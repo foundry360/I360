@@ -2,11 +2,13 @@
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { useParams } from "next/navigation";
 import React from "react";
+import { getCompany } from "@/services/company-service";
+import type { Company } from "@/services/company-service";
 
 export default function CompanyDashboardPage() {
   const params = useParams();
   const companyId = params.companyId as string;
-  const [companyName, setCompanyName] = React.useState('');
+  const [company, setCompany] = React.useState<Company | null>(null);
   const [greeting, setGreeting] = React.useState('');
 
   React.useEffect(() => {
@@ -22,21 +24,25 @@ export default function CompanyDashboardPage() {
 
   React.useEffect(() => {
     if (companyId) {
-      // Capitalize the first letter and replace hyphens with spaces
-      const formattedName = companyId
-        .split('-')
-        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-        .join(' ');
-      setCompanyName(formattedName);
+      getCompany(companyId).then(data => {
+        setCompany(data);
+      });
     }
   }, [companyId]);
+
+  const getFirstName = () => {
+    if (company?.contact?.name) {
+      return company.contact.name.split(' ')[0];
+    }
+    return 'User';
+  }
 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-start">
         <div>
-          <h1 className="text-3xl font-bold">{greeting} 👋</h1>
-          <p className="text-muted-foreground">Here's the dashboard for {companyName}</p>
+          <h1 className="text-3xl font-bold">{greeting}, {getFirstName()} 👋</h1>
+          <p className="text-muted-foreground">Here's the dashboard for {company?.name}</p>
         </div>
       </div>
 
