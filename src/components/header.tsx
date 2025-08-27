@@ -16,7 +16,7 @@ export function Header() {
       <Logo />
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Avatar className="cursor-pointer">
+          <Avatar className="h-8 w-8 cursor-pointer">
             <AvatarImage src="https://picsum.photos/100/100" data-ai-hint="user avatar" />
             <AvatarFallback>U</AvatarFallback>
           </Avatar>
@@ -26,6 +26,9 @@ export function Header() {
           <DropdownMenuSeparator />
           <DropdownMenuItem asChild>
             <Link href="/dashboard">Dashboard</Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <Link href="/dashboard/profile">Profile</Link>
           </DropdownMenuItem>
           <DropdownMenuItem>Settings</DropdownMenuItem>
           <DropdownMenuSeparator />
