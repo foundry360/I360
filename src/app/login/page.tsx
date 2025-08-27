@@ -9,6 +9,7 @@ import { Logo } from '@/components/logo';
 
 export default function LoginPage() {
   const router = useRouter();
+  const [companyId, setCompanyId] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [isClient, setIsClient] = useState(false);
@@ -19,10 +20,19 @@ export default function LoginPage() {
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!companyId) {
+      // Basic validation, you can add more sophisticated checks
+      alert('Company ID is required.');
+      return;
+    }
     // In a real app, you'd have authentication logic here.
-    // For now, we'll just redirect to the dashboard.
-    router.push('/dashboard');
+    // For now, we'll just redirect to the company-specific dashboard.
+    router.push(`/${companyId}/dashboard`);
   };
+
+  if (!isClient) {
+    return null;
+  }
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
@@ -36,8 +46,18 @@ export default function LoginPage() {
             <CardDescription>Enter your credentials to access your account</CardDescription>
           </CardHeader>
           <CardContent>
-            {isClient && (
               <form onSubmit={handleLogin} className="space-y-6">
+                <div className="space-y-2">
+                  <Label htmlFor="companyId">Company ID</Label>
+                  <Input
+                    id="companyId"
+                    type="text"
+                    placeholder="your-company-name"
+                    value={companyId}
+                    onChange={(e) => setCompanyId(e.target.value)}
+                    required
+                  />
+                </div>
                 <div className="space-y-2">
                   <Label htmlFor="username">Username</Label>
                   <Input
@@ -64,7 +84,6 @@ export default function LoginPage() {
                   Login
                 </Button>
               </form>
-            )}
           </CardContent>
         </Card>
       </div>

@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { usePathname } from 'next/navigation';
+import { usePathname, useParams } from 'next/navigation';
 import Link from 'next/link';
 import {
   ChevronsLeft,
@@ -20,21 +20,23 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 
-const navItems = [
-  { type: 'link', href: '/dashboard', label: 'Dashboard', icon: Home },
-  {
-    type: 'action',
-    label: 'New Assessment',
-    icon: Plus,
-    action: () => {},
-  },
-  { type: 'link', href: '/dashboard/profile', label: 'Profile', icon: User },
-];
-
 export function Sidebar() {
   const pathname = usePathname();
+  const params = useParams();
+  const companyId = params.companyId as string;
   const [isCollapsed, setIsCollapsed] = React.useState(false);
   const [isModalOpen, setIsModalOpen] = React.useState(false);
+
+  const navItems = [
+    { type: 'link', href: `/${companyId}/dashboard`, label: 'Dashboard', icon: Home },
+    {
+      type: 'action',
+      label: 'New Assessment',
+      icon: Plus,
+      action: () => setIsModalOpen(true),
+    },
+    { type: 'link', href: `/${companyId}/dashboard/profile`, label: 'Profile', icon: User },
+  ];
 
   function toggleSidebar() {
     setIsCollapsed(!isCollapsed);
@@ -99,7 +101,7 @@ export function Sidebar() {
                           <Button
                             variant="sidebar"
                             className="w-full justify-start"
-                            onClick={() => setIsModalOpen(true)}
+                            onClick={item.action}
                           >
                             <Icon
                               className={cn('h-5 w-5', {
