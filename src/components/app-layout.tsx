@@ -11,7 +11,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
   return (
-    <>
+    <div className="flex flex-1">
       <Sidebar>
         <SidebarContent>
           <SidebarMenu>
@@ -43,10 +43,8 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         </SidebarContent>
       </Sidebar>
       <SidebarInset>
-        <ScrollArea className="h-full">
-          <main className="flex-1 p-4 md:p-6">{children}</main>
-        </ScrollArea>
+        <main className="flex-1 p-4 md:p-6">{children}</main>
       </SidebarInset>
-    </>
+    </div>
   );
 }
