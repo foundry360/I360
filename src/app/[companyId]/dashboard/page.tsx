@@ -7,6 +7,18 @@ export default function CompanyDashboardPage() {
   const params = useParams();
   const companyId = params.companyId as string;
   const [companyName, setCompanyName] = React.useState('');
+  const [greeting, setGreeting] = React.useState('');
+
+  React.useEffect(() => {
+    const hour = new Date().getHours();
+    if (hour < 12) {
+      setGreeting('Good morning');
+    } else if (hour < 18) {
+      setGreeting('Good afternoon');
+    } else {
+      setGreeting('Good evening');
+    }
+  }, []);
 
   React.useEffect(() => {
     if (companyId) {
@@ -23,8 +35,8 @@ export default function CompanyDashboardPage() {
     <div className="space-y-6">
       <div className="flex justify-between items-start">
         <div>
-          <h1 className="text-3xl font-bold">Dashboard for {companyName}</h1>
-          <p className="text-muted-foreground">Here's what's happening with your projects today</p>
+          <h1 className="text-3xl font-bold">{greeting} 👋</h1>
+          <p className="text-muted-foreground">Here's the dashboard for {companyName}</p>
         </div>
       </div>
 
