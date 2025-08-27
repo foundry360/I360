@@ -411,7 +411,7 @@ export default function CompaniesPage() {
                       </Badge>
                     </TableCell>
                     <TableCell>
-                        {new Date(company.lastActivity).toLocaleDateString()}
+                        {new Date(company.lastActivity).toLocaleString([], { year: 'numeric', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit', timeZoneName: 'short' })}
                     </TableCell>
                     <TableCell className="text-right">
                        <DropdownMenu>
