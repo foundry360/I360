@@ -27,14 +27,16 @@ export default function LoginPage() {
     }
     
     try {
-      // In a real app, you'd have authentication logic here.
-      // For now, we'll just create/update the user document.
+      // In a real app, you'd have authentication. For now, we'll just create the user document.
+      // This user is global, and can be associated with a workspace later.
       const userDocRef = doc(db, 'users', username);
       await setDoc(userDocRef, {
         username: username,
         lastLogin: serverTimestamp(),
       }, { merge: true });
 
+      // After login, send the user to the main dashboard.
+      // They can select or create a workspace from there.
       router.push(`/dashboard`);
     } catch (error) {
       console.error("Error saving user data:", error);

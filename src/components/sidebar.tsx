@@ -9,6 +9,7 @@ import {
   Plus,
   Home,
   User,
+  Building,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -33,6 +34,7 @@ export function Sidebar() {
       icon: Plus,
       action: () => setIsModalOpen(true),
     },
+    { type: 'link', href: `/dashboard/workspaces`, label: 'Workspaces', icon: Building },
     { type: 'link', href: `/dashboard/profile`, label: 'Profile', icon: User },
   ];
 
