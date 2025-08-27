@@ -4,7 +4,6 @@ import * as React from 'react';
 import { ChevronsLeft, ChevronsRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { Logo } from './logo';
 
 export function Sidebar() {
   const [isCollapsed, setIsCollapsed] = React.useState(false);
@@ -25,19 +24,11 @@ export function Sidebar() {
     >
       <div className="flex h-full flex-col">
         <div
-          className={cn('flex h-16 items-center px-6', {
+          className={cn('flex h-16 items-center', {
             'justify-center': isCollapsed,
-            'justify-between': !isCollapsed,
+            'justify-end px-4': !isCollapsed,
           })}
-        >
-          <div
-            className={cn('transition-opacity duration-200', {
-              'opacity-0': isCollapsed,
-            })}
-          >
-            <Logo />
-          </div>
-        </div>
+        ></div>
         <nav className="flex-1 space-y-2 px-4"></nav>
         <div className="border-t border-sidebar-border p-4">
           <Button
