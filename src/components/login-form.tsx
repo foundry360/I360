@@ -2,34 +2,17 @@
 
 import * as React from 'react';
 import { useRouter } from 'next/navigation';
-import { initializeApp, getApps, getApp } from 'firebase/app';
 import {
-  getAuth,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   updateProfile,
 } from 'firebase/auth';
-import { getFirestore, doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-
-// Hardcoded Firebase config directly in the component
-const firebaseConfig = {
-  projectId: 'insights360-ta9hn',
-  appId: '1:249056251135:web:016bba83b9d0d0150f50ca',
-  storageBucket: 'insights360-ta9hn.firebasestorage.app',
-  apiKey: 'AIzaSyC_Vd2Ttd3VwzefYCdTNLuO4Dk7KDESOE4',
-  authDomain: 'insights360-ta9hn.firebaseapp.com',
-  measurementId: '',
-  messagingSenderId: '249056251135',
-};
-
-// Initialize Firebase app and services within the component's scope
-const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
-const auth = getAuth(app);
-const db = getFirestore(app);
+import { auth, db } from '@/lib/firebase';
 
 export function LoginForm() {
   const router = useRouter();
