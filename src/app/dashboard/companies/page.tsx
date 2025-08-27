@@ -1,5 +1,6 @@
 'use client';
 
+import * as React from 'react';
 import {
   Table,
   TableHeader,
@@ -19,8 +20,20 @@ import {
 } from '@/components/ui/card';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { useRouter } from 'next/navigation';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+  DialogTrigger,
+  DialogClose,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
-const companies = [
+const initialCompanies = [
   {
     id: 'acme-inc',
     name: 'Acme Inc.',
@@ -61,6 +74,36 @@ const companies = [
 
 export default function CompaniesPage() {
   const router = useRouter();
+  const [companies, setCompanies] = React.useState(initialCompanies);
+  const [newCompany, setNewCompany] = React.useState({
+    name: '',
+    street: '',
+    city: '',
+    state: '',
+    zip: '',
+    phone: '',
+    website: '',
+  });
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { id, value } = e.target;
+    setNewCompany((prev) => ({ ...prev, [id]: value }));
+  };
+
+  const handleCreateCompany = () => {
+    const newCompanyData = {
+      id: newCompany.name.toLowerCase().replace(/\s+/g, '-'),
+      name: newCompany.name,
+      contact: {
+        name: 'New Contact', // Placeholder
+        avatar: `https://picsum.photos/100/100?q=${companies.length + 1}`,
+      },
+      status: 'Active',
+    };
+    setCompanies([...companies, newCompanyData]);
+    // Reset form
+    setNewCompany({ name: '', street: '', city: '', state: '', zip: '', phone: '', website: '' });
+  };
 
   const handleViewDetails = (companyId: string) => {
     router.push(`/${companyId}/details`);
@@ -68,7 +111,76 @@ export default function CompaniesPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold">Companies</h1>
+      <div className="flex justify-between items-center">
+        <h1 className="text-3xl font-bold">Companies</h1>
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button>Create Company</Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[600px]">
+            <DialogHeader>
+              <DialogTitle>Create New Company</DialogTitle>
+              <DialogDescription>
+                Fill in the details below to create a new company.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="name" className="text-right">
+                  Company Name
+                </Label>
+                <Input id="name" value={newCompany.name} onChange={handleInputChange} className="col-span-3" />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="street" className="text-right">
+                  Street Address
+                </Label>
+                <Input id="street" value={newCompany.street} onChange={handleInputChange} className="col-span-3" />
+              </div>
+               <div className="grid grid-cols-4 items-center gap-4">
+                 <Label htmlFor="city" className="text-right">
+                   City
+                 </Label>
+                 <Input id="city" value={newCompany.city} onChange={handleInputChange} className="col-span-3" />
+               </div>
+               <div className="grid grid-cols-4 items-center gap-4">
+                 <Label htmlFor="state" className="text-right">
+                   State
+                 </Label>
+                 <Input id="state" value={newCompany.state} onChange={handleInputChange} className="col-span-3" />
+               </div>
+               <div className="grid grid-cols-4 items-center gap-4">
+                 <Label htmlFor="zip" className="text-right">
+                   Postal Code
+                 </Label>
+                 <Input id="zip" value={newCompany.zip} onChange={handleInputChange} className="col-span-3" />
+               </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="phone" className="text-right">
+                  Phone Number
+                </Label>
+                <Input id="phone" value={newCompany.phone} onChange={handleInputChange} className="col-span-3" />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="website" className="text-right">
+                  Website
+                </Label>
+                <Input id="website" value={newCompany.website} onChange={handleInputChange} className="col-span-3" />
+              </div>
+            </div>
+            <DialogFooter>
+              <DialogClose asChild>
+                <Button type="button" variant="outline">
+                  Cancel
+                </Button>
+              </DialogClose>
+              <DialogClose asChild>
+                <Button type="submit" onClick={handleCreateCompany}>Create Company</Button>
+              </DialogClose>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </div>
       <Card>
         <CardHeader>
           <CardTitle>All Companies</CardTitle>

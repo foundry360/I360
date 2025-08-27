@@ -39,7 +39,6 @@ export function Sidebar() {
       action: () => setIsModalOpen(true),
     },
     { type: 'link', href: `/dashboard/companies`, label: 'Companies', icon: Briefcase },
-    { type: 'link', href: `/${companyId}/details`, label: 'Company Details', icon: Building2 },
     { type: 'link', href: `/${companyId}/profile`, label: 'Profile', icon: User },
   ];
 
