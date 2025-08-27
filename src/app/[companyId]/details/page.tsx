@@ -19,6 +19,13 @@ import { Badge } from '@/components/ui/badge';
 import { AppLayout } from '@/components/app-layout';
 import { useParams } from 'next/navigation';
 import React from 'react';
+import { Progress } from '@/components/ui/progress';
+
+const currentAssessments = [
+    { name: 'Q4 2023 RevOps Maturity', status: 'In Progress', progress: 75, startDate: '2023-10-01' },
+    { name: 'GTM Strategy Alignment', status: 'In Progress', progress: 40, startDate: '2023-10-10' },
+    { name: 'Tech Stack ROI Analysis', status: 'Not Started', progress: 0, startDate: '2023-11-01' },
+];
 
 const assessmentHistory = [
   {
@@ -33,7 +40,7 @@ const assessmentHistory = [
   },
   {
     name: 'New Product Launch Readiness',
-    status: 'In Progress',
+    status: 'Completed',
     date: '2023-10-05',
   },
   {
@@ -103,9 +110,53 @@ export default function CompanyDetailsPage() {
             </Card>
             <Card>
               <CardHeader>
+                <CardTitle>Current Assessments</CardTitle>
+                <CardDescription>
+                  Ongoing assessments for {companyName}.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Assessment Name</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead className="w-[150px]">Progress</TableHead>
+                      <TableHead>Start Date</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {currentAssessments.map((assessment, index) => (
+                      <TableRow key={index}>
+                        <TableCell className="font-medium">
+                          {assessment.name}
+                        </TableCell>
+                        <TableCell>
+                          <Badge
+                            variant={
+                              assessment.status === 'In Progress'
+                                ? 'secondary'
+                                : 'outline'
+                            }
+                          >
+                            {assessment.status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                            <Progress value={assessment.progress} className="h-2" />
+                        </TableCell>
+                        <TableCell>{assessment.startDate}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader>
                 <CardTitle>Assessment History</CardTitle>
                 <CardDescription>
-                  Review of all assessments, past and present.
+                  Review of all completed assessments.
                 </CardDescription>
               </CardHeader>
               <CardContent>
