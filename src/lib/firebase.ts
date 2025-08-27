@@ -1,6 +1,8 @@
-import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
-import { getFirestore } from 'firebase/firestore';
-import { getAuth } from 'firebase/auth';
+'use client';
+
+import { initializeApp, getApp, getApps, FirebaseApp } from 'firebase/app';
+import { getAuth, Auth } from 'firebase/auth';
+import { getFirestore, Firestore } from 'firebase/firestore';
 
 const firebaseConfig = {
   projectId: 'insights360-ta9hn',
@@ -12,9 +14,19 @@ const firebaseConfig = {
   messagingSenderId: '249056251135',
 };
 
-// Initialize Firebase
-const app: FirebaseApp = getApps().length ? getApp() : initializeApp(firebaseConfig);
-const db = getFirestore(app);
-const auth = getAuth(app);
+let app: FirebaseApp;
+let auth: Auth;
+let db: Firestore;
+
+if (typeof window !== 'undefined' && !getApps().length) {
+  app = initializeApp(firebaseConfig);
+  auth = getAuth(app);
+  db = getFirestore(app);
+} else {
+  app = getApp();
+  auth = getAuth(app);
+  db = getFirestore(app);
+}
+
 
 export { app, db, auth };
