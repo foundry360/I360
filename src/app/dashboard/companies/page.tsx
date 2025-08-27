@@ -16,7 +16,7 @@ import {
   CardContent,
   CardFooter,
 } from '@/components/ui/card';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { useRouter } from 'next/navigation';
 import {
   Dialog,
@@ -242,12 +242,12 @@ export default function CompaniesPage() {
   
   const getSortIcon = (key: SortKey) => {
     if (!sortConfig || sortConfig.key !== key) {
-        return <ArrowUpDown className="h-4 w-4 ml-2 opacity-0 group-hover:opacity-100" />;
+        return <ArrowUpDown className="h-4 w-4 opacity-0 group-hover:opacity-100" />;
     }
     if (sortConfig.direction === 'ascending') {
-        return <ArrowUpDown className="h-4 w-4 ml-2" />; // Or a specific up icon
+        return <ArrowUpDown className="h-4 w-4" />; // Or a specific up icon
     }
-    return <ArrowUpDown className="h-4 w-4 ml-2" />; // Or a specific down icon
+    return <ArrowUpDown className="h-4 w-4" />; // Or a specific down icon
   };
 
   return (
@@ -419,27 +419,35 @@ export default function CompaniesPage() {
                     />
                   </TableHead>
                   <TableHead>
-                    <Button variant="ghost" onClick={() => requestSort('name')} className="group -ml-4">
-                      Company Name
-                      {getSortIcon('name')}
+                    <Button variant="ghost" onClick={() => requestSort('name')} className="group w-full p-0 hover:bg-transparent">
+                      <div className="flex justify-between items-center w-full">
+                        Company Name
+                        {getSortIcon('name')}
+                      </div>
                     </Button>
                   </TableHead>
                   <TableHead>
-                     <Button variant="ghost" onClick={() => requestSort('contact')} className="group -ml-4">
-                      Primary Contact
-                       {getSortIcon('contact')}
+                     <Button variant="ghost" onClick={() => requestSort('contact')} className="group w-full p-0 hover:bg-transparent">
+                       <div className="flex justify-between items-center w-full">
+                        Primary Contact
+                        {getSortIcon('contact')}
+                       </div>
                     </Button>
                   </TableHead>
                   <TableHead>
-                    <Button variant="ghost" onClick={() => requestSort('status')} className="group -ml-4">
-                      Status
-                      {getSortIcon('status')}
+                    <Button variant="ghost" onClick={() => requestSort('status')} className="group w-full p-0 hover:bg-transparent">
+                       <div className="flex justify-between items-center w-full">
+                        Status
+                        {getSortIcon('status')}
+                       </div>
                     </Button>
                   </TableHead>
                   <TableHead>
-                     <Button variant="ghost" onClick={() => requestSort('lastActivity')} className="group -ml-4">
-                      Last Activity
-                      {getSortIcon('lastActivity')}
+                     <Button variant="ghost" onClick={() => requestSort('lastActivity')} className="group w-full p-0 hover:bg-transparent">
+                       <div className="flex justify-between items-center w-full">
+                        Last Activity
+                        {getSortIcon('lastActivity')}
+                       </div>
                     </Button>
                   </TableHead>
                   <TableHead className="text-right"></TableHead>
