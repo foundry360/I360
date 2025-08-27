@@ -17,9 +17,10 @@ import {
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { AppLayout } from '@/components/app-layout';
-import { useParams } from 'next/navigation';
+import { useParams, useSearchParams } from 'next/navigation';
 import React from 'react';
 import { Progress } from '@/components/ui/progress';
+import { Phone, Globe, MapPin } from 'lucide-react';
 
 const currentAssessments = [
     { name: 'Q4 2023 RevOps Maturity', status: 'In Progress', progress: 75, startDate: '2023-10-01' },
@@ -71,28 +72,48 @@ const recentActivity = [
     { activity: 'Company profile updated', time: '1 week ago' },
 ];
 
-export default function CompanyDetailsPage() {
-  const params = useParams();
-  const companyId = params.companyId as string;
-  const [companyName, setCompanyName] = React.useState('');
+interface CompanyData {
+    name: string;
+    street: string;
+    city: string;
+    state: string;
+    zip: string;
+    phone: string;
+    website: string;
+}
 
+export default function CompanyDetailsPage() {
+  const searchParams = useSearchParams();
+  const [companyData, setCompanyData] = React.useState<CompanyData | null>(null);
+  
   React.useEffect(() => {
-    if (companyId) {
-      const formattedName = companyId
-        .split('-')
-        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-        .join(' ');
-      setCompanyName(formattedName);
-    }
-  }, [companyId]);
+    const name = searchParams.get('name') || 'Company';
+    const street = searchParams.get('street') || '';
+    const city = searchParams.get('city') || '';
+    const state = searchParams.get('state') || '';
+    const zip = searchParams.get('zip') || '';
+    const phone = searchParams.get('phone') || '';
+    const website = searchParams.get('website') || '';
+    setCompanyData({ name, street, city, state, zip, phone, website });
+  }, [searchParams]);
+
+  if (!companyData) {
+      return (
+        <AppLayout>
+            <div className="flex justify-center items-center h-full">
+                <p>Loading company data...</p>
+            </div>
+        </AppLayout>
+      );
+  }
 
   return (
     <AppLayout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold">Company Details</h1>
+          <h1 className="text-3xl font-bold">{companyData.name}</h1>
           <p className="text-muted-foreground">
-            A complete overview of {companyName}.
+            A complete overview of {companyData.name}.
           </p>
         </div>
 
@@ -104,7 +125,7 @@ export default function CompanyDetailsPage() {
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground">
-                  {companyName} is a leading provider of innovative solutions in the tech industry. They are focused on developing cutting-edge products that solve real-world problems. With a strong team of experts and a commitment to customer success, they have established themselves as a trusted partner for businesses worldwide.
+                  {companyData.name} is a leading provider of innovative solutions in the tech industry. They are focused on developing cutting-edge products that solve real-world problems. With a strong team of experts and a commitment to customer success, they have established themselves as a trusted partner for businesses worldwide.
                 </p>
               </CardContent>
             </Card>
@@ -112,7 +133,7 @@ export default function CompanyDetailsPage() {
               <CardHeader>
                 <CardTitle>Current Assessments</CardTitle>
                 <CardDescription>
-                  Ongoing assessments for {companyName}.
+                  Ongoing assessments for {companyData.name}.
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -196,6 +217,27 @@ export default function CompanyDetailsPage() {
           </div>
 
           <div className="space-y-6">
+            <Card>
+                <CardHeader>
+                    <CardTitle>Company Information</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <div className="flex items-center gap-4">
+                        <MapPin className="h-5 w-5 text-muted-foreground" />
+                        <span className="text-sm">{`${companyData.street}, ${companyData.city}, ${companyData.state} ${companyData.zip}`}</span>
+                    </div>
+                     <div className="flex items-center gap-4">
+                        <Phone className="h-5 w-5 text-muted-foreground" />
+                        <span className="text-sm">{companyData.phone}</span>
+                    </div>
+                     <div className="flex items-center gap-4">
+                        <Globe className="h-5 w-5 text-muted-foreground" />
+                        <a href={`http://${companyData.website}`} target="_blank" rel="noopener noreferrer" className="text-sm text-primary hover:underline">
+                            {companyData.website}
+                        </a>
+                    </div>
+                </CardContent>
+            </Card>
             <Card>
               <CardHeader>
                 <CardTitle>Primary Contacts</CardTitle>

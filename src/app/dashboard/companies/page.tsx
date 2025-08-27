@@ -37,6 +37,12 @@ const initialCompanies = [
   {
     id: 'acme-inc',
     name: 'Acme Inc.',
+    street: '123 Main St',
+    city: 'Anytown',
+    state: 'CA',
+    zip: '12345',
+    phone: '555-1234',
+    website: 'acme.com',
     contact: {
       name: 'Jane Doe',
       avatar: 'https://picsum.photos/100/100?q=1',
@@ -46,6 +52,12 @@ const initialCompanies = [
   {
     id: 'widgets-co',
     name: 'Widgets Co.',
+    street: '456 Oak Ave',
+    city: 'Someville',
+    state: 'TX',
+    zip: '67890',
+    phone: '555-5678',
+    website: 'widgets.co',
     contact: {
       name: 'John Smith',
       avatar: 'https://picsum.photos/100/100?q=2',
@@ -55,6 +67,12 @@ const initialCompanies = [
   {
     id: 'innovate-llc',
     name: 'Innovate LLC',
+    street: '789 Pine Rd',
+    city: 'Metropolis',
+    state: 'NY',
+    zip: '10101',
+    phone: '555-8765',
+    website: 'innovatellc.com',
     contact: {
       name: 'Emily Johnson',
       avatar: 'https://picsum.photos/100/100?q=3',
@@ -64,6 +82,12 @@ const initialCompanies = [
   {
     id: 'synergy-corp',
     name: 'Synergy Corp',
+    street: '321 Elm St',
+    city: 'Star City',
+    state: 'FL',
+    zip: '33333',
+    phone: '555-4321',
+    website: 'synergy.corp',
     contact: {
       name: 'Michael Brown',
       avatar: 'https://picsum.photos/100/100?q=4',
@@ -94,6 +118,12 @@ export default function CompaniesPage() {
     const newCompanyData = {
       id: newCompany.name.toLowerCase().replace(/\s+/g, '-'),
       name: newCompany.name,
+      street: newCompany.street,
+      city: newCompany.city,
+      state: newCompany.state,
+      zip: newCompany.zip,
+      phone: newCompany.phone,
+      website: newCompany.website,
       contact: {
         name: 'New Contact', // Placeholder
         avatar: `https://picsum.photos/100/100?q=${companies.length + 1}`,
@@ -105,8 +135,9 @@ export default function CompaniesPage() {
     setNewCompany({ name: '', street: '', city: '', state: '', zip: '', phone: '', website: '' });
   };
 
-  const handleViewDetails = (companyId: string) => {
-    router.push(`/${companyId}/details`);
+  const handleViewDetails = (company: typeof initialCompanies[0]) => {
+    const query = new URLSearchParams(company).toString();
+    router.push(`/${company.id}/details?${query}`);
   };
 
   return (
@@ -227,7 +258,7 @@ export default function CompaniesPage() {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => handleViewDetails(company.id)}
+                      onClick={() => handleViewDetails(company)}
                     >
                       View Details
                     </Button>
