@@ -45,9 +45,9 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
             </SidebarMenu>
           </SidebarContent>
         </Sidebar>
-        <SidebarInset>
-          <main className="flex-1 p-4 md:p-6 overflow-y-auto">{children}</main>
-        </SidebarInset>
+        <div className="flex flex-1 flex-col overflow-y-auto">
+          <main className="flex-1 p-4 md:p-6">{children}</main>
+        </div>
       </div>
     </div>
   );
