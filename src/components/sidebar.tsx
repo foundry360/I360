@@ -35,7 +35,7 @@ export function Sidebar() {
           <nav className="flex-1 space-y-2 px-4">
             <Button
               variant="primary"
-              className="w-full"
+              className="w-full justify-start"
               onClick={() => setIsModalOpen(true)}
             >
               <Plus className="mr-2 h-4 w-4" />
