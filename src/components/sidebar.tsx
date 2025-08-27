@@ -18,7 +18,7 @@ export function Sidebar() {
     <>
       <div
         className={cn(
-          'relative h-full bg-sidebar text-sidebar-foreground transition-all duration-300 ease-in-out',
+          'relative h-full bg-sidebar text-sidebar-foreground transition-all duration-300 ease-in-out border-r border-border',
           {
             'w-64': !isCollapsed,
             'w-16': isCollapsed,
@@ -42,7 +42,7 @@ export function Sidebar() {
               {!isCollapsed && 'New Assessment'}
             </Button>
           </nav>
-          <div className="border-t border-sidebar-border p-4">
+          <div className="border-t border-border p-4">
             <Button
               variant="ghost"
               className="w-full justify-center p-2"
