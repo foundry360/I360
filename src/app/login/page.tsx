@@ -6,7 +6,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Logo } from '@/components/logo';
-import Link from 'next/link';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -23,10 +22,8 @@ export default function LoginPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
       <div className="w-full max-w-md">
-        <div className="mb-8 text-center">
-          <Link href="/">
+        <div className="mb-8 flex justify-center">
             <Logo />
-          </Link>
         </div>
         <Card>
           <CardHeader className="text-center">
