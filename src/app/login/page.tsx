@@ -43,10 +43,6 @@ export default function LoginPage() {
     }
   };
 
-  if (!isClient) {
-    return null;
-  }
-
   return (
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
       <div className="w-full max-w-md">
@@ -60,42 +56,44 @@ export default function LoginPage() {
           </CardHeader>
           <CardContent>
               <form onSubmit={handleLogin} className="space-y-6">
-                <div className="space-y-2">
-                  <Label htmlFor="companyId">Company ID</Label>
-                  <Input
-                    id="companyId"
-                    type="text"
-                    placeholder="your-company-name"
-                    value={companyId}
-                    onChange={(e) => setCompanyId(e.target.value)}
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="username">Username</Label>
-                  <Input
-                    id="username"
-                    type="text"
-                    placeholder="your-username"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="password">Password</Label>
-                  <Input
-                    id="password"
-                    type="password"
-                    placeholder="your-password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                  />
-                </div>
-                <Button type="submit" className="w-full">
-                  Login
-                </Button>
+                <fieldset disabled={!isClient} className="space-y-6">
+                  <div className="space-y-2">
+                    <Label htmlFor="companyId">Company ID</Label>
+                    <Input
+                      id="companyId"
+                      type="text"
+                      placeholder="your-company-name"
+                      value={companyId}
+                      onChange={(e) => setCompanyId(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="username">Username</Label>
+                    <Input
+                      id="username"
+                      type="text"
+                      placeholder="your-username"
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="password">Password</Label>
+                    <Input
+                      id="password"
+                      type="password"
+                      placeholder="your-password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <Button type="submit" className="w-full" disabled={!isClient}>
+                    Login
+                  </Button>
+                </fieldset>
               </form>
           </CardContent>
         </Card>
