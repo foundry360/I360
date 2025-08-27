@@ -33,6 +33,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { getCompanies, createCompany, Company } from '@/services/company-service';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Eye } from 'lucide-react';
 
 const initialNewCompanyState = {
   name: '',
@@ -216,10 +217,11 @@ export default function CompaniesPage() {
                   <TableCell className="text-right">
                     <Button
                       variant="outline"
-                      size="sm"
+                      size="icon"
                       onClick={() => handleViewDetails(company)}
                     >
-                      View Details
+                      <Eye className="h-4 w-4" />
+                      <span className="sr-only">View Details</span>
                     </Button>
                   </TableCell>
                 </TableRow>
