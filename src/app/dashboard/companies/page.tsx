@@ -28,7 +28,6 @@ import {
   DialogDescription,
   DialogFooter,
   DialogTrigger,
-  DialogClose,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -74,7 +73,8 @@ export default function CompaniesPage() {
     setNewCompany((prev) => ({ ...prev, [id]: value }));
   };
 
-  const handleCreateCompany = async () => {
+  const handleCreateCompany = async (e: React.FormEvent) => {
+    e.preventDefault();
     const id = newCompany.name.toLowerCase().replace(/\s+/g, '-');
     const companyData = {
       ...newCompany,
@@ -116,56 +116,58 @@ export default function CompaniesPage() {
                 Fill in the details below to create a new company.
               </DialogDescription>
             </DialogHeader>
-            <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="name" className="text-right">
-                  Company Name
-                </Label>
-                <Input id="name" value={newCompany.name} onChange={handleInputChange} className="col-span-3" />
+            <form onSubmit={handleCreateCompany}>
+              <div className="grid gap-4 py-4">
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="name" className="text-right">
+                    Company Name
+                  </Label>
+                  <Input id="name" value={newCompany.name} onChange={handleInputChange} className="col-span-3" required />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="street" className="text-right">
+                    Street Address
+                  </Label>
+                  <Input id="street" value={newCompany.street} onChange={handleInputChange} className="col-span-3" />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="city" className="text-right">
+                    City
+                  </Label>
+                  <Input id="city" value={newCompany.city} onChange={handleInputChange} className="col-span-3" />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="state" className="text-right">
+                    State
+                  </Label>
+                  <Input id="state" value={newCompany.state} onChange={handleInputChange} className="col-span-3" />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="zip" className="text-right">
+                    Postal Code
+                  </Label>
+                  <Input id="zip" value={newCompany.zip} onChange={handleInputChange} className="col-span-3" />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="phone" className="text-right">
+                    Phone Number
+                  </Label>
+                  <Input id="phone" value={newCompany.phone} onChange={handleInputChange} className="col-span-3" />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="website" className="text-right">
+                    Website
+                  </Label>
+                  <Input id="website" value={newCompany.website} onChange={handleInputChange} className="col-span-3" />
+                </div>
               </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="street" className="text-right">
-                  Street Address
-                </Label>
-                <Input id="street" value={newCompany.street} onChange={handleInputChange} className="col-span-3" />
-              </div>
-               <div className="grid grid-cols-4 items-center gap-4">
-                 <Label htmlFor="city" className="text-right">
-                   City
-                 </Label>
-                 <Input id="city" value={newCompany.city} onChange={handleInputChange} className="col-span-3" />
-               </div>
-               <div className="grid grid-cols-4 items-center gap-4">
-                 <Label htmlFor="state" className="text-right">
-                   State
-                 </Label>
-                 <Input id="state" value={newCompany.state} onChange={handleInputChange} className="col-span-3" />
-               </div>
-               <div className="grid grid-cols-4 items-center gap-4">
-                 <Label htmlFor="zip" className="text-right">
-                   Postal Code
-                 </Label>
-                 <Input id="zip" value={newCompany.zip} onChange={handleInputChange} className="col-span-3" />
-               </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="phone" className="text-right">
-                  Phone Number
-                </Label>
-                <Input id="phone" value={newCompany.phone} onChange={handleInputChange} className="col-span-3" />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="website" className="text-right">
-                  Website
-                </Label>
-                <Input id="website" value={newCompany.website} onChange={handleInputChange} className="col-span-3" />
-              </div>
-            </div>
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
-                Cancel
-              </Button>
-              <Button type="submit" onClick={handleCreateCompany}>Create Company</Button>
-            </DialogFooter>
+              <DialogFooter>
+                <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
+                  Cancel
+                </Button>
+                <Button type="submit">Create Company</Button>
+              </DialogFooter>
+            </form>
           </DialogContent>
         </Dialog>
       </div>
