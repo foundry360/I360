@@ -244,9 +244,9 @@ export default function CompaniesPage() {
         return <ArrowUpDown className="h-4 w-4 opacity-0 group-hover:opacity-100" />;
     }
     if (sortConfig.direction === 'ascending') {
-        return <ArrowUpDown className="h-4 w-4" />; // Or a specific up icon
+        return <ArrowUpDown className="h-4 w-4" />;
     }
-    return <ArrowUpDown className="h-4 w-4" />; // Or a specific down icon
+    return <ArrowUpDown className="h-4 w-4" />;
   };
 
   return (
@@ -582,3 +582,5 @@ export default function CompaniesPage() {
     </div>
   );
 }
+
+    
