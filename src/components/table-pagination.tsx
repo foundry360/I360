@@ -51,7 +51,7 @@ export function TablePagination({
   };
 
   return (
-    <div className="flex items-center justify-end space-x-6 lg:space-x-8 text-sm">
+    <div className="flex items-center justify-end space-x-6 lg:space-x-8 text-sm text-muted-foreground">
       <div className="flex items-center space-x-2">
         <p className="font-medium">Rows per page</p>
         <Select

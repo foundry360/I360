@@ -420,7 +420,7 @@ export default function CompaniesPage() {
             </Table>
           )}
         </CardContent>
-         <CardFooter>
+         <CardFooter className="justify-end">
             <TablePagination
                 count={companies.length}
                 page={page}
