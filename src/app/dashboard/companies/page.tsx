@@ -101,7 +101,7 @@ export default function CompaniesPage() {
         <h1 className="text-3xl font-bold">Companies</h1>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button size="icon">
+            <Button variant="outline" size="icon">
               <Plus className="h-4 w-4" />
               <span className="sr-only">Create Company</span>
             </Button>
