@@ -18,7 +18,7 @@ export function AssessmentModal({ isOpen, onOpenChange }: AssessmentModalProps) 
         <DialogHeader>
           <DialogTitle>New Assessment</DialogTitle>
           <DialogDescription>
-            Start a new assessment by filling out the form below.
+            Start a new assessment by filling out the form below
           </DialogDescription>
         </DialogHeader>
         <div className="flex-1 py-4">

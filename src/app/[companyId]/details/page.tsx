@@ -173,7 +173,7 @@ export default function CompanyDetailsPage() {
             <h1 className="text-3xl font-bold">{companyData.name}</h1>
           </div>
           <p className="text-muted-foreground mt-2">
-            A complete overview of {companyData.name}.
+            A complete overview of {companyData.name}
           </p>
         </div>
 
@@ -194,7 +194,7 @@ export default function CompanyDetailsPage() {
                 <div>
                   <div className="font-semibold">Current Assessments</div>
                   <div className="text-sm text-muted-foreground">
-                    Ongoing assessments for {companyData.name}.
+                    Ongoing assessments for {companyData.name}
                   </div>
                 </div>
                 <DropdownMenu>
@@ -257,7 +257,7 @@ export default function CompanyDetailsPage() {
               <CardHeader>
                 <div className="font-semibold">Assessment History</div>
                 <div className="text-sm text-muted-foreground">
-                  Review of all completed assessments.
+                  Review of all completed assessments
                 </div>
               </CardHeader>
               <CardContent>

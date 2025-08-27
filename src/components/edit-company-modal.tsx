@@ -48,7 +48,7 @@ export function EditCompanyModal({
           <DialogHeader>
             <DialogTitle>Edit Company: {company.name}</DialogTitle>
             <DialogDescription>
-              Update the company details below.
+              Update the company details below
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">

@@ -50,7 +50,7 @@ export default function CompanyProfilePage() {
           <CardHeader>
             <CardTitle>Your Information</CardTitle>
             <CardDescription>
-              View and edit your personal details.
+              View and edit your personal details
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">

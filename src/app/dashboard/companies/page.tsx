@@ -107,7 +107,7 @@ export default function CompaniesPage() {
               <DialogHeader>
                 <DialogTitle>Create New Company</DialogTitle>
                 <DialogDescription>
-                  Fill in the details below to create a new company.
+                  Fill in the details below to create a new company
                 </DialogDescription>
               </DialogHeader>
               <div className="grid gap-4 py-4">
@@ -168,7 +168,7 @@ export default function CompaniesPage() {
         <CardHeader>
           <CardTitle>All Companies</CardTitle>
           <CardDescription>
-            A list of all companies in your portfolio.
+            A list of all companies in your portfolio
           </CardDescription>
         </CardHeader>
         <CardContent>

@@ -14,7 +14,7 @@ export default function LandingPage() {
           Welcome to Insights360
         </h1>
         <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto mb-8">
-          Unlock powerful AI-driven insights for your RevOps and Go-To-Market strategies.
+          Unlock powerful AI-driven insights for your RevOps and Go-To-Market strategies
         </p>
         <Button asChild size="lg">
           <Link href="/acme-inc/dashboard">
