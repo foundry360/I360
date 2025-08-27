@@ -4,7 +4,7 @@ export function Logo() {
   return (
     <div className="flex items-center gap-2 text-xl font-bold">
       <Activity className="h-6 w-6 text-accent" />
-      <span className="text-sidebar-foreground">Insights360</span>
+      <span>Insights360</span>
     </div>
   );
 }
