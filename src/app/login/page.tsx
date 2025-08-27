@@ -11,7 +11,6 @@ import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 
 export default function LoginPage() {
   const router = useRouter();
-  const [companyId, setCompanyId] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [isClient, setIsClient] = useState(false);
@@ -22,21 +21,21 @@ export default function LoginPage() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!companyId || !username) {
-      alert('Company ID and Username are required.');
+    if (!username) {
+      alert('Username is required.');
       return;
     }
     
     try {
       // In a real app, you'd have authentication logic here.
       // For now, we'll just create/update the user document.
-      const userDocRef = doc(db, 'companies', companyId, 'users', username);
+      const userDocRef = doc(db, 'users', username);
       await setDoc(userDocRef, {
         username: username,
         lastLogin: serverTimestamp(),
       }, { merge: true });
 
-      router.push(`/${companyId}/dashboard`);
+      router.push(`/dashboard`);
     } catch (error) {
       console.error("Error saving user data:", error);
       alert('There was an error logging in. Please try again.');
@@ -57,17 +56,6 @@ export default function LoginPage() {
           <CardContent>
               <form onSubmit={handleLogin} className="space-y-6">
                 <fieldset disabled={!isClient} className="space-y-6">
-                  <div className="space-y-2" suppressHydrationWarning>
-                    <Label htmlFor="companyId">Company ID</Label>
-                    <Input
-                      id="companyId"
-                      type="text"
-                      placeholder="your-company-name"
-                      value={companyId}
-                      onChange={(e) => setCompanyId(e.target.value)}
-                      required
-                    />
-                  </div>
                   <div className="space-y-2" suppressHydrationWarning>
                     <Label htmlFor="username">Username</Label>
                     <Input
