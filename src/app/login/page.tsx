@@ -4,11 +4,9 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Logo } from '@/components/logo';
 import { db } from '@/lib/firebase';
 import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
-import { Skeleton } from '@/components/ui/skeleton';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -28,8 +26,7 @@ export default function LoginPage() {
     }
     
     try {
-      // Create a global user document. This user can then be associated
-      // with multiple workspaces.
+      // Create a global user document.
       const userDocRef = doc(db, 'users', username);
       await setDoc(userDocRef, {
         username: username,
@@ -44,61 +41,62 @@ export default function LoginPage() {
     }
   };
 
+  if (!isClient) {
+    return null;
+  }
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background p-4">
-      <div className="w-full max-w-md">
-        <div className="mb-8 flex justify-center">
-            <Logo />
+    <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
+      <div className="w-full max-w-sm space-y-8">
+        <div className="text-center">
+          <Logo />
+          <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-foreground">
+            Sign in to your account
+          </h2>
+          <p className="mt-2 text-center text-sm text-muted-foreground">
+            Enter your credentials to continue
+          </p>
         </div>
-        <Card>
-          <CardHeader className="text-center">
-            <CardTitle>Welcome Back!</CardTitle>
-            <CardDescription>Enter your credentials to access your account</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {isClient ? (
-              <form onSubmit={handleLogin} className="space-y-6">
-                <div className="space-y-2" suppressHydrationWarning>
-                  <Label htmlFor="username">Username</Label>
-                  <Input
-                    id="username"
-                    type="text"
-                    placeholder="your-username"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    required
-                  />
-                </div>
-                <div className="space-y-2" suppressHydrationWarning>
-                  <Label htmlFor="password">Password</Label>
-                  <Input
-                    id="password"
-                    type="password"
-                    placeholder="your-password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                  />
-                </div>
-                <Button type="submit" className="w-full">
-                  Login
-                </Button>
-              </form>
-            ) : (
-              <div className="space-y-6">
-                <div className="space-y-2">
-                  <Skeleton className="h-4 w-1/4" />
-                  <Skeleton className="h-10 w-full" />
-                </div>
-                <div className="space-y-2">
-                  <Skeleton className="h-4 w-1/4" />
-                  <Skeleton className="h-10 w-full" />
-                </div>
-                <Skeleton className="h-10 w-full" />
-              </div>
-            )}
-          </CardContent>
-        </Card>
+        <form onSubmit={handleLogin} className="space-y-6">
+          <div className="space-y-2 rounded-md shadow-sm">
+            <div>
+              <Label htmlFor="username" className="sr-only">
+                Username
+              </Label>
+              <Input
+                id="username"
+                type="text"
+                autoComplete="username"
+                required
+                className="relative block w-full appearance-none rounded-none rounded-t-md border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-primary focus:outline-none focus:ring-primary sm:text-sm"
+                placeholder="Username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="password"className="sr-only">
+                Password
+              </Label>
+              <Input
+                id="password"
+                type="password"
+                autoComplete="current-password"
+                required
+                className="relative block w-full appearance-none rounded-none rounded-b-md border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-primary focus:outline-none focus:ring-primary sm:text-sm"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+            </div>
+          </div>
+
+          <div>
+            <Button type="submit" className="w-full">
+              Login
+            </Button>
+          </div>
+        </form>
       </div>
     </div>
   );
