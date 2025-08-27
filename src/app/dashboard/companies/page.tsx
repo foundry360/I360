@@ -44,11 +44,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -60,7 +55,7 @@ import {
 } from '@/services/company-service';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Checkbox } from '@/components/ui/checkbox';
-import { MoreHorizontal, Plus, Trash2, Filter } from 'lucide-react';
+import { MoreHorizontal, Plus, Trash2, Search } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { TablePagination } from '@/components/table-pagination';
 
@@ -200,13 +195,12 @@ export default function CompaniesPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">Companies</h1>
-        <div className="flex justify-between items-center mt-2">
-            <p className="text-muted-foreground">
-                A list of all companies in your portfolio
-            </p>
-            <div className="flex items-center gap-2">
+      <h1 className="text-2xl font-bold">Companies</h1>
+      <div className="flex justify-between items-center">
+          <p className="text-muted-foreground">
+              A list of all companies in your portfolio
+          </p>
+          <div className="flex items-center gap-2">
             {numSelected > 0 && (
                 <Button
                 variant="outline"
@@ -216,37 +210,15 @@ export default function CompaniesPage() {
                 Delete ({numSelected})
                 </Button>
             )}
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button variant="outline" size="icon">
-                  <Filter className="h-4 w-4" />
-                  <span className="sr-only">Filter</span>
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-80">
-                <div className="grid gap-4">
-                  <div className="space-y-2">
-                    <h4 className="font-medium leading-none">Filter</h4>
-                    <p className="text-sm text-muted-foreground">
-                      Filter companies by name.
-                    </p>
-                  </div>
-                  <div className="grid gap-2">
-                    <div className="grid grid-cols-3 items-center gap-4">
-                      <Label htmlFor="filter-name">Company Name</Label>
-                      <Input
-                        id="filter-name"
-                        value={filterText}
-                        onChange={(e) => setFilterText(e.target.value)}
-                        className="col-span-2 h-8"
-                        placeholder="e.g. Acme Inc"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </PopoverContent>
-            </Popover>
-            
+            <div className="relative">
+              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                  placeholder="Filter by company name..."
+                  value={filterText}
+                  onChange={(e) => setFilterText(e.target.value)}
+                  className="pl-8 w-64"
+              />
+            </div>
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                 <DialogTrigger asChild>
                 <Button variant="outline" size="icon">
@@ -356,7 +328,6 @@ export default function CompaniesPage() {
                 </DialogContent>
             </Dialog>
             </div>
-        </div>
       </div>
       <Separator className="bg-gray-200"/>
       <Card>
