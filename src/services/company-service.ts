@@ -1,6 +1,6 @@
 'use client';
 import { db } from '@/lib/firebase';
-import { collection, doc, getDoc, getDocs, setDoc } from 'firebase/firestore';
+import { collection, doc, getDoc, getDocs, setDoc, updateDoc } from 'firebase/firestore';
 
 export interface Company {
   id: string;
@@ -94,4 +94,16 @@ export async function createCompany(companyData: Omit<Company, 'id' | 'contact' 
   // To use firestore, uncomment the line below and remove the push to the in-memory store
   // await setDoc(doc(companiesCollection, newCompany.id), newCompany);
   companiesStore.push(newCompany);
+}
+
+export async function updateCompany(id: string, companyData: Partial<Company>): Promise<void> {
+    await delay(500);
+    // To use firestore, uncomment the lines below
+    // const docRef = doc(db, 'companies', id);
+    // await updateDoc(docRef, companyData);
+    
+    const index = companiesStore.findIndex(c => c.id === id);
+    if (index !== -1) {
+        companiesStore[index] = { ...companiesStore[index], ...companyData };
+    }
 }

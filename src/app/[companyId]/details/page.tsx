@@ -20,9 +20,9 @@ import { AppLayout } from '@/components/app-layout';
 import { useParams } from 'next/navigation';
 import React from 'react';
 import { Progress } from '@/components/ui/progress';
-import { Phone, Globe, MapPin, ArrowLeft, Plus } from 'lucide-react';
+import { Phone, Globe, MapPin, ArrowLeft, Plus, Pencil } from 'lucide-react';
 import type { Company } from '@/services/company-service';
-import { getCompany } from '@/services/company-service';
+import { getCompany, updateCompany } from '@/services/company-service';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
@@ -33,6 +33,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { AssessmentModal } from '@/components/assessment-modal';
+import { EditCompanyModal } from '@/components/edit-company-modal';
 
 const currentAssessments = [
     { name: 'Q4 2023 RevOps Maturity', status: 'In Progress', progress: 75, startDate: '2023-10-01' },
@@ -89,32 +90,40 @@ export default function CompanyDetailsPage() {
   const companyId = params.companyId as string;
   const [companyData, setCompanyData] = React.useState<Company | null>(null);
   const [loading, setLoading] = React.useState(true);
-  const [isModalOpen, setIsModalOpen] = React.useState(false);
+  const [isAssessmentModalOpen, setIsAssessmentModalOpen] = React.useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = React.useState(false);
 
-  React.useEffect(() => {
-    async function fetchCompany() {
-      if (!companyId) return;
-      try {
-        setLoading(true);
-        const data = await getCompany(companyId);
-        if (data) {
-          setCompanyData(data);
-        } else {
-          console.error("Company not found");
-          setCompanyData(null);
-        }
-      } catch (error) {
-        console.error("Error fetching company:", error);
-      } finally {
-        setLoading(false);
+  const fetchCompany = React.useCallback(async () => {
+    if (!companyId) return;
+    try {
+      setLoading(true);
+      const data = await getCompany(companyId);
+      if (data) {
+        setCompanyData(data);
+      } else {
+        console.error("Company not found");
+        setCompanyData(null);
       }
+    } catch (error) {
+      console.error("Error fetching company:", error);
+    } finally {
+      setLoading(false);
     }
-
-    fetchCompany();
   }, [companyId]);
 
+  React.useEffect(() => {
+    fetchCompany();
+  }, [fetchCompany]);
+
   const handleAssessmentSelect = () => {
-    setIsModalOpen(true);
+    setIsAssessmentModalOpen(true);
+  };
+
+  const handleCompanyUpdate = async (updatedData: Partial<Company>) => {
+    if (!companyId) return;
+    await updateCompany(companyId, updatedData);
+    await fetchCompany(); // Refetch to show updated data
+    setIsEditModalOpen(false);
   };
 
   if (loading) {
@@ -290,8 +299,12 @@ export default function CompanyDetailsPage() {
 
           <div className="space-y-6">
             <Card>
-                <CardHeader>
+                <CardHeader className="flex flex-row items-center justify-between">
                     <CardTitle>Company Information</CardTitle>
+                    <Button variant="outline" size="icon" onClick={() => setIsEditModalOpen(true)}>
+                        <Pencil className="h-4 w-4" />
+                        <span className="sr-only">Edit Company</span>
+                    </Button>
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <div className="flex items-center gap-4">
@@ -352,7 +365,15 @@ export default function CompanyDetailsPage() {
           </div>
         </div>
       </div>
-      <AssessmentModal isOpen={isModalOpen} onOpenChange={setIsModalOpen} />
+      <AssessmentModal isOpen={isAssessmentModalOpen} onOpenChange={setIsAssessmentModalOpen} />
+      {companyData && (
+        <EditCompanyModal 
+            isOpen={isEditModalOpen}
+            onOpenChange={setIsEditModalOpen}
+            company={companyData}
+            onSave={handleCompanyUpdate}
+        />
+      )}
     </AppLayout>
   );
 }
