@@ -97,8 +97,8 @@ export function Sidebar() {
                       <Tooltip key={item.label}>
                         <TooltipTrigger asChild>
                           <Button
-                            variant="primary"
-                            className="w-full justify-start mb-4"
+                            variant="ghost"
+                            className="w-full justify-start"
                             onClick={() => setIsModalOpen(true)}
                           >
                             <Icon
