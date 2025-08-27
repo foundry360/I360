@@ -45,9 +45,11 @@ import {
   getCompanies,
   createCompany,
   deleteCompany,
+  deleteCompanies,
   Company,
 } from '@/services/company-service';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Eye, Plus, Trash2 } from 'lucide-react';
 
 const initialNewCompanyState = {
@@ -67,8 +69,13 @@ export default function CompaniesPage() {
   const [newCompany, setNewCompany] = React.useState(initialNewCompanyState);
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
+  const [isBulkDeleteDialogOpen, setIsBulkDeleteDialogOpen] =
+    React.useState(false);
   const [companyToDelete, setCompanyToDelete] = React.useState<Company | null>(
     null
+  );
+  const [selectedCompanies, setSelectedCompanies] = React.useState<string[]>(
+    []
   );
 
   const fetchCompanies = React.useCallback(async () => {
@@ -96,7 +103,7 @@ export default function CompaniesPage() {
   const handleCreateCompany = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newCompany.name) {
-      alert('Company name is required.');
+      alert('Company name is required');
       return;
     }
     try {
@@ -131,118 +138,160 @@ export default function CompaniesPage() {
     }
   };
 
+  const handleSelectCompany = (companyId: string, isSelected: boolean) => {
+    if (isSelected) {
+      setSelectedCompanies((prev) => [...prev, companyId]);
+    } else {
+      setSelectedCompanies((prev) => prev.filter((id) => id !== companyId));
+    }
+  };
+
+  const handleSelectAll = (isSelected: boolean) => {
+    if (isSelected) {
+      setSelectedCompanies(companies.map((c) => c.id));
+    } else {
+      setSelectedCompanies([]);
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    try {
+      await deleteCompanies(selectedCompanies);
+      setSelectedCompanies([]);
+      setIsBulkDeleteDialogOpen(false);
+      await fetchCompanies();
+    } catch (error) {
+      console.error('Failed to delete companies:', error);
+    }
+  };
+
+  const numSelected = selectedCompanies.length;
+  const allSelected = numSelected > 0 && numSelected === companies.length;
+  const isIndeterminate = numSelected > 0 && numSelected < companies.length;
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold">Companies</h1>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button variant="outline" size="icon">
-              <Plus className="h-4 w-4" />
-              <span className="sr-only">Create Company</span>
+        <div className="flex items-center gap-2">
+          {numSelected > 0 && (
+            <Button
+              variant="destructive"
+              onClick={() => setIsBulkDeleteDialogOpen(true)}
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
+              Delete ({numSelected})
             </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[600px]">
-            <form onSubmit={handleCreateCompany}>
-              <DialogHeader>
-                <DialogTitle>Create New Company</DialogTitle>
-                <DialogDescription>
-                  Fill in the details below to create a new company
-                </DialogDescription>
-              </DialogHeader>
-              <div className="grid gap-4 py-4">
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="name" className="text-right">
-                    Company Name
-                  </Label>
-                  <Input
-                    id="name"
-                    value={newCompany.name}
-                    onChange={handleInputChange}
-                    className="col-span-3"
-                    required
-                  />
+          )}
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline" size="icon">
+                <Plus className="h-4 w-4" />
+                <span className="sr-only">Create Company</span>
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[600px]">
+              <form onSubmit={handleCreateCompany}>
+                <DialogHeader>
+                  <DialogTitle>Create New Company</DialogTitle>
+                  <DialogDescription>
+                    Fill in the details below to create a new company
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="name" className="text-right">
+                      Company Name
+                    </Label>
+                    <Input
+                      id="name"
+                      value={newCompany.name}
+                      onChange={handleInputChange}
+                      className="col-span-3"
+                      required
+                    />
+                  </div>
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="street" className="text-right">
+                      Street Address
+                    </Label>
+                    <Input
+                      id="street"
+                      value={newCompany.street}
+                      onChange={handleInputChange}
+                      className="col-span-3"
+                    />
+                  </div>
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="city" className="text-right">
+                      City
+                    </Label>
+                    <Input
+                      id="city"
+                      value={newCompany.city}
+                      onChange={handleInputChange}
+                      className="col-span-3"
+                    />
+                  </div>
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="state" className="text-right">
+                      State
+                    </Label>
+                    <Input
+                      id="state"
+                      value={newCompany.state}
+                      onChange={handleInputChange}
+                      className="col-span-3"
+                    />
+                  </div>
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="zip" className="text-right">
+                      Postal Code
+                    </Label>
+                    <Input
+                      id="zip"
+                      value={newCompany.zip}
+                      onChange={handleInputChange}
+                      className="col-span-3"
+                    />
+                  </div>
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="phone" className="text-right">
+                      Phone Number
+                    </Label>
+                    <Input
+                      id="phone"
+                      value={newCompany.phone}
+                      onChange={handleInputChange}
+                      className="col-span-3"
+                    />
+                  </div>
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="website" className="text-right">
+                      Website
+                    </Label>
+                    <Input
+                      id="website"
+                      value={newCompany.website}
+                      onChange={handleInputChange}
+                      className="col-span-3"
+                    />
+                  </div>
                 </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="street" className="text-right">
-                    Street Address
-                  </Label>
-                  <Input
-                    id="street"
-                    value={newCompany.street}
-                    onChange={handleInputChange}
-                    className="col-span-3"
-                  />
-                </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="city" className="text-right">
-                    City
-                  </Label>
-                  <Input
-                    id="city"
-                    value={newCompany.city}
-                    onChange={handleInputChange}
-                    className="col-span-3"
-                  />
-                </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="state" className="text-right">
-                    State
-                  </Label>
-                  <Input
-                    id="state"
-                    value={newCompany.state}
-                    onChange={handleInputChange}
-                    className="col-span-3"
-                  />
-                </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="zip" className="text-right">
-                    Postal Code
-                  </Label>
-                  <Input
-                    id="zip"
-                    value={newCompany.zip}
-                    onChange={handleInputChange}
-                    className="col-span-3"
-                  />
-                </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="phone" className="text-right">
-                    Phone Number
-                  </Label>
-                  <Input
-                    id="phone"
-                    value={newCompany.phone}
-                    onChange={handleInputChange}
-                    className="col-span-3"
-                  />
-                </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="website" className="text-right">
-                    Website
-                  </Label>
-                  <Input
-                    id="website"
-                    value={newCompany.website}
-                    onChange={handleInputChange}
-                    className="col-span-3"
-                  />
-                </div>
-              </div>
-              <DialogFooter>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setIsDialogOpen(false)}
-                >
-                  Cancel
-                </Button>
-                <Button type="submit">Create Company</Button>
-              </DialogFooter>
-            </form>
-          </DialogContent>
-        </Dialog>
+                <DialogFooter>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setIsDialogOpen(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button type="submit">Create Company</Button>
+                </DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
       <Card>
         <CardHeader>
@@ -262,6 +311,16 @@ export default function CompaniesPage() {
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead className="w-[50px]">
+                    <Checkbox
+                      checked={allSelected}
+                      onCheckedChange={(checked) =>
+                        handleSelectAll(checked as boolean)
+                      }
+                      aria-label="Select all"
+                      data-state={isIndeterminate ? 'indeterminate' : 'unchecked'}
+                    />
+                  </TableHead>
                   <TableHead>Company Name</TableHead>
                   <TableHead>Primary Contact</TableHead>
                   <TableHead>Status</TableHead>
@@ -270,7 +329,16 @@ export default function CompaniesPage() {
               </TableHeader>
               <TableBody>
                 {companies.map((company) => (
-                  <TableRow key={company.id}>
+                  <TableRow key={company.id} data-state={selectedCompanies.includes(company.id) && "selected"}>
+                    <TableCell>
+                      <Checkbox
+                        checked={selectedCompanies.includes(company.id)}
+                        onCheckedChange={(checked) =>
+                          handleSelectCompany(company.id, checked as boolean)
+                        }
+                        aria-label={`Select ${company.name}`}
+                      />
+                    </TableCell>
                     <TableCell className="font-medium">
                       {company.name}
                     </TableCell>
@@ -340,6 +408,28 @@ export default function CompaniesPage() {
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={handleDeleteCompany}>
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      <AlertDialog
+        open={isBulkDeleteDialogOpen}
+        onOpenChange={setIsBulkDeleteDialogOpen}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the
+              {selectedCompanies.length} selected companies.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setIsBulkDeleteDialogOpen(false)}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={handleBulkDelete}>
               Delete
             </AlertDialogAction>
           </AlertDialogFooter>

@@ -116,3 +116,15 @@ export async function deleteCompany(id: string): Promise<void> {
     
     companiesStore = companiesStore.filter(c => c.id !== id);
 }
+
+export async function deleteCompanies(ids: string[]): Promise<void> {
+    await delay(500);
+    // In a real Firestore implementation, you would use a batched write
+    // const batch = writeBatch(db);
+    // ids.forEach(id => {
+    //   const docRef = doc(db, 'companies', id);
+    //   batch.delete(docRef);
+    // });
+    // await batch.commit();
+    companiesStore = companiesStore.filter(c => !ids.includes(c.id));
+}
