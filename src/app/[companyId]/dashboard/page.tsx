@@ -11,7 +11,7 @@ export default function CompanyDashboardPage() {
   const [companyName, setCompanyName] = React.useState('');
 
   React.useEffect(() => {
-    if (companyId) {
+    if (companyId && db) {
       const fetchCompany = async () => {
         const companyDoc = await getDoc(doc(db, "companies", companyId));
         if (companyDoc.exists()) {

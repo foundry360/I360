@@ -11,17 +11,11 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Link from 'next/link';
-import { useRouter, useParams } from 'next/navigation';
+import { useParams } from 'next/navigation';
 
 export function Header() {
-  const router = useRouter();
   const params = useParams();
   const companyId = params.companyId as string;
-
-  const handleLogout = () => {
-    // In a real app, you would clear the session here.
-    router.push('/login');
-  };
 
   return (
     <header className="flex h-16 items-center justify-between gap-4 border-b border-sidebar-border bg-sidebar px-6 text-sidebar-foreground">
@@ -46,8 +40,6 @@ export function Header() {
             <Link href="/dashboard/workspaces">Switch Workspace</Link>
           </DropdownMenuItem>
           <DropdownMenuItem>Settings</DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={handleLogout}>Logout</DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
     </header>

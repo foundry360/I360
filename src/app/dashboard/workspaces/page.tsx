@@ -26,7 +26,6 @@ import {
 import { db } from '@/lib/firebase';
 import { doc, setDoc, serverTimestamp, collection, getDocs } from 'firebase/firestore';
 import { Header } from '@/components/header';
-import { AppLayout } from '@/components/app-layout';
 
 interface Workspace {
   id: string;
@@ -42,6 +41,7 @@ export default function WorkspacesPage() {
   React.useEffect(() => {
     setIsClient(true);
     const fetchWorkspaces = async () => {
+      if (!db) return;
       try {
         const querySnapshot = await getDocs(collection(db, 'companies'));
         const fetchedWorkspaces = querySnapshot.docs.map((doc) => ({
@@ -57,7 +57,7 @@ export default function WorkspacesPage() {
   }, []);
 
   const handleCreateWorkspace = async () => {
-    if (!newWorkspaceName) {
+    if (!newWorkspaceName || !db) {
       alert('Workspace name cannot be empty.');
       return;
     }
