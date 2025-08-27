@@ -16,6 +16,11 @@ import { Label } from '@/components/ui/label';
 export default function ProfilePage() {
   const [avatarPreview, setAvatarPreview] = React.useState<string | null>(null);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const [isClient, setIsClient] = React.useState(false);
+
+  React.useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -31,6 +36,10 @@ export default function ProfilePage() {
   const handleAvatarClick = () => {
     fileInputRef.current?.click();
   };
+
+  if (!isClient) {
+    return null;
+  }
 
   return (
     <div className="space-y-6">
