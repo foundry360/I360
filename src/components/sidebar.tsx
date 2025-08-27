@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { usePathname } from 'next/navigation';
+import { useParams, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import {
   ChevronsLeft,
@@ -10,6 +10,7 @@ import {
   Home,
   User,
   Building,
+  LayoutDashboard,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -23,19 +24,22 @@ import {
 
 export function Sidebar() {
   const pathname = usePathname();
+  const params = useParams();
+  const companyId = params.companyId as string;
+
   const [isCollapsed, setIsCollapsed] = React.useState(false);
   const [isModalOpen, setIsModalOpen] = React.useState(false);
 
   const navItems = [
-    { type: 'link', href: `/dashboard`, label: 'Dashboard', icon: Home },
+    { type: 'link', href: `/${companyId}/dashboard`, label: 'Dashboard', icon: Home },
     {
       type: 'action',
       label: 'New Assessment',
       icon: Plus,
       action: () => setIsModalOpen(true),
     },
-    { type: 'link', href: `/dashboard/workspaces`, label: 'Workspaces', icon: Building },
-    { type: 'link', href: `/dashboard/profile`, label: 'Profile', icon: User },
+    { type: 'link', href: `/dashboard/workspaces`, label: 'All Workspaces', icon: Building },
+    { type: 'link', href: `/${companyId}/profile`, label: 'Profile', icon: User },
   ];
 
   function toggleSidebar() {

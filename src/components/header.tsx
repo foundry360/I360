@@ -11,10 +11,12 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 
 export function Header() {
   const router = useRouter();
+  const params = useParams();
+  const companyId = params.companyId as string;
 
   const handleLogout = () => {
     // In a real app, you would clear the session here.
@@ -35,10 +37,13 @@ export function Header() {
           <DropdownMenuLabel>My Account</DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuItem asChild>
-            <Link href="/dashboard">Dashboard</Link>
+            <Link href={`/${companyId}/dashboard`}>Dashboard</Link>
           </DropdownMenuItem>
           <DropdownMenuItem asChild>
-            <Link href="/dashboard/profile">Profile</Link>
+            <Link href={`/${companyId}/profile`}>Profile</Link>
+          </DropdownMenuItem>
+           <DropdownMenuItem asChild>
+            <Link href="/dashboard/workspaces">Switch Workspace</Link>
           </DropdownMenuItem>
           <DropdownMenuItem>Settings</DropdownMenuItem>
           <DropdownMenuSeparator />
