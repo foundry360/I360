@@ -57,7 +57,7 @@ export default function LoginPage() {
           <CardContent>
               <form onSubmit={handleLogin} className="space-y-6">
                 <fieldset disabled={!isClient} className="space-y-6">
-                  <div className="space-y-2">
+                  <div className="space-y-2" suppressHydrationWarning>
                     <Label htmlFor="companyId">Company ID</Label>
                     <Input
                       id="companyId"
@@ -68,7 +68,7 @@ export default function LoginPage() {
                       required
                     />
                   </div>
-                  <div className="space-y-2">
+                  <div className="space-y-2" suppressHydrationWarning>
                     <Label htmlFor="username">Username</Label>
                     <Input
                       id="username"
@@ -79,7 +79,7 @@ export default function LoginPage() {
                       required
                     />
                   </div>
-                  <div className="space-y-2">
+                  <div className="space-y-2" suppressHydrationWarning>
                     <Label htmlFor="password">Password</Label>
                     <Input
                       id="password"
