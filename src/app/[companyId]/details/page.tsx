@@ -20,10 +20,12 @@ import { AppLayout } from '@/components/app-layout';
 import { useParams } from 'next/navigation';
 import React from 'react';
 import { Progress } from '@/components/ui/progress';
-import { Phone, Globe, MapPin } from 'lucide-react';
+import { Phone, Globe, MapPin, ArrowLeft } from 'lucide-react';
 import type { Company } from '@/services/company-service';
 import { getCompany } from '@/services/company-service';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 
 const currentAssessments = [
     { name: 'Q4 2023 RevOps Maturity', status: 'In Progress', progress: 75, startDate: '2023-10-01' },
@@ -140,8 +142,16 @@ export default function CompanyDetailsPage() {
     <AppLayout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold">{companyData.name}</h1>
-          <p className="text-muted-foreground">
+          <div className="flex items-center gap-4">
+             <Button asChild variant="outline" size="icon">
+                <Link href="/dashboard/companies">
+                    <ArrowLeft className="h-4 w-4" />
+                    <span className="sr-only">Back to Companies</span>
+                </Link>
+             </Button>
+            <h1 className="text-3xl font-bold">{companyData.name}</h1>
+          </div>
+          <p className="text-muted-foreground mt-2">
             A complete overview of {companyData.name}.
           </p>
         </div>
