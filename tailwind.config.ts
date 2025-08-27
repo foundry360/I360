@@ -36,6 +36,7 @@ export default {
         primary: {
           DEFAULT: 'hsl(var(--primary))',
           foreground: 'hsl(var(--primary-foreground))',
+          hover: 'hsl(var(--primary-hover))',
         },
         secondary: {
           DEFAULT: 'hsl(var(--secondary))',
@@ -52,6 +53,7 @@ export default {
         destructive: {
           DEFAULT: 'hsl(var(--destructive))',
           foreground: 'hsl(var(--destructive-foreground))',
+          hover: 'hsl(var(--destructive-hover))',
         },
         border: 'hsl(var(--border))',
         input: 'hsl(var(--input))',

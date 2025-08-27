@@ -15,6 +15,7 @@ body {
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 47.4% 11.2%;
     --primary: 256 96% 63%; /* #6f47fb */
+    --primary-hover: 259 82% 56%; /* #7735e9 */
     --primary-foreground: 0 0% 98%;
     --secondary: 210 40% 96.1%;
     --secondary-foreground: 222.2 47.4% 11.2%;
@@ -23,6 +24,7 @@ body {
     --accent: 232 78% 71%; /* #677be6 */
     --accent-foreground: 0 0% 98%;
     --destructive: 0 84.2% 60.2%;
+    --destructive-hover: 0 74.2% 50.2%;
     --destructive-foreground: 0 0% 98%;
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
@@ -51,6 +53,7 @@ body {
     --popover: 222.2 47.4% 11.2%;
     --popover-foreground: 210 40% 98%;
     --primary: 256 96% 63%;
+    --primary-hover: 259 82% 56%;
     --primary-foreground: 210 40% 98%;
     --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
@@ -59,6 +62,7 @@ body {
     --accent: 232 78% 71%;
     --accent-foreground: 210 40% 98%;
     --destructive: 0 62.8% 30.6%;
+    --destructive-hover: 0 52.8% 20.6%;
     --destructive-foreground: 210 40% 98%;
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
