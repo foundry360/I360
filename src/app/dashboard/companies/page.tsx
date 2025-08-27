@@ -33,7 +33,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { getCompanies, createCompany, Company } from '@/services/company-service';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Eye } from 'lucide-react';
+import { Eye, Plus } from 'lucide-react';
 
 const initialNewCompanyState = {
   name: '',
@@ -101,7 +101,10 @@ export default function CompaniesPage() {
         <h1 className="text-3xl font-bold">Companies</h1>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button>Create Company</Button>
+            <Button size="icon">
+              <Plus className="h-4 w-4" />
+              <span className="sr-only">Create Company</span>
+            </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-[600px]">
             <form onSubmit={handleCreateCompany}>
