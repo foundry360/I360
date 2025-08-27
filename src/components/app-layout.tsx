@@ -11,7 +11,7 @@ import { Home, BarChart, Settings, BotMessageSquare } from 'lucide-react';
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
   return (
-    <>
+    <div className="flex flex-1">
       <Sidebar>
         <SidebarHeader>
           {/* Placeholder for a logo or title in sidebar if needed */}
@@ -48,6 +48,6 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
       <SidebarInset>
         <main className="flex-1 p-4 md:p-6">{children}</main>
       </SidebarInset>
-    </>
+    </div>
   );
 }
