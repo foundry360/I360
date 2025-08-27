@@ -55,7 +55,7 @@ import {
 } from '@/services/company-service';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Checkbox } from '@/components/ui/checkbox';
-import { MoreHorizontal, Plus, Trash2, Search } from 'lucide-react';
+import { MoreHorizontal, Plus, Trash2, Filter, Search } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { TablePagination } from '@/components/table-pagination';
 
@@ -88,6 +88,7 @@ export default function CompaniesPage() {
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(25);
   const [filterText, setFilterText] = React.useState('');
+  const [isFilterVisible, setIsFilterVisible] = React.useState(false);
 
   const fetchCompanies = React.useCallback(async () => {
     try {
@@ -210,20 +211,29 @@ export default function CompaniesPage() {
                 Delete ({numSelected})
                 </Button>
             )}
-            <div className="relative">
-              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                  placeholder="Filter by company name..."
-                  value={filterText}
-                  onChange={(e) => setFilterText(e.target.value)}
-                  className="pl-8 w-64"
-              />
-            </div>
+            <Button
+                variant="outline"
+                size="icon"
+                onClick={() => setIsFilterVisible(!isFilterVisible)}
+              >
+                <Filter className="h-4 w-4" />
+                <span className="sr-only">Filter</span>
+              </Button>
+              {isFilterVisible && (
+                <div className="relative">
+                  <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Filter by company name..."
+                    value={filterText}
+                    onChange={(e) => setFilterText(e.target.value)}
+                    className="pl-8 w-64"
+                  />
+                </div>
+              )}
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                 <DialogTrigger asChild>
-                <Button variant="outline" size="icon">
-                    <Plus className="h-4 w-4" />
-                    <span className="sr-only">Create Company</span>
+                <Button>
+                    <Plus className="mr-2 h-4 w-4" /> Create Company
                 </Button>
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-[600px]">
