@@ -8,7 +8,7 @@ import {
   createUserWithEmailAndPassword,
   updateProfile,
 } from 'firebase/auth';
-import { db, app } from '@/lib/firebase';
+import { db, auth } from '@/lib/firebase';
 import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -18,7 +18,6 @@ import { useToast } from '@/hooks/use-toast';
 export function LoginForm() {
   const router = useRouter();
   const { toast } = useToast();
-  const auth = getAuth(app);
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -39,13 +38,13 @@ export function LoginForm() {
     }
 
     try {
-      // First, try to sign in the user
       await signInWithEmailAndPassword(auth, email, password);
       router.push(`/dashboard/workspaces`);
-
     } catch (error: any) {
-      // If the user does not exist, create a new one
-      if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
+      if (
+        error.code === 'auth/user-not-found' ||
+        error.code === 'auth/invalid-credential'
+      ) {
         try {
           const userCredential = await createUserWithEmailAndPassword(
             auth,
@@ -54,11 +53,9 @@ export function LoginForm() {
           );
           const user = userCredential.user;
 
-          // Set a display name (from email prefix)
           const displayName = email.split('@')[0];
           await updateProfile(user, { displayName });
 
-          // Create user document in Firestore
           const userDocRef = doc(db, 'users', user.uid);
           await setDoc(userDocRef, {
             uid: user.uid,
@@ -67,7 +64,7 @@ export function LoginForm() {
             createdAt: serverTimestamp(),
             lastLogin: serverTimestamp(),
           });
-          
+
           router.push(`/dashboard/workspaces`);
         } catch (creationError: any) {
           console.error('Error creating user:', creationError);
@@ -78,7 +75,6 @@ export function LoginForm() {
           });
         }
       } else {
-        // Handle other errors (e.g., wrong password)
         console.error('Error signing in:', error);
         toast({
           title: 'Login Failed',
