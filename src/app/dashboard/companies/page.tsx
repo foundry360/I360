@@ -55,10 +55,11 @@ import {
 } from '@/services/company-service';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Checkbox } from '@/components/ui/checkbox';
-import { MoreHorizontal, Plus, Trash2, Filter, Search } from 'lucide-react';
+import { MoreHorizontal, Plus, Trash2, Filter, Search, ArrowUpDown } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { TablePagination } from '@/components/table-pagination';
 import Link from 'next/link';
+import { cn } from '@/lib/utils';
 
 const initialNewCompanyState = {
   name: '',
@@ -69,6 +70,8 @@ const initialNewCompanyState = {
   phone: '',
   website: '',
 };
+
+type SortKey = keyof Company;
 
 export default function CompaniesPage() {
   const router = useRouter();
@@ -90,6 +93,8 @@ export default function CompaniesPage() {
   const [rowsPerPage, setRowsPerPage] = React.useState(25);
   const [filterText, setFilterText] = React.useState('');
   const [isFilterVisible, setIsFilterVisible] = React.useState(false);
+
+  const [sortConfig, setSortConfig] = React.useState<{ key: SortKey; direction: 'ascending' | 'descending' } | null>({ key: 'name', direction: 'ascending' });
 
   const fetchCompanies = React.useCallback(async () => {
     try {
@@ -160,7 +165,7 @@ export default function CompaniesPage() {
   };
 
   const handleSelectAll = (isSelected: boolean) => {
-    const currentVisibleIds = filteredCompanies
+    const currentVisibleIds = sortedCompanies
       .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
       .map((c) => c.id);
     if (isSelected) {
@@ -180,12 +185,44 @@ export default function CompaniesPage() {
       console.error('Failed to delete companies:', error);
     }
   };
+  
+  const requestSort = (key: SortKey) => {
+    let direction: 'ascending' | 'descending' = 'ascending';
+    if (sortConfig && sortConfig.key === key && sortConfig.direction === 'ascending') {
+      direction = 'descending';
+    }
+    setSortConfig({ key, direction });
+  };
+  
+  const sortedCompanies = React.useMemo(() => {
+    let sortableItems = [...companies];
+    if (sortConfig !== null) {
+      sortableItems.sort((a, b) => {
+        let aValue = a[sortConfig.key];
+        let bValue = b[sortConfig.key];
 
-  const filteredCompanies = companies.filter(company => 
-    company.name.toLowerCase().includes(filterText.toLowerCase())
-  );
+        // Special handling for nested contact name
+        if (sortConfig.key === 'contact') {
+            aValue = a.contact.name;
+            bValue = b.contact.name;
+        }
 
-  const currentVisibleCompanies = filteredCompanies.slice(
+        if (aValue < bValue) {
+          return sortConfig.direction === 'ascending' ? -1 : 1;
+        }
+        if (aValue > bValue) {
+          return sortConfig.direction === 'ascending' ? 1 : -1;
+        }
+        return 0;
+      });
+    }
+    return sortableItems.filter(company => 
+        company.name.toLowerCase().includes(filterText.toLowerCase())
+    );
+  }, [companies, sortConfig, filterText]);
+
+
+  const currentVisibleCompanies = sortedCompanies.slice(
     page * rowsPerPage,
     page * rowsPerPage + rowsPerPage
   );
@@ -201,6 +238,16 @@ export default function CompaniesPage() {
       .map((n) => n[0])
       .join('')
       .toUpperCase();
+  };
+  
+  const getSortIcon = (key: SortKey) => {
+    if (!sortConfig || sortConfig.key !== key) {
+        return <ArrowUpDown className="h-4 w-4 ml-2 opacity-0 group-hover:opacity-100" />;
+    }
+    if (sortConfig.direction === 'ascending') {
+        return <ArrowUpDown className="h-4 w-4 ml-2" />; // Or a specific up icon
+    }
+    return <ArrowUpDown className="h-4 w-4 ml-2" />; // Or a specific down icon
   };
 
   return (
@@ -371,10 +418,30 @@ export default function CompaniesPage() {
                       data-state={isPageIndeterminate ? 'indeterminate' : (allOnPageSelected ? 'checked' : 'unchecked')}
                     />
                   </TableHead>
-                  <TableHead>Company Name</TableHead>
-                  <TableHead>Primary Contact</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Last Activity</TableHead>
+                  <TableHead>
+                    <Button variant="ghost" onClick={() => requestSort('name')} className="group -ml-4">
+                      Company Name
+                      {getSortIcon('name')}
+                    </Button>
+                  </TableHead>
+                  <TableHead>
+                     <Button variant="ghost" onClick={() => requestSort('contact')} className="group -ml-4">
+                      Primary Contact
+                       {getSortIcon('contact')}
+                    </Button>
+                  </TableHead>
+                  <TableHead>
+                    <Button variant="ghost" onClick={() => requestSort('status')} className="group -ml-4">
+                      Status
+                      {getSortIcon('status')}
+                    </Button>
+                  </TableHead>
+                  <TableHead>
+                     <Button variant="ghost" onClick={() => requestSort('lastActivity')} className="group -ml-4">
+                      Last Activity
+                      {getSortIcon('lastActivity')}
+                    </Button>
+                  </TableHead>
                   <TableHead className="text-right"></TableHead>
                 </TableRow>
               </TableHeader>
@@ -452,7 +519,7 @@ export default function CompaniesPage() {
         </CardContent>
          <CardFooter className="justify-end">
             <TablePagination
-                count={filteredCompanies.length}
+                count={sortedCompanies.length}
                 page={page}
                 rowsPerPage={rowsPerPage}
                 onPageChange={(newPage) => setPage(newPage)}
@@ -508,5 +575,3 @@ export default function CompaniesPage() {
     </div>
   );
 }
-
-    
