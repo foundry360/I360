@@ -21,8 +21,14 @@ import {
 } from '@/components/ui/tooltip';
 
 const navItems = [
-  { href: '/dashboard', label: 'Dashboard', icon: Home },
-  { href: '/dashboard/profile', label: 'Profile', icon: User },
+  {
+    type: 'action',
+    label: 'New Assessment',
+    icon: Plus,
+    action: () => {},
+  },
+  { type: 'link', href: '/dashboard', label: 'Dashboard', icon: Home },
+  { type: 'link', href: '/dashboard/profile', label: 'Profile', icon: User },
 ];
 
 export function Sidebar() {
@@ -48,54 +54,70 @@ export function Sidebar() {
         >
           <div className="flex h-full flex-col">
             <div className="flex-1 space-y-2 p-2 pt-4">
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="primary"
-                    className="w-full justify-start"
-                    onClick={() => setIsModalOpen(true)}
-                  >
-                    <Plus className={cn({ 'mr-2': !isCollapsed })} />
-                    {!isCollapsed && 'New Assessment'}
-                  </Button>
-                </TooltipTrigger>
-                {isCollapsed && (
-                  <TooltipContent side="right">New Assessment</TooltipContent>
-                )}
-              </Tooltip>
-
-              <nav className="space-y-1 pt-4">
+              <nav className="space-y-1">
                 {navItems.map((item) => {
-                  const isActive = pathname === item.href;
                   const Icon = item.icon;
-                  return (
-                    <Tooltip key={item.href}>
-                      <TooltipTrigger asChild>
-                        <Button
-                          asChild
-                          variant="ghost"
-                          className={cn(
-                            'w-full justify-start relative',
-                            isActive &&
-                              'bg-sidebar-accent text-sidebar-accent-foreground'
-                          )}
-                        >
-                          <Link href={item.href}>
-                            {isActive && (
-                              <div className="absolute left-0 top-0 h-full w-1.5 bg-primary" />
+                  if (item.type === 'link') {
+                    const isActive = pathname === item.href;
+                    return (
+                      <Tooltip key={item.href}>
+                        <TooltipTrigger asChild>
+                          <Button
+                            asChild
+                            variant="ghost"
+                            className={cn(
+                              'w-full justify-start relative',
+                              isActive &&
+                                'bg-sidebar-accent text-sidebar-accent-foreground'
                             )}
-                            <Icon className={cn('h-5 w-5', { 'mr-2': !isCollapsed })} />
+                          >
+                            <Link href={item.href}>
+                              {isActive && (
+                                <div className="absolute left-0 top-0 h-full w-1.5 bg-primary" />
+                              )}
+                              <Icon
+                                className={cn('h-5 w-5', {
+                                  'mr-2': !isCollapsed,
+                                })}
+                              />
+                              {!isCollapsed && item.label}
+                            </Link>
+                          </Button>
+                        </TooltipTrigger>
+                        {isCollapsed && (
+                          <TooltipContent side="right">
+                            {item.label}
+                          </TooltipContent>
+                        )}
+                      </Tooltip>
+                    );
+                  }
+                  if (item.type === 'action') {
+                    return (
+                      <Tooltip key={item.label}>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="primary"
+                            className="w-full justify-start mb-4"
+                            onClick={() => setIsModalOpen(true)}
+                          >
+                            <Icon
+                              className={cn('h-5 w-5', {
+                                'mr-2': !isCollapsed,
+                              })}
+                            />
                             {!isCollapsed && item.label}
-                          </Link>
-                        </Button>
-                      </TooltipTrigger>
-                      {isCollapsed && (
-                        <TooltipContent side="right">
-                          {item.label}
-                        </TooltipContent>
-                      )}
-                    </Tooltip>
-                  );
+                          </Button>
+                        </TooltipTrigger>
+                        {isCollapsed && (
+                          <TooltipContent side="right">
+                            {item.label}
+                          </TooltipContent>
+                        )}
+                      </Tooltip>
+                    );
+                  }
+                  return null;
                 })}
               </nav>
             </div>
