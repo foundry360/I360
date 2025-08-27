@@ -17,9 +17,9 @@ export default function LoginPage() {
         </div>
         <Card>
           <CardHeader className="text-center">
-            <CardTitle>Welcome Back</CardTitle>
+            <CardTitle>Welcome</CardTitle>
             <CardDescription>
-              Enter your credentials to access your account.
+              Enter your credentials to sign in or create an account.
             </CardDescription>
           </CardHeader>
           <CardContent>

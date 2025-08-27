@@ -2,46 +2,108 @@
 
 import * as React from 'react';
 import { useRouter } from 'next/navigation';
-import { db } from '@/lib/firebase';
-import { doc, setDoc } from 'firebase/firestore';
+import {
+  getAuth,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  updateProfile,
+} from 'firebase/auth';
+import { db, app } from '@/lib/firebase';
+import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useToast } from '@/hooks/use-toast';
 
 export function LoginForm() {
   const router = useRouter();
+  const { toast } = useToast();
+  const auth = getAuth(app);
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const username = (
-      e.currentTarget.elements.namedItem('username') as HTMLInputElement
+    const email = (
+      e.currentTarget.elements.namedItem('email') as HTMLInputElement
     ).value;
-    if (!username) {
-      alert('Username is required.');
+    const password = (
+      e.currentTarget.elements.namedItem('password') as HTMLInputElement
+    ).value;
+
+    if (!email || !password) {
+      toast({
+        title: 'Error',
+        description: 'Email and password are required.',
+        variant: 'destructive',
+      });
       return;
     }
 
     try {
-      // Simplify the write operation to its most basic form
-      const userDocRef = doc(db, 'users', username);
-      await setDoc(userDocRef, { username: username }, { merge: true });
-      
+      // First, try to sign in the user
+      await signInWithEmailAndPassword(auth, email, password);
+      const user = auth.currentUser;
+      if (user) {
+        const userDocRef = doc(db, 'users', user.uid);
+        // Update last login time
+        await setDoc(userDocRef, { lastLogin: serverTimestamp() }, { merge: true });
+      }
       router.push(`/dashboard/workspaces`);
-    } catch (error) {
-      console.error('Error saving user data:', error);
-      alert('There was an error logging in. Please try again.');
+
+    } catch (error: any) {
+      // If the user does not exist, create a new one
+      if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
+        try {
+          const userCredential = await createUserWithEmailAndPassword(
+            auth,
+            email,
+            password
+          );
+          const user = userCredential.user;
+
+          // Set a display name (from email prefix)
+          const displayName = email.split('@')[0];
+          await updateProfile(user, { displayName });
+
+          // Create user document in Firestore
+          const userDocRef = doc(db, 'users', user.uid);
+          await setDoc(userDocRef, {
+            uid: user.uid,
+            email: user.email,
+            displayName: displayName,
+            createdAt: serverTimestamp(),
+            lastLogin: serverTimestamp(),
+          });
+          
+          router.push(`/dashboard/workspaces`);
+        } catch (creationError: any) {
+          console.error('Error creating user:', creationError);
+          toast({
+            title: 'Signup Failed',
+            description: creationError.message,
+            variant: 'destructive',
+          });
+        }
+      } else {
+        // Handle other errors (e.g., wrong password)
+        console.error('Error signing in:', error);
+        toast({
+          title: 'Login Failed',
+          description: error.message,
+          variant: 'destructive',
+        });
+      }
     }
   };
 
   return (
     <form onSubmit={handleLogin} className="space-y-6">
       <div className="space-y-2">
-        <Label htmlFor="username">Username</Label>
+        <Label htmlFor="email">Email</Label>
         <Input
-          id="username"
-          name="username"
-          type="text"
-          placeholder="e.g. john.doe"
+          id="email"
+          name="email"
+          type="email"
+          placeholder="e.g. john.doe@example.com"
           required
         />
       </div>
@@ -50,7 +112,7 @@ export function LoginForm() {
         <Input id="password" name="password" type="password" required />
       </div>
       <Button type="submit" className="w-full">
-        Login
+        Sign In or Sign Up
       </Button>
     </form>
   );
