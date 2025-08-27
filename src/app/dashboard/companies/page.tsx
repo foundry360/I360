@@ -176,7 +176,7 @@ export default function CompaniesPage() {
         <div className="flex items-center gap-2">
           {numSelected > 0 && (
             <Button
-              variant="destructive"
+              variant="outline"
               onClick={() => setIsBulkDeleteDialogOpen(true)}
             >
               <Trash2 className="h-4 w-4 mr-2" />
@@ -402,7 +402,7 @@ export default function CompaniesPage() {
             <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
             <AlertDialogDescription>
               This action cannot be undone. This will permanently delete the
-              company "{companyToDelete?.name}".
+              company "{companyToDelete?.name}"
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
