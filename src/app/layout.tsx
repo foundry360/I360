@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
-import { AppLayout } from '@/components/app-layout';
 
 export const metadata: Metadata = {
   title: 'Insights360',
@@ -24,7 +23,7 @@ export default function RootLayout({
         />
       </head>
       <body className="font-body antialiased h-full" suppressHydrationWarning>
-        <AppLayout>{children}</AppLayout>
+        {children}
         <Toaster />
       </body>
     </html>
