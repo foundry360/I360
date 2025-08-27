@@ -354,7 +354,7 @@ export default function CompanyDetailsPage() {
                         <div className="mt-1 h-2 w-2 rounded-full bg-primary" />
                         <div>
                         <p className="font-medium text-sm">{item.activity}</p>
-                        <p className="text-xs text-muted-foreground">{item.time.toLocaleString()}</p>
+                        <p className="text-xs text-muted-foreground">{item.time.toLocaleString([], { year: 'numeric', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
                         </div>
                     </div>
                 ))}
@@ -380,4 +380,5 @@ export default function CompanyDetailsPage() {
     
 
     
+
 
