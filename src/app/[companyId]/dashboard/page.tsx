@@ -42,7 +42,7 @@ export default function CompanyDashboardPage() {
       <div className="flex justify-between items-start">
         <div>
           <h1 className="text-2xl font-bold">{greeting}, {getFirstName()} 👋</h1>
-          <p className="text-muted-foreground">Here's the dashboard for {company?.name}</p>
+          <p className="text-muted-foreground">Welcome to Insights360</p>
         </div>
       </div>
 
