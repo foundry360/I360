@@ -26,9 +26,7 @@ export default function RootLayout({
       </head>
       <body className="font-body antialiased h-full">
         <SidebarProvider>
-          <div className="flex flex-col h-full">
-            <AppLayout>{children}</AppLayout>
-          </div>
+          <AppLayout>{children}</AppLayout>
         </SidebarProvider>
         <Toaster />
       </body>
