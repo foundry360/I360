@@ -2,9 +2,9 @@
 import {
   Card,
   CardHeader,
-  CardTitle,
-  CardDescription,
   CardContent,
+  CardDescription,
+  CardTitle
 } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
@@ -192,16 +192,15 @@ export default function CompanyDetailsPage() {
             <Card>
               <CardHeader className="flex flex-row items-center justify-between">
                 <div>
-                  <CardTitle>Current Assessments</CardTitle>
-                  <CardDescription>
+                  <div className="font-semibold">Current Assessments</div>
+                  <div className="text-sm text-muted-foreground">
                     Ongoing assessments for {companyData.name}.
-                  </CardDescription>
+                  </div>
                 </div>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="icon">
+                    <Button variant="outline" size="sm">
                       <Plus className="h-4 w-4" />
-                      <span className="sr-only">New Assessment</span>
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
@@ -256,10 +255,10 @@ export default function CompanyDetailsPage() {
             </Card>
             <Card>
               <CardHeader>
-                <CardTitle>Assessment History</CardTitle>
-                <CardDescription>
+                <div className="font-semibold">Assessment History</div>
+                <div className="text-sm text-muted-foreground">
                   Review of all completed assessments.
-                </CardDescription>
+                </div>
               </CardHeader>
               <CardContent>
                 <Table>
@@ -300,10 +299,9 @@ export default function CompanyDetailsPage() {
           <div className="space-y-6">
             <Card>
                 <CardHeader className="flex flex-row items-center justify-between">
-                    <CardTitle>Company Information</CardTitle>
-                    <Button variant="outline" size="icon" onClick={() => setIsEditModalOpen(true)}>
+                    <div className="font-semibold">Company Information</div>
+                    <Button variant="outline" size="sm" onClick={() => setIsEditModalOpen(true)}>
                         <Pencil className="h-4 w-4" />
-                        <span className="sr-only">Edit Company</span>
                     </Button>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -325,7 +323,7 @@ export default function CompanyDetailsPage() {
             </Card>
             <Card>
               <CardHeader>
-                <CardTitle>Primary Contacts</CardTitle>
+                <div className="font-semibold">Primary Contacts</div>
               </CardHeader>
               <CardContent className="space-y-4">
                 {primaryContacts.map((contact, index) => (
@@ -348,7 +346,7 @@ export default function CompanyDetailsPage() {
             </Card>
             <Card>
               <CardHeader>
-                <CardTitle>Recent Activity</CardTitle>
+                <div className="font-semibold">Recent Activity</div>
               </CardHeader>
               <CardContent className="space-y-4">
                 {recentActivity.map((item, index) => (
@@ -376,4 +374,3 @@ export default function CompanyDetailsPage() {
       )}
     </AppLayout>
   );
-}
