@@ -7,11 +7,10 @@ import {
   SidebarMenuButton,
 } from '@/components/ui/sidebar';
 import { Home, BarChart, Settings, BotMessageSquare } from 'lucide-react';
-import { ScrollArea } from '@/components/ui/scroll-area';
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex flex-1">
+    <div className="flex flex-1 overflow-hidden">
       <Sidebar>
         <SidebarContent>
           <SidebarMenu>
@@ -43,7 +42,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         </SidebarContent>
       </Sidebar>
       <SidebarInset>
-        <main className="flex-1 p-4 md:p-6">{children}</main>
+        <main className="flex-1 p-4 md:p-6 overflow-y-auto">{children}</main>
       </SidebarInset>
     </div>
   );
