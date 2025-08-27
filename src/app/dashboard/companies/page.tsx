@@ -243,9 +243,6 @@ export default function CompaniesPage() {
     if (!sortConfig || sortConfig.key !== key) {
         return <ArrowUpDown className="h-4 w-4 opacity-0 group-hover:opacity-100" />;
     }
-    if (sortConfig.direction === 'ascending') {
-        return <ArrowUpDown className="h-4 w-4" />;
-    }
     return <ArrowUpDown className="h-4 w-4" />;
   };
 
@@ -582,5 +579,3 @@ export default function CompaniesPage() {
     </div>
   );
 }
-
-    
