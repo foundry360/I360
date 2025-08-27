@@ -310,7 +310,7 @@ export default function CompaniesPage() {
                         <span className="sr-only">View Details</span>
                       </Button>
                       <Button
-                        variant="destructive"
+                        variant="ghost"
                         size="icon"
                         onClick={() => openDeleteDialog(company)}
                       >
