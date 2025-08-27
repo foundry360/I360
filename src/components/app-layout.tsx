@@ -2,7 +2,6 @@
 import {
   Sidebar,
   SidebarContent,
-  SidebarInset,
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
