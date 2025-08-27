@@ -20,12 +20,19 @@ import { AppLayout } from '@/components/app-layout';
 import { useParams } from 'next/navigation';
 import React from 'react';
 import { Progress } from '@/components/ui/progress';
-import { Phone, Globe, MapPin, ArrowLeft } from 'lucide-react';
+import { Phone, Globe, MapPin, ArrowLeft, Plus } from 'lucide-react';
 import type { Company } from '@/services/company-service';
 import { getCompany } from '@/services/company-service';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { AssessmentModal } from '@/components/assessment-modal';
 
 const currentAssessments = [
     { name: 'Q4 2023 RevOps Maturity', status: 'In Progress', progress: 75, startDate: '2023-10-01' },
@@ -82,6 +89,7 @@ export default function CompanyDetailsPage() {
   const companyId = params.companyId as string;
   const [companyData, setCompanyData] = React.useState<Company | null>(null);
   const [loading, setLoading] = React.useState(true);
+  const [isModalOpen, setIsModalOpen] = React.useState(false);
 
   React.useEffect(() => {
     async function fetchCompany() {
@@ -104,6 +112,10 @@ export default function CompanyDetailsPage() {
 
     fetchCompany();
   }, [companyId]);
+
+  const handleAssessmentSelect = () => {
+    setIsModalOpen(true);
+  };
 
   if (loading) {
       return (
@@ -169,11 +181,32 @@ export default function CompanyDetailsPage() {
               </CardContent>
             </Card>
             <Card>
-              <CardHeader>
-                <CardTitle>Current Assessments</CardTitle>
-                <CardDescription>
-                  Ongoing assessments for {companyData.name}.
-                </CardDescription>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle>Current Assessments</CardTitle>
+                  <CardDescription>
+                    Ongoing assessments for {companyData.name}.
+                  </CardDescription>
+                </div>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="icon">
+                      <Plus className="h-4 w-4" />
+                      <span className="sr-only">New Assessment</span>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onSelect={handleAssessmentSelect}>
+                      RevOps Maturity
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onSelect={handleAssessmentSelect}>
+                      GTM Strategy Alignment
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onSelect={handleAssessmentSelect}>
+                      Tech Stack ROI Analysis
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </CardHeader>
               <CardContent>
                 <Table>
@@ -319,6 +352,7 @@ export default function CompanyDetailsPage() {
           </div>
         </div>
       </div>
+      <AssessmentModal isOpen={isModalOpen} onOpenChange={setIsModalOpen} />
     </AppLayout>
   );
 }
