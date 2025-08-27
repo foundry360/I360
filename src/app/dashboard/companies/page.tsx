@@ -193,131 +193,131 @@ export default function CompaniesPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-start">
-        <div>
-            <h1 className="text-2xl font-bold">Companies</h1>
-            <p className="text-muted-foreground mt-2">
+      <div>
+        <h1 className="text-2xl font-bold">Companies</h1>
+        <div className="flex justify-between items-center mt-2">
+            <p className="text-muted-foreground">
                 A list of all companies in your portfolio
             </p>
-        </div>
-        <div className="flex items-center gap-2">
-          {numSelected > 0 && (
-            <Button
-              variant="outline"
-              onClick={() => setIsBulkDeleteDialogOpen(true)}
-            >
-              <Trash2 className="h-4 w-4 mr-2" />
-              Delete ({numSelected})
-            </Button>
-          )}
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger asChild>
-              <Button variant="outline" size="icon">
-                <Plus className="h-4 w-4" />
-                <span className="sr-only">Create Company</span>
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[600px]">
-              <form onSubmit={handleCreateCompany}>
-                <DialogHeader>
-                  <DialogTitle>Create New Company</DialogTitle>
-                  <DialogDescription>
-                    Fill in the details below to create a new company
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="grid gap-4 py-4">
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="name" className="text-right">
-                      Company Name
-                    </Label>
-                    <Input
-                      id="name"
-                      value={newCompany.name}
-                      onChange={handleInputChange}
-                      className="col-span-3"
-                      required
-                    />
-                  </div>
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="street" className="text-right">
-                      Street Address
-                    </Label>
-                    <Input
-                      id="street"
-                      value={newCompany.street}
-                      onChange={handleInputChange}
-                      className="col-span-3"
-                    />
-                  </div>
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="city" className="text-right">
-                      City
-                    </Label>
-                    <Input
-                      id="city"
-                      value={newCompany.city}
-                      onChange={handleInputChange}
-                      className="col-span-3"
-                    />
-                  </div>
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="state" className="text-right">
-                      State
-                    </Label>
-                    <Input
-                      id="state"
-                      value={newCompany.state}
-                      onChange={handleInputChange}
-                      className="col-span-3"
-                    />
-                  </div>
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="zip" className="text-right">
-                      Postal Code
-                    </Label>
-                    <Input
-                      id="zip"
-                      value={newCompany.zip}
-                      onChange={handleInputChange}
-                      className="col-span-3"
-                    />
-                  </div>
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="phone" className="text-right">
-                      Phone Number
-                    </Label>
-                    <Input
-                      id="phone"
-                      value={newCompany.phone}
-                      onChange={handleInputChange}
-                      className="col-span-3"
-                    />
-                  </div>
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="website" className="text-right">
-                      Website
-                    </Label>
-                    <Input
-                      id="website"
-                      value={newCompany.website}
-                      onChange={handleInputChange}
-                      className="col-span-3"
-                    />
-                  </div>
-                </div>
-                <DialogFooter>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setIsDialogOpen(false)}
-                  >
-                    Cancel
-                  </Button>
-                  <Button type="submit">Create Company</Button>
-                </DialogFooter>
-              </form>
-            </DialogContent>
-          </Dialog>
+            <div className="flex items-center gap-2">
+            {numSelected > 0 && (
+                <Button
+                variant="outline"
+                onClick={() => setIsBulkDeleteDialogOpen(true)}
+                >
+                <Trash2 className="h-4 w-4 mr-2" />
+                Delete ({numSelected})
+                </Button>
+            )}
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                <DialogTrigger asChild>
+                <Button variant="outline" size="icon">
+                    <Plus className="h-4 w-4" />
+                    <span className="sr-only">Create Company</span>
+                </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[600px]">
+                <form onSubmit={handleCreateCompany}>
+                    <DialogHeader>
+                    <DialogTitle>Create New Company</DialogTitle>
+                    <DialogDescription>
+                        Fill in the details below to create a new company
+                    </DialogDescription>
+                    </DialogHeader>
+                    <div className="grid gap-4 py-4">
+                    <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="name" className="text-right">
+                        Company Name
+                        </Label>
+                        <Input
+                        id="name"
+                        value={newCompany.name}
+                        onChange={handleInputChange}
+                        className="col-span-3"
+                        required
+                        />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="street" className="text-right">
+                        Street Address
+                        </Label>
+                        <Input
+                        id="street"
+                        value={newCompany.street}
+                        onChange={handleInputChange}
+                        className="col-span-3"
+                        />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="city" className="text-right">
+                        City
+                        </Label>
+                        <Input
+                        id="city"
+                        value={newCompany.city}
+                        onChange={handleInputChange}
+                        className="col-span-3"
+                        />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="state" className="text-right">
+                        State
+                        </Label>
+                        <Input
+                        id="state"
+                        value={newCompany.state}
+                        onChange={handleInputChange}
+                        className="col-span-3"
+                        />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="zip" className="text-right">
+                        Postal Code
+                        </Label>
+                        <Input
+                        id="zip"
+                        value={newCompany.zip}
+                        onChange={handleInputChange}
+                        className="col-span-3"
+                        />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="phone" className="text-right">
+                        Phone Number
+                        </Label>
+                        <Input
+                        id="phone"
+                        value={newCompany.phone}
+                        onChange={handleInputChange}
+                        className="col-span-3"
+                        />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="website" className="text-right">
+                        Website
+                        </Label>
+                        <Input
+                        id="website"
+                        value={newCompany.website}
+                        onChange={handleInputChange}
+                        className="col-span-3"
+                        />
+                    </div>
+                    </div>
+                    <DialogFooter>
+                    <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => setIsDialogOpen(false)}
+                    >
+                        Cancel
+                    </Button>
+                    <Button type="submit">Create Company</Button>
+                    </DialogFooter>
+                </form>
+                </DialogContent>
+            </Dialog>
+            </div>
         </div>
       </div>
       <Separator className="bg-gray-200"/>
