@@ -41,12 +41,6 @@ export function LoginForm() {
     try {
       // First, try to sign in the user
       await signInWithEmailAndPassword(auth, email, password);
-      const user = auth.currentUser;
-      if (user) {
-        const userDocRef = doc(db, 'users', user.uid);
-        // Update last login time
-        await setDoc(userDocRef, { lastLogin: serverTimestamp() }, { merge: true });
-      }
       router.push(`/dashboard/workspaces`);
 
     } catch (error: any) {
