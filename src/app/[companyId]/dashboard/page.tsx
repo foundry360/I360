@@ -1,8 +1,6 @@
 'use client';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { useParams } from "next/navigation";
-import { doc, getDoc } from "firebase/firestore";
-import { db } from "@/lib/firebase";
 import React from "react";
 
 export default function CompanyDashboardPage() {
@@ -11,14 +9,13 @@ export default function CompanyDashboardPage() {
   const [companyName, setCompanyName] = React.useState('');
 
   React.useEffect(() => {
-    if (companyId && db) {
-      const fetchCompany = async () => {
-        const companyDoc = await getDoc(doc(db, "companies", companyId));
-        if (companyDoc.exists()) {
-          setCompanyName(companyDoc.data().name);
-        }
-      };
-      fetchCompany();
+    if (companyId) {
+      // Capitalize the first letter and replace hyphens with spaces
+      const formattedName = companyId
+        .split('-')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
+      setCompanyName(formattedName);
     }
   }, [companyId]);
 

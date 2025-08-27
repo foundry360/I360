@@ -23,8 +23,6 @@ import {
   DialogTrigger,
   DialogClose,
 } from '@/components/ui/dialog';
-import { db } from '@/lib/firebase';
-import { doc, setDoc, serverTimestamp, collection, getDocs } from 'firebase/firestore';
 import { Header } from '@/components/header';
 
 interface Workspace {
@@ -34,45 +32,30 @@ interface Workspace {
 
 export default function WorkspacesPage() {
   const router = useRouter();
-  const [workspaces, setWorkspaces] = React.useState<Workspace[]>([]);
+  const [workspaces, setWorkspaces] = React.useState<Workspace[]>([
+    { id: 'acme-inc', name: 'Acme Inc' },
+    { id: 'widgets-co', name: 'Widgets Co' },
+  ]);
   const [newWorkspaceName, setNewWorkspaceName] = React.useState('');
   const [isClient, setIsClient] = React.useState(false);
 
   React.useEffect(() => {
     setIsClient(true);
-    const fetchWorkspaces = async () => {
-      if (!db) return;
-      try {
-        const querySnapshot = await getDocs(collection(db, 'companies'));
-        const fetchedWorkspaces = querySnapshot.docs.map((doc) => ({
-          id: doc.id,
-          name: doc.data().name || doc.id,
-        }));
-        setWorkspaces(fetchedWorkspaces);
-      } catch (error) {
-        console.error('Error fetching workspaces:', error);
-      }
-    };
-    fetchWorkspaces();
   }, []);
 
-  const handleCreateWorkspace = async () => {
-    if (!newWorkspaceName || !db) {
+  const handleCreateWorkspace = () => {
+    if (!newWorkspaceName) {
       alert('Workspace name cannot be empty.');
       return;
     }
     const companyId = newWorkspaceName.toLowerCase().replace(/\s+/g, '-');
-    try {
-      const companyDocRef = doc(db, 'companies', companyId);
-      await setDoc(companyDocRef, {
-        name: newWorkspaceName,
-        createdAt: serverTimestamp(),
-      });
-      setWorkspaces([...workspaces, { id: companyId, name: newWorkspaceName }]);
-      setNewWorkspaceName('');
-    } catch (error) {
-      console.error('Error creating workspace:', error);
-    }
+    const newWorkspace: Workspace = {
+      id: companyId,
+      name: newWorkspaceName,
+    };
+    
+    setWorkspaces([...workspaces, newWorkspace]);
+    setNewWorkspaceName('');
   };
 
   const handleEnterWorkspace = (companyId: string) => {
@@ -142,7 +125,7 @@ export default function WorkspacesPage() {
               ))
             ) : (
               <div className="col-span-full text-center py-12">
-                <p className="text-muted-foreground">You are not a member of any workspaces yet.</p>
+                <p className="text-muted-foreground">You have no workspaces yet.</p>
                 <p className="text-muted-foreground mt-2">Create your first workspace to get started.</p>
               </div>
             )}
