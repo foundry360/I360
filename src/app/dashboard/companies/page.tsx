@@ -44,6 +44,11 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -87,6 +92,7 @@ export default function CompaniesPage() {
 
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(25);
+  const [filterText, setFilterText] = React.useState('');
 
   const fetchCompanies = React.useCallback(async () => {
     try {
@@ -157,15 +163,12 @@ export default function CompaniesPage() {
   };
 
   const handleSelectAll = (isSelected: boolean) => {
+    const currentVisibleIds = filteredCompanies
+      .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+      .map((c) => c.id);
     if (isSelected) {
-      const currentVisibleIds = companies
-        .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-        .map((c) => c.id);
       setSelectedCompanies((prev) => [...new Set([...prev, ...currentVisibleIds])]);
     } else {
-       const currentVisibleIds = companies
-        .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-        .map((c) => c.id);
       setSelectedCompanies((prev) => prev.filter((id) => !currentVisibleIds.includes(id)));
     }
   };
@@ -181,7 +184,11 @@ export default function CompaniesPage() {
     }
   };
 
-  const currentVisibleCompanies = companies.slice(
+  const filteredCompanies = companies.filter(company => 
+    company.name.toLowerCase().includes(filterText.toLowerCase())
+  );
+
+  const currentVisibleCompanies = filteredCompanies.slice(
     page * rowsPerPage,
     page * rowsPerPage + rowsPerPage
   );
@@ -209,10 +216,37 @@ export default function CompaniesPage() {
                 Delete ({numSelected})
                 </Button>
             )}
-            <Button variant="outline" size="icon">
-                <Filter className="h-4 w-4" />
-                <span className="sr-only">Filter</span>
-            </Button>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" size="icon">
+                  <Filter className="h-4 w-4" />
+                  <span className="sr-only">Filter</span>
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-80">
+                <div className="grid gap-4">
+                  <div className="space-y-2">
+                    <h4 className="font-medium leading-none">Filter</h4>
+                    <p className="text-sm text-muted-foreground">
+                      Filter companies by name.
+                    </p>
+                  </div>
+                  <div className="grid gap-2">
+                    <div className="grid grid-cols-3 items-center gap-4">
+                      <Label htmlFor="filter-name">Company Name</Label>
+                      <Input
+                        id="filter-name"
+                        value={filterText}
+                        onChange={(e) => setFilterText(e.target.value)}
+                        className="col-span-2 h-8"
+                        placeholder="e.g. Acme Inc"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </PopoverContent>
+            </Popover>
+            
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                 <DialogTrigger asChild>
                 <Button variant="outline" size="icon">
@@ -426,7 +460,7 @@ export default function CompaniesPage() {
         </CardContent>
          <CardFooter className="justify-end">
             <TablePagination
-                count={companies.length}
+                count={filteredCompanies.length}
                 page={page}
                 rowsPerPage={rowsPerPage}
                 onPageChange={(newPage) => setPage(newPage)}
