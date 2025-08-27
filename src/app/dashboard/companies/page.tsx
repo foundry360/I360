@@ -75,19 +75,12 @@ export default function CompaniesPage() {
 
   const handleCreateCompany = async (e: React.FormEvent) => {
     e.preventDefault();
-    const id = newCompany.name.toLowerCase().replace(/\s+/g, '-');
-    const companyData = {
-      ...newCompany,
-      id,
-      contact: {
-        name: 'New Contact', // Placeholder
-        avatar: `https://picsum.photos/100/100?q=${companies.length + 1}`,
-      },
-      status: 'Active',
-    };
-
+    if (!newCompany.name) {
+        alert("Company name is required.");
+        return;
+    }
     try {
-      await createCompany(companyData);
+      await createCompany(newCompany);
       setNewCompany(initialNewCompanyState);
       setIsDialogOpen(false);
       await fetchCompanies(); // Refetch companies to show the new one
@@ -110,13 +103,13 @@ export default function CompaniesPage() {
             <Button>Create Company</Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-[600px]">
-            <DialogHeader>
-              <DialogTitle>Create New Company</DialogTitle>
-              <DialogDescription>
-                Fill in the details below to create a new company.
-              </DialogDescription>
-            </DialogHeader>
             <form onSubmit={handleCreateCompany}>
+              <DialogHeader>
+                <DialogTitle>Create New Company</DialogTitle>
+                <DialogDescription>
+                  Fill in the details below to create a new company.
+                </DialogDescription>
+              </DialogHeader>
               <div className="grid gap-4 py-4">
                 <div className="grid grid-cols-4 items-center gap-4">
                   <Label htmlFor="name" className="text-right">
