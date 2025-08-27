@@ -30,6 +30,14 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -50,7 +58,7 @@ import {
 } from '@/services/company-service';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Eye, Plus, Trash2 } from 'lucide-react';
+import { MoreHorizontal, Plus, Trash2 } from 'lucide-react';
 
 const initialNewCompanyState = {
   name: '',
@@ -368,23 +376,30 @@ export default function CompaniesPage() {
                         {company.status}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-right space-x-2">
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        onClick={() => handleViewDetails(company)}
-                      >
-                        <Eye className="h-4 w-4" />
-                        <span className="sr-only">View Details</span>
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => openDeleteDialog(company)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                        <span className="sr-only">Delete Company</span>
-                      </Button>
+                    <TableCell className="text-right">
+                       <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" className="h-8 w-8 p-0">
+                            <span className="sr-only">Open menu</span>
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                          <DropdownMenuItem
+                            onClick={() => handleViewDetails(company)}
+                          >
+                            View Details
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem
+                            onClick={() => openDeleteDialog(company)}
+                             className="text-red-600"
+                          >
+                            Delete Company
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </TableCell>
                   </TableRow>
                 ))}
