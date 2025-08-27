@@ -14,9 +14,6 @@ import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
 } from '@/components/ui/card';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { useRouter } from 'next/navigation';
@@ -59,6 +56,7 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import { Checkbox } from '@/components/ui/checkbox';
 import { MoreHorizontal, Plus, Trash2 } from 'lucide-react';
+import { Separator } from '@/components/ui/separator';
 
 const initialNewCompanyState = {
   name: '',
@@ -179,8 +177,13 @@ export default function CompaniesPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">Companies</h1>
+      <div className="flex justify-between items-start">
+        <div>
+            <h1 className="text-3xl font-bold">Companies</h1>
+            <p className="text-muted-foreground mt-2">
+                A list of all companies in your portfolio
+            </p>
+        </div>
         <div className="flex items-center gap-2">
           {numSelected > 0 && (
             <Button
@@ -301,14 +304,9 @@ export default function CompaniesPage() {
           </Dialog>
         </div>
       </div>
+      <Separator />
       <Card>
-        <CardHeader>
-          <CardTitle>All Companies</CardTitle>
-          <CardDescription>
-            A list of all companies in your portfolio
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
+        <CardContent className="pt-6">
           {loading ? (
             <div className="space-y-4">
               <Skeleton className="h-12 w-full" />
