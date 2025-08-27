@@ -1,3 +1,5 @@
+'use client';
+
 import { Logo } from './logo';
 import {
   DropdownMenu,
@@ -9,8 +11,16 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 export function Header() {
+  const router = useRouter();
+
+  const handleLogout = () => {
+    // In a real app, you would clear the session here.
+    router.push('/login');
+  };
+
   return (
     <header className="flex h-16 items-center justify-between gap-4 border-b border-sidebar-border bg-sidebar px-6 text-sidebar-foreground">
       <Logo />
@@ -32,7 +42,7 @@ export function Header() {
           </DropdownMenuItem>
           <DropdownMenuItem>Settings</DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem>Logout</DropdownMenuItem>
+          <DropdownMenuItem onClick={handleLogout}>Logout</DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
     </header>
