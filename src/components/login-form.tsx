@@ -22,15 +22,10 @@ export function LoginForm() {
     }
 
     try {
+      // Simplify the write operation to its most basic form
       const userDocRef = doc(db, 'users', username);
-      await setDoc(
-        userDocRef,
-        {
-          username: username,
-          lastLogin: new Date(),
-        },
-        { merge: true }
-      );
+      await setDoc(userDocRef, { username: username }, { merge: true });
+      
       router.push(`/dashboard/workspaces`);
     } catch (error) {
       console.error('Error saving user data:', error);
