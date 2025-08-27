@@ -21,13 +21,13 @@ import {
 } from '@/components/ui/tooltip';
 
 const navItems = [
+  { type: 'link', href: '/dashboard', label: 'Dashboard', icon: Home },
   {
     type: 'action',
     label: 'New Assessment',
     icon: Plus,
     action: () => {},
   },
-  { type: 'link', href: '/dashboard', label: 'Dashboard', icon: Home },
   { type: 'link', href: '/dashboard/profile', label: 'Profile', icon: User },
 ];
 
