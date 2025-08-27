@@ -36,9 +36,6 @@ export function Header() {
           <DropdownMenuItem asChild>
             <Link href={`/${companyId}/profile`}>Profile</Link>
           </DropdownMenuItem>
-           <DropdownMenuItem asChild>
-            <Link href="/dashboard/workspaces">Switch Workspace</Link>
-          </DropdownMenuItem>
           <DropdownMenuItem>Settings</DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
