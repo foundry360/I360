@@ -1,7 +1,6 @@
 import {
   Sidebar,
   SidebarContent,
-  SidebarHeader,
   SidebarInset,
   SidebarMenu,
   SidebarMenuItem,
@@ -13,9 +12,6 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex flex-1">
       <Sidebar>
-        <SidebarHeader>
-          {/* Placeholder for a logo or title in sidebar if needed */}
-        </SidebarHeader>
         <SidebarContent>
           <SidebarMenu>
             <SidebarMenuItem>
