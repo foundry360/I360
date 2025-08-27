@@ -195,6 +195,14 @@ export default function CompaniesPage() {
   const allOnPageSelected = numSelectedOnPage > 0 && numSelectedOnPage === currentVisibleCompanies.length;
   const isPageIndeterminate = numSelectedOnPage > 0 && numSelectedOnPage < currentVisibleCompanies.length;
 
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map((n) => n[0])
+      .join('')
+      .toUpperCase();
+  };
+
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold">Companies</h1>
@@ -390,12 +398,8 @@ export default function CompaniesPage() {
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <Avatar className="h-8 w-8">
-                          <AvatarImage
-                            src={company.contact.avatar}
-                            data-ai-hint="person"
-                          />
-                          <AvatarFallback>
-                            {company.contact.name.charAt(0)}
+                          <AvatarFallback className="bg-primary text-primary-foreground">
+                            {getInitials(company.contact.name)}
                           </AvatarFallback>
                         </Avatar>
                         <span>{company.contact.name}</span>
@@ -504,3 +508,5 @@ export default function CompaniesPage() {
     </div>
   );
 }
+
+    

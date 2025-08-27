@@ -126,6 +126,14 @@ export default function CompanyDetailsPage() {
     setIsEditModalOpen(false);
   };
 
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map((n) => n[0])
+      .join('')
+      .toUpperCase();
+  };
+
   if (loading) {
       return (
         <AppLayout>
@@ -329,9 +337,8 @@ export default function CompanyDetailsPage() {
                 {primaryContacts.map((contact, index) => (
                   <div key={index} className="flex items-center gap-4">
                     <Avatar>
-                      <AvatarImage src={contact.avatar} data-ai-hint="person" />
-                      <AvatarFallback>
-                        {contact.name.charAt(0)}
+                      <AvatarFallback className="bg-primary text-primary-foreground">
+                        {getInitials(contact.name)}
                       </AvatarFallback>
                     </Avatar>
                     <div>
@@ -383,5 +390,7 @@ export default function CompanyDetailsPage() {
 
 
 
+
+    
 
     
