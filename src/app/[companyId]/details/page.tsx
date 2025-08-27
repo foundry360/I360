@@ -17,10 +17,13 @@ import {
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { AppLayout } from '@/components/app-layout';
-import { useParams, useSearchParams } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import React from 'react';
 import { Progress } from '@/components/ui/progress';
 import { Phone, Globe, MapPin } from 'lucide-react';
+import type { Company } from '@/services/company-service';
+import { getCompany } from '@/services/company-service';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const currentAssessments = [
     { name: 'Q4 2023 RevOps Maturity', status: 'In Progress', progress: 75, startDate: '2023-10-01' },
@@ -72,36 +75,62 @@ const recentActivity = [
     { activity: 'Company profile updated', time: '1 week ago' },
 ];
 
-interface CompanyData {
-    name: string;
-    street: string;
-    city: string;
-    state: string;
-    zip: string;
-    phone: string;
-    website: string;
-}
-
 export default function CompanyDetailsPage() {
-  const searchParams = useSearchParams();
-  const [companyData, setCompanyData] = React.useState<CompanyData | null>(null);
-  
+  const params = useParams();
+  const companyId = params.companyId as string;
+  const [companyData, setCompanyData] = React.useState<Company | null>(null);
+  const [loading, setLoading] = React.useState(true);
+
   React.useEffect(() => {
-    const name = searchParams.get('name') || 'Company';
-    const street = searchParams.get('street') || '';
-    const city = searchParams.get('city') || '';
-    const state = searchParams.get('state') || '';
-    const zip = searchParams.get('zip') || '';
-    const phone = searchParams.get('phone') || '';
-    const website = searchParams.get('website') || '';
-    setCompanyData({ name, street, city, state, zip, phone, website });
-  }, [searchParams]);
+    async function fetchCompany() {
+      if (!companyId) return;
+      try {
+        setLoading(true);
+        const data = await getCompany(companyId);
+        if (data) {
+          setCompanyData(data);
+        } else {
+          console.error("Company not found");
+          setCompanyData(null);
+        }
+      } catch (error) {
+        console.error("Error fetching company:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchCompany();
+  }, [companyId]);
+
+  if (loading) {
+      return (
+        <AppLayout>
+            <div className="space-y-6">
+                <Skeleton className="h-10 w-1/2" />
+                <Skeleton className="h-6 w-3/4" />
+                <div className="grid gap-6 lg:grid-cols-3">
+                    <div className="lg:col-span-2 space-y-6">
+                        <Skeleton className="h-40 w-full" />
+                        <Skeleton className="h-64 w-full" />
+                        <Skeleton className="h-64 w-full" />
+                    </div>
+                    <div className="space-y-6">
+                        <Skeleton className="h-48 w-full" />
+                        <Skeleton className="h-56 w-full" />
+                        <Skeleton className="h-56 w-full" />
+                    </div>
+                </div>
+            </div>
+        </AppLayout>
+      );
+  }
 
   if (!companyData) {
       return (
         <AppLayout>
             <div className="flex justify-center items-center h-full">
-                <p>Loading company data...</p>
+                <p>Company not found.</p>
             </div>
         </AppLayout>
       );

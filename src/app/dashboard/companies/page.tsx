@@ -32,119 +32,80 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { getCompanies, createCompany, Company } from '@/services/company-service';
+import { Skeleton } from '@/components/ui/skeleton';
 
-const initialCompanies = [
-  {
-    id: 'acme-inc',
-    name: 'Acme Inc.',
-    street: '123 Main St',
-    city: 'Anytown',
-    state: 'CA',
-    zip: '12345',
-    phone: '555-1234',
-    website: 'acme.com',
-    contact: {
-      name: 'Jane Doe',
-      avatar: 'https://picsum.photos/100/100?q=1',
-    },
-    status: 'Active',
-  },
-  {
-    id: 'widgets-co',
-    name: 'Widgets Co.',
-    street: '456 Oak Ave',
-    city: 'Someville',
-    state: 'TX',
-    zip: '67890',
-    phone: '555-5678',
-    website: 'widgets.co',
-    contact: {
-      name: 'John Smith',
-      avatar: 'https://picsum.photos/100/100?q=2',
-    },
-    status: 'Active',
-  },
-  {
-    id: 'innovate-llc',
-    name: 'Innovate LLC',
-    street: '789 Pine Rd',
-    city: 'Metropolis',
-    state: 'NY',
-    zip: '10101',
-    phone: '555-8765',
-    website: 'innovatellc.com',
-    contact: {
-      name: 'Emily Johnson',
-      avatar: 'https://picsum.photos/100/100?q=3',
-    },
-    status: 'Inactive',
-  },
-  {
-    id: 'synergy-corp',
-    name: 'Synergy Corp',
-    street: '321 Elm St',
-    city: 'Star City',
-    state: 'FL',
-    zip: '33333',
-    phone: '555-4321',
-    website: 'synergy.corp',
-    contact: {
-      name: 'Michael Brown',
-      avatar: 'https://picsum.photos/100/100?q=4',
-    },
-    status: 'Active',
-  },
-];
+const initialNewCompanyState = {
+  name: '',
+  street: '',
+  city: '',
+  state: '',
+  zip: '',
+  phone: '',
+  website: '',
+};
 
 export default function CompaniesPage() {
   const router = useRouter();
-  const [companies, setCompanies] = React.useState(initialCompanies);
-  const [newCompany, setNewCompany] = React.useState({
-    name: '',
-    street: '',
-    city: '',
-    state: '',
-    zip: '',
-    phone: '',
-    website: '',
-  });
+  const [companies, setCompanies] = React.useState<Company[]>([]);
+  const [loading, setLoading] = React.useState(true);
+  const [newCompany, setNewCompany] = React.useState(initialNewCompanyState);
+  const [isDialogOpen, setIsDialogOpen] = React.useState(false);
+
+  const fetchCompanies = React.useCallback(async () => {
+    try {
+      setLoading(true);
+      const companiesFromDb = await getCompanies();
+      setCompanies(companiesFromDb);
+    } catch (error) {
+      console.error("Failed to fetch companies:", error);
+      // Here you might want to show a toast to the user
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  React.useEffect(() => {
+    fetchCompanies();
+  }, [fetchCompanies]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
     setNewCompany((prev) => ({ ...prev, [id]: value }));
   };
 
-  const handleCreateCompany = () => {
-    const newCompanyData = {
-      id: newCompany.name.toLowerCase().replace(/\s+/g, '-'),
-      name: newCompany.name,
-      street: newCompany.street,
-      city: newCompany.city,
-      state: newCompany.state,
-      zip: newCompany.zip,
-      phone: newCompany.phone,
-      website: newCompany.website,
+  const handleCreateCompany = async () => {
+    const id = newCompany.name.toLowerCase().replace(/\s+/g, '-');
+    const companyData = {
+      ...newCompany,
+      id,
       contact: {
         name: 'New Contact', // Placeholder
         avatar: `https://picsum.photos/100/100?q=${companies.length + 1}`,
       },
       status: 'Active',
     };
-    setCompanies([...companies, newCompanyData]);
-    // Reset form
-    setNewCompany({ name: '', street: '', city: '', state: '', zip: '', phone: '', website: '' });
+
+    try {
+      await createCompany(companyData);
+      setNewCompany(initialNewCompanyState);
+      setIsDialogOpen(false);
+      await fetchCompanies(); // Refetch companies to show the new one
+    } catch (error) {
+      console.error("Failed to create company:", error);
+      // Here you might want to show a toast to the user
+    }
   };
 
-  const handleViewDetails = (company: typeof initialCompanies[0]) => {
-    const query = new URLSearchParams(company).toString();
-    router.push(`/${company.id}/details?${query}`);
+  const handleViewDetails = (company: Company) => {
+    router.push(`/${company.id}/details`);
   };
 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold">Companies</h1>
-        <Dialog>
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button>Create Company</Button>
           </DialogTrigger>
@@ -200,14 +161,10 @@ export default function CompaniesPage() {
               </div>
             </div>
             <DialogFooter>
-              <DialogClose asChild>
-                <Button type="button" variant="outline">
-                  Cancel
-                </Button>
-              </DialogClose>
-              <DialogClose asChild>
-                <Button type="submit" onClick={handleCreateCompany}>Create Company</Button>
-              </DialogClose>
+              <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button type="submit" onClick={handleCreateCompany}>Create Company</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -220,6 +177,13 @@ export default function CompaniesPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
+          {loading ? (
+             <div className="space-y-4">
+                <Skeleton className="h-12 w-full" />
+                <Skeleton className="h-12 w-full" />
+                <Skeleton className="h-12 w-full" />
+             </div>
+          ) : (
           <Table>
             <TableHeader>
               <TableRow>
@@ -267,6 +231,7 @@ export default function CompaniesPage() {
               ))}
             </TableBody>
           </Table>
+          )}
         </CardContent>
       </Card>
     </div>
