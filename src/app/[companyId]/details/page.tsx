@@ -79,10 +79,10 @@ const primaryContacts = [
 ];
 
 const recentActivity = [
-    { activity: 'New assessment "Q4 Planning" started', time: '2 hours ago' },
-    { activity: 'Jane Doe added as primary contact', time: '1 day ago' },
-    { activity: 'Report generated for "Sales Team Performance"', time: '3 days ago' },
-    { activity: 'Company profile updated', time: '1 week ago' },
+    { activity: 'New assessment "Q4 Planning" started', time: new Date(Date.now() - 2 * 60 * 60 * 1000) },
+    { activity: 'Jane Doe added as primary contact', time: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000) },
+    { activity: 'Report generated for "Sales Team Performance"', time: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000) },
+    { activity: 'Company profile updated', time: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) },
 ];
 
 export default function CompanyDetailsPage() {
@@ -354,7 +354,7 @@ export default function CompanyDetailsPage() {
                         <div className="mt-1 h-2 w-2 rounded-full bg-primary" />
                         <div>
                         <p className="font-medium text-sm">{item.activity}</p>
-                        <p className="text-xs text-muted-foreground">{item.time}</p>
+                        <p className="text-xs text-muted-foreground">{item.time.toLocaleString()}</p>
                         </div>
                     </div>
                 ))}
@@ -380,3 +380,4 @@ export default function CompanyDetailsPage() {
     
 
     
+
