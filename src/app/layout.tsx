@@ -3,7 +3,6 @@ import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { AppLayout } from '@/components/app-layout';
-import { Header } from '@/components/header';
 
 export const metadata: Metadata = {
   title: 'Insights360',
@@ -28,7 +27,6 @@ export default function RootLayout({
       <body className="font-body antialiased h-full">
         <SidebarProvider>
           <div className="flex flex-col h-full">
-            <Header />
             <AppLayout>{children}</AppLayout>
           </div>
         </SidebarProvider>
