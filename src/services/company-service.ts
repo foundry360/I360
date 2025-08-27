@@ -1,6 +1,6 @@
 'use client';
 import { db } from '@/lib/firebase';
-import { collection, doc, getDoc, getDocs, setDoc, updateDoc } from 'firebase/firestore';
+import { collection, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc } from 'firebase/firestore';
 
 export interface Company {
   id: string;
@@ -106,4 +106,13 @@ export async function updateCompany(id: string, companyData: Partial<Company>): 
     if (index !== -1) {
         companiesStore[index] = { ...companiesStore[index], ...companyData };
     }
+}
+
+export async function deleteCompany(id: string): Promise<void> {
+    await delay(500);
+    // To use firestore, uncomment the lines below
+    // const docRef = doc(db, 'companies', id);
+    // await deleteDoc(docRef);
+    
+    companiesStore = companiesStore.filter(c => c.id !== id);
 }

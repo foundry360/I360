@@ -29,11 +29,26 @@ import {
   DialogFooter,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { getCompanies, createCompany, Company } from '@/services/company-service';
+import {
+  getCompanies,
+  createCompany,
+  deleteCompany,
+  Company,
+} from '@/services/company-service';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Eye, Plus } from 'lucide-react';
+import { Eye, Plus, Trash2 } from 'lucide-react';
 
 const initialNewCompanyState = {
   name: '',
@@ -51,6 +66,10 @@ export default function CompaniesPage() {
   const [loading, setLoading] = React.useState(true);
   const [newCompany, setNewCompany] = React.useState(initialNewCompanyState);
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
+  const [companyToDelete, setCompanyToDelete] = React.useState<Company | null>(
+    null
+  );
 
   const fetchCompanies = React.useCallback(async () => {
     try {
@@ -58,7 +77,7 @@ export default function CompaniesPage() {
       const companiesFromDb = await getCompanies();
       setCompanies(companiesFromDb);
     } catch (error) {
-      console.error("Failed to fetch companies:", error);
+      console.error('Failed to fetch companies:', error);
       // Here you might want to show a toast to the user
     } finally {
       setLoading(false);
@@ -77,8 +96,8 @@ export default function CompaniesPage() {
   const handleCreateCompany = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newCompany.name) {
-        alert("Company name is required.");
-        return;
+      alert('Company name is required.');
+      return;
     }
     try {
       await createCompany(newCompany);
@@ -86,13 +105,30 @@ export default function CompaniesPage() {
       setIsDialogOpen(false);
       await fetchCompanies(); // Refetch companies to show the new one
     } catch (error) {
-      console.error("Failed to create company:", error);
+      console.error('Failed to create company:', error);
       // Here you might want to show a toast to the user
     }
   };
 
   const handleViewDetails = (company: Company) => {
     router.push(`/${company.id}/details`);
+  };
+
+  const openDeleteDialog = (company: Company) => {
+    setCompanyToDelete(company);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleDeleteCompany = async () => {
+    if (!companyToDelete) return;
+    try {
+      await deleteCompany(companyToDelete.id);
+      setIsDeleteDialogOpen(false);
+      setCompanyToDelete(null);
+      await fetchCompanies(); // Refetch companies
+    } catch (error) {
+      console.error('Failed to delete company:', error);
+    }
   };
 
   return (
@@ -119,47 +155,87 @@ export default function CompaniesPage() {
                   <Label htmlFor="name" className="text-right">
                     Company Name
                   </Label>
-                  <Input id="name" value={newCompany.name} onChange={handleInputChange} className="col-span-3" required />
+                  <Input
+                    id="name"
+                    value={newCompany.name}
+                    onChange={handleInputChange}
+                    className="col-span-3"
+                    required
+                  />
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
                   <Label htmlFor="street" className="text-right">
                     Street Address
                   </Label>
-                  <Input id="street" value={newCompany.street} onChange={handleInputChange} className="col-span-3" />
+                  <Input
+                    id="street"
+                    value={newCompany.street}
+                    onChange={handleInputChange}
+                    className="col-span-3"
+                  />
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
                   <Label htmlFor="city" className="text-right">
                     City
                   </Label>
-                  <Input id="city" value={newCompany.city} onChange={handleInputChange} className="col-span-3" />
+                  <Input
+                    id="city"
+                    value={newCompany.city}
+                    onChange={handleInputChange}
+                    className="col-span-3"
+                  />
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
                   <Label htmlFor="state" className="text-right">
                     State
                   </Label>
-                  <Input id="state" value={newCompany.state} onChange={handleInputChange} className="col-span-3" />
+                  <Input
+                    id="state"
+                    value={newCompany.state}
+                    onChange={handleInputChange}
+                    className="col-span-3"
+                  />
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
                   <Label htmlFor="zip" className="text-right">
                     Postal Code
                   </Label>
-                  <Input id="zip" value={newCompany.zip} onChange={handleInputChange} className="col-span-3" />
+                  <Input
+                    id="zip"
+                    value={newCompany.zip}
+                    onChange={handleInputChange}
+                    className="col-span-3"
+                  />
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
                   <Label htmlFor="phone" className="text-right">
                     Phone Number
                   </Label>
-                  <Input id="phone" value={newCompany.phone} onChange={handleInputChange} className="col-span-3" />
+                  <Input
+                    id="phone"
+                    value={newCompany.phone}
+                    onChange={handleInputChange}
+                    className="col-span-3"
+                  />
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
                   <Label htmlFor="website" className="text-right">
                     Website
                   </Label>
-                  <Input id="website" value={newCompany.website} onChange={handleInputChange} className="col-span-3" />
+                  <Input
+                    id="website"
+                    value={newCompany.website}
+                    onChange={handleInputChange}
+                    className="col-span-3"
+                  />
                 </div>
               </div>
               <DialogFooter>
-                <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setIsDialogOpen(false)}
+                >
                   Cancel
                 </Button>
                 <Button type="submit">Create Company</Button>
@@ -177,63 +253,98 @@ export default function CompaniesPage() {
         </CardHeader>
         <CardContent>
           {loading ? (
-             <div className="space-y-4">
-                <Skeleton className="h-12 w-full" />
-                <Skeleton className="h-12 w-full" />
-                <Skeleton className="h-12 w-full" />
-             </div>
+            <div className="space-y-4">
+              <Skeleton className="h-12 w-full" />
+              <Skeleton className="h-12 w-full" />
+              <Skeleton className="h-12 w-full" />
+            </div>
           ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Company Name</TableHead>
-                <TableHead>Primary Contact</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {companies.map((company) => (
-                <TableRow key={company.id}>
-                  <TableCell className="font-medium">{company.name}</TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <Avatar className="h-8 w-8">
-                        <AvatarImage src={company.contact.avatar} data-ai-hint="person" />
-                        <AvatarFallback>
-                          {company.contact.name.charAt(0)}
-                        </AvatarFallback>
-                      </Avatar>
-                      <span>{company.contact.name}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <Badge
-                      variant={
-                        company.status === 'Active' ? 'default' : 'secondary'
-                      }
-                      className={company.status === 'Active' ? 'bg-green-500' : ''}
-                    >
-                      {company.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() => handleViewDetails(company)}
-                    >
-                      <Eye className="h-4 w-4" />
-                      <span className="sr-only">View Details</span>
-                    </Button>
-                  </TableCell>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Company Name</TableHead>
+                  <TableHead>Primary Contact</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {companies.map((company) => (
+                  <TableRow key={company.id}>
+                    <TableCell className="font-medium">
+                      {company.name}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <Avatar className="h-8 w-8">
+                          <AvatarImage
+                            src={company.contact.avatar}
+                            data-ai-hint="person"
+                          />
+                          <AvatarFallback>
+                            {company.contact.name.charAt(0)}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span>{company.contact.name}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        variant={
+                          company.status === 'Active' ? 'default' : 'secondary'
+                        }
+                        className={
+                          company.status === 'Active' ? 'bg-green-500' : ''
+                        }
+                      >
+                        {company.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right space-x-2">
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => handleViewDetails(company)}
+                      >
+                        <Eye className="h-4 w-4" />
+                        <span className="sr-only">View Details</span>
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        size="icon"
+                        onClick={() => openDeleteDialog(company)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                        <span className="sr-only">Delete Company</span>
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           )}
         </CardContent>
       </Card>
+      <AlertDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the
+              company "{companyToDelete?.name}".
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteCompany}>
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
