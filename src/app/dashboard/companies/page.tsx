@@ -58,6 +58,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { MoreHorizontal, Plus, Trash2, Filter, Search } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { TablePagination } from '@/components/table-pagination';
+import Link from 'next/link';
 
 const initialNewCompanyState = {
   name: '',
@@ -382,7 +383,9 @@ export default function CompaniesPage() {
                       />
                     </TableCell>
                     <TableCell className="font-medium">
-                      {company.name}
+                      <Link href={`/${company.id}/details`} className="hover:text-primary">
+                        {company.name}
+                      </Link>
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
