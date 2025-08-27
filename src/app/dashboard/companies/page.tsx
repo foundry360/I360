@@ -232,8 +232,8 @@ export default function CompaniesPage() {
               )}
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                 <DialogTrigger asChild>
-                <Button>
-                    <Plus className="mr-2 h-4 w-4" /> Create Company
+                <Button size="icon">
+                    <Plus className="h-4 w-4" />
                 </Button>
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-[600px]">
