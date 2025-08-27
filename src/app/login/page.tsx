@@ -6,6 +6,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Logo } from '@/components/logo';
+import { db } from '@/lib/firebase';
+import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -18,16 +20,27 @@ export default function LoginPage() {
     setIsClient(true);
   }, []);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!companyId) {
-      // Basic validation, you can add more sophisticated checks
-      alert('Company ID is required.');
+    if (!companyId || !username) {
+      alert('Company ID and Username are required.');
       return;
     }
-    // In a real app, you'd have authentication logic here.
-    // For now, we'll just redirect to the company-specific dashboard.
-    router.push(`/${companyId}/dashboard`);
+    
+    try {
+      // In a real app, you'd have authentication logic here.
+      // For now, we'll just create/update the user document.
+      const userDocRef = doc(db, 'companies', companyId, 'users', username);
+      await setDoc(userDocRef, {
+        username: username,
+        lastLogin: serverTimestamp(),
+      }, { merge: true });
+
+      router.push(`/${companyId}/dashboard`);
+    } catch (error) {
+      console.error("Error saving user data:", error);
+      alert('There was an error logging in. Please try again.');
+    }
   };
 
   if (!isClient) {
