@@ -16,6 +16,7 @@ export interface Company {
     avatar: string;
   };
   status: string;
+  lastActivity: string;
 }
 
 // In-memory store for prototyping
@@ -34,6 +35,7 @@ let companiesStore: Company[] = [
         avatar: 'https://picsum.photos/100/100?q=1',
       },
       status: 'Active',
+      lastActivity: '2023-10-26',
     },
     {
       id: 'widgets-co',
@@ -49,6 +51,7 @@ let companiesStore: Company[] = [
         avatar: 'https://picsum.photos/100/100?q=2',
       },
       status: 'Active',
+      lastActivity: '2023-10-28',
     },
 ];
 
@@ -79,7 +82,7 @@ export async function getCompany(id: string): Promise<Company | null> {
     return company || null;
 }
 
-export async function createCompany(companyData: Omit<Company, 'id' | 'contact' | 'status'>): Promise<void> {
+export async function createCompany(companyData: Omit<Company, 'id' | 'contact' | 'status' | 'lastActivity'>): Promise<void> {
   await delay(500);
   const newCompany: Company = {
       ...companyData,
@@ -89,6 +92,7 @@ export async function createCompany(companyData: Omit<Company, 'id' | 'contact' 
         avatar: `https://picsum.photos/100/100?q=${companiesStore.length + 1}`,
       },
       status: 'Active',
+      lastActivity: new Date().toISOString().split('T')[0],
   };
   
   // To use firestore, uncomment the line below and remove the push to the in-memory store

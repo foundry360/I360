@@ -365,6 +365,7 @@ export default function CompaniesPage() {
                   <TableHead>Company Name</TableHead>
                   <TableHead>Primary Contact</TableHead>
                   <TableHead>Status</TableHead>
+                  <TableHead>Last Activity</TableHead>
                   <TableHead className="text-right"></TableHead>
                 </TableRow>
               </TableHeader>
@@ -408,6 +409,9 @@ export default function CompaniesPage() {
                       >
                         {company.status}
                       </Badge>
+                    </TableCell>
+                    <TableCell>
+                        {new Date(company.lastActivity).toLocaleDateString()}
                     </TableCell>
                     <TableCell className="text-right">
                        <DropdownMenu>
