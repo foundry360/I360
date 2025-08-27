@@ -181,7 +181,7 @@ export default function CompanyDetailsPage() {
           <div className="lg:col-span-2 space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>Company Overview</CardTitle>
+                <div className="font-semibold">Company Overview</div>
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground">
@@ -374,3 +374,5 @@ export default function CompanyDetailsPage() {
       )}
     </AppLayout>
   );
+
+    
