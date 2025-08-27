@@ -14,6 +14,7 @@ import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
+  CardFooter,
 } from '@/components/ui/card';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { useRouter } from 'next/navigation';
@@ -56,6 +57,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Checkbox } from '@/components/ui/checkbox';
 import { MoreHorizontal, Plus, Trash2 } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
+import { TablePagination } from '@/components/table-pagination';
 
 const initialNewCompanyState = {
   name: '',
@@ -82,6 +84,9 @@ export default function CompaniesPage() {
   const [selectedCompanies, setSelectedCompanies] = React.useState<string[]>(
     []
   );
+
+  const [page, setPage] = React.useState(0);
+  const [rowsPerPage, setRowsPerPage] = React.useState(25);
 
   const fetchCompanies = React.useCallback(async () => {
     try {
@@ -153,9 +158,15 @@ export default function CompaniesPage() {
 
   const handleSelectAll = (isSelected: boolean) => {
     if (isSelected) {
-      setSelectedCompanies(companies.map((c) => c.id));
+      const currentVisibleIds = companies
+        .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+        .map((c) => c.id);
+      setSelectedCompanies((prev) => [...new Set([...prev, ...currentVisibleIds])]);
     } else {
-      setSelectedCompanies([]);
+       const currentVisibleIds = companies
+        .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+        .map((c) => c.id);
+      setSelectedCompanies((prev) => prev.filter((id) => !currentVisibleIds.includes(id)));
     }
   };
 
@@ -170,9 +181,15 @@ export default function CompaniesPage() {
     }
   };
 
+  const currentVisibleCompanies = companies.slice(
+    page * rowsPerPage,
+    page * rowsPerPage + rowsPerPage
+  );
+  
   const numSelected = selectedCompanies.length;
-  const allSelected = numSelected > 0 && numSelected === companies.length;
-  const isIndeterminate = numSelected > 0 && numSelected < companies.length;
+  const numSelectedOnPage = currentVisibleCompanies.filter(c => selectedCompanies.includes(c.id)).length;
+  const allOnPageSelected = numSelectedOnPage > 0 && numSelectedOnPage === currentVisibleCompanies.length;
+  const isPageIndeterminate = numSelectedOnPage > 0 && numSelectedOnPage < currentVisibleCompanies.length;
 
   return (
     <div className="space-y-6">
@@ -318,22 +335,22 @@ export default function CompaniesPage() {
                 <TableRow>
                   <TableHead className="w-[50px]">
                     <Checkbox
-                      checked={allSelected}
+                      checked={allOnPageSelected}
                       onCheckedChange={(checked) =>
                         handleSelectAll(checked as boolean)
                       }
-                      aria-label="Select all"
-                      data-state={isIndeterminate ? 'indeterminate' : 'unchecked'}
+                      aria-label="Select all on page"
+                      data-state={isPageIndeterminate ? 'indeterminate' : (allOnPageSelected ? 'checked' : 'unchecked')}
                     />
                   </TableHead>
                   <TableHead>Company Name</TableHead>
                   <TableHead>Primary Contact</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead className="text-right"></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {companies.map((company) => (
+                {currentVisibleCompanies.map((company) => (
                   <TableRow key={company.id} data-state={selectedCompanies.includes(company.id) && "selected"}>
                     <TableCell>
                       <Checkbox
@@ -403,6 +420,18 @@ export default function CompaniesPage() {
             </Table>
           )}
         </CardContent>
+         <CardFooter>
+            <TablePagination
+                count={companies.length}
+                page={page}
+                rowsPerPage={rowsPerPage}
+                onPageChange={(newPage) => setPage(newPage)}
+                onRowsPerPageChange={(newRowsPerPage) => {
+                    setRowsPerPage(newRowsPerPage);
+                    setPage(0);
+                }}
+            />
+        </CardFooter>
       </Card>
       <AlertDialog
         open={isDeleteDialogOpen}
