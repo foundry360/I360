@@ -7,7 +7,6 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
 } from '@/components/ui/sidebar';
-import { Header } from './header';
 import { Home, BarChart, Settings, BotMessageSquare } from 'lucide-react';
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
@@ -47,7 +46,6 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         </SidebarContent>
       </Sidebar>
       <SidebarInset>
-        <Header />
         <main className="flex-1 p-4 md:p-6">{children}</main>
       </SidebarInset>
     </>
