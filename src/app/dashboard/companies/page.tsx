@@ -14,7 +14,6 @@ import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
-  CardFooter,
 } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { useRouter } from 'next/navigation';
@@ -525,19 +524,19 @@ export default function CompaniesPage() {
             </Table>
           )}
         </CardContent>
-         <CardFooter className="justify-end">
-            <TablePagination
-                count={sortedCompanies.length}
-                page={page}
-                rowsPerPage={rowsPerPage}
-                onPageChange={(newPage) => setPage(newPage)}
-                onRowsPerPageChange={(newRowsPerPage) => {
-                    setRowsPerPage(newRowsPerPage);
-                    setPage(0);
-                }}
-            />
-        </CardFooter>
       </Card>
+      <div className="flex justify-end mt-4">
+        <TablePagination
+            count={sortedCompanies.length}
+            page={page}
+            rowsPerPage={rowsPerPage}
+            onPageChange={(newPage) => setPage(newPage)}
+            onRowsPerPageChange={(newRowsPerPage) => {
+                setRowsPerPage(newRowsPerPage);
+                setPage(0);
+            }}
+        />
+      </div>
       <AlertDialog
         open={isDeleteDialogOpen}
         onOpenChange={setIsDeleteDialogOpen}
