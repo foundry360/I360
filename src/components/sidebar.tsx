@@ -64,7 +64,7 @@ export function Sidebar() {
                         <TooltipTrigger asChild>
                           <Button
                             asChild
-                            variant="ghost"
+                            variant="sidebar"
                             className={cn(
                               'w-full justify-start relative',
                               isActive &&
@@ -97,7 +97,7 @@ export function Sidebar() {
                       <Tooltip key={item.label}>
                         <TooltipTrigger asChild>
                           <Button
-                            variant="ghost"
+                            variant="sidebar"
                             className="w-full justify-start"
                             onClick={() => setIsModalOpen(true)}
                           >
