@@ -179,7 +179,7 @@ export default function CompaniesPage() {
     <div className="space-y-6">
       <div className="flex justify-between items-start">
         <div>
-            <h1 className="text-3xl font-bold">Companies</h1>
+            <h1 className="text-2xl font-bold">Companies</h1>
             <p className="text-muted-foreground mt-2">
                 A list of all companies in your portfolio
             </p>
@@ -304,7 +304,7 @@ export default function CompaniesPage() {
           </Dialog>
         </div>
       </div>
-      <Separator />
+      <Separator className="bg-gray-200"/>
       <Card>
         <CardContent className="pt-6">
           {loading ? (
