@@ -206,7 +206,7 @@ export default function CompaniesPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Companies</h1>
+        <h1 className="text-2xl font-bold">Companies ({sortedCompanies.length})</h1>
         <p className="text-muted-foreground">
           Manage and track all companies in your system.
         </p>
@@ -248,14 +248,7 @@ export default function CompaniesPage() {
           </Button>
         </div>
       </div>
-      <Card>
-        <CardHeader>
-            <CardTitle>Total Companies</CardTitle>
-        </CardHeader>
-        <CardContent>
-            <p className="text-4xl font-bold">{sortedCompanies.length}</p>
-        </CardContent>
-      </Card>
+
       <Card>
         <CardContent className="pt-6">
           {loading ? (
