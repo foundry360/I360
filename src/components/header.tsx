@@ -13,7 +13,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { Button } from './ui/button';
-import { Plus, Search, LogOut } from 'lucide-react';
+import { Plus, Search, LogOut, Briefcase, UserPlus, FilePlus } from 'lucide-react';
 import { useQuickAction } from '@/contexts/quick-action-context';
 import * as React from 'react';
 import { Input } from './ui/input';
@@ -126,12 +126,15 @@ export function Header() {
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuItem onSelect={openNewCompanyDialog}>
+              <Briefcase className="mr-2 h-4 w-4" />
               New Company
             </DropdownMenuItem>
              <DropdownMenuItem onSelect={openNewContactDialog}>
+              <UserPlus className="mr-2 h-4 w-4" />
               New Contact
             </DropdownMenuItem>
             <DropdownMenuItem onSelect={() => openAssessmentModal()}>
+              <FilePlus className="mr-2 h-4 w-4" />
               New Assessment
             </DropdownMenuItem>
           </DropdownMenuContent>
