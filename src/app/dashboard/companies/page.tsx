@@ -12,10 +12,6 @@ import {
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-} from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { useRouter } from 'next/navigation';
 import {
@@ -226,10 +222,9 @@ export default function CompaniesPage() {
           </Button>
         </div>
       </div>
-      <Card>
-        <CardContent className="pt-6">
+      <div className="border rounded-lg">
           {loading ? (
-            <div className="space-y-4">
+            <div className="space-y-4 p-6">
               <Skeleton className="h-12 w-full" />
               <Skeleton className="h-12 w-full" />
               <Skeleton className="h-12 w-full" />
@@ -374,8 +369,7 @@ export default function CompaniesPage() {
               </TableBody>
             </Table>
           )}
-        </CardContent>
-      </Card>
+      </div>
       <div className="flex justify-end mt-4">
         <TablePagination
             count={sortedCompanies.length}
@@ -435,5 +429,7 @@ export default function CompaniesPage() {
 
     
 
+
+    
 
     

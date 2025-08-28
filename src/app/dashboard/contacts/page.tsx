@@ -11,10 +11,6 @@ import {
   TableCell,
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-} from '@/components/ui/card';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import {
   DropdownMenu,
@@ -211,10 +207,9 @@ export default function ContactsPage() {
           </Button>
         </div>
       </div>
-      <Card>
-        <CardContent className="pt-6">
+      <div className="border rounded-lg">
           {loading ? (
-            <div className="space-y-4">
+            <div className="space-y-4 p-6">
               <Skeleton className="h-12 w-full" />
               <Skeleton className="h-12 w-full" />
               <Skeleton className="h-12 w-full" />
@@ -348,8 +343,7 @@ export default function ContactsPage() {
               </TableBody>
             </Table>
           )}
-        </CardContent>
-      </Card>
+      </div>
       <div className="flex justify-end mt-4">
         <TablePagination
             count={sortedContacts.length}
@@ -407,5 +401,7 @@ export default function ContactsPage() {
     </div>
   );
 
+
+    
 
     
