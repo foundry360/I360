@@ -13,6 +13,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import type { Company } from '@/services/company-service';
 import { Textarea } from './ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 
 type EditCompanyModalProps = {
   isOpen: boolean;
@@ -37,6 +38,10 @@ export function EditCompanyModal({
     const { id, value } = e.target;
     setFormData((prev) => ({ ...prev, [id]: value }));
   };
+  
+  const handleSelectChange = (value: string) => {
+    setFormData((prev) => ({ ...prev, status: value }));
+  }
 
   const handleSaveChanges = (e: React.FormEvent) => {
     e.preventDefault();
@@ -77,6 +82,20 @@ export function EditCompanyModal({
                 className="col-span-3"
                 placeholder="A brief description of the company."
               />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="status" className="text-right">
+                    Status
+                </Label>
+                <Select onValueChange={handleSelectChange} value={formData.status}>
+                    <SelectTrigger className="col-span-3">
+                        <SelectValue placeholder="Select a status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="Active">Active</SelectItem>
+                        <SelectItem value="Non-Active">Non-Active</SelectItem>
+                    </SelectContent>
+                </Select>
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="street" className="text-right">
@@ -160,5 +179,4 @@ export function EditCompanyModal({
     </Dialog>
   );
 }
-
     
