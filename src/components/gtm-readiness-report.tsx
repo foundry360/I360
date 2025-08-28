@@ -1,3 +1,4 @@
+
 'use client';
 import * as React from 'react';
 import jsPDF from 'jspdf';
@@ -50,8 +51,13 @@ export function GtmReadinessReport({ result, onComplete }: GtmReadinessReportPro
   const [isExporting, setIsExporting] = React.useState(false);
 
   const handleExportToPdf = async () => {
-    if (!reportRef.current) return;
+    const reportElement = reportRef.current;
+    if (!reportElement) return;
+    
     setIsExporting(true);
+    
+    // Add a class to apply PDF-specific styles
+    reportElement.classList.add('pdf-export');
 
     const pdf = new jsPDF('p', 'pt', 'a4');
     const pdfWidth = pdf.internal.pageSize.getWidth();
@@ -61,17 +67,16 @@ export function GtmReadinessReport({ result, onComplete }: GtmReadinessReportPro
     let pageCount = 1;
 
     const addHeaderFooter = () => {
+        pdf.setFont('Arial', 'normal');
         pdf.setFontSize(8);
         pdf.setTextColor(150);
-        // Header
         pdf.text("PROPRIETARY & CONFIDENTIAL", margin, margin / 2);
-        // Footer
         pdf.text(`Page ${pageCount}`, pdfWidth - margin, pdfHeight - margin / 2);
     };
 
     addHeaderFooter();
 
-    const sections = Array.from(reportRef.current.querySelectorAll('.printable-section'));
+    const sections = Array.from(reportElement.querySelectorAll('.printable-section'));
 
     for (const section of sections) {
         const canvas = await html2canvas(section as HTMLElement, {
@@ -92,10 +97,13 @@ export function GtmReadinessReport({ result, onComplete }: GtmReadinessReportPro
         }
 
         pdf.addImage(imgData, 'PNG', margin, yPos, imgWidth, imgHeight);
-        yPos += imgHeight + 20; // Add some space between sections
+        yPos += imgHeight + 20;
     }
 
     pdf.save('gtm-readiness-report.pdf');
+    
+    // Clean up the class after export
+    reportElement.classList.remove('pdf-export');
     setIsExporting(false);
   };
 
@@ -156,9 +164,21 @@ export function GtmReadinessReport({ result, onComplete }: GtmReadinessReportPro
 
   return (
     <div className="bg-muted">
+       <style>{`
+        .pdf-export {
+            font-family: Arial, sans-serif;
+            font-size: 11px;
+        }
+        .pdf-export .text-xl { font-size: 16px; }
+        .pdf-export .text-lg { font-size: 14px; }
+        .pdf-export .text-sm { font-size: 11px; }
+        .pdf-export .text-xs { font-size: 9px; }
+        .pdf-export h4 { font-size: 12px; }
+        .pdf-export .prose { font-size: 11px; }
+      `}</style>
       <div className="space-y-6 p-6">
         <div ref={reportRef} className="bg-background p-8 rounded-lg shadow-sm">
-            <div className="text-center pb-4 border-b mb-6">
+            <div className="text-center pb-4 border-b mb-6 printable-section">
                 <h2 className="text-3xl font-bold text-primary">GTM Readiness Assessment Report</h2>
                 <p className="text-muted-foreground">Generated on {new Date().toLocaleDateString()}</p>
             </div>
@@ -189,3 +209,5 @@ export function GtmReadinessReport({ result, onComplete }: GtmReadinessReportPro
     </div>
   );
 }
+
+    
