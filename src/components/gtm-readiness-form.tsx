@@ -45,6 +45,7 @@ import { cn } from '@/lib/utils';
 import { getCompanies, type Company } from '@/services/company-service';
 import { createAssessment, updateAssessment, type Assessment } from '@/services/assessment-service';
 import { GtmReadinessReport } from './gtm-readiness-report';
+import { Separator } from './ui/separator';
 
 
 const GtmReadinessInputSchema = z.object({
@@ -457,6 +458,7 @@ export function GtmReadinessForm({ onComplete, assessmentToResume }: GtmReadines
                     </button>
                 ))}
             </nav>
+            <Separator className="my-4" />
             <p className="text-sm text-muted-foreground mt-4 text-center">
               Step {currentSection + 1} of {formSections.length}
             </p>
