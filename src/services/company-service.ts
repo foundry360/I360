@@ -61,11 +61,25 @@ const companiesCollection = collection(db, 'companies');
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 export async function getCompanies(): Promise<Company[]> {
-  await delay(500); // Simulate network delay
+  await delay(100); // Reduced delay for faster UI
   // To use firestore, uncomment the lines below and remove the return statement for the in-memory store
   // const snapshot = await getDocs(companiesCollection);
   // return snapshot.docs.map((doc) => doc.data() as Company);
   return [...companiesStore];
+}
+
+export async function searchCompanies(searchTerm: string): Promise<Company[]> {
+    await delay(100);
+    const allCompanies = await getCompanies();
+    if (!searchTerm) {
+        return [];
+    }
+    const lowercasedTerm = searchTerm.toLowerCase();
+    return allCompanies.filter(company =>
+        company.name.toLowerCase().includes(lowercasedTerm) ||
+        company.contact.name.toLowerCase().includes(lowercasedTerm) ||
+        company.website.toLowerCase().includes(lowercasedTerm)
+    );
 }
 
 export async function getCompany(id: string): Promise<Company | null> {

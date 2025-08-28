@@ -1,4 +1,3 @@
-
 'use client';
 
 import { Logo } from './logo';
@@ -11,36 +10,97 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { Button } from './ui/button';
 import { Plus, Search } from 'lucide-react';
 import { useQuickAction } from '@/contexts/quick-action-context';
 import * as React from 'react';
 import { Input } from './ui/input';
+import { Company, searchCompanies } from '@/services/company-service';
 
 export function Header() {
   const params = useParams();
+  const router = useRouter();
   const companyId = params.companyId as string;
   const { openNewCompanyDialog, globalSearchTerm, setGlobalSearchTerm } = useQuickAction();
   const [isSearchVisible, setIsSearchVisible] = React.useState(false);
+  const [searchResults, setSearchResults] = React.useState<Company[]>([]);
+  const searchInputRef = React.useRef<HTMLInputElement>(null);
+
+  React.useEffect(() => {
+    const performSearch = async () => {
+      if (globalSearchTerm) {
+        const results = await searchCompanies(globalSearchTerm);
+        setSearchResults(results);
+      } else {
+        setSearchResults([]);
+      }
+    };
+    performSearch();
+  }, [globalSearchTerm]);
+
+  React.useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        searchInputRef.current &&
+        !searchInputRef.current.contains(event.target as Node)
+      ) {
+        setIsSearchVisible(false);
+        setGlobalSearchTerm('');
+      }
+    };
+
+    if (isSearchVisible) {
+      document.addEventListener('mousedown', handleClickOutside);
+    } else {
+      document.removeEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isSearchVisible, setGlobalSearchTerm]);
+
+  const handleResultClick = (companyId: string) => {
+    router.push(`/${companyId}/details`);
+    setIsSearchVisible(false);
+    setGlobalSearchTerm('');
+  };
 
   return (
     <header className="flex h-16 items-center justify-between gap-4 border-b border-sidebar-border bg-sidebar px-6 text-sidebar-foreground">
       <Logo />
       <div className="flex items-center gap-4">
-        <div className="flex items-center gap-2">
+        <div className="relative flex items-center gap-2" ref={searchInputRef}>
             <Button variant="ghost" size="icon" onClick={() => setIsSearchVisible(!isSearchVisible)}>
                 <Search className="h-5 w-5" />
             </Button>
             {isSearchVisible && (
-                <div className="relative">
-                     <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                     <Input 
-                        placeholder="Search..." 
-                        className="pl-8 w-64 bg-sidebar-accent border-sidebar-border focus:bg-background focus:text-foreground"
-                        value={globalSearchTerm}
-                        onChange={(e) => setGlobalSearchTerm(e.target.value)}
-                     />
+                <div className="absolute top-12 right-0 z-10">
+                     <div className="relative">
+                        <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                        <Input 
+                            placeholder="Search..." 
+                            className="pl-8 w-64 bg-sidebar-accent border-sidebar-border focus:bg-background focus:text-foreground"
+                            value={globalSearchTerm}
+                            onChange={(e) => setGlobalSearchTerm(e.target.value)}
+                            autoFocus
+                        />
+                     </div>
+                     {searchResults.length > 0 && (
+                        <div className="absolute mt-1 w-64 rounded-md bg-background border border-border shadow-lg">
+                            <ul className="py-1">
+                                {searchResults.map((company) => (
+                                    <li key={company.id}
+                                        className="px-3 py-2 text-sm text-foreground hover:bg-muted cursor-pointer"
+                                        onClick={() => handleResultClick(company.id)}
+                                    >
+                                       {company.name}
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                     )}
                 </div>
             )}
         </div>
@@ -85,5 +145,3 @@ export function Header() {
     </header>
   );
 }
-
-    
