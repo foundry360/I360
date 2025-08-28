@@ -238,13 +238,6 @@ export default function CompaniesPage() {
       .join('')
       .toUpperCase();
   };
-  
-  const getSortIconVisibility = (key: SortKey) => {
-    if (sortConfig && sortConfig.key === key) {
-      return 'opacity-100';
-    }
-    return 'opacity-0 group-hover:opacity-100';
-  };
 
   return (
     <div className="space-y-6">
@@ -418,7 +411,7 @@ export default function CompaniesPage() {
                     <Button variant="ghost" onClick={() => requestSort('name')} className="group w-full p-0 hover:bg-transparent">
                       <div className="flex justify-between items-center w-full">
                         Company Name
-                        <ArrowUpDown className={cn("h-4 w-4", getSortIconVisibility('name'))} />
+                        <ArrowUpDown className={cn("h-4 w-4", sortConfig?.key === 'name' ? 'opacity-100' : 'opacity-25')} />
                       </div>
                     </Button>
                   </TableHead>
@@ -426,7 +419,7 @@ export default function CompaniesPage() {
                      <Button variant="ghost" onClick={() => requestSort('contact')} className="group w-full p-0 hover:bg-transparent">
                        <div className="flex justify-between items-center w-full">
                         Primary Contact
-                        <ArrowUpDown className={cn("h-4 w-4", getSortIconVisibility('contact'))} />
+                        <ArrowUpDown className={cn("h-4 w-4", sortConfig?.key === 'contact' ? 'opacity-100' : 'opacity-25')} />
                        </div>
                     </Button>
                   </TableHead>
@@ -434,7 +427,7 @@ export default function CompaniesPage() {
                     <Button variant="ghost" onClick={() => requestSort('status')} className="group w-full p-0 hover:bg-transparent">
                        <div className="flex justify-between items-center w-full">
                         Status
-                        <ArrowUpDown className={cn("h-4 w-4", getSortIconVisibility('status'))} />
+                        <ArrowUpDown className={cn("h-4 w-4", sortConfig?.key === 'status' ? 'opacity-100' : 'opacity-25')} />
                        </div>
                     </Button>
                   </TableHead>
@@ -442,7 +435,7 @@ export default function CompaniesPage() {
                      <Button variant="ghost" onClick={() => requestSort('lastActivity')} className="group w-full p-0 hover:bg-transparent">
                        <div className="flex justify-between items-center w-full">
                         Last Activity
-                        <ArrowUpDown className={cn("h-4 w-4", getSortIconVisibility('lastActivity'))} />
+                        <ArrowUpDown className={cn("h-4 w-4", sortConfig?.key === 'lastActivity' ? 'opacity-100' : 'opacity-25')} />
                        </div>
                     </Button>
                   </TableHead>
