@@ -457,7 +457,7 @@ export function GtmReadinessForm({ onComplete, assessmentToResume }: GtmReadines
                     </button>
                 ))}
             </nav>
-            <p className="text-sm text-muted-foreground mt-4">
+            <p className="text-sm text-muted-foreground mt-4 text-center">
               Step {currentSection + 1} of {formSections.length}
             </p>
         </div>
