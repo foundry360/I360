@@ -300,30 +300,38 @@ export default function AssessmentsPage() {
                           {new Date(assessment.startDate).toLocaleDateString()}
                       </TableCell>
                       <TableCell className="text-right p-2">
-                         <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" className="h-8 w-8 p-0">
-                              <span className="sr-only">Open menu</span>
-                              <MoreHorizontal className="h-4 w-4" />
+                        <div className="flex justify-end items-center">
+                          {assessment.status === 'Completed' && (
+                            <Button variant="ghost" size="icon" onClick={() => openAssessmentModal(assessment)}>
+                                <FileText className="h-4 w-4" />
+                                <span className="sr-only">View Report</span>
                             </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem
-                              onClick={() => openAssessmentModal(assessment)}
-                            >
-                              <FileText className="mr-2 h-4 w-4" />
-                              {assessment.status === 'Completed' ? 'View Report' : 'Resume'}
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem
-                              onClick={() => openDeleteDialog(assessment)}
-                              className="text-destructive"
-                            >
-                              <Trash2 className="mr-2 h-4 w-4" />
-                              Delete
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
+                          )}
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" className="h-8 w-8 p-0">
+                                <span className="sr-only">Open menu</span>
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem
+                                onClick={() => openAssessmentModal(assessment)}
+                              >
+                                <FileText className="mr-2 h-4 w-4" />
+                                {assessment.status === 'Completed' ? 'View Report' : 'Resume'}
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem
+                                onClick={() => openDeleteDialog(assessment)}
+                                className="text-destructive"
+                              >
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                Delete
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))
