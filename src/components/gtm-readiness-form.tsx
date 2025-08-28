@@ -344,7 +344,7 @@ export function GtmReadinessForm() {
 
   return (
     <div className="grid grid-cols-12 h-full">
-        <div className="col-span-3 border-r p-6 bg-muted">
+        <div className="col-span-3 border-r p-6 bg-primary-light">
             <h3 className="font-semibold mb-4">Assessment Sections</h3>
             <nav className="space-y-2">
                 {formSections.map((section, index) => (

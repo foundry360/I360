@@ -16,6 +16,7 @@ body {
     --popover-foreground: 222.2 47.4% 11.2%;
     --primary: 256 96% 63%; /* #6f47fb */
     --primary-hover: 259 82% 56%; /* #7735e9 */
+    --primary-light: 256 96% 96%; /* lighter purple */
     --primary-foreground: 0 0% 98%;
     --secondary: 210 40% 96.1%;
     --secondary-foreground: 222.2 47.4% 11.2%;
@@ -54,6 +55,7 @@ body {
     --popover-foreground: 210 40% 98%;
     --primary: 256 96% 63%;
     --primary-hover: 259 82% 56%;
+    --primary-light: 256 96% 20%; /* darker purple */
     --primary-foreground: 210 40% 98%;
     --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
