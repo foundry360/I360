@@ -192,7 +192,7 @@ export default function CompanyDetailsPage() {
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-muted-foreground">
-                  {companyData.name} is a leading provider of innovative solutions in the tech industry. They are focused on developing cutting-edge products that solve real-world problems. With a strong team of experts and a commitment to customer success, they have established themselves as a trusted partner for businesses worldwide.
+                  {companyData.description}
                 </p>
               </CardContent>
             </Card>
@@ -384,5 +384,3 @@ export default function CompanyDetailsPage() {
       )}
     </AppLayout>
   );
-
-    

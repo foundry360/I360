@@ -5,6 +5,7 @@ import { collection, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, writeBa
 export interface Company {
   id: string;
   name: string;
+  description: string;
   street: string;
   city: string;
   state: string;

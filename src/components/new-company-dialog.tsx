@@ -14,9 +14,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { createCompany } from '@/services/company-service';
 import { useQuickAction } from '@/contexts/quick-action-context';
+import { Textarea } from './ui/textarea';
 
 const initialNewCompanyState = {
   name: '',
+  description: '',
   street: '',
   city: '',
   state: '',
@@ -30,7 +32,7 @@ export function NewCompanyDialog() {
     useQuickAction();
   const [newCompany, setNewCompany] = React.useState(initialNewCompanyState);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { id, value } = e.target;
     setNewCompany((prev) => ({ ...prev, [id]: value }));
   };
@@ -81,6 +83,18 @@ export function NewCompanyDialog() {
                 onChange={handleInputChange}
                 className="col-span-3"
                 required
+              />
+            </div>
+            <div className="grid grid-cols-4 items-start gap-4">
+              <Label htmlFor="description" className="text-right pt-2">
+                Description
+              </Label>
+              <Textarea
+                id="description"
+                value={newCompany.description}
+                onChange={handleInputChange}
+                className="col-span-3"
+                placeholder="A brief description of the company."
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
