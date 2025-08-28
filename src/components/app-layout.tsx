@@ -5,7 +5,7 @@ import { Sidebar } from '@/components/sidebar';
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex h-screen flex-col bg-background">
+    <div className="flex h-full flex-col bg-background">
       <Header />
       <div className="flex flex-1 overflow-hidden">
         <Sidebar />

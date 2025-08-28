@@ -2,6 +2,20 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  html,
+  body,
+  body > div:first-child,
+  div#__next,
+  div#__next > div {
+    @apply h-full;
+  }
+
+  html, body {
+    overflow: hidden;
+  }
+}
+
 body {
   font-family: 'Inter', sans-serif;
 }
