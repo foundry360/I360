@@ -93,7 +93,7 @@ export function EditCompanyModal({
                     </SelectTrigger>
                     <SelectContent>
                         <SelectItem value="Active">Active</SelectItem>
-                        <SelectItem value="Non-Active">Non-Active</SelectItem>
+                        <SelectItem value="Inactive">Inactive</SelectItem>
                     </SelectContent>
                 </Select>
             </div>
