@@ -41,7 +41,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Checkbox } from '@/components/ui/checkbox';
 import { MoreHorizontal, Plus, Trash2, ArrowUpDown } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
-import { TablePagination } from '@/components/table-pagination';
+import { TablePagination } from '@/components/ui/table-pagination';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { useQuickAction } from '@/contexts/quick-action-context';
@@ -84,8 +84,10 @@ export default function CompaniesPage() {
 
   React.useEffect(() => {
     fetchCompanies();
-    setOnCompanyCreated(() => fetchCompanies);
-    return () => setOnCompanyCreated(null);
+    const unsubscribe = setOnCompanyCreated(() => fetchCompanies);
+    return () => {
+      if (unsubscribe) unsubscribe();
+    };
   }, [fetchCompanies, setOnCompanyCreated]);
 
   const handleViewDetails = (company: Company) => {
@@ -211,6 +213,7 @@ export default function CompaniesPage() {
           {numSelected > 0 && (
             <Button
               variant="outline"
+              size="sm"
               onClick={() => setIsBulkDeleteDialogOpen(true)}
             >
               <Trash2 className="h-4 w-4 mr-2" />
@@ -356,6 +359,7 @@ export default function CompaniesPage() {
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
                               onClick={() => openDeleteDialog(company)}
+                              className="text-destructive"
                             >
                               Delete Company
                             </DropdownMenuItem>
@@ -433,10 +437,3 @@ export default function CompaniesPage() {
   );
 
     
-
-
-    
-
-    
-
-
