@@ -265,9 +265,9 @@ const fieldConfig: Record<
   icpLastUpdated: { label: 'Ideal Customer Profile (ICP) Last Updated', description: 'When was the ICP last formally updated?', type: 'text' },
   valueMessagingAlignment: { label: 'Value Proposition Consistency', description: 'On a scale of 1-5, how consistently is the value proposition communicated?', type: 'slider' },
   tangibleDifferentiators: { label: 'Tangible Differentiators', description: 'What are your clear, provable differentiators from competitors?', type: 'textarea' },
-  forecastAccuracy: { label: 'Historical Forecast Accuracy', description: 'e.g., "Consistently within 10%", "Varies by >25%"', type: 'text' },
-  pipelineReportingTools: { label: 'Pipeline Reporting Tools', description: 'What tools are used for pipeline reporting?', type: 'text' },
-  manualReportingTime: { label: 'Manual Reporting Time', description: 'How many hours per week are spent on manual reporting tasks?', type: 'text' },
+  forecastAccuracy: { label: "Accuracy of Last Quarter's Revenue Forecasts", description: 'e.g., ±5% of actuals, or qualitative description', type: 'text' },
+  pipelineReportingTools: { label: 'Tools Used for Pipeline Reporting & CRM Integration', description: 'What tools are used for pipeline reporting and how do they integrate with your CRM?', type: 'text' },
+  manualReportingTime: { label: 'Estimated Weekly Time Spent on Manual Revenue Reporting/Forecasting Adjustments', description: 'How many hours per week are spent on manual reporting and forecasting tasks?', type: 'text' },
   budgetAllocation: { label: 'Budget Allocation Perception', description: 'Describe the perception of budget allocation for RevOps tools/headcount.', type: 'textarea' },
   aiAdoptionBarriers: { label: 'Barriers to AI Adoption', description: 'e.g., cost, skills, data privacy concerns', type: 'textarea' },
   businessModelTesting: { label: 'Business Model Testing Frequency', description: 'How frequently are new pricing or packaging models tested?', type: 'text' },
@@ -569,5 +569,3 @@ export function GtmReadinessForm({ onComplete, assessmentToResume }: GtmReadines
     </div>
   );
 }
-
-    

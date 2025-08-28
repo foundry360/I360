@@ -208,9 +208,9 @@ const prompt = ai.definePrompt({
           - ICP Last Updated: {{{icpLastUpdated}}}
           - Value Proposition Consistency (1-5): {{{valueMessagingAlignment}}}
           - Tangible Differentiators: {{{tangibleDifferentiators}}}
-          - Forecast Accuracy: {{{forecastAccuracy}}}
-          - Pipeline Reporting Tools: {{{pipelineReportingTools}}}
-          - Manual Reporting Time: {{{manualReportingTime}}}
+          - Accuracy of Last Quarter\'s Revenue Forecasts: {{{forecastAccuracy}}}
+          - Tools Used for Pipeline Reporting & CRM Integration: {{{pipelineReportingTools}}}
+          - Estimated Weekly Time Spent on Manual Revenue Reporting/Forecasting Adjustments: {{{manualReportingTime}}}
           - Budget Allocation Perception: {{{budgetAllocation}}}
           - AI Adoption Barriers: {{{aiAdoptionBarriers}}}
           - Business Model Testing Frequency: {{{businessModelTesting}}}
