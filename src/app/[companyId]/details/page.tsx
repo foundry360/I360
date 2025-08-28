@@ -210,13 +210,7 @@ export default function CompanyDetailsPage() {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem onSelect={handleAssessmentSelect}>
-                      RevOps Maturity
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onSelect={handleAssessmentSelect}>
-                      GTM Strategy Alignment
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onSelect={handleAssessmentSelect}>
-                      Tech Stack ROI Analysis
+                      GTM Readiness
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
