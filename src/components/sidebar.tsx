@@ -38,8 +38,8 @@ const NavGroup = ({
         <div className="space-y-1">
             {!isCollapsed && (
                 <>
-                    {!isFirst && <Separator className="my-2 bg-sidebar-border/50" />}
-                    <h4 className="text-xs font-semibold text-sidebar-foreground/50 uppercase tracking-wider px-2 pt-2 pb-1">{title}</h4>
+                    {!isFirst && <Separator className="my-4 bg-sidebar-border/50" />}
+                    <h4 className="text-xs font-semibold text-sidebar-foreground uppercase tracking-wider px-2 pt-2 pb-1">{title}</h4>
                 </>
             )}
             {children}
