@@ -1,4 +1,3 @@
-
 'use client';
 import * as React from 'react';
 import { useForm } from 'react-hook-form';
@@ -43,8 +42,11 @@ import {
   TooltipTrigger,
 } from './ui/tooltip';
 import { cn } from '@/lib/utils';
+import { getCompanies, type Company } from '@/services/company-service';
+import { createAssessment } from '@/services/assessment-service';
 
 const GtmReadinessInputSchema = z.object({
+  companyId: z.string().min(1, 'Please select a company.'),
   companyStage: z.string().min(1, 'This field is required.'),
   employeeCount: z.string().min(1, 'This field is required.'),
   industrySector: z.string().min(1, 'This field is required.'),
@@ -89,6 +91,7 @@ const formSections = [
   {
     title: 'Company Profile',
     fields: [
+      'companyId',
       'companyStage',
       'employeeCount',
       'industrySector',
@@ -168,7 +171,7 @@ const formSections = [
   },
 ];
 
-type FieldName = keyof GtmReadinessInput;
+type FieldName = keyof z.infer<typeof GtmReadinessInputSchema>;
 
 const fieldConfig: Record<
   FieldName,
@@ -176,9 +179,10 @@ const fieldConfig: Record<
     label: string;
     description: string;
     type: 'text' | 'select' | 'slider' | 'textarea';
-    options?: string[];
+    options?: string[] | { label: string, value: string }[];
   }
 > = {
+  companyId: { label: 'Company', description: 'Select the company for this assessment.', type: 'select', options: [] },
   companyStage: { label: 'Company Stage', description: 'What is the current stage of your company?', type: 'select', options: ['Seed', 'Series A', 'Growth', 'Enterprise', 'Other'] },
   employeeCount: { label: 'Employee Count', description: 'How many employees are in your company?', type: 'select', options: ['1-10', '11-50', '51-200', '201-500', '500+'] },
   industrySector: { label: 'Industry / Sector', description: 'e.g., SaaS, Fintech, Healthtech', type: 'text' },
@@ -226,24 +230,47 @@ const defaultValues = Object.entries(fieldConfig).reduce((acc, [key, value]) => 
     acc[key as FieldName] = '';
   }
   return acc;
-}, {} as GtmReadinessInput);
+}, {} as z.infer<typeof GtmReadinessInputSchema>);
 
-export function GtmReadinessForm() {
+
+type GtmReadinessFormProps = {
+  onComplete: () => void;
+};
+
+export function GtmReadinessForm({ onComplete }: GtmReadinessFormProps) {
   const [loading, setLoading] = React.useState(false);
   const [result, setResult] = React.useState<GtmReadinessOutput | null>(null);
   const [currentSection, setCurrentSection] = React.useState(0);
+  const [companies, setCompanies] = React.useState<Company[]>([]);
 
-  const form = useForm<GtmReadinessInput>({
+  const form = useForm<z.infer<typeof GtmReadinessInputSchema>>({
     resolver: zodResolver(GtmReadinessInputSchema),
     defaultValues: defaultValues,
     mode: 'onChange'
   });
+  
+  React.useEffect(() => {
+    async function fetchCompanies() {
+      const companiesData = await getCompanies();
+      setCompanies(companiesData);
+    }
+    fetchCompanies();
+  }, []);
 
-  async function onSubmit(values: GtmReadinessInput) {
+  async function onSubmit(values: z.infer<typeof GtmReadinessInputSchema>) {
     setLoading(true);
     setResult(null);
     try {
-      const response = await generateGtmReadiness(values);
+      const { companyId, ...assessmentData } = values;
+      const response = await generateGtmReadiness(assessmentData as GtmReadinessInput);
+      await createAssessment({
+          companyId: companyId,
+          name: 'GTM Readiness',
+          status: 'In Progress', // Should be 'Completed', but for demo purposes...
+          progress: 100, // Should be dynamic
+          startDate: new Date().toISOString(),
+          result: response,
+      });
       setResult(response);
     } catch (error) {
       console.error('Error generating GTM readiness report:', error);
@@ -339,10 +366,12 @@ export function GtmReadinessForm() {
             </div>
           </CardContent>
         </Card>
-        <Button onClick={() => { setResult(null); setCurrentSection(0); }}>Start Over</Button>
+        <Button onClick={onComplete}>Close</Button>
       </div>
     );
   }
+  
+  const companyOptions = companies.map(c => ({ label: c.name, value: c.id }));
 
   return (
     <div className="grid grid-cols-12 h-full">
@@ -383,6 +412,8 @@ export function GtmReadinessForm() {
                                 const key = fieldName as FieldName;
                                 const config = fieldConfig[key];
                                 if (!config) return null;
+                                
+                                const options = key === 'companyId' ? companyOptions : config.options;
 
                                 return (
                                 <FormField
@@ -404,9 +435,11 @@ export function GtmReadinessForm() {
                                             <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
                                             <SelectTrigger><SelectValue placeholder="Select..." /></SelectTrigger>
                                             <SelectContent>
-                                                {config.options?.map((option) => (
-                                                <SelectItem key={option} value={option}>{option}</SelectItem>
-                                                ))}
+                                                {options?.map((option) => {
+                                                    const value = typeof option === 'string' ? option : option.value;
+                                                    const label = typeof option === 'string' ? option : option.label;
+                                                    return <SelectItem key={value} value={value}>{label}</SelectItem>
+                                                })}
                                             </SelectContent>
                                             </Select>
                                         ) : config.type === 'slider' ? (
@@ -454,5 +487,3 @@ export function GtmReadinessForm() {
     </div>
   );
 }
-
-    

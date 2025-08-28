@@ -34,12 +34,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { AssessmentModal } from '@/components/assessment-modal';
 import { EditCompanyModal } from '@/components/edit-company-modal';
-
-const currentAssessments = [
-    { name: 'Q4 2023 RevOps Maturity', status: 'In Progress', progress: 75, startDate: '2023-10-01' },
-    { name: 'GTM Strategy Alignment', status: 'In Progress', progress: 40, startDate: '2023-10-10' },
-    { name: 'Tech Stack ROI Analysis', status: 'Not Started', progress: 0, startDate: '2023-11-01' },
-];
+import { getAssessmentsForCompany, type Assessment } from '@/services/assessment-service';
 
 const assessmentHistory = [
   {
@@ -89,31 +84,36 @@ export default function CompanyDetailsPage() {
   const params = useParams();
   const companyId = params.companyId as string;
   const [companyData, setCompanyData] = React.useState<Company | null>(null);
+  const [assessments, setAssessments] = React.useState<Assessment[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [isAssessmentModalOpen, setIsAssessmentModalOpen] = React.useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = React.useState(false);
 
-  const fetchCompany = React.useCallback(async () => {
+  const fetchCompanyData = React.useCallback(async () => {
     if (!companyId) return;
     try {
       setLoading(true);
-      const data = await getCompany(companyId);
-      if (data) {
-        setCompanyData(data);
+      const companyPromise = getCompany(companyId);
+      const assessmentsPromise = getAssessmentsForCompany(companyId);
+      const [company, companyAssessments] = await Promise.all([companyPromise, assessmentsPromise]);
+      
+      if (company) {
+        setCompanyData(company);
       } else {
         console.error("Company not found");
         setCompanyData(null);
       }
+      setAssessments(companyAssessments);
     } catch (error) {
-      console.error("Error fetching company:", error);
+      console.error("Error fetching company data:", error);
     } finally {
       setLoading(false);
     }
   }, [companyId]);
 
   React.useEffect(() => {
-    fetchCompany();
-  }, [fetchCompany]);
+    fetchCompanyData();
+  }, [fetchCompanyData]);
 
   const handleAssessmentSelect = () => {
     setIsAssessmentModalOpen(true);
@@ -122,7 +122,7 @@ export default function CompanyDetailsPage() {
   const handleCompanyUpdate = async (updatedData: Partial<Company>) => {
     if (!companyId) return;
     await updateCompany(companyId, updatedData);
-    await fetchCompany(); // Refetch to show updated data
+    await fetchCompanyData(); // Refetch to show updated data
     setIsEditModalOpen(false);
   };
 
@@ -226,7 +226,7 @@ export default function CompanyDetailsPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {currentAssessments.map((assessment, index) => (
+                    {assessments.map((assessment, index) => (
                       <TableRow key={index}>
                         <TableCell className="font-medium">
                           {assessment.name}
@@ -245,7 +245,7 @@ export default function CompanyDetailsPage() {
                         <TableCell>
                             <Progress value={assessment.progress} className="h-2" />
                         </TableCell>
-                        <TableCell>{assessment.startDate}</TableCell>
+                        <TableCell>{new Date(assessment.startDate).toLocaleDateString()}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -361,7 +361,7 @@ export default function CompanyDetailsPage() {
           </div>
         </div>
       </div>
-      <AssessmentModal isOpen={isAssessmentModalOpen} onOpenChange={setIsAssessmentModalOpen} />
+      <AssessmentModal isOpen={isAssessmentModalOpen} onOpenChange={setIsAssessmentModalOpen} onAssessmentComplete={fetchCompanyData} />
       {companyData && (
         <EditCompanyModal 
             isOpen={isEditModalOpen}
@@ -372,16 +372,3 @@ export default function CompanyDetailsPage() {
       )}
     </AppLayout>
   );
-
-    
-
-    
-
-    
-
-
-
-
-    
-
-    
