@@ -85,6 +85,9 @@ export default function CompanyProfilePage() {
     } finally {
         setLoading(false);
         // Reset file input to allow re-uploading the same file if needed
+        if (fileInputRef.current) {
+          fileInputRef.current.value = '';
+        }
         setAvatarFile(null); 
     }
   };
