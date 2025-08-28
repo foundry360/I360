@@ -344,7 +344,7 @@ export function GtmReadinessForm() {
 
   return (
     <div className="grid grid-cols-12 h-full">
-        <div className="col-span-3 border-r p-6">
+        <div className="col-span-3 border-r p-6 bg-muted">
             <h3 className="font-semibold mb-4">Assessment Sections</h3>
             <nav className="space-y-2">
                 {formSections.map((section, index) => (
@@ -353,7 +353,7 @@ export function GtmReadinessForm() {
                         onClick={() => setCurrentSection(index)}
                         className={cn(
                             "w-full text-left p-2 rounded-md text-sm flex items-center gap-2",
-                            currentSection === index ? "bg-muted font-semibold" : "hover:bg-muted/50",
+                            currentSection === index ? "bg-background font-semibold" : "hover:bg-background/50",
                         )}
                         disabled={index > 0 && !isSectionCompleted(index-1)}
                     >
