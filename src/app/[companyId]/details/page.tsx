@@ -21,7 +21,7 @@ import { AppLayout } from '@/components/app-layout';
 import { useParams } from 'next/navigation';
 import React from 'react';
 import { Progress } from '@/components/ui/progress';
-import { Phone, Globe, MapPin, ArrowLeft, Plus, Pencil } from 'lucide-react';
+import { Phone, Globe, MapPin, ArrowLeft, Plus, Pencil, FileText } from 'lucide-react';
 import type { Company } from '@/services/company-service';
 import { getCompany, updateCompany } from '@/services/company-service';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -120,10 +120,8 @@ export default function CompanyDetailsPage() {
     }
   }, [fetchCompanyData, setOnAssessmentCompleted, setOnContactCreated]);
   
-  const handleResumeAssessment = (assessment: Assessment) => {
-    if (assessment.status === 'In Progress') {
-      openAssessmentModal(assessment);
-    }
+  const handleOpenAssessment = (assessment: Assessment) => {
+    openAssessmentModal(assessment);
   }
 
   const handleCompanyUpdate = async (updatedData: Partial<Company>) => {
@@ -255,10 +253,8 @@ export default function CompanyDetailsPage() {
                       currentAssessments.map((assessment, index) => (
                         <TableRow 
                           key={index}
-                          onClick={() => handleResumeAssessment(assessment)}
-                          className={cn(
-                            assessment.status === 'In Progress' && 'cursor-pointer'
-                          )}
+                          onClick={() => handleOpenAssessment(assessment)}
+                          className="cursor-pointer"
                         >
                           <TableCell className="font-medium">
                             {assessment.name}
@@ -305,6 +301,7 @@ export default function CompanyDetailsPage() {
                       <TableHead>Assessment Name</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead>Date</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -327,11 +324,17 @@ export default function CompanyDetailsPage() {
                             </Badge>
                           </TableCell>
                           <TableCell>{new Date(assessment.startDate).toLocaleDateString()}</TableCell>
+                          <TableCell className="text-right">
+                              <Button variant="ghost" size="icon" onClick={() => handleOpenAssessment(assessment)}>
+                                  <FileText className="h-4 w-4" />
+                                  <span className="sr-only">View Report</span>
+                              </Button>
+                          </TableCell>
                         </TableRow>
                       ))
                     ) : (
                        <TableRow>
-                        <TableCell colSpan={3} className="h-24 text-center">
+                        <TableCell colSpan={4} className="h-24 text-center">
                           No assessments found.
                         </TableCell>
                       </TableRow>
@@ -430,3 +433,5 @@ export default function CompanyDetailsPage() {
     </AppLayout>
   );
 }
+
+    
