@@ -1,3 +1,4 @@
+
 import * as React from 'react';
 import {
   Dialog,
@@ -11,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import type { Company } from '@/services/company-service';
+import { Textarea } from './ui/textarea';
 
 type EditCompanyModalProps = {
   isOpen: boolean;
@@ -31,7 +33,7 @@ export function EditCompanyModal({
     setFormData(company);
   }, [company]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { id, value } = e.target;
     setFormData((prev) => ({ ...prev, [id]: value }));
   };
@@ -62,6 +64,18 @@ export function EditCompanyModal({
                 onChange={handleInputChange}
                 className="col-span-3"
                 required
+              />
+            </div>
+             <div className="grid grid-cols-4 items-start gap-4">
+              <Label htmlFor="description" className="text-right pt-2">
+                Description
+              </Label>
+              <Textarea
+                id="description"
+                value={formData.description || ''}
+                onChange={handleInputChange}
+                className="col-span-3"
+                placeholder="A brief description of the company."
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
@@ -146,3 +160,5 @@ export function EditCompanyModal({
     </Dialog>
   );
 }
+
+    
