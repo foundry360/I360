@@ -20,16 +20,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const isUnprotected = unprotectedRoutes.some(route => pathname.startsWith(route));
 
+    // If user is not logged in and trying to access a protected route, redirect to login
     if (!user && !isUnprotected) {
       router.push('/login');
     }
 
+    // If user is logged in and on the login page, redirect to the dashboard
     if (user && pathname === '/login') {
       router.push('/dashboard/companies');
     }
   }, [user, loading, router, pathname]);
 
-  if (loading) {
+  if (loading && !unprotectedRoutes.some(route => pathname.startsWith(route))) {
     return (
         <div className="flex h-screen w-screen items-center justify-center">
             <div className="flex flex-col items-center gap-4">

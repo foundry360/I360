@@ -15,10 +15,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Logo } from '@/components/logo';
 import { useToast } from '@/hooks/use-toast';
+import { useUser } from '@/contexts/user-context';
 
 export default function LoginPage() {
   const router = useRouter();
   const { toast } = useToast();
+  const { user } = useUser();
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
   const [loading, setLoading] = React.useState(false);
@@ -28,7 +30,7 @@ export default function LoginPage() {
     setLoading(true);
     try {
       await signIn(email, password);
-      // On successful sign-in, AuthProvider will redirect to the dashboard
+      // On successful sign-in, AuthProvider will handle the redirect
     } catch (error) {
       console.error('Sign-in failed:', error);
       toast({
@@ -39,9 +41,20 @@ export default function LoginPage() {
             ? error.message
             : 'An unexpected error occurred.',
       });
-      setLoading(false);
+    } finally {
+        setLoading(false);
     }
   };
+
+  // If user is already logged in, AuthProvider will redirect.
+  // We can show a loading state until that happens.
+  if (user) {
+    return (
+        <div className="flex h-screen items-center justify-center bg-background p-4">
+            <p>Redirecting...</p>
+        </div>
+    );
+  }
 
   return (
     <div className="flex h-screen items-center justify-center bg-background p-4">
