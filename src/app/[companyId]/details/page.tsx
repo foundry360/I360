@@ -49,6 +49,7 @@ import { getContactsForCompany, type Contact } from '@/services/contact-service'
 import { cn } from '@/lib/utils';
 import { useQuickAction } from '@/contexts/quick-action-context';
 import { Checkbox } from '@/components/ui/checkbox';
+import { TablePagination } from '@/components/table-pagination';
 
 type ActivityItem = {
     activity: string;
@@ -70,6 +71,8 @@ export default function CompanyDetailsPage() {
   const [isActivityExpanded, setIsActivityExpanded] = React.useState(false);
   const [selectedAssessments, setSelectedAssessments] = React.useState<string[]>([]);
   const [isBulkDeleteDialogOpen, setIsBulkDeleteDialogOpen] = React.useState(false);
+  const [page, setPage] = React.useState(0);
+  const [rowsPerPage, setRowsPerPage] = React.useState(10);
 
   const fetchCompanyData = React.useCallback(async () => {
     if (!companyId) return;
@@ -88,7 +91,7 @@ export default function CompanyDetailsPage() {
       }
       
       const current = allAssessments.filter(a => a.status === 'In Progress');
-      const completed = allAssessments.filter(a => a.status === 'Completed');
+      const completed = allAssessments.filter(a => a.status === 'Completed').sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime());
       setCurrentAssessments(current);
       setCompletedAssessments(completed);
       setContacts(companyContacts);
@@ -162,10 +165,11 @@ export default function CompanyDetailsPage() {
   };
 
   const handleSelectAllAssessments = (isSelected: boolean) => {
+    const currentVisibleIds = paginatedAssessments.map((a) => a.id);
     if (isSelected) {
-      setSelectedAssessments(completedAssessments.map((a) => a.id));
+       setSelectedAssessments((prev) => [...new Set([...prev, ...currentVisibleIds])]);
     } else {
-      setSelectedAssessments([]);
+      setSelectedAssessments((prev) => prev.filter((id) => !currentVisibleIds.includes(id)));
     }
   };
 
@@ -180,8 +184,13 @@ export default function CompanyDetailsPage() {
     }
   };
 
-  const allAssessmentsSelected = selectedAssessments.length > 0 && selectedAssessments.length === completedAssessments.length;
-  const isAssessmentIndeterminate = selectedAssessments.length > 0 && selectedAssessments.length < completedAssessments.length;
+  const paginatedAssessments = completedAssessments.slice(
+    page * rowsPerPage,
+    page * rowsPerPage + rowsPerPage
+  );
+
+  const allOnPageSelected = paginatedAssessments.length > 0 && paginatedAssessments.every(a => selectedAssessments.includes(a.id));
+  const isAssessmentIndeterminate = paginatedAssessments.some(a => selectedAssessments.includes(a.id)) && !allOnPageSelected;
 
   const recentActivity = isActivityExpanded ? allRecentActivity : allRecentActivity.slice(0, 5);
 
@@ -359,12 +368,12 @@ export default function CompanyDetailsPage() {
                     <TableRow>
                       <TableHead className="w-[50px]">
                         <Checkbox
-                          checked={allAssessmentsSelected}
+                          checked={allOnPageSelected}
                           onCheckedChange={(checked) =>
                             handleSelectAllAssessments(checked as boolean)
                           }
                           aria-label="Select all assessments on page"
-                          data-state={isAssessmentIndeterminate ? 'indeterminate' : (allAssessmentsSelected ? 'checked' : 'unchecked')}
+                          data-state={isAssessmentIndeterminate ? 'indeterminate' : (allOnPageSelected ? 'checked' : 'unchecked')}
                         />
                       </TableHead>
                       <TableHead>Assessment Name</TableHead>
@@ -374,8 +383,8 @@ export default function CompanyDetailsPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {completedAssessments.length > 0 ? (
-                      completedAssessments.map((assessment) => (
+                    {paginatedAssessments.length > 0 ? (
+                      paginatedAssessments.map((assessment) => (
                         <TableRow key={assessment.id}>
                            <TableCell>
                             <Checkbox
@@ -419,6 +428,18 @@ export default function CompanyDetailsPage() {
                     )}
                   </TableBody>
                 </Table>
+                <div className="flex justify-end mt-4">
+                    <TablePagination
+                        count={completedAssessments.length}
+                        page={page}
+                        rowsPerPage={rowsPerPage}
+                        onPageChange={(newPage) => setPage(newPage)}
+                        onRowsPerPageChange={(newRowsPerPage) => {
+                            setRowsPerPage(newRowsPerPage);
+                            setPage(0);
+                        }}
+                    />
+                </div>
               </CardContent>
             </Card>
           </div>
