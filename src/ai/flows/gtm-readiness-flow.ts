@@ -61,202 +61,173 @@ const GtmReadinessInputSchema = z.object({
     .describe('How are leads captured, qualified, routed, and nurtured?'),
   salesCycleEfficiency: z
     .string()
-    .describe('Perception of the current sales cycle length (Too long, Optimal, Fast)'),
+    .describe('How do you perceive the length of your current sales cycle? (e.g. Too long, Optimal, Fast)'),
   forecastingProcess: z
     .string()
-    .describe('Current method for sales forecasting (e.g., manual, CRM-based, predictive tools)'),
+    .describe('e.g., Manual, CRM-based, predictive tools'),
   customerJourneyMapping: z
     .string()
-    .describe('Has the full customer journey been formally mapped? (Yes/No)'),
+    .describe('Has the full customer journey been formally mapped? (e.g., Yes, No, Partially)'),
   customerFirstCulture: z
     .string()
-    .describe('Is a customer-first mindset embedded in the company culture? (1-5)'),
+    .describe(
+      'Is a customer-first mindset embedded in the culture? (1-5)'
+    ),
   personalizationEfforts: z
     .string()
-    .describe('Current level of personalization in outreach and engagement'),
+    .describe('Current level of personalization in customer engagement.'),
   customerFeedbackMechanisms: z
     .string()
-    .describe('How is customer feedback systematically collected and actioned? (e.g., NPS, surveys, support tickets)'),
-  revenueMetricsDescription: z.string().describe('Overall Revenue & Growth Metrics Description (e.g., trajectory, key highlights)'),
+    .describe('How is feedback collected and actioned? (e.g., NPS, surveys)'),
+  revenueMetricsDescription: z.string().describe('Overall Revenue & Growth Metrics Description (e.g., Strong ARR growth but NRR needs improvement.)'),
   annualRecurringRevenue: z.string().describe('Annual Recurring Revenue (ARR) range'),
-  netRevenueRetention: z.string().describe('Net Revenue Retention (NRR) (%) range'),
-  revenueGrowthRate: z.string().describe('Revenue Growth Rate (%) range'),
-  acquisitionMetricsDescription: z.string().describe('Overall Acquisition & Sales Metrics Description (e.g., trends, key observations)'),
-  customerAcquisitionCost: z.string().describe('Customer Acquisition Cost (CAC) (Numeric Value)'),
-  winRate: z.string().describe('Win Rate (%) range'),
-  pipelineCoverage: z.string().describe('Pipeline Coverage Ratio (e.g., 3 means 3x)'),
-  pipelineVelocity: z.string().describe('Pipeline Velocity'),
-  retentionMetricsDescription: z.string().describe('Overall Retention & Success Metrics Description (e.g., trends, key observations)'),
-  churnRate: z.string().describe('Churn Rate (%) range'),
-  customerLifetimeValue: z.string().describe('Customer Lifetime Value (CLV) (Numeric Value)'),
-  netPromoterScore: z.string().describe('Net Promoter Score (NPS) range'),
-  customerSatisfaction: z.string().describe('Customer Satisfaction Score (CSAT) (%) range'),
-  kpiReportingFrequency: z.string().describe('KPI Tracking & Reporting Frequency (across departments, to executives)'),
-  specificPainPoints: z.string().describe('Qualitative feedback on the most "broken" or inefficient areas in revenue operations.'),
-  challengesDescription: z
+  netRevenueRetention: z.string().describe('Net Revenue Retention (NRR) (%)'),
+  revenueGrowthRate: z.string().describe('Revenue Growth Rate (%)'),
+  acquisitionMetricsDescription: z.string().describe('Overall Acquisition & Sales Metrics Description (e.g., CAC is rising, win rates are stable.)'),
+  customerAcquisitionCost: z.string().describe('Customer Acquisition Cost (CAC) (e.g., 10000)'),
+  winRate: z.string().describe('Win Rate (%)'),
+  pipelineCoverage: z.string().describe('Pipeline Coverage Ratio (e.g., 3 for 3x)'),
+  pipelineVelocity: z.string().describe('Pipeline Velocity (e.g., Slowing, Stable, Accelerating)'),
+  retentionMetricsDescription: z.string().describe('Overall Retention & Success Metrics Description (e.g., Churn is a concern, CLV is healthy.)'),
+  churnRate: z.string().describe('Churn Rate (%)'),
+  customerLifetimeValue: z.string().describe('Customer Lifetime Value (CLV) (e.g., 50000)'),
+  netPromoterScore: z.string().describe('Net Promoter Score (NPS)'),
+  customerSatisfaction: z.string().describe('Customer Satisfaction Score (CSAT) (%)'),
+  kpiReportingFrequency: z
     .string()
-    .describe('A brief description of the biggest challenges faced.'),
+    .describe('e.g., Weekly team dashboards, monthly executive summary.'),
+  specificPainPoints: z
+    .string()
+    .describe(
+      'Most "Broken" or Inefficient Areas in Revenue Operations'
+    ),
+  challengesDescription: z.string().describe('Biggest GTM Challenges'),
   executiveSponsorship: z
     .string()
-    .describe('Level of exec buy-in for RevOps initiatives (1-5)'),
-  organizationalChangeDescription: z
-    .string()
-    .describe('How does the organization handle change?'),
-  crossFunctionalInputMechanisms: z
-    .string()
-    .describe('How is input gathered from different teams for new initiatives?'),
-  icpLastUpdated: z
-    .string()
-    .describe('When was the Ideal Customer Profile last formally updated?'),
-  valueMessagingAlignment: z
-    .string()
-    .describe('How consistently is the value proposition communicated? (1-5)'),
-  tangibleDifferentiators: z
-    .string()
-    .describe('What are the clear, provable differentiators from competitors?'),
-  forecastAccuracy: z.string().describe('Historical accuracy of sales forecasts'),
-  pipelineReportingTools: z
-    .string()
-    .describe('What tools are used for pipeline reporting?'),
-  manualReportingTime: z
-    .string()
-    .describe('Hours per week spent on manual reporting tasks'),
-  budgetAllocation: z
-    .string()
-    .describe('Perception of budget allocation for RevOps tools/headcount'),
-  aiAdoptionBarriers: z
-    .string()
-    .describe('What are the biggest barriers to adopting AI? (e.g., cost, skills, data privacy)'),
-  businessModelTesting: z
-    .string()
-    .describe('How frequently are new pricing/packaging models tested?'),
+    .describe('Executive sponsorship for RevOps initiatives (1-5)'),
+  organizationalChangeDescription: z.string().describe('Organizational approach to change'),
+  crossFunctionalInputMechanisms: z.string().describe('Cross-functional input mechanisms'),
+  icpLastUpdated: z.string().describe('Ideal Customer Profile (ICP) Last Updated'),
+  valueMessagingAlignment: z.string().describe('Value proposition consistency (1-5)'),
+  tangibleDifferentiators: z.string().describe('Tangible differentiators from competitors'),
+  forecastAccuracy: z.string().describe("Accuracy of Last Quarter's Revenue Forecasts (e.g., ±5% of actuals, or qualitative description)"),
+  pipelineReportingTools: z.string().describe('Tools Used for Pipeline Reporting & CRM Integration'),
+  manualReportingTime: z.string().describe('Estimated Weekly Time Spent on Manual Revenue Reporting/Forecasting Adjustments'),
+  budgetAllocation: z.string().describe('Budget allocation perception for RevOps'),
+  aiAdoptionBarriers: z.string().describe('Barriers to AI adoption (e.g., cost, skills)'),
+  businessModelTesting: z.string().describe('Business model testing frequency'),
 });
+
 export type GtmReadinessInput = z.infer<typeof GtmReadinessInputSchema>;
 
-const FindingSchema = z.object({
-  findingTitle: z.string().describe("Descriptive title for the finding."),
-  impactLevel: z.enum(['High', 'Medium', 'Low']).describe("The assessed impact level of the finding."),
-  businessImpact: z.string().describe("Specific quantified effects on revenue, operations, or efficiency."),
-  currentState: z.string().describe("Relevant metrics and performance indicators that describe the current state."),
-  rootCauseAnalysis: z.string().describe("Underlying issues driving the problem."),
-  stakeholderImpact: z.string().describe("Which teams or roles are most affected by this finding."),
-  urgencyRating: z.string().describe("Recommended timeline for addressing the issue."),
-});
-
 const GtmReadinessOutputSchema = z.object({
-  executiveSummary: z.object({
-    overallReadinessScore: z.number().describe("The overall readiness score as a percentage."),
-    companyStageAndFte: z.string().describe("e.g., 'Growth Stage, 51-200 FTEs'"),
-    industrySector: z.string(),
-    primaryGtmStrategy: z.string(),
-    briefOverviewOfFindings: z.string().describe("A concise summary of the key findings."),
-  }),
-  top3CriticalFindings: z.array(FindingSchema),
-  strategicRecommendationSummary: z.string().describe("A formatted string covering Core Themes, Expected Outcomes, and ROI expectations."),
-  implementationTimelineOverview: z.string().describe("A formatted string covering the 0-30, 30-90, and 90+ day plans."),
-  currentStateAssessment: z.string().describe("A formatted string covering Readiness Scores, Team Capability, and GTM Execution Readiness."),
-  performanceBenchmarking: z.string().describe("A formatted string covering Current Metrics and Comparison Analysis."),
-  keyFindingsAndOpportunities: z.string().describe("A formatted string covering High-Impact Pain Points and Strategic Opportunities."),
-  prioritizedRecommendations: z.string().describe("A formatted string covering Tier 1, Tier 2, and Tier 3 recommendations in detail."),
-  implementationRoadmap: z.string().describe("A formatted string covering the 90-day plan, long-term milestones, success metrics, and accountability."),
-  investmentAndRoiAnalysis: z.string().describe("A formatted string covering Investment, Returns, Payback timeline, and Risk-Adjusted Projections."),
-  nextStepsAndDecisionFramework: z.string().describe("A formatted string covering Immediate Actions, Key Decisions, Success Factors, and Review Process."),
+    executiveSummary: z.object({
+        overallReadinessScore: z.number().describe('A score from 0-100 representing the overall GTM readiness.'),
+        companyStageAndFte: z.string().describe('A summary of the company stage and employee count.'),
+        industrySector: z.string().describe('The industry sector of the company.'),
+        primaryGtmStrategy: z.string().describe('The primary GTM strategy of the company.'),
+        briefOverviewOfFindings: z.string().describe('A brief, high-level overview of the key findings from the assessment.'),
+    }),
+    top3CriticalFindings: z.array(z.object({
+        findingTitle: z.string().describe('A short, descriptive title for the critical finding.'),
+        impactLevel: z.string().describe('The level of impact this finding has on the business (e.g., High, Medium, Low).'),
+        businessImpact: z.string().describe('A detailed explanation of how this issue impacts the business, referencing specific metrics if possible.'),
+        currentState: z.string().describe('A description of the current situation related to this finding.'),
+        rootCauseAnalysis: z.string().describe('An analysis of the underlying causes of this issue.'),
+        stakeholderImpact: z.string().describe('Which departments or roles are most affected by this issue.'),
+        urgencyRating: z.string().describe('A rating of how urgently this finding needs to be addressed (e.g., Critical, High, Medium).'),
+    })).length(3),
+    strategicRecommendationSummary: z.string().describe('A summary of the strategic recommendations. Use markdown ### for section titles.'),
+    implementationTimelineOverview: z.string().describe('An overview of the implementation timeline. Use markdown ### for section titles.'),
+    currentStateAssessment: z.string().describe('A detailed assessment of the current state. Use markdown ### for section titles.'),
+    performanceBenchmarking: z.string().describe('A benchmarking of performance against industry standards. Use markdown ### for section titles.'),
+    keyFindingsAndOpportunities: z.string().describe('Key findings and opportunities identified. Use markdown ### for section titles.'),
+    prioritizedRecommendations: z.string().describe('A list of prioritized recommendations. Use markdown ### for section titles.'),
+    implementationRoadmap: z.string().describe('A detailed implementation roadmap. Use markdown ### for section titles.'),
+    investmentAndRoiAnalysis: z.string().describe('An analysis of required investment and expected ROI. Use markdown ### for section titles.'),
+    nextStepsAndDecisionFramework: z.string().describe('Next steps and a framework for decision-making. Use markdown ### for section titles.'),
 });
-
 
 export type GtmReadinessOutput = z.infer<typeof GtmReadinessOutputSchema>;
 
 export async function generateGtmReadiness(
   input: GtmReadinessInput
 ): Promise<GtmReadinessOutput> {
-  return gtmReadinessFlow(input);
+  return generateGtmReadinessFlow(input);
 }
 
-const gtmReadinessPrompt = ai.definePrompt({
+const prompt = ai.definePrompt({
   name: 'gtmReadinessPrompt',
   input: { schema: GtmReadinessInputSchema },
   output: { schema: GtmReadinessOutputSchema },
-  model: 'googleai/gemini-1.5-pro',
-  prompt: `You are an expert RevOps and GTM consultant. Your task is to analyze the provided company data and generate a comprehensive, executive-level GTM Readiness Assessment report. Follow the specified structure and formatting requirements meticulously.
+  prompt: `
+          You are an expert RevOps and Go-To-Market (GTM) strategist. Your task is to analyze the provided company data and generate a comprehensive GTM Readiness Assessment report.
 
-**CRITICAL INSTRUCTION:** If the user provides very little or no information for most of the fields, you MUST generate a very low readiness score (under 20%). In the executive summary, you MUST state that the score is low because of insufficient data provided for a proper analysis. Do not invent findings or recommendations if there is no data to support them. The report should be brief and explain that a full assessment requires more data.
-
-**Analyze the following company data:**
-- Company Stage: {{{companyStage}}}
-- Employee Count (FTEs): {{{employeeCount}}}
-- Industry Sector: {{{industrySector}}}
-- Go-to-Market Strategy: {{{goToMarketStrategy}}}
-- Growth Challenges: {{{growthChallenges}}}
-- Departmental Alignment (1-5): {{{departmentalAlignment}}}
-- Communication Frequency: {{{communicationFrequency}}}
-- Responsibility Clarity (1-5): {{{responsibilityClarity}}}
-- CRM Platform: {{{crmPlatform}}}
-- Data Hygiene Practices: {{{dataHygienePractices}}}
-- Tech Stack Assessment (1-5): {{{techStackAssessment}}}
-- Integration Effectiveness (1-5): {{{integrationEffectiveness}}}
-- Tool Adoption Rates (1-5): {{{toolAdoptionRates}}}
-- Workflow Automation: {{{workflowAutomation}}}
-- Lead Management Process: {{{leadManagementProcess}}}
-- Sales Cycle Efficiency: {{{salesCycleEfficiency}}}
-- Forecasting Process: {{{forecastingProcess}}}
-- Customer Journey Mapping: {{{customerJourneyMapping}}}
-- Customer-First Culture (1-5): {{{customerFirstCulture}}}
-- Personalization Efforts: {{{personalizationEfforts}}}
-- Customer Feedback Mechanisms: {{{customerFeedbackMechanisms}}}
-- Revenue Metrics Description: {{{revenueMetricsDescription}}}
-- Annual Recurring Revenue: {{{annualRecurringRevenue}}}
-- Net Revenue Retention: {{{netRevenueRetention}}}
-- Revenue Growth Rate: {{{revenueGrowthRate}}}
-- Acquisition Metrics Description: {{{acquisitionMetricsDescription}}}
-- Customer Acquisition Cost: {{{customerAcquisitionCost}}}
-- Win Rate: {{{winRate}}}
-- Pipeline Coverage: {{{pipelineCoverage}}}
-- Pipeline Velocity: {{{pipelineVelocity}}}
-- Retention Metrics Description: {{{retentionMetricsDescription}}}
-- Churn Rate: {{{churnRate}}}
-- Customer Lifetime Value: {{{customerLifetimeValue}}}
-- Net Promoter Score: {{{netPromoterScore}}}
-- Customer Satisfaction: {{{customerSatisfaction}}}
-- KPI Reporting Frequency: {{{kpiReportingFrequency}}}
-- Specific Pain Points: {{{specificPainPoints}}}
-- Description of Challenges: {{{challengesDescription}}}
-- Executive Sponsorship for RevOps (1-5): {{{executiveSponsorship}}}
-- Organizational Approach to Change: {{{organizationalChangeDescription}}}
-- Cross-Functional Input Mechanisms: {{{crossFunctionalInputMechanisms}}}
-- ICP Last Updated: {{{icpLastUpdated}}}
-- Value Messaging Alignment (1-5): {{{valueMessagingAlignment}}}
-- Tangible Differentiators: {{{tangibleDifferentiators}}}
-- Forecast Accuracy: {{{forecastAccuracy}}}
-- Pipeline Reporting Tools: {{{pipelineReportingTools}}}
-- Manual Reporting Time (hours/week): {{{manualReportingTime}}}
-- Budget Allocation Perception: {{{budgetAllocation}}}
-- AI Adoption Barriers: {{{aiAdoptionBarriers}}}
-- Business Model Testing Frequency: {{{businessModelTesting}}}
-
-**Report Generation Instructions:**
-Based on your analysis of the data, generate a report that follows the exact JSON schema provided. For fields requiring a formatted string, use markdown-style headings (e.g., "### Core Themes") and bullet points (e.g., "- Item 1") to structure the content within that string. Ensure every field is populated with insightful, data-driven, and quantified analysis. Use professional, executive-level business language.
-
-**Key areas of focus for your analysis:**
-1.  **Quantification**: Wherever possible, translate qualitative data into quantitative business impact. For example, if "sales cycle is too long", estimate the potential revenue impact of shortening it.
-2.  **Scoring**: Calculate readiness scores based on the 1-5 scale inputs and other relevant data. A score of 5/5 should translate to ~100%, 1/5 to ~20%, etc.
-3.  **Prioritization**: The recommendations must be tiered and prioritized based on impact and urgency. The findings must also be ranked by severity.
-4.  **Actionability**: Provide concrete, step-by-step implementation plans, not vague suggestions.
-5.  **Holistic View**: Connect the dots between different data points. For instance, link poor data hygiene to inaccurate forecasting and inefficient personalization.
-
-Produce the report strictly adhering to the output schema.
-`,
+          **User-Provided Data:**
+          - Company Stage: {{{companyStage}}}
+          - Employee Count: {{{employeeCount}}}
+          - Industry/Sector: {{{industrySector}}}
+          - GTM Strategy: {{{goToMarketStrategy}}}
+          - Growth Challenges: {{{growthChallenges}}}
+          - Departmental Alignment (1-5): {{{departmentalAlignment}}}
+          - Communication Frequency: {{{communicationFrequency}}}
+          - Responsibility Clarity (1-5): {{{responsibilityClarity}}}
+          - CRM Platform: {{{crmPlatform}}}
+          - Data Hygiene Practices: {{{dataHygienePractices}}}
+          - Tech Stack Satisfaction (1-5): {{{techStackAssessment}}}
+          - Integration Effectiveness (1-5): {{{integrationEffectiveness}}}
+          - Tool Adoption Rates (1-5): {{{toolAdoptionRates}}}
+          - Workflow Automation: {{{workflowAutomation}}}
+          - Lead Management Process: {{{leadManagementProcess}}}
+          - Sales Cycle Efficiency: {{{salesCycleEfficiency}}}
+          - Forecasting Process: {{{forecastingProcess}}}
+          - Customer Journey Mapping: {{{customerJourneyMapping}}}
+          - Customer-First Culture (1-5): {{{customerFirstCulture}}}
+          - Personalization Efforts: {{{personalizationEfforts}}}
+          - Customer Feedback Mechanisms: {{{customerFeedbackMechanisms}}}
+          - Revenue Metrics Description: {{{revenueMetricsDescription}}}
+          - Annual Recurring Revenue: {{{annualRecurringRevenue}}}
+          - Net Revenue Retention: {{{netRevenueRetention}}}
+          - Revenue Growth Rate: {{{revenueGrowthRate}}}
+          - Acquisition Metrics Description: {{{acquisitionMetricsDescription}}}
+          - Customer Acquisition Cost: {{{customerAcquisitionCost}}}
+          - Win Rate: {{{winRate}}}
+          - Pipeline Coverage: {{{pipelineCoverage}}}
+          - Pipeline Velocity: {{{pipelineVelocity}}}
+          - Retention Metrics Description: {{{retentionMetricsDescription}}}
+          - Churn Rate: {{{churnRate}}}
+          - Customer Lifetime Value: {{{customerLifetimeValue}}}
+          - Net Promoter Score: {{{netPromoterScore}}}
+          - Customer Satisfaction: {{{customerSatisfaction}}}
+          - KPI Reporting Frequency: {{{kpiReportingFrequency}}}
+          - Specific Pain Points: {{{specificPainPoints}}}
+          - GTM Challenges: {{{challengesDescription}}}
+          - Executive Sponsorship (1-5): {{{executiveSponsorship}}}
+          - Organizational Change Approach: {{{organizationalChangeDescription}}}
+          - Cross-Functional Input Mechanisms: {{{crossFunctionalInputMechanisms}}}
+          - ICP Last Updated: {{{icpLastUpdated}}}
+          - Value Proposition Consistency (1-5): {{{valueMessagingAlignment}}}
+          - Tangible Differentiators: {{{tangibleDifferentiators}}}
+          - Forecast Accuracy: {{{forecastAccuracy}}}
+          - Pipeline Reporting Tools: {{{pipelineReportingTools}}}
+          - Manual Reporting Time: {{{manualReportingTime}}}
+          - Budget Allocation Perception: {{{budgetAllocation}}}
+          - AI Adoption Barriers: {{{aiAdoptionBarriers}}}
+          - Business Model Testing Frequency: {{{businessModelTesting}}}
+          
+          **Your Task:**
+          Based on the data above, generate a detailed GTM Readiness Assessment report. The report should be structured according to the GtmReadinessOutputSchema. Provide deep, actionable insights. Be direct, professional, and use the language of a seasoned RevOps consultant. Use markdown for formatting within the string fields, especially using ### for section headers where appropriate. Calculate an overall readiness score based on a holistic analysis of all inputs.
+  `,
 });
 
-const gtmReadinessFlow = ai.defineFlow(
+const generateGtmReadinessFlow = ai.defineFlow(
   {
-    name: 'gtmReadinessFlow',
+    name: 'generateGtmReadinessFlow',
     inputSchema: GtmReadinessInputSchema,
     outputSchema: GtmReadinessOutputSchema,
   },
   async (input) => {
-    const { output } = await gtmReadinessPrompt(input);
+    const { output } = await prompt(input);
     return output!;
   }
 );
-
-    
