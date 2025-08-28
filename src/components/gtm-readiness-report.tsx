@@ -166,15 +166,20 @@ export function GtmReadinessReport({ result, onComplete }: GtmReadinessReportPro
     <div className="bg-muted">
        <style>{`
         .pdf-export {
-            font-family: Arial, sans-serif;
-            font-size: 11px;
+            font-family: Arial, sans-serif !important;
+            font-size: 14px !important;
         }
-        .pdf-export .text-xl { font-size: 16px; }
-        .pdf-export .text-lg { font-size: 14px; }
-        .pdf-export .text-sm { font-size: 11px; }
-        .pdf-export .text-xs { font-size: 9px; }
-        .pdf-export h4 { font-size: 12px; }
-        .pdf-export .prose { font-size: 11px; }
+        .pdf-export .text-3xl { font-size: 28px !important; }
+        .pdf-export .text-xl { font-size: 20px !important; }
+        .pdf-export .text-lg { font-size: 18px !important; }
+        .pdf-export .text-sm { font-size: 14px !important; }
+        .pdf-export .text-xs { font-size: 12px !important; }
+        .pdf-export h4 { font-size: 16px !important; }
+        .pdf-export .prose { font-size: 14px !important; }
+        .pdf-export * { 
+            -webkit-print-color-adjust: exact !important;
+            color-adjust: exact !important;
+        }
       `}</style>
       <div className="space-y-6 p-6">
         <div ref={reportRef} className="bg-background p-8 rounded-lg shadow-sm">
@@ -209,5 +214,4 @@ export function GtmReadinessReport({ result, onComplete }: GtmReadinessReportPro
     </div>
   );
 }
-
     
