@@ -50,6 +50,7 @@ import { cn } from '@/lib/utils';
 import { useQuickAction } from '@/contexts/quick-action-context';
 import { Checkbox } from '@/components/ui/checkbox';
 import { TablePagination } from '@/components/table-pagination';
+import { Separator } from '@/components/ui/separator';
 
 type ActivityItem = {
     activity: string;
@@ -241,6 +242,7 @@ export default function CompanyDetailsPage() {
             <h1 className="text-3xl font-bold">{companyData.name}</h1>
           </div>
         </div>
+        <Separator className="my-4" />
 
         <div className="grid gap-6 lg:grid-cols-3">
           <div className="lg:col-span-2 space-y-6">
@@ -563,4 +565,6 @@ export default function CompanyDetailsPage() {
     </AppLayout>
   );
 }
+    
+
     
