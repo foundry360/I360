@@ -1,3 +1,4 @@
+
 'use client';
 import { db } from '@/lib/firebase';
 import { collection, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, writeBatch } from 'firebase/firestore';
@@ -35,7 +36,7 @@ export async function searchCompanies(searchTerm: string): Promise<Company[]> {
     const lowercasedTerm = searchTerm.toLowerCase();
     return allCompanies.filter(company =>
         company.name.toLowerCase().includes(lowercasedTerm) ||
-        company.contact.name.toLowerCase().includes(lowercasedTerm) ||
+        (company.contact && company.contact.name.toLowerCase().includes(lowercasedTerm)) ||
         company.website.toLowerCase().includes(lowercasedTerm)
     );
 }
@@ -56,8 +57,8 @@ export async function createCompany(companyData: Omit<Company, 'id' | 'contact' 
       ...companyData,
       id: companyId,
       contact: {
-        name: 'New Contact', // Placeholder
-        avatar: `https://picsum.photos/100/100?q=${Math.random()}`,
+        name: '', // Initially no primary contact
+        avatar: '',
       },
       status: 'Active',
       lastActivity: new Date().toISOString(),

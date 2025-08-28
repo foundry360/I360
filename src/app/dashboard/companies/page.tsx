@@ -156,8 +156,8 @@ export default function CompaniesPage() {
 
         // Special handling for nested contact name
         if (sortConfig.key === 'contact') {
-            aValue = a.contact.name;
-            bValue = b.contact.name;
+            aValue = a.contact?.name || '';
+            bValue = b.contact?.name || '';
         }
 
         if (aValue < bValue) {
@@ -171,7 +171,7 @@ export default function CompaniesPage() {
     }
     return sortableItems.filter(company => 
         company.name.toLowerCase().includes(globalSearchTerm.toLowerCase()) ||
-        company.contact.name.toLowerCase().includes(globalSearchTerm.toLowerCase()) ||
+        (company.contact?.name || '').toLowerCase().includes(globalSearchTerm.toLowerCase()) ||
         company.website.toLowerCase().includes(globalSearchTerm.toLowerCase())
     );
   }, [companies, sortConfig, globalSearchTerm]);
@@ -306,14 +306,18 @@ export default function CompaniesPage() {
                         </Link>
                       </TableCell>
                       <TableCell>
-                        <div className="flex items-center gap-2">
-                          <Avatar className="h-8 w-8">
-                            <AvatarFallback className="bg-primary text-primary-foreground">
-                              {getInitials(company.contact.name)}
-                            </AvatarFallback>
-                          </Avatar>
-                          <span>{company.contact.name}</span>
-                        </div>
+                        {company.contact?.name ? (
+                          <div className="flex items-center gap-2">
+                            <Avatar className="h-8 w-8">
+                              <AvatarFallback className="bg-primary text-primary-foreground">
+                                {getInitials(company.contact.name)}
+                              </AvatarFallback>
+                            </Avatar>
+                            <span>{company.contact.name}</span>
+                          </div>
+                        ) : (
+                          <span className="text-muted-foreground">N/A</span>
+                        )}
                       </TableCell>
                       <TableCell>
                         <Badge
@@ -434,4 +438,5 @@ export default function CompaniesPage() {
     
 
     
+
 

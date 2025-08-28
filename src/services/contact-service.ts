@@ -2,7 +2,7 @@
 'use client';
 import { db } from '@/lib/firebase';
 import { collection, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, writeBatch, query, where } from 'firebase/firestore';
-import type { Company } from './company-service';
+import { getCompany, updateCompany, type Company } from './company-service';
 
 export interface Contact {
   id: string;
@@ -51,6 +51,19 @@ export async function createContact(contactData: Omit<Contact, 'id' | 'lastActiv
   };
   
   await setDoc(docRef, newContact);
+
+  // Check if this company has a primary contact yet. If not, make this the one.
+  if (contactData.companyId) {
+    const company = await getCompany(contactData.companyId);
+    if (company && !company.contact?.name) {
+        await updateCompany(contactData.companyId, {
+            contact: {
+                name: newContact.name,
+                avatar: newContact.avatar
+            }
+        });
+    }
+  }
 }
 
 export async function updateContact(id: string, contactData: Partial<Contact>): Promise<void> {
@@ -63,7 +76,8 @@ export async function deleteContact(id: string): Promise<void> {
     await deleteDoc(docRef);
 }
 
-export async function deleteContacts(ids: string[]): Promise<void> {
+export async function deleteContacts(ids: string[]): Promise<void>
+{
     const batch = writeBatch(db);
     ids.forEach(id => {
       const docRef = doc(db, 'contacts', id);
