@@ -14,21 +14,24 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { AssessmentModal } from './assessment-modal';
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { useQuickAction } from '@/contexts/quick-action-context';
+import { AssessmentModal } from './assessment-modal';
+
 
 export function Sidebar() {
   const pathname = usePathname();
   const params = useParams();
   const companyId = params.companyId as string;
+  const { openNewCompanyDialog } = useQuickAction();
 
   const [isCollapsed, setIsCollapsed] = React.useState(false);
-  const [isModalOpen, setIsModalOpen] = React.useState(false);
+  const [isAssessmentModalOpen, setIsAssessmentModalOpen] = React.useState(false);
 
   const navItems = [
     { type: 'link', href: `/${companyId}/dashboard`, label: 'Dashboard', icon: Home },
@@ -36,7 +39,7 @@ export function Sidebar() {
       type: 'action',
       label: 'New Assessment',
       icon: Plus,
-      action: () => setIsModalOpen(true),
+      action: () => setIsAssessmentModalOpen(true),
     },
     { type: 'link', href: `/dashboard/companies`, label: 'Companies', icon: Briefcase },
     { type: 'link', href: `/${companyId}/profile`, label: 'Profile', icon: User },
@@ -152,7 +155,7 @@ export function Sidebar() {
           </div>
         </div>
       </TooltipProvider>
-      <AssessmentModal isOpen={isModalOpen} onOpenChange={setIsModalOpen} />
+      <AssessmentModal isOpen={isAssessmentModalOpen} onOpenChange={setIsAssessmentModalOpen} onAssessmentComplete={() => {}} />
     </>
   );
 }
