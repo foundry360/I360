@@ -188,6 +188,7 @@ export default function CompaniesPage() {
   const isPageIndeterminate = numSelectedOnPage > 0 && numSelectedOnPage < currentVisibleCompanies.length;
 
   const getInitials = (name: string) => {
+    if (!name) return '';
     return name
       .split(' ')
       .map((n) => n[0])
@@ -433,3 +434,4 @@ export default function CompaniesPage() {
     
 
     
+
