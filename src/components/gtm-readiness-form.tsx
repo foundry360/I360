@@ -32,8 +32,7 @@ import {
 import { Slider } from '@/components/ui/slider';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { Loader2, Lightbulb, TrendingUp, Cpu, ListChecks, CheckCircle } from 'lucide-react';
-import { Badge } from './ui/badge';
+import { Loader2, CheckCircle } from 'lucide-react';
 import { z } from 'zod';
 import {
   Tooltip,
@@ -44,6 +43,8 @@ import {
 import { cn } from '@/lib/utils';
 import { getCompanies, type Company } from '@/services/company-service';
 import { createAssessment, updateAssessment, type Assessment } from '@/services/assessment-service';
+import { GtmReadinessReport } from './gtm-readiness-report';
+
 
 const GtmReadinessInputSchema = z.object({
   companyId: z.string().min(1, 'Please select a company.'),
@@ -381,63 +382,7 @@ export function GtmReadinessForm({ onComplete, assessmentToResume }: GtmReadines
 
   if (result) {
     return (
-      <div className="space-y-6 p-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Lightbulb className="h-6 w-6 text-primary" />
-              <span>Prioritized Recommendations</span>
-            </CardTitle>
-            <CardDescription>Your actionable next steps to improve GTM readiness, sorted by priority.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {result.recommendations.sort((a, b) => a.priority - b.priority).map((rec) => (
-              <div key={rec.priority} className="p-4 border rounded-lg">
-                <h4 className="font-bold text-lg">{rec.priority}. {rec.title}</h4>
-                <p className="text-muted-foreground mt-1">{rec.justification}</p>
-                <div className="flex items-center gap-6 mt-3">
-                  <Badge variant="outline">Impact: {rec.estimatedImpact}</Badge>
-                  <Badge variant="outline">Effort: {rec.estimatedEffort}</Badge>
-                </div>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="h-6 w-6 text-primary" />
-              <span>Strategic Focus Areas</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent><p className="text-muted-foreground">{result.strategicFocusAreas}</p></CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Cpu className="h-6 w-6 text-primary" />
-              <span>AI & Automation Opportunities</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent><p className="text-muted-foreground">{result.aiAutomationOpportunities}</p></CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <ListChecks className="h-6 w-6 text-primary" />
-              <span>Key Metrics to Monitor</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-wrap gap-2">
-              {result.keyMetricsToMonitor.split(',').map(metric => (
-                <Badge key={metric.trim()} variant="secondary">{metric.trim()}</Badge>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-        <Button onClick={onComplete}>Close</Button>
-      </div>
+      <GtmReadinessReport result={result} onComplete={onComplete} />
     );
   }
   
