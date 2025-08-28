@@ -21,19 +21,27 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { Separator } from './ui/separator';
 
 const NavGroup = ({
     title,
     isCollapsed,
+    isFirst,
     children
 }: {
     title: string;
     isCollapsed: boolean;
+    isFirst: boolean;
     children: React.ReactNode
 }) => {
     return (
         <div className="space-y-1">
-            {!isCollapsed && <h4 className="text-xs font-semibold text-sidebar-foreground/50 uppercase tracking-wider px-2 pt-4 pb-1">{title}</h4>}
+            {!isCollapsed && (
+                <>
+                    {!isFirst && <Separator className="my-2 bg-sidebar-border/50" />}
+                    <h4 className="text-xs font-semibold text-sidebar-foreground/50 uppercase tracking-wider px-2 pt-2 pb-1">{title}</h4>
+                </>
+            )}
             {children}
         </div>
     )
@@ -93,8 +101,8 @@ export function Sidebar() {
           <div className="flex h-full flex-col">
             <div className="flex-1 space-y-2 p-2 pt-4">
               <nav className="space-y-1">
-                {navItems.map((group) => (
-                  <NavGroup key={group.group} title={group.group} isCollapsed={isCollapsed}>
+                {navItems.map((group, index) => (
+                  <NavGroup key={group.group} title={group.group} isCollapsed={isCollapsed} isFirst={index === 0}>
                     {group.links.map((item) => {
                       const Icon = item.icon;
                       const isActive = pathname === item.href;
