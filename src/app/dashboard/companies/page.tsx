@@ -233,7 +233,7 @@ export default function CompaniesPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-[50px]">
+                  <TableHead className="w-[50px] border-t border-b">
                     <Checkbox
                       checked={allOnPageSelected}
                       onCheckedChange={(checked) =>
@@ -243,7 +243,7 @@ export default function CompaniesPage() {
                       data-state={isPageIndeterminate ? 'indeterminate' : (allOnPageSelected ? 'checked' : 'unchecked')}
                     />
                   </TableHead>
-                  <TableHead>
+                  <TableHead className="border-t border-r border-b">
                     <Button variant="ghost" onClick={() => requestSort('name')} className="group w-full p-0 hover:bg-transparent hover:text-muted-foreground">
                       <div className="flex justify-between items-center w-full">
                         Company Name
@@ -251,7 +251,7 @@ export default function CompaniesPage() {
                       </div>
                     </Button>
                   </TableHead>
-                  <TableHead>
+                  <TableHead className="border-t border-r border-b">
                      <Button variant="ghost" onClick={() => requestSort('contact')} className="group w-full p-0 hover:bg-transparent hover:text-muted-foreground">
                        <div className="flex justify-between items-center w-full">
                         Primary Contact
@@ -259,7 +259,7 @@ export default function CompaniesPage() {
                        </div>
                     </Button>
                   </TableHead>
-                  <TableHead>
+                  <TableHead className="border-t border-r border-b">
                     <Button variant="ghost" onClick={() => requestSort('status')} className="group w-full p-0 hover:bg-transparent hover:text-muted-foreground">
                        <div className="flex justify-between items-center w-full">
                         Status
@@ -267,7 +267,7 @@ export default function CompaniesPage() {
                        </div>
                     </Button>
                   </TableHead>
-                  <TableHead>
+                  <TableHead className="border-t border-r border-b">
                      <Button variant="ghost" onClick={() => requestSort('website')} className="group w-full p-0 hover:bg-transparent hover:text-muted-foreground">
                        <div className="flex justify-between items-center w-full">
                         Website
@@ -275,7 +275,7 @@ export default function CompaniesPage() {
                        </div>
                     </Button>
                   </TableHead>
-                  <TableHead>
+                  <TableHead className="border-t border-r border-b">
                      <Button variant="ghost" onClick={() => requestSort('lastActivity')} className="group w-full p-0 hover:bg-transparent hover:text-muted-foreground">
                        <div className="flex justify-between items-center w-full">
                         Last Activity
@@ -283,7 +283,7 @@ export default function CompaniesPage() {
                        </div>
                     </Button>
                   </TableHead>
-                  <TableHead className="text-right"></TableHead>
+                  <TableHead className="text-right border-t border-b"></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>

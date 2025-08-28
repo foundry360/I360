@@ -211,7 +211,7 @@ export default function AssessmentsPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-[50px]">
+                  <TableHead className="w-[50px] border-t border-b">
                     <Checkbox
                       checked={allOnPageSelected}
                       onCheckedChange={(checked) =>
@@ -221,7 +221,7 @@ export default function AssessmentsPage() {
                       data-state={isPageIndeterminate ? 'indeterminate' : (allOnPageSelected ? 'checked' : 'unchecked')}
                     />
                   </TableHead>
-                  <TableHead>
+                  <TableHead className="border-t border-r border-b">
                     <Button variant="ghost" onClick={() => requestSort('name')} className="group w-full p-0 hover:bg-transparent hover:text-muted-foreground">
                       <div className="flex justify-between items-center w-full">
                         Assessment Name
@@ -229,7 +229,7 @@ export default function AssessmentsPage() {
                       </div>
                     </Button>
                   </TableHead>
-                  <TableHead>
+                  <TableHead className="border-t border-r border-b">
                      <Button variant="ghost" onClick={() => requestSort('companyName')} className="group w-full p-0 hover:bg-transparent hover:text-muted-foreground">
                        <div className="flex justify-between items-center w-full">
                         Company
@@ -237,7 +237,7 @@ export default function AssessmentsPage() {
                        </div>
                     </Button>
                   </TableHead>
-                  <TableHead>
+                  <TableHead className="border-t border-r border-b">
                     <Button variant="ghost" onClick={() => requestSort('status')} className="group w-full p-0 hover:bg-transparent hover:text-muted-foreground">
                        <div className="flex justify-between items-center w-full">
                         Status
@@ -245,7 +245,7 @@ export default function AssessmentsPage() {
                        </div>
                     </Button>
                   </TableHead>
-                  <TableHead>
+                  <TableHead className="border-t border-r border-b">
                      <Button variant="ghost" onClick={() => requestSort('startDate')} className="group w-full p-0 hover:bg-transparent hover:text-muted-foreground">
                        <div className="flex justify-between items-center w-full">
                         Date
@@ -253,7 +253,7 @@ export default function AssessmentsPage() {
                        </div>
                     </Button>
                   </TableHead>
-                  <TableHead className="text-right"></TableHead>
+                  <TableHead className="text-right border-t border-b"></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>

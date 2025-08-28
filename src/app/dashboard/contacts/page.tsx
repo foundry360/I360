@@ -218,7 +218,7 @@ export default function ContactsPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-[50px]">
+                  <TableHead className="w-[50px] border-t border-b">
                     <Checkbox
                       checked={allOnPageSelected}
                       onCheckedChange={(checked) =>
@@ -228,7 +228,7 @@ export default function ContactsPage() {
                       data-state={isPageIndeterminate ? 'indeterminate' : (allOnPageSelected ? 'checked' : 'unchecked')}
                     />
                   </TableHead>
-                  <TableHead>
+                  <TableHead className="border-t border-r border-b">
                     <Button variant="ghost" onClick={() => requestSort('name')} className="group w-full p-0 hover:bg-transparent hover:text-muted-foreground">
                       <div className="flex justify-between items-center w-full">
                         Name
@@ -236,7 +236,7 @@ export default function ContactsPage() {
                       </div>
                     </Button>
                   </TableHead>
-                  <TableHead>
+                  <TableHead className="border-t border-r border-b">
                      <Button variant="ghost" onClick={() => requestSort('companyName')} className="group w-full p-0 hover:bg-transparent hover:text-muted-foreground">
                        <div className="flex justify-between items-center w-full">
                         Company
@@ -244,7 +244,7 @@ export default function ContactsPage() {
                        </div>
                     </Button>
                   </TableHead>
-                  <TableHead>
+                  <TableHead className="border-t border-r border-b">
                     <Button variant="ghost" onClick={() => requestSort('email')} className="group w-full p-0 hover:bg-transparent hover:text-muted-foreground">
                        <div className="flex justify-between items-center w-full">
                         Email
@@ -252,7 +252,7 @@ export default function ContactsPage() {
                        </div>
                     </Button>
                   </TableHead>
-                  <TableHead>
+                  <TableHead className="border-t border-r border-b">
                      <Button variant="ghost" onClick={() => requestSort('phone')} className="group w-full p-0 hover:bg-transparent hover:text-muted-foreground">
                        <div className="flex justify-between items-center w-full">
                         Phone
@@ -260,7 +260,7 @@ export default function ContactsPage() {
                        </div>
                     </Button>
                   </TableHead>
-                   <TableHead>
+                   <TableHead className="border-t border-r border-b">
                      <Button variant="ghost" onClick={() => requestSort('title')} className="group w-full p-0 hover:bg-transparent hover:text-muted-foreground">
                        <div className="flex justify-between items-center w-full">
                         Title
@@ -268,7 +268,7 @@ export default function ContactsPage() {
                        </div>
                     </Button>
                   </TableHead>
-                  <TableHead className="text-right"></TableHead>
+                  <TableHead className="text-right border-t border-b"></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
