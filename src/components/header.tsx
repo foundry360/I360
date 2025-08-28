@@ -82,7 +82,7 @@ export function Header() {
   }
 
   return (
-    <header className="flex h-16 items-center justify-between gap-4 border-b border-sidebar-border bg-sidebar px-6 text-sidebar-foreground">
+    <header className="flex h-16 items-center justify-between gap-4 bg-sidebar px-6 text-sidebar-foreground">
       <Logo />
       <div className="flex items-center gap-4">
         <div className="relative flex items-center gap-2" ref={searchInputRef}>
