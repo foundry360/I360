@@ -1,3 +1,4 @@
+
 'use client';
 import {
   Card,
@@ -34,6 +35,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { EditCompanyModal } from '@/components/edit-company-modal';
 import { getAssessmentsForCompany, type Assessment } from '@/services/assessment-service';
+import { getContactsForCompany, type Contact } from '@/services/contact-service';
 import { cn } from '@/lib/utils';
 import { useQuickAction } from '@/contexts/quick-action-context';
 
@@ -60,20 +62,6 @@ const assessmentHistory = [
   },
 ];
 
-const primaryContacts = [
-  { name: 'Jane Doe', role: 'CEO', avatar: 'https://picsum.photos/100/100' },
-  {
-    name: 'John Smith',
-    role: 'Head of Sales',
-    avatar: 'https://picsum.photos/100/100',
-  },
-  {
-    name: 'Emily Johnson',
-    role: 'Marketing Director',
-    avatar: 'https://picsum.photos/100/100',
-  },
-];
-
 const recentActivity = [
     { activity: 'New assessment "Q4 Planning" started', time: new Date(Date.now() - 2 * 60 * 60 * 1000) },
     { activity: 'Jane Doe added as primary contact', time: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000) },
@@ -84,9 +72,10 @@ const recentActivity = [
 export default function CompanyDetailsPage() {
   const params = useParams();
   const companyId = params.companyId as string;
-  const { openAssessmentModal, setOnAssessmentCompleted } = useQuickAction();
+  const { openAssessmentModal, setOnAssessmentCompleted, openNewContactDialog, setOnContactCreated } = useQuickAction();
   const [companyData, setCompanyData] = React.useState<Company | null>(null);
   const [assessments, setAssessments] = React.useState<Assessment[]>([]);
+  const [contacts, setContacts] = React.useState<Contact[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [isEditModalOpen, setIsEditModalOpen] = React.useState(false);
 
@@ -96,7 +85,8 @@ export default function CompanyDetailsPage() {
       setLoading(true);
       const companyPromise = getCompany(companyId);
       const assessmentsPromise = getAssessmentsForCompany(companyId);
-      const [company, companyAssessments] = await Promise.all([companyPromise, assessmentsPromise]);
+      const contactsPromise = getContactsForCompany(companyId);
+      const [company, companyAssessments, companyContacts] = await Promise.all([companyPromise, assessmentsPromise, contactsPromise]);
       
       if (company) {
         setCompanyData(company);
@@ -105,6 +95,7 @@ export default function CompanyDetailsPage() {
         setCompanyData(null);
       }
       setAssessments(companyAssessments);
+      setContacts(companyContacts);
     } catch (error) {
       console.error("Error fetching company data:", error);
     } finally {
@@ -114,9 +105,14 @@ export default function CompanyDetailsPage() {
 
   React.useEffect(() => {
     fetchCompanyData();
-    setOnAssessmentCompleted(() => fetchCompanyData);
-    return () => setOnAssessmentCompleted(null);
-  }, [fetchCompanyData, setOnAssessmentCompleted]);
+    const unsubscribeAssessment = setOnAssessmentCompleted(() => fetchCompanyData);
+    const unsubscribeContact = setOnContactCreated(() => fetchCompanyData);
+    
+    return () => {
+      if (typeof unsubscribeAssessment === 'function') unsubscribeAssessment();
+      if (typeof unsubscribeContact === 'function') unsubscribeContact();
+    }
+  }, [fetchCompanyData, setOnAssessmentCompleted, setOnContactCreated]);
   
   const handleResumeAssessment = (assessment: Assessment) => {
     if (assessment.status === 'In Progress') {
@@ -132,6 +128,7 @@ export default function CompanyDetailsPage() {
   };
 
   const getInitials = (name: string) => {
+    if (!name) return '';
     return name
       .split(' ')
       .map((n) => n[0])
@@ -290,7 +287,7 @@ export default function CompanyDetailsPage() {
                             variant={
                               assessment.status === 'Completed'
                                 ? 'default'
-                                : 'secondary'
+                                : 'outline'
                             }
                             className={assessment.status === 'Completed' ? 'bg-green-500' : ''}
                           >
@@ -332,25 +329,31 @@ export default function CompanyDetailsPage() {
                 </CardContent>
             </Card>
             <Card>
-              <CardHeader>
+              <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle className="text-xl">Primary Contacts</CardTitle>
+                 <Button variant="outline" size="sm" onClick={openNewContactDialog}>
+                    <Plus className="h-4 w-4" />
+                </Button>
               </CardHeader>
               <CardContent className="space-y-4">
-                {primaryContacts.map((contact, index) => (
-                  <div key={index} className="flex items-center gap-4">
+                {contacts.length > 0 ? contacts.map((contact) => (
+                  <div key={contact.id} className="flex items-center gap-4">
                     <Avatar>
-                      <AvatarFallback className="bg-primary text-primary-foreground">
+                       <AvatarImage src={contact.avatar} alt={contact.name} />
+                       <AvatarFallback className="bg-primary text-primary-foreground">
                         {getInitials(contact.name)}
                       </AvatarFallback>
                     </Avatar>
                     <div>
                       <p className="font-medium text-sm">{contact.name}</p>
                       <p className="text-xs text-muted-foreground">
-                        {contact.role}
+                        {contact.title}
                       </p>
                     </div>
                   </div>
-                ))}
+                )) : (
+                    <p className="text-sm text-muted-foreground">No contacts found for this company.</p>
+                )}
               </CardContent>
             </Card>
             <Card>
@@ -384,4 +387,3 @@ export default function CompanyDetailsPage() {
   );
 
     
-

@@ -9,20 +9,20 @@ type QuickActionContextType = {
   openNewCompanyDialog: () => void;
   closeNewCompanyDialog: () => void;
   onCompanyCreated: (() => void) | null;
-  setOnCompanyCreated: (callback: (() => void) | null) => void;
+  setOnCompanyCreated: (callback: (() => void) | null) => (() => void) | void;
   
   isNewContactDialogOpen: boolean;
   openNewContactDialog: () => void;
   closeNewContactDialog: () => void;
   onContactCreated: (() => void) | null;
-  setOnContactCreated: (callback: (() => void) | null) => void;
+  setOnContactCreated: (callback: (() => void) | null) => (() => void) | void;
 
   isAssessmentModalOpen: boolean;
   openAssessmentModal: (assessment?: Assessment | null) => void;
   closeAssessmentModal: () => void;
   assessmentToResume: Assessment | null;
   onAssessmentCompleted: (() => void) | null;
-  setOnAssessmentCompleted: (callback: (() => void) | null) => void;
+  setOnAssessmentCompleted: (callback: (() => void) | null) => (() => void) | void;
 
   globalSearchTerm: string;
   setGlobalSearchTerm: (term: string) => void;
@@ -66,6 +66,7 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
   const handleSetOnCompanyCreated = React.useCallback(
     (callback: (() => void) | null) => {
       setOnCompanyCreated(() => callback);
+      return () => setOnCompanyCreated(null);
     },
     []
   );
@@ -81,6 +82,7 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
   const handleSetOnContactCreated = React.useCallback(
     (callback: (() => void) | null) => {
       setOnContactCreated(() => callback);
+       return () => setOnContactCreated(null);
     },
     []
   );
@@ -98,6 +100,7 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
   const handleSetOnAssessmentCompleted = React.useCallback(
     (callback: (() => void) | null) => {
       setOnAssessmentCompleted(() => callback);
+       return () => setOnAssessmentCompleted(null);
     },
     []
   );
@@ -143,3 +146,5 @@ export const useQuickAction = () => {
   }
   return context;
 };
+
+    
