@@ -243,6 +243,9 @@ export default function CompaniesPage() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
           <h1 className="text-2xl font-bold">Companies</h1>
+      </div>
+      <Separator className="bg-gray-200"/>
+      <div className="flex justify-end items-center">
           <div className="flex items-center gap-2">
             {numSelected > 0 && (
                 <Button
@@ -381,7 +384,6 @@ export default function CompaniesPage() {
             </Dialog>
             </div>
       </div>
-      <Separator className="bg-gray-200"/>
       <Card>
         <CardContent className="pt-6">
           {loading ? (
