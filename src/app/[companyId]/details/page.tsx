@@ -39,12 +39,10 @@ import { getContactsForCompany, type Contact } from '@/services/contact-service'
 import { cn } from '@/lib/utils';
 import { useQuickAction } from '@/contexts/quick-action-context';
 
-const recentActivity = [
-    { activity: 'New assessment "Q4 Planning" started', time: new Date(Date.now() - 2 * 60 * 60 * 1000) },
-    { activity: 'Jane Doe added as primary contact', time: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000) },
-    { activity: 'Report generated for "Sales Team Performance"', time: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000) },
-    { activity: 'Company profile updated', time: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) },
-];
+type ActivityItem = {
+    activity: string;
+    time: Date;
+};
 
 export default function CompanyDetailsPage() {
   const params = useParams();
@@ -54,6 +52,7 @@ export default function CompanyDetailsPage() {
   const [currentAssessments, setCurrentAssessments] = React.useState<Assessment[]>([]);
   const [completedAssessments, setCompletedAssessments] = React.useState<Assessment[]>([]);
   const [contacts, setContacts] = React.useState<Contact[]>([]);
+  const [recentActivity, setRecentActivity] = React.useState<ActivityItem[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [isEditModalOpen, setIsEditModalOpen] = React.useState(false);
   const [isDescriptionExpanded, setIsDescriptionExpanded] = React.useState(false);
@@ -74,9 +73,35 @@ export default function CompanyDetailsPage() {
         setCompanyData(null);
       }
       
-      setCurrentAssessments(allAssessments.filter(a => a.status === 'In Progress'));
-      setCompletedAssessments(allAssessments.filter(a => a.status === 'Completed'));
+      const current = allAssessments.filter(a => a.status === 'In Progress');
+      const completed = allAssessments.filter(a => a.status === 'Completed');
+      setCurrentAssessments(current);
+      setCompletedAssessments(completed);
       setContacts(companyContacts);
+
+      // Generate recent activity feed
+      const assessmentActivity: ActivityItem[] = allAssessments.map(a => ({
+          activity: `Assessment "${a.name}" status: ${a.status}`,
+          time: new Date(a.startDate),
+      }));
+
+      const contactActivity: ActivityItem[] = companyContacts.map(c => ({
+          activity: `Contact "${c.name}" added.`,
+          time: new Date(c.lastActivity),
+      }));
+      
+      if (company) {
+          const companyUpdateActivity = {
+              activity: "Company profile updated",
+              time: new Date(company.lastActivity)
+          };
+           const allActivity = [...assessmentActivity, ...contactActivity, companyUpdateActivity]
+            .sort((a, b) => b.time.getTime() - a.time.getTime())
+            .slice(0, 5);
+           setRecentActivity(allActivity);
+      }
+
+
     } catch (error) {
       console.error("Error fetching company data:", error);
     } finally {
@@ -103,7 +128,7 @@ export default function CompanyDetailsPage() {
 
   const handleCompanyUpdate = async (updatedData: Partial<Company>) => {
     if (!companyId) return;
-    await updateCompany(companyId, updatedData);
+    await updateCompany(companyId, { ...updatedData, lastActivity: new Date().toISOString() });
     await fetchCompanyData(); // Refetch to show updated data
     setIsEditModalOpen(false);
   };
@@ -376,15 +401,19 @@ export default function CompanyDetailsPage() {
                 <CardTitle className="text-xl">Recent Activity</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                {recentActivity.map((item, index) => (
-                    <div key={index} className="flex items-start gap-4">
-                        <div className="mt-1 h-2 w-2 rounded-full bg-primary" />
-                        <div>
-                        <p className="font-medium text-sm">{item.activity}</p>
-                        <p className="text-xs text-muted-foreground">{item.time.toLocaleString([], { year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric', hour12: true, timeZoneName: 'short' })}</p>
+                {recentActivity.length > 0 ? (
+                    recentActivity.map((item, index) => (
+                        <div key={index} className="flex items-start gap-4">
+                            <div className="mt-1 h-2 w-2 rounded-full bg-primary" />
+                            <div>
+                            <p className="font-medium text-sm">{item.activity}</p>
+                            <p className="text-xs text-muted-foreground">{item.time.toLocaleString([], { year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric', hour12: true, timeZoneName: 'short' })}</p>
+                            </div>
                         </div>
-                    </div>
-                ))}
+                    ))
+                ) : (
+                    <p className="text-sm text-muted-foreground text-center py-4">No recent activity.</p>
+                )}
               </CardContent>
             </Card>
           </div>
@@ -400,11 +429,4 @@ export default function CompanyDetailsPage() {
       )}
     </AppLayout>
   );
-
-    
-
-
-    
-
-
-    
+}
