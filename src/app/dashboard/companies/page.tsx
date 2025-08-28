@@ -296,6 +296,14 @@ export default function CompaniesPage() {
                     </Button>
                   </TableHead>
                   <TableHead>
+                     <Button variant="ghost" onClick={() => requestSort('website')} className="group w-full p-0 hover:bg-transparent hover:text-muted-foreground">
+                       <div className="flex justify-between items-center w-full">
+                        Website
+                        <ArrowUpDown className={cn("h-4 w-4", sortConfig?.key === 'website' ? 'opacity-100' : 'opacity-25')} />
+                       </div>
+                    </Button>
+                  </TableHead>
+                  <TableHead>
                      <Button variant="ghost" onClick={() => requestSort('lastActivity')} className="group w-full p-0 hover:bg-transparent hover:text-muted-foreground">
                        <div className="flex justify-between items-center w-full">
                         Last Activity
@@ -344,6 +352,11 @@ export default function CompaniesPage() {
                       >
                         {company.status}
                       </Badge>
+                    </TableCell>
+                    <TableCell>
+                        <a href={`http://${company.website}`} target="_blank" rel="noopener noreferrer" className="hover:text-primary">
+                            {company.website}
+                        </a>
                     </TableCell>
                     <TableCell>
                         {new Date(company.lastActivity).toLocaleString([], { year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric', hour12: true, timeZoneName: 'short' })}
@@ -435,10 +448,3 @@ export default function CompaniesPage() {
       </AlertDialog>
     </div>
   );
-
-    
-
-
-    
-
-    
