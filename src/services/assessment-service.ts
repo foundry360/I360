@@ -1,6 +1,6 @@
 'use client';
 
-import { GtmReadinessOutput } from "@/ai/flows/gtm-readiness-flow";
+import { GtmReadinessOutput, GtmReadinessInput } from "@/ai/flows/gtm-readiness-flow";
 
 export interface Assessment {
   id: string;
@@ -10,6 +10,7 @@ export interface Assessment {
   progress: number;
   startDate: string;
   result?: GtmReadinessOutput;
+  formData?: Partial<GtmReadinessInput>;
 }
 
 // In-memory store for prototyping

@@ -266,10 +266,11 @@ export function GtmReadinessForm({ onComplete }: GtmReadinessFormProps) {
       await createAssessment({
           companyId: companyId,
           name: 'GTM Readiness',
-          status: 'In Progress', // Should be 'Completed', but for demo purposes...
-          progress: 100, // Should be dynamic
+          status: 'Completed',
+          progress: 100,
           startDate: new Date().toISOString(),
           result: response,
+          formData: values,
       });
       setResult(response);
     } catch (error) {
@@ -290,9 +291,38 @@ export function GtmReadinessForm({ onComplete }: GtmReadinessFormProps) {
   const handlePrevious = () => {
     setCurrentSection((prev) => prev - 1);
   };
+
+  const handleSaveForLater = async () => {
+    const values = form.getValues();
+    const { companyId } = values;
+
+    if (!companyId) {
+        form.trigger("companyId");
+        return;
+    }
+
+    const completedSections = formSections.reduce((acc, section, index) => {
+        if (isSectionCompleted(index)) {
+            return acc + 1;
+        }
+        return acc;
+    }, 0);
+    const progress = Math.round((completedSections / formSections.length) * 100);
+
+    await createAssessment({
+        companyId: companyId,
+        name: 'GTM Readiness',
+        status: 'In Progress',
+        progress: progress,
+        startDate: new Date().toISOString(),
+        formData: values,
+    });
+    onComplete();
+  }
   
   const isSectionCompleted = (sectionIndex: number) => {
     const fields = formSections[sectionIndex].fields as FieldName[];
+    // For a section to be complete, all fields must have a value and be valid.
     return fields.every(field => {
       const value = form.watch(field);
       return value !== '' && value !== undefined && value !== null && !form.formState.errors[field];
@@ -386,6 +416,7 @@ export function GtmReadinessForm({ onComplete }: GtmReadinessFormProps) {
                             "w-full text-left p-2 rounded-md text-sm flex items-center gap-2",
                             currentSection === index ? "bg-background font-semibold" : "hover:bg-background/50",
                         )}
+                        // Users can only navigate to sections they have completed
                         disabled={index > 0 && !isSectionCompleted(index-1)}
                     >
                         {isSectionCompleted(index) ? 
@@ -401,85 +432,94 @@ export function GtmReadinessForm({ onComplete }: GtmReadinessFormProps) {
         </div>
         <div className="col-span-9 p-6 overflow-y-auto">
             <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>{formSections[currentSection].title}</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                            {formSections[currentSection].fields.map((fieldName) => {
-                                const key = fieldName as FieldName;
-                                const config = fieldConfig[key];
-                                if (!config) return null;
-                                
-                                const options = key === 'companyId' ? companyOptions : config.options;
+                <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col h-full">
+                    <div className="flex-1">
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>{formSections[currentSection].title}</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                {formSections[currentSection].fields.map((fieldName) => {
+                                    const key = fieldName as FieldName;
+                                    const config = fieldConfig[key];
+                                    if (!config) return null;
+                                    
+                                    const options = key === 'companyId' ? companyOptions : config.options;
 
-                                return (
-                                <FormField
-                                    key={key}
-                                    control={form.control}
-                                    name={key}
-                                    render={({ field }) => (
-                                    <FormItem>
-                                        <TooltipProvider>
-                                        <Tooltip>
-                                            <TooltipTrigger asChild>
-                                            <FormLabel className="cursor-help">{config.label}</FormLabel>
-                                            </TooltipTrigger>
-                                            <TooltipContent><p>{config.description}</p></TooltipContent>
-                                        </Tooltip>
-                                        </TooltipProvider>
-                                        <FormControl>
-                                        {config.type === 'select' ? (
-                                            <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
-                                            <SelectTrigger><SelectValue placeholder="Select..." /></SelectTrigger>
-                                            <SelectContent>
-                                                {options?.map((option) => {
-                                                    const value = typeof option === 'string' ? option : option.value;
-                                                    const label = typeof option === 'string' ? option : option.label;
-                                                    return <SelectItem key={value} value={value}>{label}</SelectItem>
-                                                })}
-                                            </SelectContent>
-                                            </Select>
-                                        ) : config.type === 'slider' ? (
-                                            <div className="flex items-center gap-4 pt-2">
-                                            <Slider min={1} max={5} step={1} defaultValue={[Number(field.value) || 3]} onValueChange={(value) => field.onChange(String(value[0]))} />
-                                            <span className="text-sm font-medium w-4">{field.value}</span>
-                                            </div>
-                                        ) : config.type === 'textarea' ? (
-                                            <Textarea placeholder={config.description} {...field} />
-                                        ) : (
-                                            <Input placeholder={config.description} {...field} />
+                                    return (
+                                    <FormField
+                                        key={key}
+                                        control={form.control}
+                                        name={key}
+                                        render={({ field }) => (
+                                        <FormItem>
+                                            <TooltipProvider>
+                                            <Tooltip>
+                                                <TooltipTrigger asChild>
+                                                <FormLabel className="cursor-help">{config.label}</FormLabel>
+                                                </TooltipTrigger>
+                                                <TooltipContent><p>{config.description}</p></TooltipContent>
+                                            </Tooltip>
+                                            </TooltipProvider>
+                                            <FormControl>
+                                            {config.type === 'select' ? (
+                                                <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
+                                                <SelectTrigger><SelectValue placeholder="Select..." /></SelectTrigger>
+                                                <SelectContent>
+                                                    {options?.map((option) => {
+                                                        const value = typeof option === 'string' ? option : option.value;
+                                                        const label = typeof option === 'string' ? option : option.label;
+                                                        return <SelectItem key={value} value={value}>{label}</SelectItem>
+                                                    })}
+                                                </SelectContent>
+                                                </Select>
+                                            ) : config.type === 'slider' ? (
+                                                <div className="flex items-center gap-4 pt-2">
+                                                <Slider min={1} max={5} step={1} defaultValue={[Number(field.value) || 3]} onValueChange={(value) => field.onChange(String(value[0]))} />
+                                                <span className="text-sm font-medium w-4">{field.value}</span>
+                                                </div>
+                                            ) : config.type === 'textarea' ? (
+                                                <Textarea placeholder={config.description} {...field} />
+                                            ) : (
+                                                <Input placeholder={config.description} {...field} />
+                                            )}
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
                                         )}
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                    )}
-                                />
-                                );
-                            })}
-                            </div>
-                        </CardContent>
-                    </Card>
+                                    />
+                                    );
+                                })}
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </div>
 
-                    <div className="flex justify-between">
-                        <Button type="button" variant="outline" onClick={handlePrevious} disabled={currentSection === 0}>
-                            Previous
-                        </Button>
-                        {currentSection < formSections.length - 1 ? (
-                            <Button type="button" onClick={handleNext}>
-                                Next
+                    <div className="flex justify-between items-center pt-8">
+                        <div>
+                             <Button type="button" variant="link" onClick={handleSaveForLater}>
+                                Save for Later
                             </Button>
-                        ) : (
-                            <Button type="submit" size="lg" disabled={loading}>
-                            {loading ? (
-                                <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Analyzing...</>
+                        </div>
+                        <div className="flex gap-2">
+                            <Button type="button" variant="outline" onClick={handlePrevious} disabled={currentSection === 0}>
+                                Previous
+                            </Button>
+                            {currentSection < formSections.length - 1 ? (
+                                <Button type="button" onClick={handleNext}>
+                                    Next
+                                </Button>
                             ) : (
-                                'Generate GTM Readiness Report'
+                                <Button type="submit" size="lg" disabled={loading}>
+                                {loading ? (
+                                    <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Analyzing...</>
+                                ) : (
+                                    'Generate GTM Readiness Report'
+                                )}
+                                </Button>
                             )}
-                            </Button>
-                        )}
+                        </div>
                     </div>
                 </form>
             </Form>
