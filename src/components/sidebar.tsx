@@ -139,7 +139,6 @@ export function Sidebar() {
                                     </Tooltip>
                                 )
                             })}
-                             {!isCollapsed && <Separator className="my-4 bg-sidebar-border/50" />}
                         </div>
                     )
                   }
