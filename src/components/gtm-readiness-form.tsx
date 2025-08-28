@@ -1,3 +1,4 @@
+
 'use client';
 import * as React from 'react';
 import { useForm } from 'react-hook-form';
@@ -184,7 +185,7 @@ const fieldConfig: Record<
   }
 > = {
   companyId: { label: 'Company', description: 'Select the company for this assessment.', type: 'select', options: [] },
-  companyStage: { label: 'Company Stage', description: 'What is the current stage of your company?', type: 'select', options: ['Seed', 'Series A', 'Growth', 'Enterprise', 'Other'] },
+  companyStage: { label: 'Company Stage', description: 'What is the current stage of your company?', type: 'select', options: ['Seed', 'Series A', 'Series B', 'Series C', 'Series D+', 'Growth', 'Enterprise', 'Other'] },
   employeeCount: { label: 'Employee Count', description: 'How many employees are in your company?', type: 'select', options: ['1-10', '11-50', '51-200', '201-500', '500+'] },
   industrySector: { label: 'Industry / Sector', description: 'e.g., SaaS, Fintech, Healthtech', type: 'text' },
   goToMarketStrategy: { label: 'Go-to-Market Strategy', description: 'What is your primary GTM motion?', type: 'select', options: ['Product-led', 'Sales-led', 'Hybrid', 'Channel', 'Community-led'] },
@@ -512,3 +513,5 @@ export function GtmReadinessForm({ onComplete, assessmentToResume }: GtmReadines
     </div>
   );
 }
+
+    
