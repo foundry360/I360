@@ -242,9 +242,9 @@ export default function CompaniesPage() {
               />
             </div>
           )}
-          <Button size="sm" onClick={openNewCompanyDialog}>
-            <Plus className="h-4 w-4 mr-2" />
-            New Company
+          <Button size="icon" onClick={openNewCompanyDialog}>
+            <Plus className="h-4 w-4" />
+            <span className="sr-only">New Company</span>
           </Button>
         </div>
       </div>
@@ -435,5 +435,8 @@ export default function CompaniesPage() {
       </AlertDialog>
     </div>
   );
+
+    
+
 
     
