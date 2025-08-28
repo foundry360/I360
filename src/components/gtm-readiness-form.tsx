@@ -4,7 +4,6 @@ import * as React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
-  GtmReadinessInputSchema,
   generateGtmReadiness,
   type GtmReadinessInput,
   type GtmReadinessOutput,
@@ -38,6 +37,124 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Loader2, Lightbulb, TrendingUp, Cpu, ListChecks } from 'lucide-react';
 import { Badge } from './ui/badge';
+import { z } from 'zod';
+
+const GtmReadinessInputSchema = z.object({
+  companyStage: z.string().describe('e.g., Seed, Series A, Growth, Enterprise'),
+  employeeCount: z
+    .string()
+    .describe('e.g., 1-10, 11-50, 51-200, 201-500, 500+'),
+  industrySector: z.string().describe('e.g., SaaS, Fintech, Healthtech'),
+  goToMarketStrategy: z
+    .string()
+    .describe(
+      'e.g., Product-led, Sales-led, Hybrid, Channel, Community-led'
+    ),
+  growthChallenges: z
+    .string()
+    .describe(
+      'Primary obstacles to scaling revenue (e.g., lead generation, conversion rates, sales cycle length, churn)'
+    ),
+  departmentalAlignment: z
+    .string()
+    .describe('Perceived alignment between Sales, Marketing, and CS (1-5)'),
+  communicationFrequency: z
+    .string()
+    .describe('How often do Sales, Marketing, and CS teams formally meet?'),
+  responsibilityClarity: z
+    .string()
+    .describe(
+      'Clarity of roles and responsibilities at handoff points (1-5)'
+    ),
+  crmPlatform: z.string().describe('e.g., Salesforce, HubSpot, Zoho, Pipedrive'),
+  dataHygienePractices: z
+    .string()
+    .describe('Current process for maintaining data quality in the CRM'),
+  techStackAssessment: z
+    .string()
+    .describe('Overall satisfaction with the current RevOps tech stack (1-5)'),
+  integrationEffectiveness: z
+    .string()
+    .describe(
+      'How well do the tools in your stack work together? (1-5)'
+    ),
+  toolAdoptionRates: z.string().describe('User adoption of key platforms (1-5)'),
+  workflowAutomation: z
+    .string()
+    .describe(
+      'Current level of automation for routine tasks (e.g., data entry, lead routing, reporting)'
+    ),
+  leadManagementProcess: z
+    .string()
+    .describe('How are leads captured, qualified, routed, and nurtured?'),
+  salesCycleEfficiency: z
+    .string()
+    .describe('Perception of the current sales cycle length (Too long, Optimal, Fast)'),
+  forecastingProcess: z
+    .string()
+    .describe('Current method for sales forecasting (e.g., manual, CRM-based, predictive tools)'),
+  customerJourneyMapping: z
+    .string()
+    .describe('Has the full customer journey been formally mapped? (Yes/No)'),
+  customerFirstCulture: z
+    .string()
+    .describe('Is a customer-first mindset embedded in the company culture? (1-5)'),
+  personalizationEfforts: z
+    .string()
+    .describe('Current level of personalization in outreach and engagement'),
+  customerFeedbackMechanisms: z
+    .string()
+    .describe('How is customer feedback systematically collected and actioned? (e.g., NPS, surveys, support tickets)'),
+  revenueMetrics: z
+    .string()
+    .describe('Primary revenue KPIs tracked (e.g., ARR/MRR, Gross Margin, LTV)'),
+  acquisitionAndSalesMetrics: z
+    .string()
+    .describe('Primary top-of-funnel KPIs (e.g., MQLs, SQLs, Conversion Rates, CAC)'),
+  retentionAndSuccessMetrics: z
+    .string()
+    .describe('Primary customer success KPIs (e.g., Churn Rate, NRR, CSAT)'),
+  measurementAndReportingFrequency: z
+    .string()
+    .describe('How often are these KPIs reviewed? (e.g., Daily, Weekly, Monthly)'),
+  challengesDescription: z
+    .string()
+    .describe('A brief description of the biggest challenges faced.'),
+  executiveSponsorship: z
+    .string()
+    .describe('Level of exec buy-in for RevOps initiatives (1-5)'),
+  organizationalChangeDescription: z
+    .string()
+    .describe('How does the organization handle change?'),
+  crossFunctionalInputMechanisms: z
+    .string()
+    .describe('How is input gathered from different teams for new initiatives?'),
+  icpLastUpdated: z
+    .string()
+    .describe('When was the Ideal Customer Profile last formally updated?'),
+  valueMessagingAlignment: z
+    .string()
+    .describe('How consistently is the value proposition communicated? (1-5)'),
+  tangibleDifferentiators: z
+    .string()
+    .describe('What are the clear, provable differentiators from competitors?'),
+  forecastAccuracy: z.string().describe('Historical accuracy of sales forecasts'),
+  pipelineReportingTools: z
+    .string()
+    .describe('What tools are used for pipeline reporting?'),
+  manualReportingTime: z
+    .string()
+    .describe('Hours per week spent on manual reporting tasks'),
+  budgetAllocation: z
+    .string()
+    .describe('Perception of budget allocation for RevOps tools/headcount'),
+  aiAdoptionBarriers: z
+    .string()
+    .describe('What are the biggest barriers to adopting AI? (e.g., cost, skills, data privacy)'),
+  businessModelTesting: z
+    .string()
+    .describe('How frequently are new pricing/packaging models tested?'),
+});
 
 const formSections = [
   {

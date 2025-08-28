@@ -10,7 +10,7 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
 
-export const GtmReadinessInputSchema = z.object({
+const GtmReadinessInputSchema = z.object({
   companyStage: z.string().describe('e.g., Seed, Series A, Growth, Enterprise'),
   employeeCount: z
     .string()
@@ -128,7 +128,7 @@ export const GtmReadinessInputSchema = z.object({
 });
 export type GtmReadinessInput = z.infer<typeof GtmReadinessInputSchema>;
 
-export const GtmReadinessOutputSchema = z.object({
+const GtmReadinessOutputSchema = z.object({
   recommendations: z.array(
     z.object({
       priority: z.number().describe('The priority of the recommendation (1 is highest)'),
