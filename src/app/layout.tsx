@@ -29,7 +29,7 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body className="font-sans antialiased h-full" suppressHydrationWarning>
+      <body className="font-sans antialiased h-full flex flex-col" suppressHydrationWarning>
         <UserProvider>
           <QuickActionProvider>
             <AuthProvider>
