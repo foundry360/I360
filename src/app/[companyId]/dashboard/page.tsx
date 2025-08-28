@@ -1,12 +1,15 @@
+
 'use client';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { useParams } from "next/navigation";
 import React from "react";
 import { getCompany } from "@/services/company-service";
 import type { Company } from "@/services/company-service";
+import { useUser } from "@/contexts/user-context";
 
 export default function CompanyDashboardPage() {
   const params = useParams();
+  const { user } = useUser();
   const companyId = params.companyId as string;
   const [company, setCompany] = React.useState<Company | null>(null);
   const [greeting, setGreeting] = React.useState('');
@@ -31,8 +34,8 @@ export default function CompanyDashboardPage() {
   }, [companyId]);
 
   const getFirstName = () => {
-    if (company?.contact?.name) {
-      return company.contact.name.split(' ')[0];
+    if (user?.displayName) {
+      return user.displayName.split(' ')[0];
     }
     return 'User';
   }
