@@ -277,6 +277,7 @@ const gtmReadinessPrompt = ai.definePrompt({
   name: 'gtmReadinessPrompt',
   input: { schema: GtmReadinessInputSchema },
   output: { schema: GtmReadinessOutputSchema },
+  model: 'googleai/gemini-1.5-pro',
   prompt: `You are an expert RevOps and GTM consultant. Your task is to analyze the provided company data and generate a comprehensive, executive-level GTM Readiness Assessment report. Follow the specified structure and formatting requirements meticulously.
 
 **Analyze the following company data:**
