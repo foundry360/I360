@@ -102,7 +102,7 @@ const GtmReadinessInputSchema = z.object({
 
 const formSections = [
   {
-    title: 'Company Profile',
+    title: 'Organizational Overview & Current GTM Motion',
     fields: [
       'companyId',
       'companyStage',
@@ -113,7 +113,7 @@ const formSections = [
     ],
   },
   {
-    title: 'Internal Alignment',
+    title: 'Strategic Alignment & Collaboration',
     fields: [
       'departmentalAlignment',
       'communicationFrequency',
@@ -121,7 +121,7 @@ const formSections = [
     ],
   },
   {
-    title: 'Technology & Data',
+    title: 'Data Management & Technology Stack',
     fields: [
       'crmPlatform',
       'dataHygienePractices',
@@ -131,7 +131,7 @@ const formSections = [
     ],
   },
   {
-    title: 'Process & Execution',
+    title: 'Process Optimization & Automation',
     fields: [
       'workflowAutomation',
       'leadManagementProcess',
@@ -140,7 +140,7 @@ const formSections = [
     ],
   },
   {
-    title: 'Customer Centricity',
+    title: 'Customer Experience (CX) & Personalization',
     fields: [
       'customerJourneyMapping',
       'customerFirstCulture',
@@ -149,7 +149,7 @@ const formSections = [
     ],
   },
   {
-    title: 'Metrics & KPIs',
+    title: 'Key Performance Indicators (KPIs) & Metrics',
     fields: [
         'revenueMetricsDescription',
         'annualRecurringRevenue',
@@ -169,19 +169,24 @@ const formSections = [
     ],
   },
   {
-    title: 'Strategy & Planning',
+    title: 'Change Management Readiness',
     fields: [
-      'challengesDescription',
       'executiveSponsorship',
       'organizationalChangeDescription',
       'crossFunctionalInputMechanisms',
+    ],
+  },
+    {
+    title: 'Strategic Clarity & Value Proposition Validation',
+    fields: [
+      'challengesDescription',
       'icpLastUpdated',
       'valueMessagingAlignment',
       'tangibleDifferentiators',
     ],
   },
   {
-    title: 'Reporting & Budget',
+    title: 'Forecasting & Measurement Effectiveness',
     fields: [
       'forecastAccuracy',
       'pipelineReportingTools',
@@ -190,7 +195,7 @@ const formSections = [
     ],
   },
   {
-    title: 'Future Readiness',
+    title: 'Innovation & Digital Transformation Potential',
     fields: ['aiAdoptionBarriers', 'businessModelTesting'],
   },
 ];
