@@ -178,6 +178,8 @@ const gtmReadinessPrompt = ai.definePrompt({
   model: 'googleai/gemini-1.5-pro',
   prompt: `You are an expert RevOps and GTM consultant. Your task is to analyze the provided company data and generate a comprehensive, executive-level GTM Readiness Assessment report. Follow the specified structure and formatting requirements meticulously.
 
+**CRITICAL INSTRUCTION:** If the user provides very little or no information for most of the fields, you MUST generate a very low readiness score (under 20%). In the executive summary, you MUST state that the score is low because of insufficient data provided for a proper analysis. Do not invent findings or recommendations if there is no data to support them. The report should be brief and explain that a full assessment requires more data.
+
 **Analyze the following company data:**
 - Company Stage: {{{companyStage}}}
 - Employee Count (FTEs): {{{employeeCount}}}
@@ -254,4 +256,3 @@ const gtmReadinessFlow = ai.defineFlow(
     return output!;
   }
 );
-
