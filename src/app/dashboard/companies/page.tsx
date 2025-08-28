@@ -208,7 +208,7 @@ export default function CompaniesPage() {
       <div>
         <h1 className="text-2xl font-bold">Companies</h1>
         <p className="text-muted-foreground">
-          Manage and track all companies in your system.
+          Manage and track all companies in your system
         </p>
       </div>
       <Separator />
