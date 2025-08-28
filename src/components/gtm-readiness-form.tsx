@@ -70,10 +70,21 @@ const GtmReadinessInputSchema = z.object({
   customerFirstCulture: z.string(),
   personalizationEfforts: z.string(),
   customerFeedbackMechanisms: z.string(),
-  revenueMetrics: z.string(),
-  acquisitionAndSalesMetrics: z.string(),
-  retentionAndSuccessMetrics: z.string(),
-  measurementAndReportingFrequency: z.string(),
+  revenueMetricsDescription: z.string(),
+  annualRecurringRevenue: z.string(),
+  netRevenueRetention: z.string(),
+  revenueGrowthRate: z.string(),
+  acquisitionMetricsDescription: z.string(),
+  customerAcquisitionCost: z.string(),
+  winRate: z.string(),
+  pipelineCoverage: z.string(),
+  pipelineVelocity: z.string(),
+  retentionMetricsDescription: z.string(),
+  churnRate: z.string(),
+  customerLifetimeValue: z.string(),
+  netPromoterScore: z.string(),
+  customerSatisfaction: z.string(),
+  kpiReportingFrequency: z.string(),
   challengesDescription: z.string(),
   executiveSponsorship: z.string(),
   organizationalChangeDescription: z.string(),
@@ -140,10 +151,21 @@ const formSections = [
   {
     title: 'Metrics & KPIs',
     fields: [
-      'revenueMetrics',
-      'acquisitionAndSalesMetrics',
-      'retentionAndSuccessMetrics',
-      'measurementAndReportingFrequency',
+        'revenueMetricsDescription',
+        'annualRecurringRevenue',
+        'netRevenueRetention',
+        'revenueGrowthRate',
+        'acquisitionMetricsDescription',
+        'customerAcquisitionCost',
+        'winRate',
+        'pipelineCoverage',
+        'pipelineVelocity',
+        'retentionMetricsDescription',
+        'churnRate',
+        'customerLifetimeValue',
+        'netPromoterScore',
+        'customerSatisfaction',
+        'kpiReportingFrequency',
     ],
   },
   {
@@ -180,7 +202,7 @@ const fieldConfig: Record<
   {
     label: string;
     description: string;
-    type: 'text' | 'select' | 'slider' | 'textarea';
+    type: 'text' | 'select' | 'slider' | 'textarea' | 'number';
     options?: string[] | { label: string, value: string }[];
   }
 > = {
@@ -206,10 +228,21 @@ const fieldConfig: Record<
   customerFirstCulture: { label: 'Customer-First Culture', description: 'On a scale of 1-5, is a customer-first mindset embedded in the culture?', type: 'slider' },
   personalizationEfforts: { label: 'Personalization in Outreach', description: 'Describe the current level of personalization in engagement.', type: 'textarea' },
   customerFeedbackMechanisms: { label: 'Customer Feedback Mechanisms', description: 'How is feedback collected and actioned? (e.g., NPS, surveys)', type: 'textarea' },
-  revenueMetrics: { label: 'Primary Revenue Metrics Tracked', description: 'e.g., ARR/MRR, Gross Margin, LTV (comma-separated)', type: 'textarea' },
-  acquisitionAndSalesMetrics: { label: 'Primary Acquisition & Sales Metrics Tracked', description: 'e.g., MQLs, SQLs, Conversion Rates, CAC (comma-separated)', type: 'textarea' },
-  retentionAndSuccessMetrics: { label: 'Primary Retention & Success Metrics Tracked', description: 'e.g., Churn Rate, NRR, CSAT (comma-separated)', type: 'textarea' },
-  measurementAndReportingFrequency: { label: 'KPI Review Frequency', description: 'How often are these KPIs reviewed?', type: 'text' },
+  revenueMetricsDescription: { label: 'Overall Revenue & Growth Metrics Description', description: 'e.g., Strong ARR growth but NRR needs improvement.', type: 'textarea' },
+  annualRecurringRevenue: { label: 'Annual Recurring Revenue (ARR)', description: 'Select ARR range', type: 'select', options: ['<$1M', '$1M-$5M', '$5M-$10M', '$10M-$25M', '$25M-$50M', '$50M-$100M', '$100M+'] },
+  netRevenueRetention: { label: 'Net Revenue Retention (NRR) (%)', description: 'Select NRR range', type: 'select', options: ['<80%', '80-90%', '90-100%', '100-110%', '110-120%', '>120%'] },
+  revenueGrowthRate: { label: 'Revenue Growth Rate (%)', description: 'Select growth rate range', type: 'select', options: ['<0%', '0-20%', '21-40%', '41-60%', '61-80%', '81-100%', '>100%'] },
+  acquisitionMetricsDescription: { label: 'Overall Acquisition & Sales Metrics Description', description: 'e.g., CAC is rising, win rates are stable.', type: 'textarea' },
+  customerAcquisitionCost: { label: 'Customer Acquisition Cost (CAC)', description: 'e.g., 10000', type: 'number' },
+  winRate: { label: 'Win Rate (%)', description: 'Select win rate range', type: 'select', options: ['<10%', '10-20%', '21-30%', '31-40%', '41-50%', '>50%'] },
+  pipelineCoverage: { label: 'Pipeline Coverage Ratio', description: 'e.g., 3 (for 3x)', type: 'number' },
+  pipelineVelocity: { label: 'Pipeline Velocity', description: 'Select pipeline velocity', type: 'select', options: ['Slowing', 'Stable', 'Accelerating'] },
+  retentionMetricsDescription: { label: 'Overall Retention & Success Metrics Description', description: 'e.g., Churn is a concern, CLV is healthy.', type: 'textarea' },
+  churnRate: { label: 'Churn Rate (%)', description: 'Select churn rate range', type: 'select', options: ['<1%', '1-2%', '2-3%', '3-5%', '>5%'] },
+  customerLifetimeValue: { label: 'Customer Lifetime Value (CLV)', description: 'e.g., 50000', type: 'number' },
+  netPromoterScore: { label: 'Net Promoter Score (NPS)', description: 'Select NPS score range', type: 'select', options: ['<0', '0-20', '21-40', '41-60', '61-80', '>80'] },
+  customerSatisfaction: { label: 'Customer Satisfaction Score (CSAT) (%)', description: 'Select CSAT range', type: 'select', options: ['<70%', '70-80%', '81-90%', '>90%'] },
+  kpiReportingFrequency: { label: 'KPI Tracking & Reporting Frequency', description: 'e.g., Weekly team dashboards, monthly executive summary.', type: 'text' },
   challengesDescription: { label: 'Biggest GTM Challenges', description: 'Briefly describe the one or two biggest challenges you face.', type: 'textarea' },
   executiveSponsorship: { label: 'Executive Sponsorship for RevOps', description: 'On a scale of 1-5, what is the level of executive buy-in for RevOps initiatives?', type: 'slider' },
   organizationalChangeDescription: { label: 'Organizational Approach to Change', description: 'How does the organization typically handle and adopt change?', type: 'textarea' },
@@ -468,7 +501,7 @@ export function GtmReadinessForm({ onComplete, assessmentToResume }: GtmReadines
                                             ) : config.type === 'textarea' ? (
                                                 <Textarea placeholder={config.description} {...field} />
                                             ) : (
-                                                <Input placeholder={config.description} {...field} />
+                                                <Input placeholder={config.description} {...field} type={config.type} />
                                             )}
                                             </FormControl>
                                             <FormMessage />

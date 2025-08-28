@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview A GTM Readiness assessment AI agent.
@@ -76,18 +77,21 @@ const GtmReadinessInputSchema = z.object({
   customerFeedbackMechanisms: z
     .string()
     .describe('How is customer feedback systematically collected and actioned? (e.g., NPS, surveys, support tickets)'),
-  revenueMetrics: z
-    .string()
-    .describe('Primary revenue KPIs tracked (e.g., ARR/MRR, Gross Margin, LTV)'),
-  acquisitionAndSalesMetrics: z
-    .string()
-    .describe('Primary top-of-funnel KPIs (e.g., MQLs, SQLs, Conversion Rates, CAC)'),
-  retentionAndSuccessMetrics: z
-    .string()
-    .describe('Primary customer success KPIs (e.g., Churn Rate, NRR, CSAT)'),
-  measurementAndReportingFrequency: z
-    .string()
-    .describe('How often are these KPIs reviewed? (e.g., Daily, Weekly, Monthly)'),
+  revenueMetricsDescription: z.string().describe('Overall Revenue & Growth Metrics Description (e.g., trajectory, key highlights)'),
+  annualRecurringRevenue: z.string().describe('Annual Recurring Revenue (ARR) range'),
+  netRevenueRetention: z.string().describe('Net Revenue Retention (NRR) (%) range'),
+  revenueGrowthRate: z.string().describe('Revenue Growth Rate (%) range'),
+  acquisitionMetricsDescription: z.string().describe('Overall Acquisition & Sales Metrics Description (e.g., trends, key observations)'),
+  customerAcquisitionCost: z.string().describe('Customer Acquisition Cost (CAC) (Numeric Value)'),
+  winRate: z.string().describe('Win Rate (%) range'),
+  pipelineCoverage: z.string().describe('Pipeline Coverage Ratio (e.g., 3 means 3x)'),
+  pipelineVelocity: z.string().describe('Pipeline Velocity'),
+  retentionMetricsDescription: z.string().describe('Overall Retention & Success Metrics Description (e.g., trends, key observations)'),
+  churnRate: z.string().describe('Churn Rate (%) range'),
+  customerLifetimeValue: z.string().describe('Customer Lifetime Value (CLV) (Numeric Value)'),
+  netPromoterScore: z.string().describe('Net Promoter Score (NPS) range'),
+  customerSatisfaction: z.string().describe('Customer Satisfaction Score (CSAT) (%) range'),
+  kpiReportingFrequency: z.string().describe('KPI Tracking & Reporting Frequency (across departments, to executives)'),
   challengesDescription: z
     .string()
     .describe('A brief description of the biggest challenges faced.'),
@@ -196,10 +200,21 @@ const gtmReadinessPrompt = ai.definePrompt({
 - Customer-First Culture (1-5): {{{customerFirstCulture}}}
 - Personalization Efforts: {{{personalizationEfforts}}}
 - Customer Feedback Mechanisms: {{{customerFeedbackMechanisms}}}
-- Revenue Metrics Tracked: {{{revenueMetrics}}}
-- Acquisition & Sales Metrics Tracked: {{{acquisitionAndSalesMetrics}}}
-- Retention & Success Metrics Tracked: {{{retentionAndSuccessMetrics}}}
-- Measurement & Reporting Frequency: {{{measurementAndReportingFrequency}}}
+- Revenue Metrics Description: {{{revenueMetricsDescription}}}
+- Annual Recurring Revenue: {{{annualRecurringRevenue}}}
+- Net Revenue Retention: {{{netRevenueRetention}}}
+- Revenue Growth Rate: {{{revenueGrowthRate}}}
+- Acquisition Metrics Description: {{{acquisitionMetricsDescription}}}
+- Customer Acquisition Cost: {{{customerAcquisitionCost}}}
+- Win Rate: {{{winRate}}}
+- Pipeline Coverage: {{{pipelineCoverage}}}
+- Pipeline Velocity: {{{pipelineVelocity}}}
+- Retention Metrics Description: {{{retentionMetricsDescription}}}
+- Churn Rate: {{{churnRate}}}
+- Customer Lifetime Value: {{{customerLifetimeValue}}}
+- Net Promoter Score: {{{netPromoterScore}}}
+- Customer Satisfaction: {{{customerSatisfaction}}}
+- KPI Reporting Frequency: {{{kpiReportingFrequency}}}
 - Description of Challenges: {{{challengesDescription}}}
 - Executive Sponsorship for RevOps (1-5): {{{executiveSponsorship}}}
 - Organizational Approach to Change: {{{organizationalChangeDescription}}}
@@ -239,3 +254,4 @@ const gtmReadinessFlow = ai.defineFlow(
     return output!;
   }
 );
+
