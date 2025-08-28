@@ -19,9 +19,6 @@ import {
 import {
   Card,
   CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import {
@@ -34,7 +31,7 @@ import {
 import { Slider } from '@/components/ui/slider';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { Loader2, Lightbulb, TrendingUp, Cpu, ListChecks } from 'lucide-react';
+import { Loader2, Lightbulb, TrendingUp, Cpu, ListChecks, CheckCircle } from 'lucide-react';
 import { Badge } from './ui/badge';
 import { z } from 'zod';
 import {
@@ -43,122 +40,47 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from './ui/tooltip';
+import { cn } from '@/lib/utils';
 
 const GtmReadinessInputSchema = z.object({
-  companyStage: z.string().describe('e.g., Seed, Series A, Growth, Enterprise'),
-  employeeCount: z
-    .string()
-    .describe('e.g., 1-10, 11-50, 51-200, 201-500, 500+'),
-  industrySector: z.string().describe('e.g., SaaS, Fintech, Healthtech'),
-  goToMarketStrategy: z
-    .string()
-    .describe(
-      'e.g., Product-led, Sales-led, Hybrid, Channel, Community-led'
-    ),
-  growthChallenges: z
-    .string()
-    .describe(
-      'Primary obstacles to scaling revenue (e.g., lead generation, conversion rates, sales cycle length, churn)'
-    ),
-  departmentalAlignment: z
-    .string()
-    .describe('Perceived alignment between Sales, Marketing, and CS (1-5)'),
-  communicationFrequency: z
-    .string()
-    .describe('How often do Sales, Marketing, and CS teams formally meet?'),
-  responsibilityClarity: z
-    .string()
-    .describe(
-      'Clarity of roles and responsibilities at handoff points (1-5)'
-    ),
-  crmPlatform: z.string().describe('e.g., Salesforce, HubSpot, Zoho, Pipedrive'),
-  dataHygienePractices: z
-    .string()
-    .describe('Current process for maintaining data quality in the CRM'),
-  techStackAssessment: z
-    .string()
-    .describe('Overall satisfaction with the current RevOps tech stack (1-5)'),
-  integrationEffectiveness: z
-    .string()
-    .describe(
-      'How well do the tools in your stack work together? (1-5)'
-    ),
-  toolAdoptionRates: z.string().describe('User adoption of key platforms (1-5)'),
-  workflowAutomation: z
-    .string()
-    .describe(
-      'Current level of automation for routine tasks (e.g., data entry, lead routing, reporting)'
-    ),
-  leadManagementProcess: z
-    .string()
-    .describe('How are leads captured, qualified, routed, and nurtured?'),
-  salesCycleEfficiency: z
-    .string()
-    .describe('Perception of the current sales cycle length (Too long, Optimal, Fast)'),
-  forecastingProcess: z
-    .string()
-    .describe('Current method for sales forecasting (e.g., manual, CRM-based, predictive tools)'),
-  customerJourneyMapping: z
-    .string()
-    .describe('Has the full customer journey been formally mapped? (Yes/No)'),
-  customerFirstCulture: z
-    .string()
-    .describe('Is a customer-first mindset embedded in the company culture? (1-5)'),
-  personalizationEfforts: z
-    .string()
-    .describe('Current level of personalization in outreach and engagement'),
-  customerFeedbackMechanisms: z
-    .string()
-    .describe('How is customer feedback systematically collected and actioned? (e.g., NPS, surveys, support tickets)'),
-  revenueMetrics: z
-    .string()
-    .describe('Primary revenue KPIs tracked (e.g., ARR/MRR, Gross Margin, LTV)'),
-  acquisitionAndSalesMetrics: z
-    .string()
-    .describe('Primary top-of-funnel KPIs (e.g., MQLs, SQLs, Conversion Rates, CAC)'),
-  retentionAndSuccessMetrics: z
-    .string()
-    .describe('Primary customer success KPIs (e.g., Churn Rate, NRR, CSAT)'),
-  measurementAndReportingFrequency: z
-    .string()
-    .describe('How often are these KPIs reviewed? (e.g., Daily, Weekly, Monthly)'),
-  challengesDescription: z
-    .string()
-    .describe('A brief description of the biggest challenges faced.'),
-  executiveSponsorship: z
-    .string()
-    .describe('Level of exec buy-in for RevOps initiatives (1-5)'),
-  organizationalChangeDescription: z
-    .string()
-    .describe('How does the organization handle change?'),
-  crossFunctionalInputMechanisms: z
-    .string()
-    .describe('How is input gathered from different teams for new initiatives?'),
-  icpLastUpdated: z
-    .string()
-    .describe('When was the Ideal Customer Profile last formally updated?'),
-  valueMessagingAlignment: z
-    .string()
-    .describe('How consistently is the value proposition communicated? (1-5)'),
-  tangibleDifferentiators: z
-    .string()
-    .describe('What are the clear, provable differentiators from competitors?'),
-  forecastAccuracy: z.string().describe('Historical accuracy of sales forecasts'),
-  pipelineReportingTools: z
-    .string()
-    .describe('What tools are used for pipeline reporting?'),
-  manualReportingTime: z
-    .string()
-    .describe('Hours per week spent on manual reporting tasks'),
-  budgetAllocation: z
-    .string()
-    .describe('Perception of budget allocation for RevOps tools/headcount'),
-  aiAdoptionBarriers: z
-    .string()
-    .describe('What are the biggest barriers to adopting AI? (e.g., cost, skills, data privacy)'),
-  businessModelTesting: z
-    .string()
-    .describe('How frequently are new pricing/packaging models tested?'),
+  companyStage: z.string().min(1, 'This field is required.'),
+  employeeCount: z.string().min(1, 'This field is required.'),
+  industrySector: z.string().min(1, 'This field is required.'),
+  goToMarketStrategy: z.string().min(1, 'This field is required.'),
+  growthChallenges: z.string().min(1, 'This field is required.'),
+  departmentalAlignment: z.string(),
+  communicationFrequency: z.string().min(1, 'This field is required.'),
+  responsibilityClarity: z.string(),
+  crmPlatform: z.string().min(1, 'This field is required.'),
+  dataHygienePractices: z.string().min(1, 'This field is required.'),
+  techStackAssessment: z.string(),
+  integrationEffectiveness: z.string(),
+  toolAdoptionRates: z.string(),
+  workflowAutomation: z.string().min(1, 'This field is required.'),
+  leadManagementProcess: z.string().min(1, 'This field is required.'),
+  salesCycleEfficiency: z.string().min(1, 'This field is required.'),
+  forecastingProcess: z.string().min(1, 'This field is required.'),
+  customerJourneyMapping: z.string().min(1, 'This field is required.'),
+  customerFirstCulture: z.string(),
+  personalizationEfforts: z.string().min(1, 'This field is required.'),
+  customerFeedbackMechanisms: z.string().min(1, 'This field is required.'),
+  revenueMetrics: z.string().min(1, 'This field is required.'),
+  acquisitionAndSalesMetrics: z.string().min(1, 'This field is required.'),
+  retentionAndSuccessMetrics: z.string().min(1, 'This field is required.'),
+  measurementAndReportingFrequency: z.string().min(1, 'This field is required.'),
+  challengesDescription: z.string().min(1, 'This field is required.'),
+  executiveSponsorship: z.string(),
+  organizationalChangeDescription: z.string().min(1, 'This field is required.'),
+  crossFunctionalInputMechanisms: z.string().min(1, 'This field is required.'),
+  icpLastUpdated: z.string().min(1, 'This field is required.'),
+  valueMessagingAlignment: z.string(),
+  tangibleDifferentiators: z.string().min(1, 'This field is required.'),
+  forecastAccuracy: z.string().min(1, 'This field is required.'),
+  pipelineReportingTools: z.string().min(1, 'This field is required.'),
+  manualReportingTime: z.string().min(1, 'This field is required.'),
+  budgetAllocation: z.string().min(1, 'This field is required.'),
+  aiAdoptionBarriers: z.string().min(1, 'This field is required.'),
+  businessModelTesting: z.string().min(1, 'This field is required.'),
 });
 
 const formSections = [
@@ -244,8 +166,10 @@ const formSections = [
   },
 ];
 
+type FieldName = keyof GtmReadinessInput;
+
 const fieldConfig: Record<
-  keyof GtmReadinessInput,
+  FieldName,
   {
     label: string;
     description: string;
@@ -253,231 +177,64 @@ const fieldConfig: Record<
     options?: string[];
   }
 > = {
-  companyStage: {
-    label: 'Company Stage',
-    description: 'What is the current stage of your company?',
-    type: 'select',
-    options: ['Seed', 'Series A', 'Growth', 'Enterprise', 'Other'],
-  },
-  employeeCount: {
-    label: 'Employee Count',
-    description: 'How many employees are in your company?',
-    type: 'select',
-    options: ['1-10', '11-50', '51-200', '201-500', '500+'],
-  },
-  industrySector: {
-    label: 'Industry / Sector',
-    description: 'e.g., SaaS, Fintech, Healthtech',
-    type: 'text',
-  },
-  goToMarketStrategy: {
-    label: 'Go-to-Market Strategy',
-    description: 'What is your primary GTM motion?',
-    type: 'select',
-    options: ['Product-led', 'Sales-led', 'Hybrid', 'Channel', 'Community-led'],
-  },
-  growthChallenges: {
-    label: 'Primary Growth Challenges',
-    description: 'e.g., Lead generation, conversion rates, sales cycle length',
-    type: 'textarea',
-  },
-  departmentalAlignment: {
-    label: 'Departmental Alignment (Sales, Marketing, CS)',
-    description:
-      'On a scale of 1-5, how well-aligned are your GTM departments?',
-    type: 'slider',
-  },
-  communicationFrequency: {
-    label: 'Inter-department Communication Frequency',
-    description: 'How often do Sales, Marketing, and CS teams formally meet?',
-    type: 'text',
-  },
-  responsibilityClarity: {
-    label: 'Clarity of Responsibility at Handoffs',
-    description:
-      'On a scale of 1-5, how clear are roles at customer handoff points?',
-    type: 'slider',
-  },
-  crmPlatform: {
-    label: 'Primary CRM Platform',
-    description: 'e.g., Salesforce, HubSpot, Zoho',
-    type: 'text',
-  },
-  dataHygienePractices: {
-    label: 'Data Hygiene Practices',
-    description: 'Describe your current process for maintaining data quality.',
-    type: 'textarea',
-  },
-  techStackAssessment: {
-    label: 'Overall Tech Stack Satisfaction',
-    description:
-      'On a scale of 1-5, how satisfied are you with your RevOps tech stack?',
-    type: 'slider',
-  },
-  integrationEffectiveness: {
-    label: 'Tech Stack Integration Effectiveness',
-    description:
-      'On a scale of 1-5, how well do your tools work together?',
-    type: 'slider',
-  },
-  toolAdoptionRates: {
-    label: 'Key Platform Adoption Rates',
-    description:
-      'On a scale of 1-5, how well are key platforms adopted by users?',
-    type: 'slider',
-  },
-  workflowAutomation: {
-    label: 'Current Level of Workflow Automation',
-    description: 'e.g., data entry, lead routing, reporting',
-    type: 'textarea',
-  },
-  leadManagementProcess: {
-    label: 'Lead Management Process',
-    description: 'How are leads captured, qualified, routed, and nurtured?',
-    type: 'textarea',
-  },
-  salesCycleEfficiency: {
-    label: 'Sales Cycle Efficiency',
-    description: 'How do you perceive the length of your current sales cycle?',
-    type: 'select',
-    options: ['Too long', 'Optimal', 'Fast'],
-  },
-  forecastingProcess: {
-    label: 'Sales Forecasting Process',
-    description: 'e.g., Manual, CRM-based, predictive tools',
-    type: 'text',
-  },
-  customerJourneyMapping: {
-    label: 'Formal Customer Journey Mapping',
-    description: 'Has the full customer journey been formally mapped?',
-    type: 'select',
-    options: ['Yes', 'No', 'Partially'],
-  },
-  customerFirstCulture: {
-    label: 'Customer-First Culture',
-    description:
-      'On a scale of 1-5, is a customer-first mindset embedded in the culture?',
-    type: 'slider',
-  },
-  personalizationEfforts: {
-    label: 'Personalization in Outreach',
-    description: 'Describe the current level of personalization in engagement.',
-    type: 'textarea',
-  },
-  customerFeedbackMechanisms: {
-    label: 'Customer Feedback Mechanisms',
-    description: 'How is feedback collected and actioned? (e.g., NPS, surveys)',
-    type: 'textarea',
-  },
-  revenueMetrics: {
-    label: 'Primary Revenue Metrics Tracked',
-    description: 'e.g., ARR/MRR, Gross Margin, LTV (comma-separated)',
-    type: 'textarea',
-  },
-  acquisitionAndSalesMetrics: {
-    label: 'Primary Acquisition & Sales Metrics Tracked',
-    description: 'e.g., MQLs, SQLs, Conversion Rates, CAC (comma-separated)',
-    type: 'textarea',
-  },
-  retentionAndSuccessMetrics: {
-    label: 'Primary Retention & Success Metrics Tracked',
-    description: 'e.g., Churn Rate, NRR, CSAT (comma-separated)',
-    type: 'textarea',
-  },
-  measurementAndReportingFrequency: {
-    label: 'KPI Review Frequency',
-    description: 'How often are these KPIs reviewed?',
-    type: 'text',
-  },
-  challengesDescription: {
-    label: 'Biggest GTM Challenges',
-    description: 'Briefly describe the one or two biggest challenges you face.',
-    type: 'textarea',
-  },
-  executiveSponsorship: {
-    label: 'Executive Sponsorship for RevOps',
-    description:
-      'On a scale of 1-5, what is the level of executive buy-in for RevOps initiatives?',
-    type: 'slider',
-  },
-  organizationalChangeDescription: {
-    label: 'Organizational Approach to Change',
-    description: 'How does the organization typically handle and adopt change?',
-    type: 'textarea',
-  },
-  crossFunctionalInputMechanisms: {
-    label: 'Cross-Functional Input Mechanisms',
-    description:
-      'How is input gathered from different teams for new initiatives?',
-    type: 'textarea',
-  },
-  icpLastUpdated: {
-    label: 'Ideal Customer Profile (ICP) Last Updated',
-    description: 'When was the ICP last formally updated?',
-    type: 'text',
-  },
-  valueMessagingAlignment: {
-    label: 'Value Proposition Consistency',
-    description:
-      'On a scale of 1-5, how consistently is the value proposition communicated?',
-    type: 'slider',
-  },
-  tangibleDifferentiators: {
-    label: 'Tangible Differentiators',
-    description:
-      'What are your clear, provable differentiators from competitors?',
-    type: 'textarea',
-  },
-  forecastAccuracy: {
-    label: 'Historical Forecast Accuracy',
-    description: 'e.g., "Consistently within 10%", "Varies by >25%"',
-    type: 'text',
-  },
-  pipelineReportingTools: {
-    label: 'Pipeline Reporting Tools',
-    description: 'What tools are used for pipeline reporting?',
-    type: 'text',
-  },
-  manualReportingTime: {
-    label: 'Manual Reporting Time',
-    description: 'How many hours per week are spent on manual reporting tasks?',
-    type: 'text',
-  },
-  budgetAllocation: {
-    label: 'Budget Allocation Perception',
-    description:
-      'Describe the perception of budget allocation for RevOps tools/headcount.',
-    type: 'textarea',
-  },
-  aiAdoptionBarriers: {
-    label: 'Barriers to AI Adoption',
-    description: 'e.g., cost, skills, data privacy concerns',
-    type: 'textarea',
-  },
-  businessModelTesting: {
-    label: 'Business Model Testing Frequency',
-    description: 'How frequently are new pricing or packaging models tested?',
-    type: 'text',
-  },
+  companyStage: { label: 'Company Stage', description: 'What is the current stage of your company?', type: 'select', options: ['Seed', 'Series A', 'Growth', 'Enterprise', 'Other'] },
+  employeeCount: { label: 'Employee Count', description: 'How many employees are in your company?', type: 'select', options: ['1-10', '11-50', '51-200', '201-500', '500+'] },
+  industrySector: { label: 'Industry / Sector', description: 'e.g., SaaS, Fintech, Healthtech', type: 'text' },
+  goToMarketStrategy: { label: 'Go-to-Market Strategy', description: 'What is your primary GTM motion?', type: 'select', options: ['Product-led', 'Sales-led', 'Hybrid', 'Channel', 'Community-led'] },
+  growthChallenges: { label: 'Primary Growth Challenges', description: 'e.g., Lead generation, conversion rates, sales cycle length', type: 'textarea' },
+  departmentalAlignment: { label: 'Departmental Alignment (Sales, Marketing, CS)', description: 'On a scale of 1-5, how well-aligned are your GTM departments?', type: 'slider' },
+  communicationFrequency: { label: 'Inter-department Communication Frequency', description: 'How often do Sales, Marketing, and CS teams formally meet?', type: 'text' },
+  responsibilityClarity: { label: 'Clarity of Responsibility at Handoffs', description: 'On a scale of 1-5, how clear are roles at customer handoff points?', type: 'slider' },
+  crmPlatform: { label: 'Primary CRM Platform', description: 'e.g., Salesforce, HubSpot, Zoho', type: 'text' },
+  dataHygienePractices: { label: 'Data Hygiene Practices', description: 'Describe your current process for maintaining data quality.', type: 'textarea' },
+  techStackAssessment: { label: 'Overall Tech Stack Satisfaction', description: 'On a scale of 1-5, how satisfied are you with your RevOps tech stack?', type: 'slider' },
+  integrationEffectiveness: { label: 'Tech Stack Integration Effectiveness', description: 'On a scale of 1-5, how well do your tools work together?', type: 'slider' },
+  toolAdoptionRates: { label: 'Key Platform Adoption Rates', description: 'On a scale of 1-5, how well are key platforms adopted by users?', type: 'slider' },
+  workflowAutomation: { label: 'Current Level of Workflow Automation', description: 'e.g., data entry, lead routing, reporting', type: 'textarea' },
+  leadManagementProcess: { label: 'Lead Management Process', description: 'How are leads captured, qualified, routed, and nurtured?', type: 'textarea' },
+  salesCycleEfficiency: { label: 'Sales Cycle Efficiency', description: 'How do you perceive the length of your current sales cycle?', type: 'select', options: ['Too long', 'Optimal', 'Fast'] },
+  forecastingProcess: { label: 'Sales Forecasting Process', description: 'e.g., Manual, CRM-based, predictive tools', type: 'text' },
+  customerJourneyMapping: { label: 'Formal Customer Journey Mapping', description: 'Has the full customer journey been formally mapped?', type: 'select', options: ['Yes', 'No', 'Partially'] },
+  customerFirstCulture: { label: 'Customer-First Culture', description: 'On a scale of 1-5, is a customer-first mindset embedded in the culture?', type: 'slider' },
+  personalizationEfforts: { label: 'Personalization in Outreach', description: 'Describe the current level of personalization in engagement.', type: 'textarea' },
+  customerFeedbackMechanisms: { label: 'Customer Feedback Mechanisms', description: 'How is feedback collected and actioned? (e.g., NPS, surveys)', type: 'textarea' },
+  revenueMetrics: { label: 'Primary Revenue Metrics Tracked', description: 'e.g., ARR/MRR, Gross Margin, LTV (comma-separated)', type: 'textarea' },
+  acquisitionAndSalesMetrics: { label: 'Primary Acquisition & Sales Metrics Tracked', description: 'e.g., MQLs, SQLs, Conversion Rates, CAC (comma-separated)', type: 'textarea' },
+  retentionAndSuccessMetrics: { label: 'Primary Retention & Success Metrics Tracked', description: 'e.g., Churn Rate, NRR, CSAT (comma-separated)', type: 'textarea' },
+  measurementAndReportingFrequency: { label: 'KPI Review Frequency', description: 'How often are these KPIs reviewed?', type: 'text' },
+  challengesDescription: { label: 'Biggest GTM Challenges', description: 'Briefly describe the one or two biggest challenges you face.', type: 'textarea' },
+  executiveSponsorship: { label: 'Executive Sponsorship for RevOps', description: 'On a scale of 1-5, what is the level of executive buy-in for RevOps initiatives?', type: 'slider' },
+  organizationalChangeDescription: { label: 'Organizational Approach to Change', description: 'How does the organization typically handle and adopt change?', type: 'textarea' },
+  crossFunctionalInputMechanisms: { label: 'Cross-Functional Input Mechanisms', description: 'How is input gathered from different teams for new initiatives?', type: 'textarea' },
+  icpLastUpdated: { label: 'Ideal Customer Profile (ICP) Last Updated', description: 'When was the ICP last formally updated?', type: 'text' },
+  valueMessagingAlignment: { label: 'Value Proposition Consistency', description: 'On a scale of 1-5, how consistently is the value proposition communicated?', type: 'slider' },
+  tangibleDifferentiators: { label: 'Tangible Differentiators', description: 'What are your clear, provable differentiators from competitors?', type: 'textarea' },
+  forecastAccuracy: { label: 'Historical Forecast Accuracy', description: 'e.g., "Consistently within 10%", "Varies by >25%"', type: 'text' },
+  pipelineReportingTools: { label: 'Pipeline Reporting Tools', description: 'What tools are used for pipeline reporting?', type: 'text' },
+  manualReportingTime: { label: 'Manual Reporting Time', description: 'How many hours per week are spent on manual reporting tasks?', type: 'text' },
+  budgetAllocation: { label: 'Budget Allocation Perception', description: 'Describe the perception of budget allocation for RevOps tools/headcount.', type: 'textarea' },
+  aiAdoptionBarriers: { label: 'Barriers to AI Adoption', description: 'e.g., cost, skills, data privacy concerns', type: 'textarea' },
+  businessModelTesting: { label: 'Business Model Testing Frequency', description: 'How frequently are new pricing or packaging models tested?', type: 'text' },
 };
 
 const defaultValues = Object.entries(fieldConfig).reduce((acc, [key, value]) => {
   if (value.type === 'slider') {
-    acc[key as keyof GtmReadinessInput] = '3';
+    acc[key as FieldName] = '3';
   } else {
-    acc[key as keyof GtmReadinessInput] = '';
+    acc[key as FieldName] = '';
   }
   return acc;
-}, {} as Partial<Record<keyof GtmReadinessInput, string>>);
-
+}, {} as GtmReadinessInput);
 
 export function GtmReadinessForm() {
   const [loading, setLoading] = React.useState(false);
   const [result, setResult] = React.useState<GtmReadinessOutput | null>(null);
+  const [currentSection, setCurrentSection] = React.useState(0);
 
   const form = useForm<GtmReadinessInput>({
     resolver: zodResolver(GtmReadinessInputSchema),
     defaultValues: defaultValues,
+    mode: 'onChange'
   });
 
   async function onSubmit(values: GtmReadinessInput) {
@@ -488,64 +245,65 @@ export function GtmReadinessForm() {
       setResult(response);
     } catch (error) {
       console.error('Error generating GTM readiness report:', error);
-      // You should show a toast notification to the user here
     } finally {
       setLoading(false);
     }
+  }
+
+  const handleNext = async () => {
+    const fields = formSections[currentSection].fields as FieldName[];
+    const isValid = await form.trigger(fields);
+    if (isValid) {
+      setCurrentSection((prev) => prev + 1);
+    }
+  };
+
+  const handlePrevious = () => {
+    setCurrentSection((prev) => prev - 1);
+  };
+  
+  const isSectionCompleted = (sectionIndex: number) => {
+    const fields = formSections[sectionIndex].fields as FieldName[];
+    return fields.every(field => {
+      const value = form.watch(field);
+      return value !== '' && value !== undefined && value !== null && !form.formState.errors[field];
+    });
   }
 
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center h-full gap-4">
         <Loader2 className="h-12 w-12 animate-spin text-primary" />
-        <p className="text-lg text-muted-foreground">
-          Analyzing your data...
-        </p>
-        <p className="text-sm text-muted-foreground">
-          This may take a moment. The AI is generating your personalized recommendations.
-        </p>
+        <p className="text-lg text-muted-foreground">Analyzing your data...</p>
+        <p className="text-sm text-muted-foreground">This may take a moment. The AI is generating your personalized recommendations.</p>
       </div>
     );
   }
 
   if (result) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-6 p-6">
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Lightbulb className="h-6 w-6 text-primary" />
               <span>Prioritized Recommendations</span>
             </CardTitle>
-            <CardDescription>
-              Your actionable next steps to improve GTM readiness, sorted by
-              priority.
-            </CardDescription>
+            <CardDescription>Your actionable next steps to improve GTM readiness, sorted by priority.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            {result.recommendations
-              .sort((a, b) => a.priority - b.priority)
-              .map((rec) => (
-                <div key={rec.priority} className="p-4 border rounded-lg">
-                  <h4 className="font-bold text-lg">
-                    {rec.priority}. {rec.title}
-                  </h4>
-                  <p className="text-muted-foreground mt-1">
-                    {rec.justification}
-                  </p>
-                  <div className="flex items-center gap-6 mt-3">
-                    <Badge variant="outline">
-                      Impact: {rec.estimatedImpact}
-                    </Badge>
-                    <Badge variant="outline">
-                      Effort: {rec.estimatedEffort}
-                    </Badge>
-                  </div>
+            {result.recommendations.sort((a, b) => a.priority - b.priority).map((rec) => (
+              <div key={rec.priority} className="p-4 border rounded-lg">
+                <h4 className="font-bold text-lg">{rec.priority}. {rec.title}</h4>
+                <p className="text-muted-foreground mt-1">{rec.justification}</p>
+                <div className="flex items-center gap-6 mt-3">
+                  <Badge variant="outline">Impact: {rec.estimatedImpact}</Badge>
+                  <Badge variant="outline">Effort: {rec.estimatedEffort}</Badge>
                 </div>
-              ))}
+              </div>
+            ))}
           </CardContent>
         </Card>
-
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -553,11 +311,8 @@ export function GtmReadinessForm() {
               <span>Strategic Focus Areas</span>
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <p className="text-muted-foreground">{result.strategicFocusAreas}</p>
-          </CardContent>
+          <CardContent><p className="text-muted-foreground">{result.strategicFocusAreas}</p></CardContent>
         </Card>
-
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -565,13 +320,8 @@ export function GtmReadinessForm() {
               <span>AI & Automation Opportunities</span>
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <p className="text-muted-foreground">
-              {result.aiAutomationOpportunities}
-            </p>
-          </CardContent>
+          <CardContent><p className="text-muted-foreground">{result.aiAutomationOpportunities}</p></CardContent>
         </Card>
-
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -581,111 +331,121 @@ export function GtmReadinessForm() {
           </CardHeader>
           <CardContent>
             <div className="flex flex-wrap gap-2">
-            {result.keyMetricsToMonitor.split(',').map(metric => (
+              {result.keyMetricsToMonitor.split(',').map(metric => (
                 <Badge key={metric.trim()} variant="secondary">{metric.trim()}</Badge>
-            ))}
+              ))}
             </div>
           </CardContent>
         </Card>
-
-        <Button onClick={() => setResult(null)}>Start Over</Button>
+        <Button onClick={() => { setResult(null); setCurrentSection(0); }}>Start Over</Button>
       </div>
     );
   }
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-        {formSections.map((section) => (
-          <Card key={section.title}>
-            <CardHeader>
-              <CardTitle>{section.title}</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                {section.fields.map((fieldName) => {
-                  const key = fieldName as keyof GtmReadinessInput;
-                  const config = fieldConfig[key];
-                  if (!config) return null;
+    <div className="grid grid-cols-12 h-full">
+        <div className="col-span-3 border-r p-6">
+            <h3 className="font-semibold mb-4">Assessment Sections</h3>
+            <nav className="space-y-2">
+                {formSections.map((section, index) => (
+                    <button
+                        key={section.title}
+                        onClick={() => setCurrentSection(index)}
+                        className={cn(
+                            "w-full text-left p-2 rounded-md text-sm flex items-center gap-2",
+                            currentSection === index ? "bg-muted font-semibold" : "hover:bg-muted/50",
+                        )}
+                        disabled={index > 0 && !isSectionCompleted(index-1)}
+                    >
+                        {isSectionCompleted(index) ? 
+                            <CheckCircle className="h-4 w-4 text-green-500" /> : 
+                            <div className={cn("h-4 w-4 rounded-full border flex items-center justify-center", currentSection === index ? "border-primary" : "border-muted-foreground")}>
+                                {currentSection === index && <div className="h-2 w-2 rounded-full bg-primary" />}
+                            </div>
+                        }
+                        <span>{section.title}</span>
+                    </button>
+                ))}
+            </nav>
+        </div>
+        <div className="col-span-9 p-6 overflow-y-auto">
+            <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+                    <Card>
+                        <CardContent className="pt-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            {formSections[currentSection].fields.map((fieldName) => {
+                                const key = fieldName as FieldName;
+                                const config = fieldConfig[key];
+                                if (!config) return null;
 
-                  return (
-                    <FormField
-                      key={key}
-                      control={form.control}
-                      name={key}
-                      render={({ field }) => (
-                        <FormItem>
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <FormLabel className="cursor-help">{config.label}</FormLabel>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p>{config.description}</p>
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-                          <FormControl>
-                            {config.type === 'select' ? (
-                              <Select
-                                onValueChange={field.onChange}
-                                defaultValue={field.value}
-                              >
-                                <SelectTrigger>
-                                  <SelectValue placeholder={`Select...`} />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  {config.options?.map((option) => (
-                                    <SelectItem key={option} value={option}>
-                                      {option}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                            ) : config.type === 'slider' ? (
-                              <div className="flex items-center gap-4 pt-2">
-                                <Slider
-                                  min={1}
-                                  max={5}
-                                  step={1}
-                                  defaultValue={[Number(field.value) || 3]}
-                                  onValueChange={(value) => field.onChange(String(value[0]))}
+                                return (
+                                <FormField
+                                    key={key}
+                                    control={form.control}
+                                    name={key}
+                                    render={({ field }) => (
+                                    <FormItem>
+                                        <TooltipProvider>
+                                        <Tooltip>
+                                            <TooltipTrigger asChild>
+                                            <FormLabel className="cursor-help">{config.label}</FormLabel>
+                                            </TooltipTrigger>
+                                            <TooltipContent><p>{config.description}</p></TooltipContent>
+                                        </Tooltip>
+                                        </TooltipProvider>
+                                        <FormControl>
+                                        {config.type === 'select' ? (
+                                            <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
+                                            <SelectTrigger><SelectValue placeholder="Select..." /></SelectTrigger>
+                                            <SelectContent>
+                                                {config.options?.map((option) => (
+                                                <SelectItem key={option} value={option}>{option}</SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                            </Select>
+                                        ) : config.type === 'slider' ? (
+                                            <div className="flex items-center gap-4 pt-2">
+                                            <Slider min={1} max={5} step={1} defaultValue={[Number(field.value) || 3]} onValueChange={(value) => field.onChange(String(value[0]))} />
+                                            <span className="text-sm font-medium w-4">{field.value}</span>
+                                            </div>
+                                        ) : config.type === 'textarea' ? (
+                                            <Textarea placeholder={config.description} {...field} />
+                                        ) : (
+                                            <Input placeholder={config.description} {...field} />
+                                        )}
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                    )}
                                 />
-                                <span className="text-sm font-medium w-4">{field.value}</span>
-                              </div>
-                            ) : config.type === 'textarea' ? (
-                              <Textarea
-                                placeholder={config.description}
-                                {...field}
-                              />
+                                );
+                            })}
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    <div className="flex justify-between">
+                        <Button type="button" variant="outline" onClick={handlePrevious} disabled={currentSection === 0}>
+                            Previous
+                        </Button>
+                        {currentSection < formSections.length - 1 ? (
+                            <Button type="button" onClick={handleNext}>
+                                Next
+                            </Button>
+                        ) : (
+                            <Button type="submit" size="lg" disabled={loading}>
+                            {loading ? (
+                                <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Analyzing...</>
                             ) : (
-                              <Input
-                                placeholder={config.description}
-                                {...field}
-                              />
+                                'Generate GTM Readiness Report'
                             )}
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  );
-                })}
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-        <Button type="submit" size="lg" disabled={loading}>
-          {loading ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Analyzing...
-            </>
-          ) : (
-            'Generate GTM Readiness Report'
-          )}
-        </Button>
-      </form>
-    </Form>
+                            </Button>
+                        )}
+                    </div>
+                </form>
+            </Form>
+        </div>
+    </div>
   );
 }
