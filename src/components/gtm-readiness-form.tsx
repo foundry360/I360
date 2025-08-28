@@ -49,6 +49,7 @@ import { GtmReadinessReport } from './gtm-readiness-report';
 
 const GtmReadinessInputSchema = z.object({
   companyId: z.string().min(1, 'Please select a company.'),
+  assessmentName: z.string().min(1, 'Please enter an assessment name.'),
   companyStage: z.string().optional(),
   employeeCount: z.string().optional(),
   industrySector: z.string().optional(),
@@ -105,6 +106,7 @@ const formSections = [
     title: 'Organizational Overview & Current GTM Motion',
     fields: [
       'companyId',
+      'assessmentName',
       'companyStage',
       'employeeCount',
       'industrySector',
@@ -212,6 +214,7 @@ const fieldConfig: Record<
   }
 > = {
   companyId: { label: 'Company', description: 'Select the company for this assessment.', type: 'select', options: [] },
+  assessmentName: { label: 'Assessment Name', description: 'Give this assessment a unique name.', type: 'text' },
   companyStage: { label: 'Company Stage', description: 'What is the current stage of your company?', type: 'select', options: ['Seed', 'Series A', 'Series B', 'Series C', 'Series D+', 'Growth', 'Enterprise', 'Other'] },
   employeeCount: { label: 'Employee Count', description: 'How many employees are in your company?', type: 'select', options: ['1-10', '11-50', '51-200', '201-500', '500+'] },
   industrySector: { label: 'Industry / Sector', description: 'e.g., SaaS, Fintech, Healthtech', type: 'text' },
@@ -319,9 +322,7 @@ export function GtmReadinessForm({ onComplete, assessmentToResume }: GtmReadines
     setLoading(true);
     setResult(null);
     try {
-      const { companyId, ...assessmentData } = values;
-      const selectedCompany = companies.find(c => c.id === companyId);
-      const assessmentName = `GTM Readiness - ${selectedCompany?.name || 'Company'}`;
+      const { companyId, assessmentName, ...assessmentData } = values;
       
       const response = await generateGtmReadiness(assessmentData as GtmReadinessInput);
       const payload = {
@@ -365,10 +366,10 @@ export function GtmReadinessForm({ onComplete, assessmentToResume }: GtmReadines
 
   const handleSaveForLater = async () => {
     const values = form.getValues();
-    const { companyId } = values;
+    const { companyId, assessmentName } = values;
 
-    if (!companyId) {
-        form.trigger("companyId");
+    if (!companyId || !assessmentName) {
+        form.trigger(["companyId", "assessmentName"]);
         return;
     }
 
@@ -379,8 +380,6 @@ export function GtmReadinessForm({ onComplete, assessmentToResume }: GtmReadines
         return acc;
     }, 0);
     const progress = Math.round((completedSections / formSections.length) * 100);
-    const selectedCompany = companies.find(c => c.id === companyId);
-    const assessmentName = `GTM Readiness - ${selectedCompany?.name || 'Company'}`;
 
     const payload = {
         companyId: companyId,
@@ -554,3 +553,5 @@ export function GtmReadinessForm({ onComplete, assessmentToResume }: GtmReadines
     </div>
   );
 }
+
+    
