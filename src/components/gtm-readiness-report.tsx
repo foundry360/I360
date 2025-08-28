@@ -80,7 +80,7 @@ export function GtmReadinessReport({ result, onComplete }: GtmReadinessReportPro
 
     for (const section of sections) {
         const canvas = await html2canvas(section as HTMLElement, {
-            scale: 2,
+            scale: 3,
             useCORS: true,
             scrollY: -window.scrollY,
         });
