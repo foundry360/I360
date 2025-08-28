@@ -309,7 +309,7 @@ export default function CompaniesPage() {
                         </Link>
                       </TableCell>
                       <TableCell>
-                        {company.contact?.name ? (
+                        {company.contact?.name && company.contact.name !== 'New Contact' ? (
                           <div className="flex items-center gap-2">
                             <Avatar className="h-8 w-8">
                               <AvatarFallback className="bg-primary text-primary-foreground">
@@ -435,6 +435,8 @@ export default function CompaniesPage() {
       </AlertDialog>
     </div>
   );
+
+    
 
     
 
