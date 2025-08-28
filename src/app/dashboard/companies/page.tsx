@@ -14,6 +14,9 @@ import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
 } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { useRouter } from 'next/navigation';
@@ -241,13 +244,11 @@ export default function CompaniesPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-2xl font-bold">Companies</h1>
-            <p className="text-muted-foreground">Manage and track all companies in your system.</p>
-          </div>
+      <div>
+        <h1 className="text-2xl font-bold">Companies</h1>
+        <p className="text-muted-foreground">Manage and track all companies in your system.</p>
       </div>
-      <Separator className="bg-gray-200"/>
+      <Separator/>
       <div className="flex justify-end items-center">
           <div className="flex items-center gap-2">
             {numSelected > 0 && (
@@ -484,7 +485,7 @@ export default function CompaniesPage() {
                       </Badge>
                     </TableCell>
                     <TableCell>
-                        {new Date(company.lastActivity).toLocaleString([], { year: 'numeric', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit', timeZoneName: 'short' })}
+                        {new Date(company.lastActivity).toLocaleString([], { year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric', hour12: true })}
                     </TableCell>
                     <TableCell className="text-right">
                        <DropdownMenu>

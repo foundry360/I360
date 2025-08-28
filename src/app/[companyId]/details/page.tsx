@@ -186,10 +186,10 @@ export default function CompanyDetailsPage() {
           <div className="lg:col-span-2 space-y-6">
             <Card>
               <CardHeader>
-                <div className="font-semibold">Company Overview</div>
+                <CardTitle>Company Overview</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-sm">
+                <p className="text-sm text-muted-foreground">
                   {companyData.name} is a leading provider of innovative solutions in the tech industry. They are focused on developing cutting-edge products that solve real-world problems. With a strong team of experts and a commitment to customer success, they have established themselves as a trusted partner for businesses worldwide.
                 </p>
               </CardContent>
@@ -197,10 +197,10 @@ export default function CompanyDetailsPage() {
             <Card>
               <CardHeader className="flex flex-row items-center justify-between">
                 <div>
-                  <div className="font-semibold">Current Assessments</div>
-                  <div className="text-sm text-muted-foreground">
+                  <CardTitle>Current Assessments</CardTitle>
+                  <CardDescription>
                     Ongoing assessments for {companyData.name}
-                  </div>
+                  </CardDescription>
                 </div>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -260,10 +260,10 @@ export default function CompanyDetailsPage() {
             </Card>
             <Card>
               <CardHeader>
-                <div className="font-semibold">Assessment History</div>
-                <div className="text-sm text-muted-foreground">
+                <CardTitle>Assessment History</CardTitle>
+                <CardDescription>
                   Review of all completed assessments
-                </div>
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <Table>
@@ -304,7 +304,7 @@ export default function CompanyDetailsPage() {
           <div className="space-y-6">
             <Card>
                 <CardHeader className="flex flex-row items-center justify-between">
-                    <div className="font-semibold">Company Information</div>
+                    <CardTitle>Company Information</CardTitle>
                     <Button variant="outline" size="sm" onClick={() => setIsEditModalOpen(true)}>
                         <Pencil className="h-4 w-4" />
                     </Button>
@@ -328,7 +328,7 @@ export default function CompanyDetailsPage() {
             </Card>
             <Card>
               <CardHeader>
-                <div className="font-semibold">Primary Contacts</div>
+                <CardTitle>Primary Contacts</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 {primaryContacts.map((contact, index) => (
@@ -350,7 +350,7 @@ export default function CompanyDetailsPage() {
             </Card>
             <Card>
               <CardHeader>
-                <div className="font-semibold">Recent Activity</div>
+                <CardTitle>Recent Activity</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 {recentActivity.map((item, index) => (
@@ -358,7 +358,7 @@ export default function CompanyDetailsPage() {
                         <div className="mt-1 h-2 w-2 rounded-full bg-primary" />
                         <div>
                         <p className="font-medium text-sm">{item.activity}</p>
-                        <p className="text-xs text-muted-foreground">{item.time.toLocaleString([], { year: 'numeric', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit', timeZoneName: 'short' })}</p>
+                        <p className="text-xs text-muted-foreground">{item.time.toLocaleString([], { year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric', hour12: true })}</p>
                         </div>
                     </div>
                 ))}
