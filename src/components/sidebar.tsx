@@ -26,19 +26,17 @@ import { Separator } from './ui/separator';
 const NavGroup = ({
     title,
     isCollapsed,
-    isFirst,
     children
 }: {
     title: string;
     isCollapsed: boolean;
-    isFirst: boolean;
     children: React.ReactNode
 }) => {
     return (
         <div className="space-y-1">
             {!isCollapsed && (
                 <>
-                    {!isFirst && <Separator className="my-4 bg-sidebar-border/50" />}
+                    <Separator className="my-4 bg-sidebar-border/50" />
                     <h4 className="text-xs font-semibold text-sidebar-foreground uppercase tracking-wider px-2 pt-2 pb-1">{title}</h4>
                 </>
             )}
@@ -101,47 +99,52 @@ export function Sidebar() {
           <div className="flex h-full flex-col">
             <div className="flex-1 space-y-2 p-2 pt-4">
               <nav className="space-y-1">
-                {navItems.map((group, index) => {
+                {navItems.map((group) => {
                   if (group.group === 'HOME') {
-                    return group.links.map((item) => {
-                       const Icon = item.icon;
-                       const isActive = pathname === item.href;
-                       return (
-                          <Tooltip key={item.href}>
-                          <TooltipTrigger asChild>
-                            <Button
-                              asChild
-                              variant="sidebar"
-                              className={cn(
-                                'w-full justify-start relative',
-                                isActive &&
-                                  'bg-sidebar-accent text-sidebar-accent-foreground'
-                              )}
-                            >
-                              <Link href={item.href}>
-                                {isActive && (
-                                  <div className="absolute left-0 top-0 h-full w-1.5 bg-primary" />
-                                )}
-                                <Icon
-                                  className={cn('h-5 w-5', {
-                                    'mr-2': !isCollapsed,
-                                  })}
-                                />
-                                {!isCollapsed && item.label}
-                              </Link>
-                            </Button>
-                          </TooltipTrigger>
-                          {isCollapsed && (
-                            <TooltipContent side="right">
-                              {item.label}
-                            </TooltipContent>
-                          )}
-                        </Tooltip>
-                       )
-                    });
+                    return (
+                        <div key={group.group}>
+                            {group.links.map((item) => {
+                                const Icon = item.icon;
+                                const isActive = pathname === item.href;
+                                return (
+                                <Tooltip key={item.href}>
+                                    <TooltipTrigger asChild>
+                                        <Button
+                                        asChild
+                                        variant="sidebar"
+                                        className={cn(
+                                            'w-full justify-start relative',
+                                            isActive &&
+                                            'bg-sidebar-accent text-sidebar-accent-foreground'
+                                        )}
+                                        >
+                                        <Link href={item.href}>
+                                            {isActive && (
+                                            <div className="absolute left-0 top-0 h-full w-1.5 bg-primary" />
+                                            )}
+                                            <Icon
+                                            className={cn('h-5 w-5', {
+                                                'mr-2': !isCollapsed,
+                                            })}
+                                            />
+                                            {!isCollapsed && item.label}
+                                        </Link>
+                                        </Button>
+                                    </TooltipTrigger>
+                                    {isCollapsed && (
+                                        <TooltipContent side="right">
+                                        {item.label}
+                                        </TooltipContent>
+                                    )}
+                                    </Tooltip>
+                                )
+                            })}
+                             {!isCollapsed && <Separator className="my-4 bg-sidebar-border/50" />}
+                        </div>
+                    )
                   }
                   return (
-                    <NavGroup key={group.group} title={group.group} isCollapsed={isCollapsed} isFirst={index === 1}>
+                    <NavGroup key={group.group} title={group.group} isCollapsed={isCollapsed}>
                       {group.links.map((item) => {
                         const Icon = item.icon;
                         const isActive = pathname === item.href;
