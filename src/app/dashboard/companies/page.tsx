@@ -242,7 +242,10 @@ export default function CompaniesPage() {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-bold">Companies</h1>
+          <div>
+            <h1 className="text-2xl font-bold">Companies</h1>
+            <p className="text-muted-foreground">Manage and track all companies in your system.</p>
+          </div>
       </div>
       <Separator className="bg-gray-200"/>
       <div className="flex justify-end items-center">
