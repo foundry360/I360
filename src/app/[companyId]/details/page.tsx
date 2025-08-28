@@ -39,29 +39,6 @@ import { getContactsForCompany, type Contact } from '@/services/contact-service'
 import { cn } from '@/lib/utils';
 import { useQuickAction } from '@/contexts/quick-action-context';
 
-const assessmentHistory = [
-  {
-    name: 'Q3 2023 GTM Strategy Review',
-    status: 'Completed',
-    date: '2023-09-15',
-  },
-  {
-    name: 'Sales Team Performance Analysis',
-    status: 'Completed',
-    date: '2023-08-22',
-  },
-  {
-    name: 'New Product Launch Readiness',
-    status: 'Completed',
-    date: '2023-10-05',
-  },
-  {
-    name: 'Market Expansion Feasibility',
-    status: 'Completed',
-    date: '2023-07-30',
-  },
-];
-
 const recentActivity = [
     { activity: 'New assessment "Q4 Planning" started', time: new Date(Date.now() - 2 * 60 * 60 * 1000) },
     { activity: 'Jane Doe added as primary contact', time: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000) },
@@ -74,7 +51,8 @@ export default function CompanyDetailsPage() {
   const companyId = params.companyId as string;
   const { openAssessmentModal, setOnAssessmentCompleted, openNewContactDialog, setOnContactCreated } = useQuickAction();
   const [companyData, setCompanyData] = React.useState<Company | null>(null);
-  const [assessments, setAssessments] = React.useState<Assessment[]>([]);
+  const [currentAssessments, setCurrentAssessments] = React.useState<Assessment[]>([]);
+  const [completedAssessments, setCompletedAssessments] = React.useState<Assessment[]>([]);
   const [contacts, setContacts] = React.useState<Contact[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [isEditModalOpen, setIsEditModalOpen] = React.useState(false);
@@ -87,7 +65,7 @@ export default function CompanyDetailsPage() {
       const companyPromise = getCompany(companyId);
       const assessmentsPromise = getAssessmentsForCompany(companyId);
       const contactsPromise = getContactsForCompany(companyId);
-      const [company, companyAssessments, companyContacts] = await Promise.all([companyPromise, assessmentsPromise, contactsPromise]);
+      const [company, allAssessments, companyContacts] = await Promise.all([companyPromise, assessmentsPromise, contactsPromise]);
       
       if (company) {
         setCompanyData(company);
@@ -95,7 +73,9 @@ export default function CompanyDetailsPage() {
         console.error("Company not found");
         setCompanyData(null);
       }
-      setAssessments(companyAssessments);
+      
+      setCurrentAssessments(allAssessments.filter(a => a.status === 'In Progress'));
+      setCompletedAssessments(allAssessments.filter(a => a.status === 'Completed'));
       setContacts(companyContacts);
     } catch (error) {
       console.error("Error fetching company data:", error);
@@ -246,7 +226,7 @@ export default function CompanyDetailsPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {assessments.map((assessment, index) => (
+                    {currentAssessments.map((assessment, index) => (
                       <TableRow 
                         key={index}
                         onClick={() => handleResumeAssessment(assessment)}
@@ -295,7 +275,7 @@ export default function CompanyDetailsPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {assessmentHistory.map((assessment, index) => (
+                    {completedAssessments.map((assessment, index) => (
                       <TableRow key={index}>
                         <TableCell className="font-medium">
                           {assessment.name}
@@ -312,7 +292,7 @@ export default function CompanyDetailsPage() {
                             {assessment.status}
                           </Badge>
                         </TableCell>
-                        <TableCell>{assessment.date}</TableCell>
+                        <TableCell>{new Date(assessment.startDate).toLocaleDateString()}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
