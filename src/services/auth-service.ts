@@ -9,23 +9,22 @@ import {
   type User,
 } from 'firebase/auth';
 
-// For this prototype, we'll auto-create a user if they don't exist.
 export const signIn = async (email: string, password: string) => {
   try {
     return await signInWithEmailAndPassword(auth, email, password);
   } catch (error: any) {
-    // If the user is not found, create a new account.
-    if (error.code === 'auth/user-not-found') {
+    // Check for various auth errors that might indicate user doesn't exist
+    if (error.code === 'auth/invalid-credential' || 
+        error.code === 'auth/user-not-found' ||
+        error.code === 'auth/wrong-password') {
       try {
         return await createUserWithEmailAndPassword(auth, email, password);
-      } catch (createError) {
+      } catch (createError: any) {
         console.error('Error creating user:', createError);
-        // Throw the error from the creation attempt
         throw createError;
       }
     }
     
-    // For any other sign-in error, re-throw it to be handled by the UI.
     console.error("Error signing in:", error);
     throw error;
   }
