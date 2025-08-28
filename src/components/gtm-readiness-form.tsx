@@ -49,55 +49,55 @@ import { GtmReadinessReport } from './gtm-readiness-report';
 
 const GtmReadinessInputSchema = z.object({
   companyId: z.string().min(1, 'Please select a company.'),
-  companyStage: z.string(),
-  employeeCount: z.string(),
-  industrySector: z.string(),
-  goToMarketStrategy: z.string(),
-  growthChallenges: z.string(),
-  departmentalAlignment: z.string(),
-  communicationFrequency: z.string(),
-  responsibilityClarity: z.string(),
-  crmPlatform: z.string(),
-  dataHygienePractices: z.string(),
-  techStackAssessment: z.string(),
-  integrationEffectiveness: z.string(),
-  toolAdoptionRates: z.string(),
-  workflowAutomation: z.string(),
-  leadManagementProcess: z.string(),
-  salesCycleEfficiency: z.string(),
-  forecastingProcess: z.string(),
-  customerJourneyMapping: z.string(),
-  customerFirstCulture: z.string(),
-  personalizationEfforts: z.string(),
-  customerFeedbackMechanisms: z.string(),
-  revenueMetricsDescription: z.string(),
-  annualRecurringRevenue: z.string(),
-  netRevenueRetention: z.string(),
-  revenueGrowthRate: z.string(),
-  acquisitionMetricsDescription: z.string(),
-  customerAcquisitionCost: z.string(),
-  winRate: z.string(),
-  pipelineCoverage: z.string(),
-  pipelineVelocity: z.string(),
-  retentionMetricsDescription: z.string(),
-  churnRate: z.string(),
-  customerLifetimeValue: z.string(),
-  netPromoterScore: z.string(),
-  customerSatisfaction: z.string(),
-  kpiReportingFrequency: z.string(),
-  challengesDescription: z.string(),
-  executiveSponsorship: z.string(),
-  organizationalChangeDescription: z.string(),
-  crossFunctionalInputMechanisms: z.string(),
-  icpLastUpdated: z.string(),
-  valueMessagingAlignment: z.string(),
-  tangibleDifferentiators: z.string(),
-  forecastAccuracy: z.string(),
-  pipelineReportingTools: z.string(),
-  manualReportingTime: z.string(),
-  budgetAllocation: z.string(),
-  aiAdoptionBarriers: z.string(),
-  businessModelTesting: z.string(),
+  companyStage: z.string().optional(),
+  employeeCount: z.string().optional(),
+  industrySector: z.string().optional(),
+  goToMarketStrategy: z.string().optional(),
+  growthChallenges: z.string().optional(),
+  departmentalAlignment: z.string().optional(),
+  communicationFrequency: z.string().optional(),
+  responsibilityClarity: z.string().optional(),
+  crmPlatform: z.string().optional(),
+  dataHygienePractices: z.string().optional(),
+  techStackAssessment: z.string().optional(),
+  integrationEffectiveness: z.string().optional(),
+  toolAdoptionRates: z.string().optional(),
+  workflowAutomation: z.string().optional(),
+  leadManagementProcess: z.string().optional(),
+  salesCycleEfficiency: z.string().optional(),
+  forecastingProcess: z.string().optional(),
+  customerJourneyMapping: z.string().optional(),
+  customerFirstCulture: z.string().optional(),
+  personalizationEfforts: z.string().optional(),
+  customerFeedbackMechanisms: z.string().optional(),
+  revenueMetricsDescription: z.string().optional(),
+  annualRecurringRevenue: z.string().optional(),
+  netRevenueRetention: z.string().optional(),
+  revenueGrowthRate: z.string().optional(),
+  acquisitionMetricsDescription: z.string().optional(),
+  customerAcquisitionCost: z.string().optional(),
+  winRate: z.string().optional(),
+  pipelineCoverage: z.string().optional(),
+  pipelineVelocity: z.string().optional(),
+  retentionMetricsDescription: z.string().optional(),
+  churnRate: z.string().optional(),
+  customerLifetimeValue: z.string().optional(),
+  netPromoterScore: z.string().optional(),
+  customerSatisfaction: z.string().optional(),
+  kpiReportingFrequency: z.string().optional(),
+  challengesDescription: z.string().optional(),
+  executiveSponsorship: z.string().optional(),
+  organizationalChangeDescription: z.string().optional(),
+  crossFunctionalInputMechanisms: z.string().optional(),
+  icpLastUpdated: z.string().optional(),
+  valueMessagingAlignment: z.string().optional(),
+  tangibleDifferentiators: z.string().optional(),
+  forecastAccuracy: z.string().optional(),
+  pipelineReportingTools: z.string().optional(),
+  manualReportingTime: z.string().optional(),
+  budgetAllocation: z.string().optional(),
+  aiAdoptionBarriers: z.string().optional(),
+  businessModelTesting: z.string().optional(),
 });
 
 const formSections = [
@@ -454,10 +454,10 @@ export function GtmReadinessForm({ onComplete, assessmentToResume }: GtmReadines
                 ))}
             </nav>
         </div>
-        <div className="col-span-9 p-6 overflow-y-auto">
+        <div className="col-span-9 flex flex-col h-full">
             <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col h-full">
-                    <div className="flex-1">
+                <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col flex-1 overflow-hidden">
+                    <div className="flex-1 overflow-y-auto p-6">
                         <Card>
                             <CardHeader>
                                 <CardTitle>
@@ -523,7 +523,7 @@ export function GtmReadinessForm({ onComplete, assessmentToResume }: GtmReadines
                         </Card>
                     </div>
 
-                    <div className="flex justify-between items-center pt-8">
+                    <div className="flex justify-between items-center p-6 border-t bg-background">
                         <div>
                              <Button type="button" variant="link" onClick={handleSaveForLater}>
                                 Save for Later
@@ -554,7 +554,3 @@ export function GtmReadinessForm({ onComplete, assessmentToResume }: GtmReadines
     </div>
   );
 }
-
-    
-
-    
