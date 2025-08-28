@@ -78,6 +78,7 @@ export default function CompanyDetailsPage() {
   const [contacts, setContacts] = React.useState<Contact[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [isEditModalOpen, setIsEditModalOpen] = React.useState(false);
+  const [isDescriptionExpanded, setIsDescriptionExpanded] = React.useState(false);
 
   const fetchCompanyData = React.useCallback(async () => {
     if (!companyId) return;
@@ -191,9 +192,26 @@ export default function CompanyDetailsPage() {
                 <CardTitle className="text-xl">Company Overview</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-muted-foreground">
+                <p
+                  className={cn(
+                    'text-sm text-muted-foreground',
+                    !isDescriptionExpanded && 'line-clamp-2'
+                  )}
+                >
                   {companyData.description}
                 </p>
+                {companyData.description &&
+                  companyData.description.length > 150 && (
+                    <Button
+                      variant="link"
+                      className="p-0 h-auto mt-2 text-sm"
+                      onClick={() =>
+                        setIsDescriptionExpanded(!isDescriptionExpanded)
+                      }
+                    >
+                      {isDescriptionExpanded ? 'Read less' : 'Read more'}
+                    </Button>
+                  )}
               </CardContent>
             </Card>
             <Card>
@@ -384,5 +402,8 @@ export default function CompanyDetailsPage() {
       )}
     </AppLayout>
   );
+
+    
+
 
     
