@@ -5,6 +5,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from '@/components/ui/dialog';
+import { GtmReadinessForm } from './gtm-readiness-form';
 
 type AssessmentModalProps = {
   isOpen: boolean;
@@ -16,13 +17,14 @@ export function AssessmentModal({ isOpen, onOpenChange }: AssessmentModalProps) 
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="h-[90vh] w-[90vw] max-w-none flex flex-col">
         <DialogHeader>
-          <DialogTitle>New Assessment</DialogTitle>
+          <DialogTitle>GTM Readiness Assessment</DialogTitle>
           <DialogDescription>
-            Start a new assessment by filling out the form below
+            Complete the form below to receive an AI-powered analysis of your
+            go-to-market readiness.
           </DialogDescription>
         </DialogHeader>
-        <div className="flex-1 py-4">
-          <p>Your assessment form will go here.</p>
+        <div className="flex-1 overflow-y-auto pr-6">
+          <GtmReadinessForm />
         </div>
       </DialogContent>
     </Dialog>
