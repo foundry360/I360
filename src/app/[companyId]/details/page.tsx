@@ -196,7 +196,7 @@ export default function CompanyDetailsPage() {
           <div className="lg:col-span-2 space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>Company Overview</CardTitle>
+                <CardTitle className="text-xl">Company Overview</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-muted-foreground">
@@ -207,7 +207,7 @@ export default function CompanyDetailsPage() {
             <Card>
               <CardHeader className="flex flex-row items-center justify-between">
                 <div>
-                  <CardTitle>Current Assessments</CardTitle>
+                  <CardTitle className="text-xl">Current Assessments</CardTitle>
                   <CardDescription>
                     Ongoing assessments for {companyData.name}
                   </CardDescription>
@@ -270,7 +270,7 @@ export default function CompanyDetailsPage() {
             </Card>
             <Card>
               <CardHeader>
-                <CardTitle>Assessment History</CardTitle>
+                <CardTitle className="text-xl">Assessment History</CardTitle>
                 <CardDescription>
                   Review of all completed assessments
                 </CardDescription>
@@ -314,7 +314,7 @@ export default function CompanyDetailsPage() {
           <div className="space-y-6">
             <Card>
                 <CardHeader className="flex flex-row items-center justify-between">
-                    <CardTitle>Company Information</CardTitle>
+                    <CardTitle className="text-xl">Company Information</CardTitle>
                     <Button variant="outline" size="sm" onClick={() => setIsEditModalOpen(true)}>
                         <Pencil className="h-4 w-4" />
                     </Button>
@@ -338,7 +338,7 @@ export default function CompanyDetailsPage() {
             </Card>
             <Card>
               <CardHeader>
-                <CardTitle>Primary Contacts</CardTitle>
+                <CardTitle className="text-xl">Primary Contacts</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 {primaryContacts.map((contact, index) => (
@@ -349,8 +349,8 @@ export default function CompanyDetailsPage() {
                       </AvatarFallback>
                     </Avatar>
                     <div>
-                      <p className="font-semibold">{contact.name}</p>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="font-medium text-sm">{contact.name}</p>
+                      <p className="text-xs text-muted-foreground">
                         {contact.role}
                       </p>
                     </div>
@@ -360,7 +360,7 @@ export default function CompanyDetailsPage() {
             </Card>
             <Card>
               <CardHeader>
-                <CardTitle>Recent Activity</CardTitle>
+                <CardTitle className="text-xl">Recent Activity</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 {recentActivity.map((item, index) => (
