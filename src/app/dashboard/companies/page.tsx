@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -14,21 +15,11 @@ import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { useRouter } from 'next/navigation';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-  DialogTrigger,
-} from '@/components/ui/dialog';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -47,10 +38,8 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import {
   getCompanies,
-  createCompany,
   deleteCompany,
   deleteCompanies,
   Company,
@@ -62,16 +51,7 @@ import { Separator } from '@/components/ui/separator';
 import { TablePagination } from '@/components/table-pagination';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
-
-const initialNewCompanyState = {
-  name: '',
-  street: '',
-  city: '',
-  state: '',
-  zip: '',
-  phone: '',
-  website: '',
-};
+import { useQuickAction } from '@/contexts/quick-action-context';
 
 type SortKey = keyof Company;
 
@@ -79,8 +59,6 @@ export default function CompaniesPage() {
   const router = useRouter();
   const [companies, setCompanies] = React.useState<Company[]>([]);
   const [loading, setLoading] = React.useState(true);
-  const [newCompany, setNewCompany] = React.useState(initialNewCompanyState);
-  const [isDialogOpen, setIsDialogOpen] = React.useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
   const [isBulkDeleteDialogOpen, setIsBulkDeleteDialogOpen] =
     React.useState(false);
@@ -98,6 +76,8 @@ export default function CompaniesPage() {
 
   const [sortConfig, setSortConfig] = React.useState<{ key: SortKey; direction: 'ascending' | 'descending' } | null>({ key: 'name', direction: 'ascending' });
 
+  const { openNewCompanyDialog, setOnCompanyCreated } = useQuickAction();
+
   const fetchCompanies = React.useCallback(async () => {
     try {
       setLoading(true);
@@ -113,29 +93,9 @@ export default function CompaniesPage() {
 
   React.useEffect(() => {
     fetchCompanies();
-  }, [fetchCompanies]);
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { id, value } = e.target;
-    setNewCompany((prev) => ({ ...prev, [id]: value }));
-  };
-
-  const handleCreateCompany = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newCompany.name) {
-      alert('Company name is required');
-      return;
-    }
-    try {
-      await createCompany(newCompany);
-      setNewCompany(initialNewCompanyState);
-      setIsDialogOpen(false);
-      await fetchCompanies(); // Refetch companies to show the new one
-    } catch (error) {
-      console.error('Failed to create company:', error);
-      // Here you might want to show a toast to the user
-    }
-  };
+    setOnCompanyCreated(() => fetchCompanies);
+    return () => setOnCompanyCreated(null);
+  }, [fetchCompanies, setOnCompanyCreated]);
 
   const handleViewDetails = (company: Company) => {
     router.push(`/${company.id}/details`);
@@ -249,7 +209,7 @@ export default function CompaniesPage() {
         <p className="text-muted-foreground">Manage and track all companies in your system.</p>
       </div>
       <Separator/>
-       <div className="flex justify-end items-center">
+       <div className="flex justify-end">
           <div className="flex items-center gap-2">
             {numSelected > 0 && (
                 <Button
@@ -279,113 +239,9 @@ export default function CompaniesPage() {
                   />
                 </div>
               )}
-            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                <DialogTrigger asChild>
-                <Button size="icon">
-                    <Plus className="h-4 w-4" />
-                </Button>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-[600px]">
-                <form onSubmit={handleCreateCompany}>
-                    <DialogHeader>
-                    <DialogTitle>Create New Company</DialogTitle>
-                    <DialogDescription>
-                        Fill in the details below to create a new company
-                    </DialogDescription>
-                    </DialogHeader>
-                    <div className="grid gap-4 py-4">
-                    <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="name" className="text-right">
-                        Company Name
-                        </Label>
-                        <Input
-                        id="name"
-                        value={newCompany.name}
-                        onChange={handleInputChange}
-                        className="col-span-3"
-                        required
-                        />
-                    </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="street" className="text-right">
-                        Street Address
-                        </Label>
-                        <Input
-                        id="street"
-                        value={newCompany.street}
-                        onChange={handleInputChange}
-                        className="col-span-3"
-                        />
-                    </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="city" className="text-right">
-                        City
-                        </Label>
-                        <Input
-                        id="city"
-                        value={newCompany.city}
-                        onChange={handleInputChange}
-                        className="col-span-3"
-                        />
-                    </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="state" className="text-right">
-                        State
-                        </Label>
-                        <Input
-                        id="state"
-                        value={newCompany.state}
-                        onChange={handleInputChange}
-                        className="col-span-3"
-                        />
-                    </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="zip" className="text-right">
-                        Postal Code
-                        </Label>
-                        <Input
-                        id="zip"
-                        value={newCompany.zip}
-                        onChange={handleInputChange}
-                        className="col-span-3"
-                        />
-                    </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="phone" className="text-right">
-                        Phone Number
-                        </Label>
-                        <Input
-                        id="phone"
-                        value={newCompany.phone}
-                        onChange={handleInputChange}
-                        className="col-span-3"
-                        />
-                    </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="website" className="text-right">
-                        Website
-                        </Label>
-                        <Input
-                        id="website"
-                        value={newCompany.website}
-                        onChange={handleInputChange}
-                        className="col-span-3"
-                        />
-                    </div>
-                    </div>
-                    <DialogFooter>
-                    <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => setIsDialogOpen(false)}
-                    >
-                        Cancel
-                    </Button>
-                    <Button type="submit">Create Company</Button>
-                    </DialogFooter>
-                </form>
-                </DialogContent>
-            </Dialog>
+            <Button size="icon" onClick={openNewCompanyDialog}>
+                <Plus className="h-4 w-4" />
+            </Button>
             </div>
       </div>
       <Card>

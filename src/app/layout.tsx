@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
+import { QuickActionProvider } from '@/contexts/quick-action-context';
+import { NewCompanyDialog } from '@/components/new-company-dialog';
 
 export const metadata: Metadata = {
   title: 'Insights360',
@@ -22,11 +24,11 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body
-        className="font-sans antialiased h-full"
-        suppressHydrationWarning
-      >
-        {children}
+      <body className="font-sans antialiased h-full" suppressHydrationWarning>
+        <QuickActionProvider>
+          {children}
+          <NewCompanyDialog />
+        </QuickActionProvider>
         <Toaster />
       </body>
     </html>
