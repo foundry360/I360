@@ -33,8 +33,6 @@ export function Header() {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Quick Actions</DropdownMenuLabel>
-            <DropdownMenuSeparator />
             <DropdownMenuItem onSelect={openNewCompanyDialog}>
               New Company
             </DropdownMenuItem>
