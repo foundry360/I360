@@ -19,8 +19,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   React.useEffect(() => {
-    if (loading) {
-      return; // Wait until user state is determined
+    if (loading || !isMounted) {
+      return; // Wait until user state is determined and component is mounted
     }
 
     const isUnprotected = unprotectedRoutes.some(route => pathname.startsWith(route));
@@ -34,8 +34,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (user && pathname === '/login') {
       router.push('/dashboard/companies');
     }
-  }, [user, loading, router, pathname]);
+  }, [user, loading, router, pathname, isMounted]);
 
+  // While loading or before mount, show a skeleton on protected routes
   if ((loading || !isMounted) && !unprotectedRoutes.some(route => pathname.startsWith(route))) {
      return (
          <div className="flex h-screen w-screen items-center justify-center">
