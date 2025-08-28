@@ -99,7 +99,7 @@ export function Sidebar() {
           <div className="flex h-full flex-col">
             <div className="flex-1 space-y-2 p-2 pt-4">
               <nav className="space-y-1">
-                {navItems.map((group, groupIndex) => {
+                {navItems.map((group) => {
                   if (group.group === 'HOME') {
                     return (
                         <div key={group.group}>
@@ -139,7 +139,6 @@ export function Sidebar() {
                                     </Tooltip>
                                 )
                             })}
-                             {groupIndex === 0 && <Separator className="my-4 bg-sidebar-border" />}
                         </div>
                     )
                   }
