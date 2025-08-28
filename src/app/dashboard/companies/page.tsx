@@ -249,7 +249,7 @@ export default function CompaniesPage() {
         <p className="text-muted-foreground">Manage and track all companies in your system.</p>
       </div>
       <Separator/>
-      <div className="flex justify-end items-center">
+       <div className="flex justify-end items-center">
           <div className="flex items-center gap-2">
             {numSelected > 0 && (
                 <Button
@@ -485,7 +485,7 @@ export default function CompaniesPage() {
                       </Badge>
                     </TableCell>
                     <TableCell>
-                        {new Date(company.lastActivity).toLocaleString([], { year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric', hour12: true })}
+                        {new Date(company.lastActivity).toLocaleString([], { year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric', hour12: true, timeZoneName: 'short' })}
                     </TableCell>
                     <TableCell className="text-right">
                        <DropdownMenu>
