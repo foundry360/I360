@@ -1,8 +1,10 @@
+
 import type { Metadata } from 'next';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { QuickActionProvider } from '@/contexts/quick-action-context';
 import { NewCompanyDialog } from '@/components/new-company-dialog';
+import { NewContactDialog } from '@/components/new-contact-dialog';
 import { UserProvider } from '@/contexts/user-context';
 import { AuthProvider } from '@/components/auth-provider';
 import { AssessmentModal } from '@/components/assessment-modal';
@@ -33,6 +35,7 @@ export default function RootLayout({
             <AuthProvider>
                 {children}
                 <NewCompanyDialog />
+                <NewContactDialog />
                 <AssessmentModal 
                   // These props are managed by the QuickActionProvider now
                 />

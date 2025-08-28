@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -9,6 +10,7 @@ import {
   Home,
   User,
   Briefcase,
+  Users,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -29,6 +31,7 @@ export function Sidebar() {
   const navItems = [
     { type: 'link', href: `/${companyId}/dashboard`, label: 'Dashboard', icon: Home },
     { type: 'link', href: `/dashboard/companies`, label: 'Companies', icon: Briefcase },
+    { type: 'link', href: `/dashboard/contacts`, label: 'Contacts', icon: Users },
     { type: 'link', href: `/${companyId}/profile`, label: 'Profile', icon: User },
   ];
 

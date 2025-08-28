@@ -11,6 +11,12 @@ type QuickActionContextType = {
   onCompanyCreated: (() => void) | null;
   setOnCompanyCreated: (callback: (() => void) | null) => void;
   
+  isNewContactDialogOpen: boolean;
+  openNewContactDialog: () => void;
+  closeNewContactDialog: () => void;
+  onContactCreated: (() => void) | null;
+  setOnContactCreated: (callback: (() => void) | null) => void;
+
   isAssessmentModalOpen: boolean;
   openAssessmentModal: (assessment?: Assessment | null) => void;
   closeAssessmentModal: () => void;
@@ -34,6 +40,13 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
     (() => void) | null
   >(null);
 
+  // New Contact Dialog State
+  const [isNewContactDialogOpen, setIsNewContactDialogOpen] =
+    React.useState(false);
+  const [onContactCreated, setOnContactCreated] = React.useState<
+    (() => void) | null
+  >(null);
+
   // New Assessment Modal State
   const [isAssessmentModalOpen, setIsAssessmentModalOpen] = React.useState(false);
   const [assessmentToResume, setAssessmentToResume] = React.useState<Assessment | null>(null);
@@ -53,6 +66,21 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
   const handleSetOnCompanyCreated = React.useCallback(
     (callback: (() => void) | null) => {
       setOnCompanyCreated(() => callback);
+    },
+    []
+  );
+
+  const openNewContactDialog = React.useCallback(() => {
+    setIsNewContactDialogOpen(true);
+  }, []);
+
+  const closeNewContactDialog = React.useCallback(() => {
+    setIsNewContactDialogOpen(false);
+  }, []);
+
+  const handleSetOnContactCreated = React.useCallback(
+    (callback: (() => void) | null) => {
+      setOnContactCreated(() => callback);
     },
     []
   );
@@ -83,6 +111,12 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
         closeNewCompanyDialog,
         onCompanyCreated,
         setOnCompanyCreated: handleSetOnCompanyCreated,
+
+        isNewContactDialogOpen,
+        openNewContactDialog,
+        closeNewContactDialog,
+        onContactCreated,
+        setOnContactCreated: handleSetOnContactCreated,
         
         isAssessmentModalOpen,
         openAssessmentModal,
