@@ -3,7 +3,8 @@
 
 import { GtmReadinessOutput, GtmReadinessInput } from "@/ai/flows/gtm-readiness-flow";
 import { db } from '@/lib/firebase';
-import { collection, doc, getDocs, setDoc, updateDoc, query, where, writeBatch, deleteDoc } from 'firebase/firestore';
+import { collection, doc, getDocs, setDoc, updateDoc, query, where, writeBatch, getDoc } from 'firebase/firestore';
+import type { Company } from "./company-service";
 
 
 export interface Assessment {
@@ -15,9 +16,25 @@ export interface Assessment {
   startDate: string;
   result?: GtmReadinessOutput;
   formData?: Partial<GtmReadinessInput>;
+  companyName?: string;
 }
 
 const assessmentsCollection = collection(db, 'assessments');
+
+export async function getAssessments(): Promise<Assessment[]> {
+  const snapshot = await getDocs(assessmentsCollection);
+  const assessments = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Assessment));
+
+  for (const assessment of assessments) {
+    if (assessment.companyId) {
+      const companyDoc = await getDoc(doc(db, 'companies', assessment.companyId));
+      if (companyDoc.exists()) {
+        assessment.companyName = (companyDoc.data() as Company).name;
+      }
+    }
+  }
+  return assessments;
+}
 
 export async function getAssessmentsForCompany(companyId: string): Promise<Assessment[]> {
     const q = query(assessmentsCollection, where("companyId", "==", companyId));

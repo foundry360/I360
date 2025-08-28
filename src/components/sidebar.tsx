@@ -11,6 +11,7 @@ import {
   User,
   Briefcase,
   Users,
+  ClipboardList,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -32,6 +33,7 @@ export function Sidebar() {
     { type: 'link', href: `/${companyId}/dashboard`, label: 'Dashboard', icon: Home },
     { type: 'link', href: `/dashboard/companies`, label: 'Companies', icon: Briefcase },
     { type: 'link', href: `/dashboard/contacts`, label: 'Contacts', icon: Users },
+    { type: 'link', href: `/dashboard/assessments`, label: 'Assessments', icon: ClipboardList },
     { type: 'link', href: `/${companyId}/profile`, label: 'Profile', icon: User },
   ];
 
