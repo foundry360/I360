@@ -287,7 +287,6 @@ export default function ContactsPage() {
                       <TableCell className="font-medium">
                         <div className="flex items-center gap-2">
                           <Avatar className="h-8 w-8">
-                            <AvatarImage src={contact.avatar} alt={contact.name} />
                             <AvatarFallback className="bg-primary text-primary-foreground">
                               {getInitials(contact.name)}
                             </AvatarFallback>
@@ -405,3 +404,4 @@ export default function ContactsPage() {
     
 
     
+
