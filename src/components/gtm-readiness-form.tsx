@@ -449,7 +449,10 @@ export function GtmReadinessForm({ onComplete, assessmentToResume }: GtmReadines
                                 {currentSection === index && <div className="h-2 w-2 rounded-full bg-primary" />}
                             </div>
                         }
-                        <span>{section.title}</span>
+                        <div className="flex flex-col items-start">
+                          <span className="text-xs text-muted-foreground">Section {index + 1} of {formSections.length}</span>
+                          <span>{section.title}</span>
+                        </div>
                     </button>
                 ))}
             </nav>
@@ -460,7 +463,10 @@ export function GtmReadinessForm({ onComplete, assessmentToResume }: GtmReadines
                     <div className="flex-1">
                         <Card>
                             <CardHeader>
-                                <CardTitle>{formSections[currentSection].title}</CardTitle>
+                                <CardTitle>
+                                    <span className="text-sm font-normal text-muted-foreground block">Section {currentSection + 1} of {formSections.length}</span>
+                                    {formSections[currentSection].title}
+                                </CardTitle>
                             </CardHeader>
                             <CardContent>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -551,5 +557,7 @@ export function GtmReadinessForm({ onComplete, assessmentToResume }: GtmReadines
     </div>
   );
 }
+
+    
 
     
