@@ -52,10 +52,11 @@ export default function CompanyDetailsPage() {
   const [currentAssessments, setCurrentAssessments] = React.useState<Assessment[]>([]);
   const [completedAssessments, setCompletedAssessments] = React.useState<Assessment[]>([]);
   const [contacts, setContacts] = React.useState<Contact[]>([]);
-  const [recentActivity, setRecentActivity] = React.useState<ActivityItem[]>([]);
+  const [allRecentActivity, setAllRecentActivity] = React.useState<ActivityItem[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [isEditModalOpen, setIsEditModalOpen] = React.useState(false);
   const [isDescriptionExpanded, setIsDescriptionExpanded] = React.useState(false);
+  const [isActivityExpanded, setIsActivityExpanded] = React.useState(false);
 
   const fetchCompanyData = React.useCallback(async () => {
     if (!companyId) return;
@@ -96,9 +97,8 @@ export default function CompanyDetailsPage() {
               time: new Date(company.lastActivity)
           };
            const allActivity = [...assessmentActivity, ...contactActivity, companyUpdateActivity]
-            .sort((a, b) => b.time.getTime() - a.time.getTime())
-            .slice(0, 5);
-           setRecentActivity(allActivity);
+            .sort((a, b) => b.time.getTime() - a.time.getTime());
+           setAllRecentActivity(allActivity);
       }
 
 
@@ -139,6 +139,8 @@ export default function CompanyDetailsPage() {
       .join('')
       .toUpperCase();
   };
+
+  const recentActivity = isActivityExpanded ? allRecentActivity : allRecentActivity.slice(0, 5);
 
   if (loading) {
       return (
@@ -417,6 +419,15 @@ export default function CompanyDetailsPage() {
                 ) : (
                     <p className="text-sm text-muted-foreground text-center py-4">No recent activity.</p>
                 )}
+                {allRecentActivity.length > 5 && (
+                    <Button 
+                        variant="link" 
+                        className="p-0 h-auto text-sm"
+                        onClick={() => setIsActivityExpanded(!isActivityExpanded)}
+                    >
+                        {isActivityExpanded ? 'View less' : 'View all'}
+                    </Button>
+                )}
               </CardContent>
             </Card>
           </div>
@@ -433,5 +444,4 @@ export default function CompanyDetailsPage() {
     </AppLayout>
   );
 }
-
     
