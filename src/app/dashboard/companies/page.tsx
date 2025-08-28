@@ -214,7 +214,7 @@ export default function CompaniesPage() {
       <div>
         <h1 className="text-2xl font-bold">Companies</h1>
         <p className="text-muted-foreground">
-          Manage and track all companies in your system
+          Manage and track all companies in your portfolio
         </p>
       </div>
       <Separator />
@@ -320,7 +320,7 @@ export default function CompaniesPage() {
                         </Link>
                       </TableCell>
                       <TableCell>
-                        {company.contact && company.contact.name ? (
+                        {company.contact && company.contact.name && company.contact.name !== 'New Contact' ? (
                           <div className="flex items-center gap-2">
                             <Avatar className="h-8 w-8">
                               <AvatarFallback className="bg-primary text-primary-foreground">
