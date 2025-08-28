@@ -319,7 +319,7 @@ export default function CompaniesPage() {
                             <span>{company.contact.name}</span>
                           </div>
                         ) : (
-                          <span className="text-muted-foreground">N/A</span>
+                          <span className="text-muted-foreground">-</span>
                         )}
                       </TableCell>
                       <TableCell>
