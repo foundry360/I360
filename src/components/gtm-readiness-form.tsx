@@ -323,11 +323,13 @@ export function GtmReadinessForm({ onComplete, assessmentToResume }: GtmReadines
     setResult(null);
     try {
       const { companyId, assessmentName, ...assessmentData } = values;
+      const company = companies.find(c => c.id === companyId);
+      const finalAssessmentName = company ? `${assessmentName} - ${company.name}` : assessmentName;
       
       const response = await generateGtmReadiness(assessmentData as GtmReadinessInput);
       const payload = {
         companyId: companyId,
-        name: assessmentName,
+        name: finalAssessmentName,
         status: 'Completed' as const,
         progress: 100,
         startDate: assessmentToResume?.startDate || new Date().toISOString(),
@@ -373,6 +375,9 @@ export function GtmReadinessForm({ onComplete, assessmentToResume }: GtmReadines
         return;
     }
 
+    const company = companies.find(c => c.id === companyId);
+    const finalAssessmentName = company ? `${assessmentName} - ${company.name}` : assessmentName;
+
     const completedSections = formSections.reduce((acc, section, index) => {
         if (isSectionCompleted(index)) {
             return acc + 1;
@@ -383,7 +388,7 @@ export function GtmReadinessForm({ onComplete, assessmentToResume }: GtmReadines
 
     const payload = {
         companyId: companyId,
-        name: assessmentName,
+        name: finalAssessmentName,
         status: 'In Progress' as const,
         progress: progress,
         startDate: assessmentToResume?.startDate || new Date().toISOString(),
@@ -553,5 +558,3 @@ export function GtmReadinessForm({ onComplete, assessmentToResume }: GtmReadines
     </div>
   );
 }
-
-    
