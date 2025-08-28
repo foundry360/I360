@@ -265,7 +265,7 @@ export default function AssessmentsPage() {
                 {currentVisibleAssessments.length > 0 ? (
                   currentVisibleAssessments.map((assessment) => (
                     <TableRow key={assessment.id} data-state={selectedAssessments.includes(assessment.id) && "selected"}>
-                      <TableCell>
+                      <TableCell className="p-2">
                         <Checkbox
                           checked={selectedAssessments.includes(assessment.id)}
                           onCheckedChange={(checked) =>
@@ -274,17 +274,17 @@ export default function AssessmentsPage() {
                           aria-label={`Select ${assessment.name}`}
                         />
                       </TableCell>
-                      <TableCell className="font-medium">
+                      <TableCell className="font-medium p-2">
                         <span onClick={() => openAssessmentModal(assessment)} className="hover:text-primary cursor-pointer">
                           {assessment.name}
                         </span>
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="p-2">
                         <Link href={`/${assessment.companyId}/details`} className="hover:text-primary">
                             {assessment.companyName}
                         </Link>
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="p-2">
                         <Badge
                             variant={
                                 assessment.status === 'Completed' ? 'default' : (assessment.status === 'In Progress' ? 'secondary' : 'outline')
@@ -296,10 +296,10 @@ export default function AssessmentsPage() {
                           {assessment.status}
                         </Badge>
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="p-2">
                           {new Date(assessment.startDate).toLocaleDateString()}
                       </TableCell>
-                      <TableCell className="text-right">
+                      <TableCell className="text-right p-2">
                          <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button variant="ghost" className="h-8 w-8 p-0">
@@ -372,3 +372,5 @@ export default function AssessmentsPage() {
       </AlertDialog>
     </div>
   );
+
+    
