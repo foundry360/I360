@@ -292,78 +292,85 @@ export default function CompaniesPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {currentVisibleCompanies.map((company) => (
-                  <TableRow key={company.id} data-state={selectedCompanies.includes(company.id) && "selected"}>
-                    <TableCell>
-                      <Checkbox
-                        checked={selectedCompanies.includes(company.id)}
-                        onCheckedChange={(checked) =>
-                          handleSelectCompany(company.id, checked as boolean)
-                        }
-                        aria-label={`Select ${company.name}`}
-                      />
-                    </TableCell>
-                    <TableCell className="font-medium">
-                      <Link href={`/${company.id}/details`} className="hover:text-primary">
-                        {company.name}
-                      </Link>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Avatar className="h-8 w-8">
-                          <AvatarFallback className="bg-primary text-primary-foreground">
-                            {getInitials(company.contact.name)}
-                          </AvatarFallback>
-                        </Avatar>
-                        <span>{company.contact.name}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        variant={
-                          company.status === 'Active' ? 'default' : 'secondary'
-                        }
-                        className={
-                          company.status === 'Active' ? 'bg-green-500' : ''
-                        }
-                      >
-                        {company.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                        <a href={`http://${company.website}`} target="_blank" rel="noopener noreferrer" className="hover:text-primary">
-                            {company.website}
-                        </a>
-                    </TableCell>
-                    <TableCell>
-                        {new Date(company.lastActivity).toLocaleString([], { year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric', hour12: true, timeZoneName: 'short' })}
-                    </TableCell>
-                    <TableCell className="text-right">
-                       <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" className="h-8 w-8 p-0">
-                            <span className="sr-only">Open menu</span>
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem
-                            onClick={() => handleViewDetails(company)}
-                          >
-                            View Details
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem
-                            onClick={() => openDeleteDialog(company)}
-                             className="text-red-600"
-                          >
-                            Delete Company
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                {currentVisibleCompanies.length > 0 ? (
+                  currentVisibleCompanies.map((company) => (
+                    <TableRow key={company.id} data-state={selectedCompanies.includes(company.id) && "selected"}>
+                      <TableCell>
+                        <Checkbox
+                          checked={selectedCompanies.includes(company.id)}
+                          onCheckedChange={(checked) =>
+                            handleSelectCompany(company.id, checked as boolean)
+                          }
+                          aria-label={`Select ${company.name}`}
+                        />
+                      </TableCell>
+                      <TableCell className="font-medium">
+                        <Link href={`/${company.id}/details`} className="hover:text-primary">
+                          {company.name}
+                        </Link>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <Avatar className="h-8 w-8">
+                            <AvatarFallback className="bg-primary text-primary-foreground">
+                              {getInitials(company.contact.name)}
+                            </AvatarFallback>
+                          </Avatar>
+                          <span>{company.contact.name}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          variant={
+                            company.status === 'Active' ? 'default' : 'secondary'
+                          }
+                          className={
+                            company.status === 'Active' ? 'bg-green-500' : ''
+                          }
+                        >
+                          {company.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                          <a href={`http://${company.website}`} target="_blank" rel="noopener noreferrer" className="hover:text-primary">
+                              {company.website}
+                          </a>
+                      </TableCell>
+                      <TableCell>
+                          {new Date(company.lastActivity).toLocaleString([], { year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric', hour12: true, timeZoneName: 'short' })}
+                      </TableCell>
+                      <TableCell className="text-right">
+                         <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" className="h-8 w-8 p-0">
+                              <span className="sr-only">Open menu</span>
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem
+                              onClick={() => handleViewDetails(company)}
+                            >
+                              View Details
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                              onClick={() => openDeleteDialog(company)}
+                            >
+                              Delete Company
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={7} className="h-24 text-center">
+                      No companies found.
                     </TableCell>
                   </TableRow>
-                ))}
+                )}
               </TableBody>
             </Table>
           )}
@@ -425,5 +432,8 @@ export default function CompaniesPage() {
       </AlertDialog>
     </div>
   );
+
+    
+
 
     

@@ -277,67 +277,74 @@ export default function ContactsPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {currentVisibleContacts.map((contact) => (
-                  <TableRow key={contact.id} data-state={selectedContacts.includes(contact.id) && "selected"}>
-                    <TableCell>
-                      <Checkbox
-                        checked={selectedContacts.includes(contact.id)}
-                        onCheckedChange={(checked) =>
-                          handleSelectContact(contact.id, checked as boolean)
+                {currentVisibleContacts.length > 0 ? (
+                  currentVisibleContacts.map((contact) => (
+                    <TableRow key={contact.id} data-state={selectedContacts.includes(contact.id) && "selected"}>
+                      <TableCell>
+                        <Checkbox
+                          checked={selectedContacts.includes(contact.id)}
+                          onCheckedChange={(checked) =>
+                            handleSelectContact(contact.id, checked as boolean)
+                          }
+                          aria-label={`Select ${contact.name}`}
+                        />
+                      </TableCell>
+                      <TableCell className="font-medium">
+                        <div className="flex items-center gap-2">
+                          <Avatar className="h-8 w-8">
+                            <AvatarImage src={contact.avatar} alt={contact.name} />
+                            <AvatarFallback className="bg-primary text-primary-foreground">
+                              {getInitials(contact.name)}
+                            </AvatarFallback>
+                          </Avatar>
+                          <span>{contact.name}</span>
+                        </div>
+                      </TableCell>
+                       <TableCell>
+                        {contact.companyId && contact.companyName ? (
+                          <Link href={`/${contact.companyId}/details`} className="hover:text-primary">
+                            {contact.companyName}
+                          </Link>
+                          ) : (
+                            'N/A'
+                          )
                         }
-                        aria-label={`Select ${contact.name}`}
-                      />
-                    </TableCell>
-                    <TableCell className="font-medium">
-                      <div className="flex items-center gap-2">
-                        <Avatar className="h-8 w-8">
-                          <AvatarImage src={contact.avatar} alt={contact.name} />
-                          <AvatarFallback className="bg-primary text-primary-foreground">
-                            {getInitials(contact.name)}
-                          </AvatarFallback>
-                        </Avatar>
-                        <span>{contact.name}</span>
-                      </div>
-                    </TableCell>
-                     <TableCell>
-                      {contact.companyId && contact.companyName ? (
-                        <Link href={`/${contact.companyId}/details`} className="hover:text-primary">
-                          {contact.companyName}
-                        </Link>
-                        ) : (
-                          'N/A'
-                        )
-                      }
-                    </TableCell>
-                    <TableCell>{contact.email}</TableCell>
-                    <TableCell>{contact.phone}</TableCell>
-                    <TableCell>{contact.title}</TableCell>
-                    <TableCell className="text-right">
-                       <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" className="h-8 w-8 p-0">
-                            <span className="sr-only">Open menu</span>
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem
-                            onClick={() => { /* Placeholder for future view details */ }}
-                          >
-                            View Details
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem
-                            onClick={() => openDeleteDialog(contact)}
-                             className="text-red-600"
-                          >
-                            Delete Contact
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                      </TableCell>
+                      <TableCell>{contact.email}</TableCell>
+                      <TableCell>{contact.phone}</TableCell>
+                      <TableCell>{contact.title}</TableCell>
+                      <TableCell className="text-right">
+                         <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" className="h-8 w-8 p-0">
+                              <span className="sr-only">Open menu</span>
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem
+                              onClick={() => { /* Placeholder for future view details */ }}
+                            >
+                              View Details
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                              onClick={() => openDeleteDialog(contact)}
+                            >
+                              Delete Contact
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={7} className="h-24 text-center">
+                      No contacts found.
                     </TableCell>
                   </TableRow>
-                ))}
+                )}
               </TableBody>
             </Table>
           )}
@@ -399,3 +406,6 @@ export default function ContactsPage() {
       </AlertDialog>
     </div>
   );
+
+
+    

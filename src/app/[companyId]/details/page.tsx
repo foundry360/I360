@@ -226,34 +226,42 @@ export default function CompanyDetailsPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {currentAssessments.map((assessment, index) => (
-                      <TableRow 
-                        key={index}
-                        onClick={() => handleResumeAssessment(assessment)}
-                        className={cn(
-                          assessment.status === 'In Progress' && 'cursor-pointer'
-                        )}
-                      >
-                        <TableCell className="font-medium">
-                          {assessment.name}
+                    {currentAssessments.length > 0 ? (
+                      currentAssessments.map((assessment, index) => (
+                        <TableRow 
+                          key={index}
+                          onClick={() => handleResumeAssessment(assessment)}
+                          className={cn(
+                            assessment.status === 'In Progress' && 'cursor-pointer'
+                          )}
+                        >
+                          <TableCell className="font-medium">
+                            {assessment.name}
+                          </TableCell>
+                          <TableCell>
+                            <Badge
+                              variant={
+                                assessment.status === 'In Progress'
+                                  ? 'secondary'
+                                  : 'outline'
+                              }
+                            >
+                              {assessment.status}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                              <Progress value={assessment.progress} className="h-2" />
+                          </TableCell>
+                          <TableCell>{new Date(assessment.startDate).toLocaleDateString()}</TableCell>
+                        </TableRow>
+                      ))
+                    ) : (
+                      <TableRow>
+                        <TableCell colSpan={4} className="h-24 text-center">
+                          No assessments found.
                         </TableCell>
-                        <TableCell>
-                          <Badge
-                            variant={
-                              assessment.status === 'In Progress'
-                                ? 'secondary'
-                                : 'outline'
-                            }
-                          >
-                            {assessment.status}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                            <Progress value={assessment.progress} className="h-2" />
-                        </TableCell>
-                        <TableCell>{new Date(assessment.startDate).toLocaleDateString()}</TableCell>
                       </TableRow>
-                    ))}
+                    )}
                   </TableBody>
                 </Table>
               </CardContent>
@@ -275,26 +283,34 @@ export default function CompanyDetailsPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {completedAssessments.map((assessment, index) => (
-                      <TableRow key={index}>
-                        <TableCell className="font-medium">
-                          {assessment.name}
+                    {completedAssessments.length > 0 ? (
+                      completedAssessments.map((assessment, index) => (
+                        <TableRow key={index}>
+                          <TableCell className="font-medium">
+                            {assessment.name}
+                          </TableCell>
+                          <TableCell>
+                            <Badge
+                              variant={
+                                assessment.status === 'Completed'
+                                  ? 'default'
+                                  : 'outline'
+                              }
+                              className={assessment.status === 'Completed' ? 'bg-green-500' : ''}
+                            >
+                              {assessment.status}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>{new Date(assessment.startDate).toLocaleDateString()}</TableCell>
+                        </TableRow>
+                      ))
+                    ) : (
+                       <TableRow>
+                        <TableCell colSpan={3} className="h-24 text-center">
+                          No assessments found.
                         </TableCell>
-                        <TableCell>
-                          <Badge
-                            variant={
-                              assessment.status === 'Completed'
-                                ? 'default'
-                                : 'outline'
-                            }
-                            className={assessment.status === 'Completed' ? 'bg-green-500' : ''}
-                          >
-                            {assessment.status}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>{new Date(assessment.startDate).toLocaleDateString()}</TableCell>
                       </TableRow>
-                    ))}
+                    )}
                   </TableBody>
                 </Table>
               </CardContent>
@@ -334,22 +350,24 @@ export default function CompanyDetailsPage() {
                 </Button>
               </CardHeader>
               <CardContent className="space-y-4">
-                {contacts.length > 0 ? contacts.map((contact) => (
-                  <div key={contact.id} className="flex items-center gap-4">
-                    <Avatar>
-                       <AvatarFallback className="bg-primary text-primary-foreground">
-                        {getInitials(contact.name)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <p className="font-medium text-sm">{contact.name}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {contact.title}
-                      </p>
+                {contacts.length > 0 ? (
+                  contacts.map((contact) => (
+                    <div key={contact.id} className="flex items-center gap-4">
+                      <Avatar>
+                         <AvatarFallback className="bg-primary text-primary-foreground">
+                          {getInitials(contact.name)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <p className="font-medium text-sm">{contact.name}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {contact.title}
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                )) : (
-                    <p className="text-sm text-muted-foreground">No contacts found for this company.</p>
+                  ))
+                ) : (
+                    <p className="text-sm text-muted-foreground text-center py-4">No contacts found for this company.</p>
                 )}
               </CardContent>
             </Card>
@@ -382,6 +400,9 @@ export default function CompanyDetailsPage() {
       )}
     </AppLayout>
   );
+
+    
+
 
     
 
