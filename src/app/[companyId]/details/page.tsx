@@ -35,6 +35,7 @@ import {
 import { AssessmentModal } from '@/components/assessment-modal';
 import { EditCompanyModal } from '@/components/edit-company-modal';
 import { getAssessmentsForCompany, type Assessment } from '@/services/assessment-service';
+import { cn } from '@/lib/utils';
 
 const assessmentHistory = [
   {
@@ -88,6 +89,7 @@ export default function CompanyDetailsPage() {
   const [loading, setLoading] = React.useState(true);
   const [isAssessmentModalOpen, setIsAssessmentModalOpen] = React.useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = React.useState(false);
+  const [assessmentToResume, setAssessmentToResume] = React.useState<Assessment | null>(null);
 
   const fetchCompanyData = React.useCallback(async () => {
     if (!companyId) return;
@@ -116,8 +118,16 @@ export default function CompanyDetailsPage() {
   }, [fetchCompanyData]);
 
   const handleAssessmentSelect = () => {
+    setAssessmentToResume(null);
     setIsAssessmentModalOpen(true);
   };
+  
+  const handleResumeAssessment = (assessment: Assessment) => {
+    if (assessment.status === 'In Progress') {
+      setAssessmentToResume(assessment);
+      setIsAssessmentModalOpen(true);
+    }
+  }
 
   const handleCompanyUpdate = async (updatedData: Partial<Company>) => {
     if (!companyId) return;
@@ -227,7 +237,13 @@ export default function CompanyDetailsPage() {
                   </TableHeader>
                   <TableBody>
                     {assessments.map((assessment, index) => (
-                      <TableRow key={index}>
+                      <TableRow 
+                        key={index}
+                        onClick={() => handleResumeAssessment(assessment)}
+                        className={cn(
+                          assessment.status === 'In Progress' && 'cursor-pointer'
+                        )}
+                      >
                         <TableCell className="font-medium">
                           {assessment.name}
                         </TableCell>
@@ -361,7 +377,15 @@ export default function CompanyDetailsPage() {
           </div>
         </div>
       </div>
-      <AssessmentModal isOpen={isAssessmentModalOpen} onOpenChange={setIsAssessmentModalOpen} onAssessmentComplete={fetchCompanyData} />
+      <AssessmentModal 
+        isOpen={isAssessmentModalOpen} 
+        onOpenChange={(isOpen) => {
+            if (!isOpen) setAssessmentToResume(null);
+            setIsAssessmentModalOpen(isOpen);
+        }} 
+        onAssessmentComplete={fetchCompanyData}
+        assessmentToResume={assessmentToResume}
+      />
       {companyData && (
         <EditCompanyModal 
             isOpen={isEditModalOpen}
@@ -372,3 +396,5 @@ export default function CompanyDetailsPage() {
       )}
     </AppLayout>
   );
+
+    

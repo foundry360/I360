@@ -43,7 +43,7 @@ import {
 } from './ui/tooltip';
 import { cn } from '@/lib/utils';
 import { getCompanies, type Company } from '@/services/company-service';
-import { createAssessment } from '@/services/assessment-service';
+import { createAssessment, updateAssessment, type Assessment } from '@/services/assessment-service';
 
 const GtmReadinessInputSchema = z.object({
   companyId: z.string().min(1, 'Please select a company.'),
@@ -235,9 +235,10 @@ const defaultValues = Object.entries(fieldConfig).reduce((acc, [key, value]) => 
 
 type GtmReadinessFormProps = {
   onComplete: () => void;
+  assessmentToResume?: Assessment | null;
 };
 
-export function GtmReadinessForm({ onComplete }: GtmReadinessFormProps) {
+export function GtmReadinessForm({ onComplete, assessmentToResume }: GtmReadinessFormProps) {
   const [loading, setLoading] = React.useState(false);
   const [result, setResult] = React.useState<GtmReadinessOutput | null>(null);
   const [currentSection, setCurrentSection] = React.useState(0);
@@ -245,7 +246,9 @@ export function GtmReadinessForm({ onComplete }: GtmReadinessFormProps) {
 
   const form = useForm<z.infer<typeof GtmReadinessInputSchema>>({
     resolver: zodResolver(GtmReadinessInputSchema),
-    defaultValues: defaultValues,
+    defaultValues: assessmentToResume?.formData ? 
+        { ...defaultValues, ...assessmentToResume.formData } : 
+        defaultValues,
     mode: 'onChange'
   });
   
@@ -257,6 +260,16 @@ export function GtmReadinessForm({ onComplete }: GtmReadinessFormProps) {
     fetchCompanies();
   }, []);
 
+  React.useEffect(() => {
+    if (assessmentToResume?.formData) {
+        form.reset(assessmentToResume.formData);
+        const lastCompletedSection = formSections.findLastIndex(section =>
+            section.fields.every(field => !!assessmentToResume.formData?.[field as keyof GtmReadinessInput])
+        );
+        setCurrentSection(lastCompletedSection >= 0 ? lastCompletedSection : 0);
+    }
+  }, [assessmentToResume, form]);
+
   async function onSubmit(values: z.infer<typeof GtmReadinessInputSchema>) {
     setLoading(true);
     setResult(null);
@@ -264,17 +277,25 @@ export function GtmReadinessForm({ onComplete }: GtmReadinessFormProps) {
       const { companyId, ...assessmentData } = values;
       const selectedCompany = companies.find(c => c.id === companyId);
       const assessmentName = `GTM Readiness - ${selectedCompany?.name || 'Company'}`;
-
+      
       const response = await generateGtmReadiness(assessmentData as GtmReadinessInput);
-      await createAssessment({
-          companyId: companyId,
-          name: assessmentName,
-          status: 'Completed',
-          progress: 100,
-          startDate: new Date().toISOString(),
-          result: response,
-          formData: values,
-      });
+      const payload: Omit<Assessment, 'id'> & { id?: string } = {
+        id: assessmentToResume?.id,
+        companyId: companyId,
+        name: assessmentName,
+        status: 'Completed',
+        progress: 100,
+        startDate: assessmentToResume?.startDate || new Date().toISOString(),
+        result: response,
+        formData: values,
+      };
+
+      if (payload.id) {
+          await updateAssessment(payload.id, payload);
+      } else {
+          await createAssessment(payload);
+      }
+
       setResult(response);
     } catch (error) {
       console.error('Error generating GTM readiness report:', error);
@@ -315,14 +336,21 @@ export function GtmReadinessForm({ onComplete }: GtmReadinessFormProps) {
     const assessmentName = `GTM Readiness - ${selectedCompany?.name || 'Company'}`;
 
 
-    await createAssessment({
+    const payload: Omit<Assessment, 'id'> & { id?: string } = {
+        id: assessmentToResume?.id,
         companyId: companyId,
         name: assessmentName,
         status: 'In Progress',
         progress: progress,
-        startDate: new Date().toISOString(),
+        startDate: assessmentToResume?.startDate || new Date().toISOString(),
         formData: values,
-    });
+    };
+    
+    if (payload.id) {
+        await updateAssessment(payload.id, payload);
+    } else {
+        await createAssessment(payload);
+    }
     onComplete();
   }
   
@@ -470,7 +498,7 @@ export function GtmReadinessForm({ onComplete }: GtmReadinessFormProps) {
                                             </TooltipProvider>
                                             <FormControl>
                                             {config.type === 'select' ? (
-                                                <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
+                                                <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value} disabled={key === 'companyId' && !!assessmentToResume}>
                                                 <SelectTrigger><SelectValue placeholder="Select..." /></SelectTrigger>
                                                 <SelectContent>
                                                     {options?.map((option) => {
@@ -533,3 +561,5 @@ export function GtmReadinessForm({ onComplete }: GtmReadinessFormProps) {
     </div>
   );
 }
+
+    

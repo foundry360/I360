@@ -6,14 +6,16 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog';
 import { GtmReadinessForm } from './gtm-readiness-form';
+import type { Assessment } from '@/services/assessment-service';
 
 type AssessmentModalProps = {
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
   onAssessmentComplete: () => void;
+  assessmentToResume?: Assessment | null;
 };
 
-export function AssessmentModal({ isOpen, onOpenChange, onAssessmentComplete }: AssessmentModalProps) {
+export function AssessmentModal({ isOpen, onOpenChange, onAssessmentComplete, assessmentToResume }: AssessmentModalProps) {
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="h-full max-h-[90vh] w-full max-w-[90vw] flex flex-col p-0">
@@ -25,12 +27,17 @@ export function AssessmentModal({ isOpen, onOpenChange, onAssessmentComplete }: 
           </DialogDescription>
         </DialogHeader>
         <div className="flex-1 overflow-y-auto">
-          <GtmReadinessForm onComplete={() => {
-            onOpenChange(false);
-            onAssessmentComplete();
-          }} />
+          <GtmReadinessForm 
+            onComplete={() => {
+              onOpenChange(false);
+              onAssessmentComplete();
+            }}
+            assessmentToResume={assessmentToResume}
+          />
         </div>
       </DialogContent>
     </Dialog>
   );
 }
+
+    
