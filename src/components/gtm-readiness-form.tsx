@@ -262,10 +262,13 @@ export function GtmReadinessForm({ onComplete }: GtmReadinessFormProps) {
     setResult(null);
     try {
       const { companyId, ...assessmentData } = values;
+      const selectedCompany = companies.find(c => c.id === companyId);
+      const assessmentName = `GTM Readiness - ${selectedCompany?.name || 'Company'}`;
+
       const response = await generateGtmReadiness(assessmentData as GtmReadinessInput);
       await createAssessment({
           companyId: companyId,
-          name: 'GTM Readiness',
+          name: assessmentName,
           status: 'Completed',
           progress: 100,
           startDate: new Date().toISOString(),
@@ -308,10 +311,13 @@ export function GtmReadinessForm({ onComplete }: GtmReadinessFormProps) {
         return acc;
     }, 0);
     const progress = Math.round((completedSections / formSections.length) * 100);
+    const selectedCompany = companies.find(c => c.id === companyId);
+    const assessmentName = `GTM Readiness - ${selectedCompany?.name || 'Company'}`;
+
 
     await createAssessment({
         companyId: companyId,
-        name: 'GTM Readiness',
+        name: assessmentName,
         status: 'In Progress',
         progress: progress,
         startDate: new Date().toISOString(),
