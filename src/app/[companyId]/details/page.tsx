@@ -21,7 +21,7 @@ import { AppLayout } from '@/components/app-layout';
 import { useParams } from 'next/navigation';
 import React from 'react';
 import { Progress } from '@/components/ui/progress';
-import { Phone, Globe, MapPin, ArrowLeft, Plus, Pencil, FileText } from 'lucide-react';
+import { Phone, Globe, MapPin, ArrowLeft, Plus, Pencil, FileText, Trash2 } from 'lucide-react';
 import type { Company } from '@/services/company-service';
 import { getCompany, updateCompany } from '@/services/company-service';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -33,11 +33,22 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { EditCompanyModal } from '@/components/edit-company-modal';
-import { getAssessmentsForCompany, type Assessment } from '@/services/assessment-service';
+import { getAssessmentsForCompany, type Assessment, deleteAssessments } from '@/services/assessment-service';
 import { getContactsForCompany, type Contact } from '@/services/contact-service';
 import { cn } from '@/lib/utils';
 import { useQuickAction } from '@/contexts/quick-action-context';
+import { Checkbox } from '@/components/ui/checkbox';
 
 type ActivityItem = {
     activity: string;
@@ -57,6 +68,8 @@ export default function CompanyDetailsPage() {
   const [isEditModalOpen, setIsEditModalOpen] = React.useState(false);
   const [isDescriptionExpanded, setIsDescriptionExpanded] = React.useState(false);
   const [isActivityExpanded, setIsActivityExpanded] = React.useState(false);
+  const [selectedAssessments, setSelectedAssessments] = React.useState<string[]>([]);
+  const [isBulkDeleteDialogOpen, setIsBulkDeleteDialogOpen] = React.useState(false);
 
   const fetchCompanyData = React.useCallback(async () => {
     if (!companyId) return;
@@ -139,6 +152,36 @@ export default function CompanyDetailsPage() {
       .join('')
       .toUpperCase();
   };
+  
+  const handleSelectAssessment = (assessmentId: string, isSelected: boolean) => {
+    if (isSelected) {
+      setSelectedAssessments((prev) => [...prev, assessmentId]);
+    } else {
+      setSelectedAssessments((prev) => prev.filter((id) => id !== assessmentId));
+    }
+  };
+
+  const handleSelectAllAssessments = (isSelected: boolean) => {
+    if (isSelected) {
+      setSelectedAssessments(completedAssessments.map((a) => a.id));
+    } else {
+      setSelectedAssessments([]);
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    try {
+      await deleteAssessments(selectedAssessments);
+      setSelectedAssessments([]);
+      setIsBulkDeleteDialogOpen(false);
+      await fetchCompanyData(); // Refetch data
+    } catch (error) {
+      console.error('Failed to delete assessments:', error);
+    }
+  };
+
+  const allAssessmentsSelected = selectedAssessments.length > 0 && selectedAssessments.length === completedAssessments.length;
+  const isAssessmentIndeterminate = selectedAssessments.length > 0 && selectedAssessments.length < completedAssessments.length;
 
   const recentActivity = isActivityExpanded ? allRecentActivity : allRecentActivity.slice(0, 5);
 
@@ -291,15 +334,39 @@ export default function CompanyDetailsPage() {
             </Card>
             <Card>
               <CardHeader>
-                <CardTitle className="text-xl">Assessment History</CardTitle>
-                <CardDescription>
-                  Review of all completed assessments
-                </CardDescription>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="text-xl">Assessment History</CardTitle>
+                    <CardDescription>
+                      Review of all completed assessments
+                    </CardDescription>
+                  </div>
+                   {selectedAssessments.length > 0 && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setIsBulkDeleteDialogOpen(true)}
+                      >
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Delete ({selectedAssessments.length})
+                      </Button>
+                    )}
+                </div>
               </CardHeader>
               <CardContent>
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableHead className="w-[50px]">
+                        <Checkbox
+                          checked={allAssessmentsSelected}
+                          onCheckedChange={(checked) =>
+                            handleSelectAllAssessments(checked as boolean)
+                          }
+                          aria-label="Select all assessments on page"
+                          data-state={isAssessmentIndeterminate ? 'indeterminate' : (allAssessmentsSelected ? 'checked' : 'unchecked')}
+                        />
+                      </TableHead>
                       <TableHead>Assessment Name</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead>Date</TableHead>
@@ -308,8 +375,17 @@ export default function CompanyDetailsPage() {
                   </TableHeader>
                   <TableBody>
                     {completedAssessments.length > 0 ? (
-                      completedAssessments.map((assessment, index) => (
-                        <TableRow key={index}>
+                      completedAssessments.map((assessment) => (
+                        <TableRow key={assessment.id}>
+                           <TableCell>
+                            <Checkbox
+                              checked={selectedAssessments.includes(assessment.id)}
+                              onCheckedChange={(checked) =>
+                                handleSelectAssessment(assessment.id, checked as boolean)
+                              }
+                              aria-label={`Select ${assessment.name}`}
+                            />
+                          </TableCell>
                           <TableCell className="font-medium">
                             {assessment.name}
                           </TableCell>
@@ -336,7 +412,7 @@ export default function CompanyDetailsPage() {
                       ))
                     ) : (
                        <TableRow>
-                        <TableCell colSpan={4} className="h-24 text-center">
+                        <TableCell colSpan={5} className="h-24 text-center">
                           No assessments found.
                         </TableCell>
                       </TableRow>
@@ -441,6 +517,28 @@ export default function CompanyDetailsPage() {
             onSave={handleCompanyUpdate}
         />
       )}
+       <AlertDialog
+        open={isBulkDeleteDialogOpen}
+        onOpenChange={setIsBulkDeleteDialogOpen}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the
+              {selectedAssessments.length} selected assessments.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setIsBulkDeleteDialogOpen(false)}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={handleBulkDelete}>
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </AppLayout>
   );
 }
