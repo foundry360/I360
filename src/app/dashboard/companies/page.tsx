@@ -41,7 +41,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Checkbox } from '@/components/ui/checkbox';
 import { MoreHorizontal, Plus, Trash2, ArrowUpDown } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
-import { TablePagination } from '@/components/ui/table-pagination';
+import { TablePagination } from '@/components/table-pagination';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { useQuickAction } from '@/contexts/quick-action-context';
@@ -435,5 +435,7 @@ export default function CompaniesPage() {
       </AlertDialog>
     </div>
   );
+
+    
 
     
