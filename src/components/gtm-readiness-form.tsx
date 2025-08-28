@@ -19,6 +19,8 @@ import {
 import {
   Card,
   CardContent,
+  CardHeader,
+  CardTitle,
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import {
@@ -372,7 +374,10 @@ export function GtmReadinessForm() {
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
                     <Card>
-                        <CardContent className="pt-6">
+                        <CardHeader>
+                            <CardTitle>{formSections[currentSection].title}</CardTitle>
+                        </CardHeader>
+                        <CardContent>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                             {formSections[currentSection].fields.map((fieldName) => {
                                 const key = fieldName as FieldName;
@@ -449,3 +454,5 @@ export function GtmReadinessForm() {
     </div>
   );
 }
+
+    
