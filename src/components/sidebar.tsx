@@ -6,10 +6,8 @@ import Link from 'next/link';
 import {
   ChevronsLeft,
   ChevronsRight,
-  Plus,
   Home,
   User,
-  Building2,
   Briefcase,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -20,27 +18,16 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { useQuickAction } from '@/contexts/quick-action-context';
-import { AssessmentModal } from './assessment-modal';
-
 
 export function Sidebar() {
   const pathname = usePathname();
   const params = useParams();
   const companyId = params.companyId as string;
-  const { openNewCompanyDialog } = useQuickAction();
 
   const [isCollapsed, setIsCollapsed] = React.useState(false);
-  const [isAssessmentModalOpen, setIsAssessmentModalOpen] = React.useState(false);
 
   const navItems = [
     { type: 'link', href: `/${companyId}/dashboard`, label: 'Dashboard', icon: Home },
-    {
-      type: 'action',
-      label: 'New Assessment',
-      icon: Plus,
-      action: () => setIsAssessmentModalOpen(true),
-    },
     { type: 'link', href: `/dashboard/companies`, label: 'Companies', icon: Briefcase },
     { type: 'link', href: `/${companyId}/profile`, label: 'Profile', icon: User },
   ];
@@ -101,31 +88,6 @@ export function Sidebar() {
                       </Tooltip>
                     );
                   }
-                  if (item.type === 'action') {
-                    return (
-                      <Tooltip key={item.label}>
-                        <TooltipTrigger asChild>
-                          <Button
-                            variant="sidebar"
-                            className="w-full justify-start"
-                            onClick={item.action}
-                          >
-                            <Icon
-                              className={cn('h-5 w-5', {
-                                'mr-2': !isCollapsed,
-                              })}
-                            />
-                            {!isCollapsed && item.label}
-                          </Button>
-                        </TooltipTrigger>
-                        {isCollapsed && (
-                          <TooltipContent side="right">
-                            {item.label}
-                          </TooltipContent>
-                        )}
-                      </Tooltip>
-                    );
-                  }
                   return null;
                 })}
               </nav>
@@ -155,7 +117,6 @@ export function Sidebar() {
           </div>
         </div>
       </TooltipProvider>
-      <AssessmentModal isOpen={isAssessmentModalOpen} onOpenChange={setIsAssessmentModalOpen} onAssessmentComplete={() => {}} />
     </>
   );
 }
