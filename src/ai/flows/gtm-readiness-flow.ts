@@ -144,16 +144,15 @@ const RecommendationSchema = z.object({
   resourceRequirements: z.string().describe("People, technology, and budget needed."),
   expectedOutcomes: z.string().describe("Measurable success criteria and expected results."),
   riskMitigation: z.string().describe("Potential risks and strategies to mitigate them."),
-  initiativeDescription: z.string().optional().describe("Business case for the initiative (for Tiers 2 and 3)."),
-  dependencies: z.string().optional().describe("Dependencies on other recommendations (for Tiers 2 and 3)."),
-  pilotProgram: z.string().optional().describe("Pilot program specifications and success metrics (for Tiers 2 and 3)."),
-  scalabilityConsiderations: z.string().optional().describe("How the recommendation will scale (for Tiers 2 and 3)."),
-  visionAndAlignment: z.string().optional().describe("Long-term vision and strategic alignment (for Tier 3)."),
-  technologyRoadmap: z.string().optional().describe("Technology roadmap and capability building (for Tier 3)."),
-  organizationalChange: z.string().optional().describe("Organizational change requirements (for Tier 3)."),
-  marketTiming: z.string().optional().describe("Market timing and competitive considerations (for Tier 3)."),
+  initiativeDescription: z.string().optional().describe("Business case for the initiative."),
+  dependencies: z.string().optional().describe("Dependencies on other recommendations."),
+  pilotProgram: z.string().optional().describe("Pilot program specifications and success metrics."),
+  scalabilityConsiderations: z.string().optional().describe("How the recommendation will scale."),
+  visionAndAlignment: z.string().optional().describe("Long-term vision and strategic alignment."),
+  technologyRoadmap: z.string().optional().describe("Technology roadmap and capability building."),
+  organizationalChange: z.string().optional().describe("Organizational change requirements."),
+  marketTiming: z.string().optional().describe("Market timing and competitive considerations."),
 });
-
 
 const GtmReadinessOutputSchema = z.object({
   executiveSummary: z.object({
@@ -164,16 +163,11 @@ const GtmReadinessOutputSchema = z.object({
     briefOverviewOfFindings: z.string().describe("A concise summary of the key findings."),
   }),
 
-  top3CriticalFindings: z.array(FindingSchema).max(3),
+  top3CriticalFindings: z.array(FindingSchema),
   
   strategicRecommendationSummary: z.object({
     coreRecommendationThemes: z.string().describe("High-level themes of the strategic recommendations."),
-    expectedOutcomes: z.object({
-      revenueImpact: z.string().describe("Bullet points on revenue impact projections."),
-      efficiencyImprovements: z.string().describe("Bullet points on efficiency gains."),
-      costReductions: z.string().describe("Bullet points on potential cost savings."),
-      processOptimizations: z.string().describe("Bullet points on process improvements."),
-    }),
+    expectedOutcomes: z.string().describe("Bulleted list of expected outcomes covering revenue, efficiency, cost, and process."),
     roiExpectationsAndTimeline: z.string().describe("Expected ROI and timeline for achieving it."),
   }),
 
@@ -184,47 +178,24 @@ const GtmReadinessOutputSchema = z.object({
   }),
   
   currentStateAssessment: z.object({
-    readinessScoreBreakdown: z.object({
-      overall: z.object({ score: z.number(), details: z.string() }),
-      technologyAdoption: z.object({ score: z.number(), details: z.string() }),
-      processMaturity: z.object({ score: z.number(), details: z.string() }),
-      dataManagement: z.object({ score: z.number(), details: z.string() }),
+    readinessScores: z.object({
+      overall: z.string().describe("Overall score and details"),
+      technologyAdoption: z.string().describe("Technology score and details"),
+      processMaturity: z.string().describe("Process score and details"),
+      dataManagement: z.string().describe("Data score and details"),
     }),
-    teamCapabilityReadiness: z.object({
-      skillGapAnalysis: z.string(),
-      changeManagementReadiness: z.string(),
-    }),
-    gtmExecutionReadiness: z.object({
-      marketTimingAndCompetitivePosition: z.string(),
-    }),
+    teamCapabilityReadiness: z.string().describe("Analysis of skill gaps and change readiness."),
+    gtmExecutionReadiness: z.string().describe("Analysis of market timing and competitive position."),
   }),
   
   performanceBenchmarking: z.object({
-    currentMetrics: z.object({
-      arr: z.string().optional(),
-      nrr: z.string().optional(),
-      growthRate: z.string().optional(),
-      cac: z.string().optional(),
-      clv: z.string().optional(),
-      winRate: z.string().optional(),
-      churnRate: z.string().optional(),
-      nps: z.string().optional(),
-      csat: z.string().optional(),
-      salesCycleEfficiency: z.string().optional(),
-      pipelineCoverage: z.string().optional(),
-      revenueForecastAccuracy: z.string().optional(),
-    }),
+    currentMetricsSummary: z.string().describe("Summary of all provided metrics like ARR, NRR, CAC, etc."),
     comparisonAnalysis: z.string().describe("Industry benchmarking and performance gap identification."),
   }),
   
   keyFindingsAndOpportunities: z.object({
     highImpactPainPoints: z.array(FindingSchema).describe("Ranked list of severe pain points."),
-    strategicOpportunities: z.array(z.object({
-      marketOpportunity: z.string(),
-      competitiveAdvantage: z.string(),
-      resourceRequirements: z.string(),
-      successProbabilityAndRisk: z.string(),
-    })).describe("Key strategic opportunities identified."),
+    strategicOpportunities: z.array(z.string()).describe("List of key strategic opportunities identified."),
   }),
 
   prioritizedRecommendations: z.object({
@@ -234,7 +205,7 @@ const GtmReadinessOutputSchema = z.object({
   }),
 
   implementationRoadmap: z.object({
-    quickWins: z.object({ day30: z.string(), day60: z.string(), day90: z.string() }),
+    ninetyDayPlan: z.string().describe("Combined 30, 60, and 90-day plans with milestones."),
     sixMonthMilestones: z.string(),
     twelveMonthVision: z.string(),
     successMetricsDashboard: z.string().describe("KPIs to track with frequency."),
@@ -242,17 +213,8 @@ const GtmReadinessOutputSchema = z.object({
   }),
 
   investmentAndRoiAnalysis: z.object({
-    totalInvestmentRequired: z.object({
-      technology: z.string(),
-      humanResources: z.string(),
-      programBudget: z.string(),
-    }),
-    expectedReturns: z.object({
-      revenueGrowth: z.string(),
-      efficiencyGains: z.string(),
-      costSavings: z.string(),
-      improvedDecisionMaking: z.string(),
-    }),
+    totalInvestmentRequired: z.string().describe("Summary of tech, human resources, and program budget."),
+    expectedReturns: z.string().describe("Summary of quantified benefits (revenue, efficiency, cost)."),
     paybackTimeline: z.string(),
     riskAdjustedProjections: z.string().describe("Conservative, Expected, and Optimistic scenarios."),
   }),
@@ -264,6 +226,7 @@ const GtmReadinessOutputSchema = z.object({
     reviewAndAdjustmentProcess: z.string(),
   }),
 });
+
 
 export type GtmReadinessOutput = z.infer<typeof GtmReadinessOutputSchema>;
 
@@ -346,4 +309,4 @@ const gtmReadinessFlow = ai.defineFlow(
   }
 );
 
-    
+      
