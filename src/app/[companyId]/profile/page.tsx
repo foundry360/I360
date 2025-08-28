@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -13,19 +14,36 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { AppLayout } from '@/components/app-layout';
+import { useUser } from '@/contexts/user-context';
+import { updateUserProfile } from '@/services/auth-service';
+import { useToast } from '@/hooks/use-toast';
+import { Loader2 } from 'lucide-react';
 
 export default function CompanyProfilePage() {
+  const { user, loading: userLoading } = useUser();
+  const { toast } = useToast();
+
+  const [displayName, setDisplayName] = React.useState('');
+  const [email, setEmail] = React.useState('');
+  const [phone, setPhone] = React.useState('');
+  const [avatarFile, setAvatarFile] = React.useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = React.useState<string | null>(null);
+  const [loading, setLoading] = React.useState(false);
+  
   const fileInputRef = React.useRef<HTMLInputElement>(null);
-  const [isClient, setIsClient] = React.useState(false);
 
   React.useEffect(() => {
-    setIsClient(true);
-  }, []);
+    if (user) {
+      setDisplayName(user.displayName || '');
+      setEmail(user.email || '');
+      setAvatarPreview(user.photoURL || null);
+    }
+  }, [user]);
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
+      setAvatarFile(file);
       const reader = new FileReader();
       reader.onloadend = () => {
         setAvatarPreview(reader.result as string);
@@ -37,9 +55,51 @@ export default function CompanyProfilePage() {
   const handleAvatarClick = () => {
     fileInputRef.current?.click();
   };
+  
+  const handleUpdateProfile = async () => {
+    if (!user) {
+        toast({
+            variant: 'destructive',
+            title: 'Error',
+            description: 'You must be logged in to update your profile.',
+        });
+        return;
+    }
+    setLoading(true);
+    try {
+        await updateUserProfile(user, {
+            displayName: displayName,
+            photoFile: avatarFile || undefined,
+        });
+        toast({
+            title: 'Success!',
+            description: 'Your profile has been updated.',
+        });
+    } catch (error) {
+        console.error('Error updating profile:', error);
+        toast({
+            variant: 'destructive',
+            title: 'Update failed',
+            description: error instanceof Error ? error.message : 'An unexpected error occurred.',
+        });
+    } finally {
+        setLoading(false);
+        // Reset file input to allow re-uploading the same file if needed
+        setAvatarFile(null); 
+    }
+  };
 
-  if (!isClient) {
-    return null;
+  const getInitials = (name: string) => {
+    if (!name) return 'U';
+    return name
+      .split(' ')
+      .map((n) => n[0])
+      .join('')
+      .toUpperCase();
+  };
+
+  if (userLoading) {
+      return null;
   }
 
   return (
@@ -50,7 +110,7 @@ export default function CompanyProfilePage() {
           <CardHeader>
             <CardTitle>Your Information</CardTitle>
             <CardDescription>
-              View and edit your personal details
+              View and edit your personal details.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -67,27 +127,36 @@ export default function CompanyProfilePage() {
                 onClick={handleAvatarClick}
               >
                 <AvatarImage
-                  src={avatarPreview ?? 'https://picsum.photos/100/100'}
+                  src={avatarPreview ?? ''}
                   data-ai-hint="user avatar"
                 />
-                <AvatarFallback>U</AvatarFallback>
+                <AvatarFallback>{getInitials(displayName)}</AvatarFallback>
               </Avatar>
-              <div>
-                <h2 className="text-2xl font-bold">Username</h2>
-                <p className="text-muted-foreground">user@example.com</p>
+              <div className="flex flex-col gap-2">
+                 <Button variant="outline" size="sm" onClick={handleAvatarClick}>
+                    Change Avatar
+                 </Button>
+                 <p className="text-xs text-muted-foreground">JPG, GIF or PNG. 1MB max.</p>
               </div>
             </div>
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="username">Username</Label>
-                <Input id="username" defaultValue="username" />
+                <Label htmlFor="displayName">Full Name</Label>
+                <Input id="displayName" value={displayName} onChange={e => setDisplayName(e.target.value)} />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
-                <Input id="email" type="email" defaultValue="user@example.com" />
+                <Input id="email" type="email" value={email} disabled />
+              </div>
+               <div className="space-y-2">
+                <Label htmlFor="phone">Phone Number</Label>
+                <Input id="phone" type="tel" value={phone} onChange={e => setPhone(e.target.value)} placeholder="(123) 456-7890" />
               </div>
             </div>
-            <Button>Update Profile</Button>
+            <Button onClick={handleUpdateProfile} disabled={loading}>
+              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Update Profile
+            </Button>
           </CardContent>
         </Card>
       </div>

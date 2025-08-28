@@ -6,8 +6,10 @@ import {
   createUserWithEmailAndPassword,
   signOut as firebaseSignOut,
   onAuthStateChanged,
+  updateProfile,
   type User,
 } from 'firebase/auth';
+import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
 export const signIn = async (email: string, password: string) => {
   try {
@@ -36,4 +38,24 @@ export const signOut = async () => {
 
 export const onAuthStateChangeObserver = (callback: (user: User | null) => void) => {
   return onAuthStateChanged(auth, callback);
+};
+
+
+export const updateUserProfile = async (
+  user: User,
+  updates: { displayName?: string; photoFile?: File }
+) => {
+  let photoURL = user.photoURL;
+
+  if (updates.photoFile) {
+    const storage = getStorage();
+    const storageRef = ref(storage, `avatars/${user.uid}/${updates.photoFile.name}`);
+    const snapshot = await uploadBytes(storageRef, updates.photoFile);
+    photoURL = await getDownloadURL(snapshot.ref);
+  }
+
+  await updateProfile(user, {
+    displayName: updates.displayName,
+    photoURL: photoURL,
+  });
 };
