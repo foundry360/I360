@@ -32,7 +32,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     // If user is logged in and on the login page, redirect to the dashboard
     if (user && pathname === '/login') {
-      router.push('/dashboard/companies');
+      router.push('/dashboard');
     }
   }, [user, loading, router, pathname, isMounted]);
 
