@@ -368,6 +368,15 @@ export function GtmReadinessForm({ onComplete, assessmentToResume }: GtmReadines
       }
     }
   };
+  
+  const handleFinish = async () => {
+    const fields = formSections[currentSection].fields as FieldName[];
+    const isValid = await form.trigger(fields);
+    if (isValid) {
+      setCurrentSection((prev) => prev + 1); // Move to the final "Generate" screen
+    }
+  };
+
 
   const handlePrevious = () => {
     setCurrentSection((prev) => prev - 1);
@@ -412,6 +421,8 @@ export function GtmReadinessForm({ onComplete, assessmentToResume }: GtmReadines
   }
   
   const isSectionCompleted = (sectionIndex: number) => {
+    if (sectionIndex < 0) return true; // Allows first section to be enabled
+    if (sectionIndex >= formSections.length) return false;
     const fields = formSections[sectionIndex].fields as FieldName[];
     // For a section to be complete, all fields must have a value and be valid.
     return fields.every(field => {
@@ -438,6 +449,8 @@ export function GtmReadinessForm({ onComplete, assessmentToResume }: GtmReadines
   
   const companyOptions = companies.map(c => ({ label: c.name, value: c.id }));
 
+  const isFinalStep = currentSection === formSections.length;
+
   return (
     <div className="grid grid-cols-12 h-full">
         <div className="col-span-3 border-r p-6 bg-primary-light">
@@ -452,7 +465,7 @@ export function GtmReadinessForm({ onComplete, assessmentToResume }: GtmReadines
                             currentSection === index ? "bg-background font-semibold" : "hover:bg-background/50",
                         )}
                         // Users can only navigate to sections they have completed
-                        disabled={index > 0 && !isSectionCompleted(index-1)}
+                        disabled={!isSectionCompleted(index-1)}
                     >
                         {isSectionCompleted(index) ? 
                             <CheckCircle className="h-4 w-4 text-green-500" /> : 
@@ -463,15 +476,52 @@ export function GtmReadinessForm({ onComplete, assessmentToResume }: GtmReadines
                         <span>{section.title}</span>
                     </button>
                 ))}
+                 <button
+                    key="generate-report"
+                    onClick={() => setCurrentSection(formSections.length)}
+                    className={cn(
+                        "w-full text-left p-2 rounded-md text-sm flex items-center gap-2",
+                        isFinalStep ? "bg-background font-semibold" : "hover:bg-background/50",
+                    )}
+                    // Users can only navigate to final step once all sections are completed
+                    disabled={!isSectionCompleted(formSections.length - 1)}
+                >
+                    {isSectionCompleted(formSections.length - 1) ? 
+                        <CheckCircle className="h-4 w-4 text-green-500" /> : 
+                        <div className={cn("h-4 w-4 rounded-full border flex items-center justify-center", isFinalStep ? "border-primary" : "border-muted-foreground")}>
+                            {isFinalStep && <div className="h-2 w-2 rounded-full bg-primary" />}
+                        </div>
+                    }
+                    <span>Generate Report</span>
+                </button>
             </nav>
             <Separator className="my-4" />
             <p className="text-sm text-muted-foreground mt-4 text-center">
-              Step {currentSection + 1} of {formSections.length}
+              Step {isFinalStep ? formSections.length + 1 : currentSection + 1} of {formSections.length + 1}
             </p>
         </div>
         <div className="col-span-9 flex flex-col h-full">
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col flex-1 overflow-hidden">
+                   {isFinalStep ? (
+                     <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
+                        <Card className="max-w-lg">
+                           <CardHeader>
+                             <CardTitle>Ready to Generate Your Report?</CardTitle>
+                           </CardHeader>
+                           <CardContent>
+                              <p className="text-muted-foreground mb-6">You have completed all the sections of the GTM Readiness Assessment. Click the button below to submit your answers and receive your personalized analysis and recommendations from our AI.</p>
+                               <Button type="submit" size="lg" disabled={loading} className="w-full">
+                                {loading ? (
+                                    <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Analyzing...</>
+                                ) : (
+                                    'Generate GTM Readiness Report'
+                                )}
+                                </Button>
+                           </CardContent>
+                        </Card>
+                     </div>
+                   ) : (
                     <div className="flex-1 overflow-y-auto p-6">
                         <Card>
                             <CardHeader>
@@ -537,7 +587,7 @@ export function GtmReadinessForm({ onComplete, assessmentToResume }: GtmReadines
                             </CardContent>
                         </Card>
                     </div>
-
+                   )}
                     <div className="flex justify-between items-center p-6 border-t bg-background">
                         <div>
                              <Button type="button" variant="link" onClick={handleSaveForLater}>
@@ -548,18 +598,18 @@ export function GtmReadinessForm({ onComplete, assessmentToResume }: GtmReadines
                             <Button type="button" variant="outline" onClick={handlePrevious} disabled={currentSection === 0}>
                                 Previous
                             </Button>
-                            {currentSection < formSections.length - 1 ? (
-                                <Button type="button" onClick={handleNext}>
-                                    Next
-                                </Button>
-                            ) : (
-                                <Button type="submit" size="lg" disabled={loading}>
-                                {loading ? (
-                                    <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Analyzing...</>
+                            {!isFinalStep && (
+                                <>
+                                {currentSection < formSections.length - 1 ? (
+                                    <Button type="button" onClick={handleNext}>
+                                        Next
+                                    </Button>
                                 ) : (
-                                    'Generate GTM Readiness Report'
+                                    <Button type="button" onClick={handleFinish}>
+                                        Finish
+                                    </Button>
                                 )}
-                                </Button>
+                                </>
                             )}
                         </div>
                     </div>
@@ -569,3 +619,4 @@ export function GtmReadinessForm({ onComplete, assessmentToResume }: GtmReadines
     </div>
   );
 }
+
