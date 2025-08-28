@@ -160,7 +160,7 @@ export function Header() {
                 <Link href="/dashboard/workspaces">Switch Workspace</Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={handleSignOut} className="text-red-600">
+            <DropdownMenuItem onClick={handleSignOut}>
                 <LogOut className="mr-2 h-4 w-4" />
                 Sign Out
             </DropdownMenuItem>
