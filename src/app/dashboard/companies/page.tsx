@@ -37,6 +37,7 @@ import {
   deleteCompanies,
   Company,
 } from '@/services/company-service';
+import { getContacts, Contact } from '@/services/contact-service';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Checkbox } from '@/components/ui/checkbox';
 import { MoreHorizontal, Plus, Trash2, ArrowUpDown } from 'lucide-react';
@@ -46,7 +47,7 @@ import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { useQuickAction } from '@/contexts/quick-action-context';
 
-type SortKey = keyof Company;
+type SortKey = keyof Company | 'contactName';
 
 export default function CompaniesPage() {
   const router = useRouter();
@@ -72,8 +73,17 @@ export default function CompaniesPage() {
   const fetchCompanies = React.useCallback(async () => {
     try {
       setLoading(true);
-      const companiesFromDb = await getCompanies();
-      setCompanies(companiesFromDb);
+      const [companiesFromDb, contactsFromDb] = await Promise.all([getCompanies(), getContacts()]);
+      
+      const companiesWithContacts = companiesFromDb.map(company => {
+        const companyContacts = contactsFromDb.filter(c => c.companyId === company.id);
+        return {
+          ...company,
+          contact: companyContacts.length > 0 ? { name: companyContacts[0].name, avatar: companyContacts[0].avatar } : { name: '', avatar: '' }
+        };
+      });
+
+      setCompanies(companiesWithContacts);
     } catch (error) {
       console.error('Failed to fetch companies:', error);
       // Here you might want to show a toast to the user
@@ -153,13 +163,14 @@ export default function CompaniesPage() {
     let sortableItems = [...companies];
     if (sortConfig !== null) {
       sortableItems.sort((a, b) => {
-        let aValue = a[sortConfig.key];
-        let bValue = b[sortConfig.key];
+        let aValue, bValue;
 
-        // Special handling for nested contact name
-        if (sortConfig.key === 'contact') {
+        if (sortConfig.key === 'contactName') {
             aValue = a.contact?.name || '';
             bValue = b.contact?.name || '';
+        } else {
+            aValue = a[sortConfig.key as keyof Company];
+            bValue = b[sortConfig.key as keyof Company];
         }
 
         if (aValue < bValue) {
@@ -256,10 +267,10 @@ export default function CompaniesPage() {
                     </Button>
                   </TableHead>
                   <TableHead className="border-t border-r border-b">
-                     <Button variant="ghost" onClick={() => requestSort('contact')} className="group w-full p-0 hover:bg-transparent hover:text-muted-foreground">
+                     <Button variant="ghost" onClick={() => requestSort('contactName')} className="group w-full p-0 hover:bg-transparent hover:text-muted-foreground">
                        <div className="flex justify-between items-center w-full">
                         Primary Contact
-                        <ArrowUpDown className={cn("h-4 w-4", sortConfig?.key === 'contact' ? 'opacity-100' : 'opacity-25')} />
+                        <ArrowUpDown className={cn("h-4 w-4", sortConfig?.key === 'contactName' ? 'opacity-100' : 'opacity-25')} />
                        </div>
                     </Button>
                   </TableHead>
@@ -309,7 +320,7 @@ export default function CompaniesPage() {
                         </Link>
                       </TableCell>
                       <TableCell>
-                        {company.contact?.name && company.contact.name !== 'New Contact' ? (
+                        {company.contact && company.contact.name ? (
                           <div className="flex items-center gap-2">
                             <Avatar className="h-8 w-8">
                               <AvatarFallback className="bg-primary text-primary-foreground">
@@ -435,9 +446,3 @@ export default function CompaniesPage() {
       </AlertDialog>
     </div>
   );
-
-    
-
-    
-
-    

@@ -13,7 +13,7 @@ export interface Company {
   zip: string;
   phone: string;
   website: string;
-  contact: {
+  contact?: {
     name: string;
     avatar: string;
   };
@@ -57,7 +57,7 @@ export async function createCompany(companyData: Omit<Company, 'id' | 'contact' 
       ...companyData,
       id: companyId,
       contact: {
-        name: '', // Initially no primary contact
+        name: '', 
         avatar: '',
       },
       status: 'Active',
