@@ -5,17 +5,13 @@ import { getFirestore, enableIndexedDbPersistence } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
 
 const firebaseConfig = {
-  apiKey: 'AIzaSyC_Vd2Ttd3VwzefYCdTNLuO4Dk7KDESOE4',
-  authDomain: 'insights360-ta9hn.firebaseapp.com',
-  projectId: 'insights360-ta9hn',
-  storageBucket: 'insights360-ta9hn.firebasestorage.app',
-  messagingSenderId: '249056251135',
-  appId: '1:249056251135:web:016bba83b9d0d0150f50ca',
+  apiKey: "AIzaSyC_Vd2Ttd3VwzefYCdTNLuO4Dk7KDESOE4",
+  authDomain: "insights360-ta9hn.firebaseapp.com",
+  projectId: "insights360-ta9hn",
+  storageBucket: "insights360-ta9hn.firebasestorage.app",
+  messagingSenderId: "249056251135",
+  appId: "1:249056251135:web:016bba83b9d0d0150f50ca",
 };
-
-// Add this temporarily for debugging
-console.log('Firebase config:', firebaseConfig);
-
 
 // Initialize Firebase
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
