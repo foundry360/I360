@@ -101,13 +101,13 @@ export function Sidebar() {
           <div className="flex h-full flex-col">
             <div className="flex-1 space-y-2 p-2 pt-4">
               <nav className="space-y-1">
-                {navItems.map((group, index) => (
-                  <NavGroup key={group.group} title={group.group} isCollapsed={isCollapsed} isFirst={index === 0}>
-                    {group.links.map((item) => {
-                      const Icon = item.icon;
-                      const isActive = pathname === item.href;
-                      return (
-                        <Tooltip key={item.href}>
+                {navItems.map((group, index) => {
+                  if (group.group === 'HOME') {
+                    return group.links.map((item) => {
+                       const Icon = item.icon;
+                       const isActive = pathname === item.href;
+                       return (
+                          <Tooltip key={item.href}>
                           <TooltipTrigger asChild>
                             <Button
                               asChild
@@ -137,10 +137,50 @@ export function Sidebar() {
                             </TooltipContent>
                           )}
                         </Tooltip>
-                      );
-                    })}
-                  </NavGroup>
-                ))}
+                       )
+                    });
+                  }
+                  return (
+                    <NavGroup key={group.group} title={group.group} isCollapsed={isCollapsed} isFirst={index === 1}>
+                      {group.links.map((item) => {
+                        const Icon = item.icon;
+                        const isActive = pathname === item.href;
+                        return (
+                          <Tooltip key={item.href}>
+                            <TooltipTrigger asChild>
+                              <Button
+                                asChild
+                                variant="sidebar"
+                                className={cn(
+                                  'w-full justify-start relative',
+                                  isActive &&
+                                    'bg-sidebar-accent text-sidebar-accent-foreground'
+                                )}
+                              >
+                                <Link href={item.href}>
+                                  {isActive && (
+                                    <div className="absolute left-0 top-0 h-full w-1.5 bg-primary" />
+                                  )}
+                                  <Icon
+                                    className={cn('h-5 w-5', {
+                                      'mr-2': !isCollapsed,
+                                    })}
+                                  />
+                                  {!isCollapsed && item.label}
+                                </Link>
+                              </Button>
+                            </TooltipTrigger>
+                            {isCollapsed && (
+                              <TooltipContent side="right">
+                                {item.label}
+                              </TooltipContent>
+                            )}
+                          </Tooltip>
+                        );
+                      })}
+                    </NavGroup>
+                  )
+                })}
               </nav>
             </div>
 
