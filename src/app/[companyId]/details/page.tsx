@@ -32,10 +32,10 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { AssessmentModal } from '@/components/assessment-modal';
 import { EditCompanyModal } from '@/components/edit-company-modal';
 import { getAssessmentsForCompany, type Assessment } from '@/services/assessment-service';
 import { cn } from '@/lib/utils';
+import { useQuickAction } from '@/contexts/quick-action-context';
 
 const assessmentHistory = [
   {
@@ -84,12 +84,11 @@ const recentActivity = [
 export default function CompanyDetailsPage() {
   const params = useParams();
   const companyId = params.companyId as string;
+  const { openAssessmentModal, setOnAssessmentCompleted } = useQuickAction();
   const [companyData, setCompanyData] = React.useState<Company | null>(null);
   const [assessments, setAssessments] = React.useState<Assessment[]>([]);
   const [loading, setLoading] = React.useState(true);
-  const [isAssessmentModalOpen, setIsAssessmentModalOpen] = React.useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = React.useState(false);
-  const [assessmentToResume, setAssessmentToResume] = React.useState<Assessment | null>(null);
 
   const fetchCompanyData = React.useCallback(async () => {
     if (!companyId) return;
@@ -115,17 +114,13 @@ export default function CompanyDetailsPage() {
 
   React.useEffect(() => {
     fetchCompanyData();
-  }, [fetchCompanyData]);
-
-  const handleAssessmentSelect = () => {
-    setAssessmentToResume(null);
-    setIsAssessmentModalOpen(true);
-  };
+    setOnAssessmentCompleted(() => fetchCompanyData);
+    return () => setOnAssessmentCompleted(null);
+  }, [fetchCompanyData, setOnAssessmentCompleted]);
   
   const handleResumeAssessment = (assessment: Assessment) => {
     if (assessment.status === 'In Progress') {
-      setAssessmentToResume(assessment);
-      setIsAssessmentModalOpen(true);
+      openAssessmentModal(assessment);
     }
   }
 
@@ -219,7 +214,7 @@ export default function CompanyDetailsPage() {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem onSelect={handleAssessmentSelect}>
+                    <DropdownMenuItem onSelect={() => openAssessmentModal()}>
                       GTM Readiness
                     </DropdownMenuItem>
                   </DropdownMenuContent>
@@ -377,15 +372,6 @@ export default function CompanyDetailsPage() {
           </div>
         </div>
       </div>
-      <AssessmentModal 
-        isOpen={isAssessmentModalOpen} 
-        onOpenChange={(isOpen) => {
-            if (!isOpen) setAssessmentToResume(null);
-            setIsAssessmentModalOpen(isOpen);
-        }} 
-        onAssessmentComplete={fetchCompanyData}
-        assessmentToResume={assessmentToResume}
-      />
       {companyData && (
         <EditCompanyModal 
             isOpen={isEditModalOpen}
@@ -398,3 +384,4 @@ export default function CompanyDetailsPage() {
   );
 
     
+

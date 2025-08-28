@@ -26,7 +26,7 @@ export function Header() {
   const router = useRouter();
   const { user } = useUser();
   const companyId = params.companyId as string || 'acme-inc';
-  const { openNewCompanyDialog, globalSearchTerm, setGlobalSearchTerm } = useQuickAction();
+  const { openNewCompanyDialog, openAssessmentModal, globalSearchTerm, setGlobalSearchTerm } = useQuickAction();
   const [isSearchVisible, setIsSearchVisible] = React.useState(false);
   const [searchResults, setSearchResults] = React.useState<Company[]>([]);
   const searchInputRef = React.useRef<HTMLInputElement>(null);
@@ -126,6 +126,9 @@ export function Header() {
           <DropdownMenuContent align="end">
             <DropdownMenuItem onSelect={openNewCompanyDialog}>
               New Company
+            </DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => openAssessmentModal()}>
+              New Assessment
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

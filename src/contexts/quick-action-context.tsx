@@ -2,15 +2,22 @@
 'use client';
 
 import * as React from 'react';
+import type { Assessment } from '@/services/assessment-service';
 
 type QuickActionContextType = {
   isNewCompanyDialogOpen: boolean;
   openNewCompanyDialog: () => void;
   closeNewCompanyDialog: () => void;
   onCompanyCreated: (() => void) | null;
-  setOnCompanyCreated: (
-    callback: (() => void) | null
-  ) => void;
+  setOnCompanyCreated: (callback: (() => void) | null) => void;
+  
+  isAssessmentModalOpen: boolean;
+  openAssessmentModal: (assessment?: Assessment | null) => void;
+  closeAssessmentModal: () => void;
+  assessmentToResume: Assessment | null;
+  onAssessmentCompleted: (() => void) | null;
+  setOnAssessmentCompleted: (callback: (() => void) | null) => void;
+
   globalSearchTerm: string;
   setGlobalSearchTerm: (term: string) => void;
 };
@@ -20,11 +27,19 @@ const QuickActionContext = React.createContext<
 >(undefined);
 
 export function QuickActionProvider({ children }: { children: React.ReactNode }) {
+  // New Company Dialog State
   const [isNewCompanyDialogOpen, setIsNewCompanyDialogOpen] =
     React.useState(false);
   const [onCompanyCreated, setOnCompanyCreated] = React.useState<
     (() => void) | null
   >(null);
+
+  // New Assessment Modal State
+  const [isAssessmentModalOpen, setIsAssessmentModalOpen] = React.useState(false);
+  const [assessmentToResume, setAssessmentToResume] = React.useState<Assessment | null>(null);
+  const [onAssessmentCompleted, setOnAssessmentCompleted] = React.useState<(() => void) | null>(null);
+
+  // Global Search State
   const [globalSearchTerm, setGlobalSearchTerm] = React.useState('');
 
   const openNewCompanyDialog = React.useCallback(() => {
@@ -42,6 +57,24 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
     []
   );
 
+  const openAssessmentModal = React.useCallback((assessment: Assessment | null = null) => {
+    setAssessmentToResume(assessment);
+    setIsAssessmentModalOpen(true);
+  }, []);
+
+  const closeAssessmentModal = React.useCallback(() => {
+    setIsAssessmentModalOpen(false);
+    setAssessmentToResume(null);
+  }, []);
+
+  const handleSetOnAssessmentCompleted = React.useCallback(
+    (callback: (() => void) | null) => {
+      setOnAssessmentCompleted(() => callback);
+    },
+    []
+  );
+
+
   return (
     <QuickActionContext.Provider
       value={{
@@ -50,6 +83,14 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
         closeNewCompanyDialog,
         onCompanyCreated,
         setOnCompanyCreated: handleSetOnCompanyCreated,
+        
+        isAssessmentModalOpen,
+        openAssessmentModal,
+        closeAssessmentModal,
+        assessmentToResume,
+        onAssessmentCompleted,
+        setOnAssessmentCompleted: handleSetOnAssessmentCompleted,
+
         globalSearchTerm,
         setGlobalSearchTerm,
       }}
@@ -68,5 +109,3 @@ export const useQuickAction = () => {
   }
   return context;
 };
-
-    

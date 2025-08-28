@@ -5,6 +5,7 @@ import { QuickActionProvider } from '@/contexts/quick-action-context';
 import { NewCompanyDialog } from '@/components/new-company-dialog';
 import { UserProvider } from '@/contexts/user-context';
 import { AuthProvider } from '@/components/auth-provider';
+import { AssessmentModal } from '@/components/assessment-modal';
 
 export const metadata: Metadata = {
   title: 'Insights360',
@@ -32,6 +33,9 @@ export default function RootLayout({
             <AuthProvider>
                 {children}
                 <NewCompanyDialog />
+                <AssessmentModal 
+                  // These props are managed by the QuickActionProvider now
+                />
             </AuthProvider>
           </QuickActionProvider>
         </UserProvider>
