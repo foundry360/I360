@@ -241,11 +241,8 @@ export default function CompaniesPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Companies</h1>
       <div className="flex justify-between items-center">
-          <p className="text-muted-foreground">
-              A list of all companies in your portfolio
-          </p>
+          <h1 className="text-2xl font-bold">Companies</h1>
           <div className="flex items-center gap-2">
             {numSelected > 0 && (
                 <Button

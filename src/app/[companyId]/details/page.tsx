@@ -180,9 +180,6 @@ export default function CompanyDetailsPage() {
              </Button>
             <h1 className="text-3xl font-bold">{companyData.name}</h1>
           </div>
-          <p className="text-muted-foreground mt-2">
-            A complete overview of {companyData.name}
-          </p>
         </div>
 
         <div className="grid gap-6 lg:grid-cols-3">
