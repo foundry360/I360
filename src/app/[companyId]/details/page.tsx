@@ -187,11 +187,8 @@ export default function CompanyDetailsPage() {
         <div className="grid gap-6 lg:grid-cols-3">
           <div className="lg:col-span-2 space-y-6">
             <Card>
-              <CardHeader className="flex flex-row items-center justify-between">
+              <CardHeader>
                 <CardTitle className="text-xl">Company Overview</CardTitle>
-                 <Button variant="outline" size="sm" onClick={() => setIsEditModalOpen(true)}>
-                    <Pencil className="h-4 w-4" />
-                </Button>
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-muted-foreground">
