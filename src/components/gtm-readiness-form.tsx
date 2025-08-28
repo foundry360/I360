@@ -434,10 +434,7 @@ export function GtmReadinessForm({ onComplete, assessmentToResume }: GtmReadines
   return (
     <div className="grid grid-cols-12 h-full">
         <div className="col-span-3 border-r p-6 bg-primary-light">
-            <h3 className="font-semibold">Assessment Sections</h3>
-            <p className="text-sm text-muted-foreground mb-4">
-              Step {currentSection + 1} of {formSections.length}
-            </p>
+            <h3 className="font-semibold mb-4">Assessment Sections</h3>
             <nav className="space-y-2">
                 {formSections.map((section, index) => (
                     <button
@@ -460,6 +457,9 @@ export function GtmReadinessForm({ onComplete, assessmentToResume }: GtmReadines
                     </button>
                 ))}
             </nav>
+            <p className="text-sm text-muted-foreground mt-4">
+              Step {currentSection + 1} of {formSections.length}
+            </p>
         </div>
         <div className="col-span-9 flex flex-col h-full">
             <Form {...form}>
