@@ -15,12 +15,13 @@ export const signIn = async (email: string, password: string) => {
   try {
     return await signInWithEmailAndPassword(auth, email, password);
   } catch (error: any) {
-    // Check for various auth errors that might indicate user doesn't exist
-    if (error.code === 'auth/invalid-credential' || 
-        error.code === 'auth/user-not-found' ||
-        error.code === 'auth/wrong-password') {
+    // If user not found, create a new user.
+    if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
       try {
-        return await createUserWithEmailAndPassword(auth, email, password);
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        // Set a default display name if none is provided
+        await updateProfile(userCredential.user, { displayName: email.split('@')[0] });
+        return userCredential;
       } catch (createError: any) {
         console.error('Error creating user:', createError);
         throw createError;
