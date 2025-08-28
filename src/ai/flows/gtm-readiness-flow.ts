@@ -112,7 +112,7 @@ const GtmReadinessInputSchema = z.object({
   tangibleDifferentiators: z.string().describe('Tangible differentiators from competitors'),
   forecastAccuracy: z.string().describe("Accuracy of Last Quarter's Revenue Forecasts (e.g., ±5% of actuals, or qualitative description)"),
   pipelineReportingTools: z.string().describe('Tools Used for Pipeline Reporting & CRM Integration'),
-  manualReportingTime: z.string().describe('Estimated Weekly Time Spent on Manual Revenue Reporting/Forecasting Adjustments'),
+  manualReportingTime: z.string().describe('Estimated Weekly Time Spent on Manual Revenue Reporting/Forecasting'),
   budgetAllocation: z.string().describe('Budget allocation perception for RevOps'),
   aiAdoptionBarriers: z.string().describe('Barriers to AI adoption (e.g., cost, skills)'),
   businessModelTesting: z.string().describe('Business model testing frequency'),
@@ -210,7 +210,7 @@ const prompt = ai.definePrompt({
           - Tangible Differentiators: {{{tangibleDifferentiators}}}
           - Accuracy of Last Quarter\'s Revenue Forecasts: {{{forecastAccuracy}}}
           - Tools Used for Pipeline Reporting & CRM Integration: {{{pipelineReportingTools}}}
-          - Estimated Weekly Time Spent on Manual Revenue Reporting/Forecasting Adjustments: {{{manualReportingTime}}}
+          - Estimated Weekly Time Spent on Manual Revenue Reporting/Forecasting: {{{manualReportingTime}}}
           - Budget Allocation Perception: {{{budgetAllocation}}}
           - AI Adoption Barriers: {{{aiAdoptionBarriers}}}
           - Business Model Testing Frequency: {{{businessModelTesting}}}
