@@ -212,7 +212,8 @@ export default function CompaniesPage() {
         </p>
       </div>
       <Separator />
-      <div className="flex justify-end">
+      <div className="flex justify-between items-center">
+        <div className="text-sm text-muted-foreground">Total Records: {sortedCompanies.length}</div>
         <div className="flex items-center gap-2">
           {numSelected > 0 && (
             <Button
@@ -248,7 +249,6 @@ export default function CompaniesPage() {
           </Button>
         </div>
       </div>
-      <div className="text-sm text-muted-foreground">Total Records: {sortedCompanies.length}</div>
       <Card>
         <CardContent className="pt-6">
           {loading ? (
@@ -438,5 +438,7 @@ export default function CompaniesPage() {
 
     
 
+
+    
 
     
