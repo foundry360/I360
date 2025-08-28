@@ -1,14 +1,12 @@
-
 'use client';
 import * as React from 'react';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import type { GtmReadinessOutput } from '@/ai/flows/gtm-readiness-flow';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Loader2, Download, CheckCircle, BarChart, Clock, Target, Lightbulb, TrendingUp, Cpu, ListChecks, PieChart, Users, GanttChartSquare, ClipboardList, Milestone, LineChart, Banknote, ShieldQuestion, ArrowRight, Flag } from 'lucide-react';
+import { Loader2, Download, BarChart, Clock, Target, Lightbulb, TrendingUp, Cpu, ListChecks, PieChart, Users, GanttChartSquare, ClipboardList, Milestone, LineChart, Banknote, ShieldQuestion, ArrowRight, Flag } from 'lucide-react';
 import { Badge } from './ui/badge';
-import { Progress } from './ui/progress';
 import { Separator } from './ui/separator';
 
 type GtmReadinessReportProps = {
@@ -17,7 +15,7 @@ type GtmReadinessReportProps = {
 };
 
 const Section: React.FC<{ icon: React.ReactNode; title: string; children: React.ReactNode; }> = ({ icon, title, children }) => (
-  <Card>
+  <Card className="break-inside-avoid">
     <CardHeader>
       <CardTitle className="flex items-center gap-3">
         {icon}
@@ -30,12 +28,21 @@ const Section: React.FC<{ icon: React.ReactNode; title: string; children: React.
   </Card>
 );
 
-const SubSection: React.FC<{ title: string; children: React.ReactNode; }> = ({ title, children }) => (
-    <div>
-        <h4 className="font-semibold text-lg text-primary">{title}</h4>
-        <div className="prose prose-sm max-w-none text-muted-foreground mt-2">{children}</div>
-    </div>
-);
+const renderFormattedString = (text: string) => {
+    const parts = text.split(/(### .*)/g);
+    return parts.map((part, index) => {
+        if (part.startsWith('### ')) {
+            return <h4 key={index} className="font-semibold text-lg text-primary mt-4">{part.substring(4)}</h4>;
+        }
+        return (
+             <ul key={index} className="prose prose-sm max-w-none text-muted-foreground list-disc pl-5 space-y-1">
+                {(part || "").split(/\r?\n/).filter(line => line.trim().length > 0 && !line.startsWith('### ')).map((line, i) => (
+                    <li key={i}>{line.replace(/^- /, '')}</li>
+                ))}
+            </ul>
+        )
+    });
+};
 
 
 export function GtmReadinessReport({ result, onComplete }: GtmReadinessReportProps) {
@@ -99,14 +106,6 @@ export function GtmReadinessReport({ result, onComplete }: GtmReadinessReportPro
     setIsExporting(false);
   };
 
-  const renderBulletPoints = (text: string) => (
-    <ul className="list-disc pl-5 space-y-1">
-      {(text || "").split(/\r?\n/).filter(line => line.trim().length > 0).map((line, index) => (
-        <li key={index}>{line.replace(/^- /, '')}</li>
-      ))}
-    </ul>
-  );
-
   if (!result || !result.executiveSummary) {
     return (
         <div className="flex flex-col items-center justify-center h-full gap-4 p-6">
@@ -128,7 +127,6 @@ export function GtmReadinessReport({ result, onComplete }: GtmReadinessReportPro
             <p className="text-muted-foreground">Generated on {new Date().toLocaleDateString()}</p>
           </div>
 
-          {/* 1. Executive Summary */}
           <Section icon={<BarChart className="h-8 w-8 text-primary" />} title="Executive Summary">
             <div className="grid grid-cols-2 gap-4">
                 <p><strong>Overall Readiness:</strong> <span className="font-bold text-lg text-primary">{result.executiveSummary.overallReadinessScore}%</span></p>
@@ -140,7 +138,6 @@ export function GtmReadinessReport({ result, onComplete }: GtmReadinessReportPro
             <p className="text-muted-foreground">{result.executiveSummary.briefOverviewOfFindings}</p>
           </Section>
 
-          {/* 2. Top 3 Critical Findings */}
           <Section icon={<Target className="h-8 w-8 text-destructive" />} title="Top 3 Critical Findings">
             {result.top3CriticalFindings.map((finding, index) => (
               <Card key={index} className="break-inside-avoid">
@@ -150,7 +147,7 @@ export function GtmReadinessReport({ result, onComplete }: GtmReadinessReportPro
                     <Badge variant={finding.impactLevel === 'High' ? 'destructive' : 'secondary'}>Impact: {finding.impactLevel}</Badge>
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-3">
+                <CardContent className="space-y-3 prose prose-sm max-w-none text-muted-foreground">
                   <p><strong>Business Impact:</strong> {finding.businessImpact}</p>
                   <p><strong>Current State:</strong> {finding.currentState}</p>
                   <p><strong>Root Cause:</strong> {finding.rootCauseAnalysis}</p>
@@ -161,71 +158,41 @@ export function GtmReadinessReport({ result, onComplete }: GtmReadinessReportPro
             ))}
           </Section>
 
-          {/* 3. Strategic Recommendation Summary */}
           <Section icon={<Lightbulb className="h-8 w-8 text-primary" />} title="Strategic Recommendation Summary">
-             <SubSection title="Core Recommendation Themes">
-                <p>{result.strategicRecommendationSummary.coreRecommendationThemes}</p>
-             </SubSection>
-             <SubSection title="Expected Outcomes">
-                <div className="grid grid-cols-2 gap-4">
-                    <div><strong>Revenue Impact:</strong> {renderBulletPoints(result.strategicRecommendationSummary.expectedOutcomes.revenueImpact)}</div>
-                    <div><strong>Efficiency Improvements:</strong> {renderBulletPoints(result.strategicRecommendationSummary.expectedOutcomes.efficiencyImprovements)}</div>
-                    <div><strong>Cost Reductions:</strong> {renderBulletPoints(result.strategicRecommendationSummary.expectedOutcomes.costReductions)}</div>
-                    <div><strong>Process Optimizations:</strong> {renderBulletPoints(result.strategicRecommendationSummary.expectedOutcomes.processOptimizations)}</div>
-                </div>
-             </SubSection>
-             <SubSection title="ROI Expectations & Timeline">
-                <p>{result.strategicRecommendationSummary.roiExpectationsAndTimeline}</p>
-             </SubSection>
+             {renderFormattedString(result.strategicRecommendationSummary)}
           </Section>
 
-          {/* 4. Implementation Timeline Overview */}
           <Section icon={<Clock className="h-8 w-8 text-primary" />} title="Implementation Timeline Overview">
-            <div className="space-y-4">
-              <p><strong>0-30 Days (Immediate Focus/Quick Wins):</strong> {result.implementationTimelineOverview.immediateFocus}</p>
-              <p><strong>30-90 Days (Short-term Optimizations):</strong> {result.implementationTimelineOverview.shortTermOptimizations}</p>
-              <p><strong>90+ Days (Long-term Strategic Changes):</strong> {result.implementationTimelineOverview.longTermStrategicChanges}</p>
-            </div>
-          </Section>
-
-          {/* 5. Current State Assessment */}
-          <Section icon={<PieChart className="h-8 w-8 text-primary" />} title="Current State Assessment">
-            <SubSection title="Readiness Score Breakdown">
-                <div className="grid grid-cols-2 gap-6">
-                    <div className="space-y-1">
-                        <div className="flex justify-between items-center"><span>Overall Readiness Score</span><span className="font-bold">{result.currentStateAssessment.readinessScoreBreakdown.overall.score}%</span></div>
-                        <Progress value={result.currentStateAssessment.readinessScoreBreakdown.overall.score} />
-                        <p className="text-xs text-muted-foreground">{result.currentStateAssessment.readinessScoreBreakdown.overall.details}</p>
-                    </div>
-                    <div className="space-y-1">
-                        <div className="flex justify-between items-center"><span>Technology Adoption Score</span><span className="font-bold">{result.currentStateAssessment.readinessScoreBreakdown.technologyAdoption.score}%</span></div>
-                        <Progress value={result.currentStateAssessment.readinessScoreBreakdown.technologyAdoption.score} />
-                        <p className="text-xs text-muted-foreground">{result.currentStateAssessment.readinessScoreBreakdown.technologyAdoption.details}</p>
-                    </div>
-                    <div className="space-y-1">
-                        <div className="flex justify-between items-center"><span>Process Maturity Score</span><span className="font-bold">{result.currentStateAssessment.readinessScoreBreakdown.processMaturity.score}%</span></div>
-                        <Progress value={result.currentStateAssessment.readinessScoreBreakdown.processMaturity.score} />
-                        <p className="text-xs text-muted-foreground">{result.currentStateAssessment.readinessScoreBreakdown.processMaturity.details}</p>
-                    </div>
-                    <div className="space-y-1">
-                        <div className="flex justify-between items-center"><span>Data Management Score</span><span className="font-bold">{result.currentStateAssessment.readinessScoreBreakdown.dataManagement.score}%</span></div>
-                        <Progress value={result.currentStateAssessment.readinessScoreBreakdown.dataManagement.score} />
-                        <p className="text-xs text-muted-foreground">{result.currentStateAssessment.readinessScoreBreakdown.dataManagement.details}</p>
-                    </div>
-                </div>
-            </SubSection>
-            <SubSection title="Team Capability Readiness">
-                <p><strong>Skill Gap Analysis:</strong> {result.currentStateAssessment.teamCapabilityReadiness.skillGapAnalysis}</p>
-                <p><strong>Change Management Readiness:</strong> {result.currentStateAssessment.teamCapabilityReadiness.changeManagementReadiness}</p>
-            </SubSection>
-             <SubSection title="GTM Execution Readiness">
-                <p><strong>Market Timing & Competitive Position:</strong> {result.currentStateAssessment.gtmExecutionReadiness.marketTimingAndCompetitivePosition}</p>
-            </SubSection>
+            {renderFormattedString(result.implementationTimelineOverview)}
           </Section>
           
-          {/* More sections to be rendered here... this component can get quite large. */}
-          {/* To keep it manageable, one could break it down further, but for now this is okay. */}
+          <Section icon={<PieChart className="h-8 w-8 text-primary" />} title="Current State Assessment">
+            {renderFormattedString(result.currentStateAssessment)}
+          </Section>
 
+           <Section icon={<TrendingUp className="h-8 w-8 text-primary" />} title="Performance Benchmarking">
+            {renderFormattedString(result.performanceBenchmarking)}
+          </Section>
+
+          <Section icon={<Flag className="h-8 w-8 text-primary" />} title="Key Findings & Opportunities">
+            {renderFormattedString(result.keyFindingsAndOpportunities)}
+          </Section>
+          
+          <Section icon={<ListChecks className="h-8 w-8 text-primary" />} title="Prioritized Recommendations">
+            {renderFormattedString(result.prioritizedRecommendations)}
+          </Section>
+          
+          <Section icon={<GanttChartSquare className="h-8 w-8 text-primary" />} title="Implementation Roadmap">
+            {renderFormattedString(result.implementationRoadmap)}
+          </Section>
+
+          <Section icon={<Banknote className="h-8 w-8 text-primary" />} title="Investment & ROI Analysis">
+            {renderFormattedString(result.investmentAndRoiAnalysis)}
+          </Section>
+
+          <Section icon={<ArrowRight className="h-8 w-8 text-primary" />} title="Next Steps & Decision Framework">
+            {renderFormattedString(result.nextStepsAndDecisionFramework)}
+          </Section>
         </div>
         <div className="flex justify-between items-center gap-4 p-6 bg-background rounded-b-lg shadow-sm">
             <p className="text-xs text-muted-foreground">PROPRIETARY & CONFIDENTIAL</p>
@@ -244,5 +211,3 @@ export function GtmReadinessReport({ result, onComplete }: GtmReadinessReportPro
     </div>
   );
 }
-
-    

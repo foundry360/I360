@@ -1,4 +1,3 @@
-
 'use server';
 /**
  * @fileOverview A GTM Readiness assessment AI agent.
@@ -139,21 +138,6 @@ const FindingSchema = z.object({
   urgencyRating: z.string().describe("Recommended timeline for addressing the issue."),
 });
 
-const RecommendationSchema = z.object({
-  specificActions: z.string().describe("Step-by-step implementation plan for the recommendation."),
-  resourceRequirements: z.string().describe("People, technology, and budget needed."),
-  expectedOutcomes: z.string().describe("Measurable success criteria and expected results."),
-  riskMitigation: z.string().describe("Potential risks and strategies to mitigate them."),
-  initiativeDescription: z.string().optional().describe("Business case for the initiative."),
-  dependencies: z.string().optional().describe("Dependencies on other recommendations."),
-  pilotProgram: z.string().optional().describe("Pilot program specifications and success metrics."),
-  scalabilityConsiderations: z.string().optional().describe("How the recommendation will scale."),
-  visionAndAlignment: z.string().optional().describe("Long-term vision and strategic alignment."),
-  technologyRoadmap: z.string().optional().describe("Technology roadmap and capability building."),
-  organizationalChange: z.string().optional().describe("Organizational change requirements."),
-  marketTiming: z.string().optional().describe("Market timing and competitive considerations."),
-});
-
 const GtmReadinessOutputSchema = z.object({
   executiveSummary: z.object({
     overallReadinessScore: z.number().describe("The overall readiness score as a percentage."),
@@ -162,69 +146,16 @@ const GtmReadinessOutputSchema = z.object({
     primaryGtmStrategy: z.string(),
     briefOverviewOfFindings: z.string().describe("A concise summary of the key findings."),
   }),
-
   top3CriticalFindings: z.array(FindingSchema),
-  
-  strategicRecommendationSummary: z.object({
-    coreRecommendationThemes: z.string().describe("High-level themes of the strategic recommendations."),
-    expectedOutcomes: z.string().describe("Bulleted list of expected outcomes covering revenue, efficiency, cost, and process."),
-    roiExpectationsAndTimeline: z.string().describe("Expected ROI and timeline for achieving it."),
-  }),
-
-  implementationTimelineOverview: z.object({
-    immediateFocus: z.string().describe("0-30 Days: Quick wins and immediate focus areas."),
-    shortTermOptimizations: z.string().describe("30-90 Days: Short-term optimization initiatives."),
-    longTermStrategicChanges: z.string().describe("90+ Days: Long-term strategic changes and transformation."),
-  }),
-  
-  currentStateAssessment: z.object({
-    readinessScores: z.object({
-      overall: z.string().describe("Overall score and details"),
-      technologyAdoption: z.string().describe("Technology score and details"),
-      processMaturity: z.string().describe("Process score and details"),
-      dataManagement: z.string().describe("Data score and details"),
-    }),
-    teamCapabilityReadiness: z.string().describe("Analysis of skill gaps and change readiness."),
-    gtmExecutionReadiness: z.string().describe("Analysis of market timing and competitive position."),
-  }),
-  
-  performanceBenchmarking: z.object({
-    currentMetricsSummary: z.string().describe("Summary of all provided metrics like ARR, NRR, CAC, etc."),
-    comparisonAnalysis: z.string().describe("Industry benchmarking and performance gap identification."),
-  }),
-  
-  keyFindingsAndOpportunities: z.object({
-    highImpactPainPoints: z.array(FindingSchema).describe("Ranked list of severe pain points."),
-    strategicOpportunities: z.array(z.string()).describe("List of key strategic opportunities identified."),
-  }),
-
-  prioritizedRecommendations: z.object({
-    tier1: z.array(RecommendationSchema).describe("Critical/Immediate recommendations (0-60 days)."),
-    tier2: z.array(RecommendationSchema).describe("Strategic/Short-term recommendations (60-180 days)."),
-    tier3: z.array(RecommendationSchema).describe("Transformational/Long-term recommendations (6-18 months)."),
-  }),
-
-  implementationRoadmap: z.object({
-    ninetyDayPlan: z.string().describe("Combined 30, 60, and 90-day plans with milestones."),
-    sixMonthMilestones: z.string(),
-    twelveMonthVision: z.string(),
-    successMetricsDashboard: z.string().describe("KPIs to track with frequency."),
-    accountabilityFramework: z.string().describe("Role assignments for functional areas."),
-  }),
-
-  investmentAndRoiAnalysis: z.object({
-    totalInvestmentRequired: z.string().describe("Summary of tech, human resources, and program budget."),
-    expectedReturns: z.string().describe("Summary of quantified benefits (revenue, efficiency, cost)."),
-    paybackTimeline: z.string(),
-    riskAdjustedProjections: z.string().describe("Conservative, Expected, and Optimistic scenarios."),
-  }),
-
-  nextStepsAndDecisionFramework: z.object({
-    immediateActions: z.string(),
-    keyDecisionsRequired: z.string(),
-    successFactors: z.string(),
-    reviewAndAdjustmentProcess: z.string(),
-  }),
+  strategicRecommendationSummary: z.string().describe("A formatted string covering Core Themes, Expected Outcomes, and ROI expectations."),
+  implementationTimelineOverview: z.string().describe("A formatted string covering the 0-30, 30-90, and 90+ day plans."),
+  currentStateAssessment: z.string().describe("A formatted string covering Readiness Scores, Team Capability, and GTM Execution Readiness."),
+  performanceBenchmarking: z.string().describe("A formatted string covering Current Metrics and Comparison Analysis."),
+  keyFindingsAndOpportunities: z.string().describe("A formatted string covering High-Impact Pain Points and Strategic Opportunities."),
+  prioritizedRecommendations: z.string().describe("A formatted string covering Tier 1, Tier 2, and Tier 3 recommendations in detail."),
+  implementationRoadmap: z.string().describe("A formatted string covering the 90-day plan, long-term milestones, success metrics, and accountability."),
+  investmentAndRoiAnalysis: z.string().describe("A formatted string covering Investment, Returns, Payback timeline, and Risk-Adjusted Projections."),
+  nextStepsAndDecisionFramework: z.string().describe("A formatted string covering Immediate Actions, Key Decisions, Success Factors, and Review Process."),
 });
 
 
@@ -284,7 +215,7 @@ const gtmReadinessPrompt = ai.definePrompt({
 - Business Model Testing Frequency: {{{businessModelTesting}}}
 
 **Report Generation Instructions:**
-Based on your analysis of the data, generate a report that follows the exact JSON schema provided. Ensure every field is populated with insightful, data-driven, and quantified analysis. Use professional, executive-level business language.
+Based on your analysis of the data, generate a report that follows the exact JSON schema provided. For fields requiring a formatted string, use markdown-style headings (e.g., "### Core Themes") and bullet points (e.g., "- Item 1") to structure the content within that string. Ensure every field is populated with insightful, data-driven, and quantified analysis. Use professional, executive-level business language.
 
 **Key areas of focus for your analysis:**
 1.  **Quantification**: Wherever possible, translate qualitative data into quantitative business impact. For example, if "sales cycle is too long", estimate the potential revenue impact of shortening it.
@@ -308,5 +239,3 @@ const gtmReadinessFlow = ai.defineFlow(
     return output!;
   }
 );
-
-      
