@@ -408,7 +408,7 @@ export default function CompaniesPage() {
                     />
                   </TableHead>
                   <TableHead>
-                    <Button variant="ghost" onClick={() => requestSort('name')} className="group w-full p-0 hover:bg-transparent">
+                    <Button variant="ghost" onClick={() => requestSort('name')} className="group w-full p-0 hover:bg-transparent hover:text-muted-foreground">
                       <div className="flex justify-between items-center w-full">
                         Company Name
                         <ArrowUpDown className={cn("h-4 w-4", sortConfig?.key === 'name' ? 'opacity-100' : 'opacity-25')} />
@@ -416,7 +416,7 @@ export default function CompaniesPage() {
                     </Button>
                   </TableHead>
                   <TableHead>
-                     <Button variant="ghost" onClick={() => requestSort('contact')} className="group w-full p-0 hover:bg-transparent">
+                     <Button variant="ghost" onClick={() => requestSort('contact')} className="group w-full p-0 hover:bg-transparent hover:text-muted-foreground">
                        <div className="flex justify-between items-center w-full">
                         Primary Contact
                         <ArrowUpDown className={cn("h-4 w-4", sortConfig?.key === 'contact' ? 'opacity-100' : 'opacity-25')} />
@@ -424,7 +424,7 @@ export default function CompaniesPage() {
                     </Button>
                   </TableHead>
                   <TableHead>
-                    <Button variant="ghost" onClick={() => requestSort('status')} className="group w-full p-0 hover:bg-transparent">
+                    <Button variant="ghost" onClick={() => requestSort('status')} className="group w-full p-0 hover:bg-transparent hover:text-muted-foreground">
                        <div className="flex justify-between items-center w-full">
                         Status
                         <ArrowUpDown className={cn("h-4 w-4", sortConfig?.key === 'status' ? 'opacity-100' : 'opacity-25')} />
@@ -432,7 +432,7 @@ export default function CompaniesPage() {
                     </Button>
                   </TableHead>
                   <TableHead>
-                     <Button variant="ghost" onClick={() => requestSort('lastActivity')} className="group w-full p-0 hover:bg-transparent">
+                     <Button variant="ghost" onClick={() => requestSort('lastActivity')} className="group w-full p-0 hover:bg-transparent hover:text-muted-foreground">
                        <div className="flex justify-between items-center w-full">
                         Last Activity
                         <ArrowUpDown className={cn("h-4 w-4", sortConfig?.key === 'lastActivity' ? 'opacity-100' : 'opacity-25')} />
