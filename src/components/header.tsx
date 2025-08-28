@@ -6,7 +6,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
@@ -22,7 +21,7 @@ import { Input } from './ui/input';
 export function Header() {
   const params = useParams();
   const companyId = params.companyId as string;
-  const { openNewCompanyDialog } = useQuickAction();
+  const { openNewCompanyDialog, globalSearchTerm, setGlobalSearchTerm } = useQuickAction();
   const [isSearchVisible, setIsSearchVisible] = React.useState(false);
 
   return (
@@ -36,7 +35,12 @@ export function Header() {
             {isSearchVisible && (
                 <div className="relative">
                      <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                     <Input placeholder="Search..." className="pl-8 w-64 bg-sidebar-accent border-sidebar-border focus:bg-background focus:text-foreground" />
+                     <Input 
+                        placeholder="Search..." 
+                        className="pl-8 w-64 bg-sidebar-accent border-sidebar-border focus:bg-background focus:text-foreground"
+                        value={globalSearchTerm}
+                        onChange={(e) => setGlobalSearchTerm(e.target.value)}
+                     />
                 </div>
             )}
         </div>
@@ -64,8 +68,6 @@ export function Header() {
             </Avatar>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuLabel>My Account</DropdownMenuLabel>
-            <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
               <Link href={`/${companyId}/dashboard`}>Dashboard</Link>
             </DropdownMenuItem>
@@ -73,9 +75,15 @@ export function Header() {
               <Link href={`/${companyId}/profile`}>Profile</Link>
             </DropdownMenuItem>
             <DropdownMenuItem>Settings</DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem asChild>
+                <Link href="/dashboard/workspaces">Switch Workspace</Link>
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
     </header>
   );
 }
+
+    

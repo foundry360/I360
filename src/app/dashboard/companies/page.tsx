@@ -15,9 +15,6 @@ import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
 } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { useRouter } from 'next/navigation';
@@ -38,7 +35,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Input } from '@/components/ui/input';
 import {
   getCompanies,
   deleteCompany,
@@ -47,7 +43,7 @@ import {
 } from '@/services/company-service';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Checkbox } from '@/components/ui/checkbox';
-import { MoreHorizontal, Plus, Trash2, Filter, Search, ArrowUpDown } from 'lucide-react';
+import { MoreHorizontal, Plus, Trash2, ArrowUpDown } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { TablePagination } from '@/components/table-pagination';
 import Link from 'next/link';
@@ -72,12 +68,10 @@ export default function CompaniesPage() {
 
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(25);
-  const [filterText, setFilterText] = React.useState('');
-  const [isFilterVisible, setIsFilterVisible] = React.useState(false);
-
+  
   const [sortConfig, setSortConfig] = React.useState<{ key: SortKey; direction: 'ascending' | 'descending' } | null>({ key: 'name', direction: 'ascending' });
 
-  const { openNewCompanyDialog, setOnCompanyCreated } = useQuickAction();
+  const { openNewCompanyDialog, setOnCompanyCreated, globalSearchTerm } = useQuickAction();
 
   const fetchCompanies = React.useCallback(async () => {
     try {
@@ -180,9 +174,11 @@ export default function CompaniesPage() {
       });
     }
     return sortableItems.filter(company => 
-        company.name.toLowerCase().includes(filterText.toLowerCase())
+        company.name.toLowerCase().includes(globalSearchTerm.toLowerCase()) ||
+        company.contact.name.toLowerCase().includes(globalSearchTerm.toLowerCase()) ||
+        company.website.toLowerCase().includes(globalSearchTerm.toLowerCase())
     );
-  }, [companies, sortConfig, filterText]);
+  }, [companies, sortConfig, globalSearchTerm]);
 
 
   const currentVisibleCompanies = sortedCompanies.slice(
@@ -223,25 +219,6 @@ export default function CompaniesPage() {
               <Trash2 className="h-4 w-4 mr-2" />
               Delete ({numSelected})
             </Button>
-          )}
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => setIsFilterVisible(!isFilterVisible)}
-          >
-            <Filter className="h-4 w-4" />
-            <span className="sr-only">Filter</span>
-          </Button>
-          {isFilterVisible && (
-            <div className="relative">
-              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Filter by company name..."
-                value={filterText}
-                onChange={(e) => setFilterText(e.target.value)}
-                className="pl-8 w-64"
-              />
-            </div>
           )}
           <Button size="icon" onClick={openNewCompanyDialog}>
             <Plus className="h-4 w-4" />
@@ -448,3 +425,5 @@ export default function CompaniesPage() {
       </AlertDialog>
     </div>
   );
+
+    

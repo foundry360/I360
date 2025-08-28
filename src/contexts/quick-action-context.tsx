@@ -11,6 +11,8 @@ type QuickActionContextType = {
   setOnCompanyCreated: (
     callback: (() => void) | null
   ) => void;
+  globalSearchTerm: string;
+  setGlobalSearchTerm: (term: string) => void;
 };
 
 const QuickActionContext = React.createContext<
@@ -23,6 +25,7 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
   const [onCompanyCreated, setOnCompanyCreated] = React.useState<
     (() => void) | null
   >(null);
+  const [globalSearchTerm, setGlobalSearchTerm] = React.useState('');
 
   const openNewCompanyDialog = React.useCallback(() => {
     setIsNewCompanyDialogOpen(true);
@@ -47,6 +50,8 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
         closeNewCompanyDialog,
         onCompanyCreated,
         setOnCompanyCreated: handleSetOnCompanyCreated,
+        globalSearchTerm,
+        setGlobalSearchTerm,
       }}
     >
       {children}
@@ -63,3 +68,5 @@ export const useQuickAction = () => {
   }
   return context;
 };
+
+    
