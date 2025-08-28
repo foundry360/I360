@@ -11,7 +11,6 @@ import {
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -38,6 +37,12 @@ import { Button } from '@/components/ui/button';
 import { Loader2, Lightbulb, TrendingUp, Cpu, ListChecks } from 'lucide-react';
 import { Badge } from './ui/badge';
 import { z } from 'zod';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from './ui/tooltip';
 
 const GtmReadinessInputSchema = z.object({
   companyStage: z.string().describe('e.g., Seed, Series A, Growth, Enterprise'),
@@ -610,7 +615,16 @@ export function GtmReadinessForm() {
                       name={key}
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>{config.label}</FormLabel>
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <FormLabel className="cursor-help">{config.label}</FormLabel>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>{config.description}</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
                           <FormControl>
                             {config.type === 'select' ? (
                               <Select
@@ -651,9 +665,6 @@ export function GtmReadinessForm() {
                               />
                             )}
                           </FormControl>
-                          {config.type !== 'slider' && (
-                             <FormDescription>{config.description}</FormDescription>
-                          )}
                           <FormMessage />
                         </FormItem>
                       )}
