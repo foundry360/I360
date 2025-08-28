@@ -22,6 +22,23 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 
+const NavGroup = ({
+    title,
+    isCollapsed,
+    children
+}: {
+    title: string;
+    isCollapsed: boolean;
+    children: React.ReactNode
+}) => {
+    return (
+        <div className="space-y-1">
+            {!isCollapsed && <h4 className="text-xs font-semibold text-sidebar-foreground/50 uppercase tracking-wider px-2 pt-4 pb-1">{title}</h4>}
+            {children}
+        </div>
+    )
+}
+
 export function Sidebar() {
   const pathname = usePathname();
   const params = useParams();
@@ -30,11 +47,31 @@ export function Sidebar() {
   const [isCollapsed, setIsCollapsed] = React.useState(false);
 
   const navItems = [
-    { type: 'link', href: `/${companyId}/dashboard`, label: 'Dashboard', icon: Home },
-    { type: 'link', href: `/dashboard/companies`, label: 'Companies', icon: Briefcase },
-    { type: 'link', href: `/dashboard/contacts`, label: 'Contacts', icon: Users },
-    { type: 'link', href: `/dashboard/assessments`, label: 'Assessments', icon: ClipboardList },
-    { type: 'link', href: `/${companyId}/profile`, label: 'Profile', icon: User },
+    { 
+        group: 'HOME', 
+        links: [
+            { href: `/${companyId}/dashboard`, label: 'Dashboard', icon: Home }
+        ]
+    },
+    {
+      group: 'MANAGE RECORDS',
+      links: [
+        { href: `/dashboard/companies`, label: 'Companies', icon: Briefcase },
+        { href: `/dashboard/contacts`, label: 'Contacts', icon: Users },
+      ],
+    },
+    {
+      group: 'ASSESSMENTS',
+      links: [
+        { href: `/dashboard/assessments`, label: 'Assessments', icon: ClipboardList },
+      ],
+    },
+    {
+      group: 'SETTINGS',
+      links: [
+        { href: `/${companyId}/profile`, label: 'Profile', icon: User },
+      ],
+    },
   ];
 
   function toggleSidebar() {
@@ -56,45 +93,46 @@ export function Sidebar() {
           <div className="flex h-full flex-col">
             <div className="flex-1 space-y-2 p-2 pt-4">
               <nav className="space-y-1">
-                {navItems.map((item) => {
-                  const Icon = item.icon;
-                  if (item.type === 'link') {
-                    const isActive = pathname === item.href;
-                    return (
-                      <Tooltip key={item.href}>
-                        <TooltipTrigger asChild>
-                          <Button
-                            asChild
-                            variant="sidebar"
-                            className={cn(
-                              'w-full justify-start relative',
-                              isActive &&
-                                'bg-sidebar-accent text-sidebar-accent-foreground'
-                            )}
-                          >
-                            <Link href={item.href}>
-                              {isActive && (
-                                <div className="absolute left-0 top-0 h-full w-1.5 bg-primary" />
+                {navItems.map((group) => (
+                  <NavGroup key={group.group} title={group.group} isCollapsed={isCollapsed}>
+                    {group.links.map((item) => {
+                      const Icon = item.icon;
+                      const isActive = pathname === item.href;
+                      return (
+                        <Tooltip key={item.href}>
+                          <TooltipTrigger asChild>
+                            <Button
+                              asChild
+                              variant="sidebar"
+                              className={cn(
+                                'w-full justify-start relative',
+                                isActive &&
+                                  'bg-sidebar-accent text-sidebar-accent-foreground'
                               )}
-                              <Icon
-                                className={cn('h-5 w-5', {
-                                  'mr-2': !isCollapsed,
-                                })}
-                              />
-                              {!isCollapsed && item.label}
-                            </Link>
-                          </Button>
-                        </TooltipTrigger>
-                        {isCollapsed && (
-                          <TooltipContent side="right">
-                            {item.label}
-                          </TooltipContent>
-                        )}
-                      </Tooltip>
-                    );
-                  }
-                  return null;
-                })}
+                            >
+                              <Link href={item.href}>
+                                {isActive && (
+                                  <div className="absolute left-0 top-0 h-full w-1.5 bg-primary" />
+                                )}
+                                <Icon
+                                  className={cn('h-5 w-5', {
+                                    'mr-2': !isCollapsed,
+                                  })}
+                                />
+                                {!isCollapsed && item.label}
+                              </Link>
+                            </Button>
+                          </TooltipTrigger>
+                          {isCollapsed && (
+                            <TooltipContent side="right">
+                              {item.label}
+                            </TooltipContent>
+                          )}
+                        </Tooltip>
+                      );
+                    })}
+                  </NavGroup>
+                ))}
               </nav>
             </div>
 
