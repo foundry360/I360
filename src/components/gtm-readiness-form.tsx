@@ -87,6 +87,7 @@ const GtmReadinessInputSchema = z.object({
   netPromoterScore: z.string().optional(),
   customerSatisfaction: z.string().optional(),
   kpiReportingFrequency: z.string().optional(),
+  specificPainPoints: z.string().optional(),
   challengesDescription: z.string().optional(),
   executiveSponsorship: z.string().optional(),
   organizationalChangeDescription: z.string().optional(),
@@ -171,6 +172,10 @@ const formSections = [
         'kpiReportingFrequency',
     ],
   },
+   {
+    title: 'Specific Pain Points (Qualitative Feedback)',
+    fields: ['specificPainPoints'],
+  },
   {
     title: 'Change Management Readiness',
     fields: [
@@ -252,6 +257,7 @@ const fieldConfig: Record<
   netPromoterScore: { label: 'Net Promoter Score (NPS)', description: 'Select NPS score range', type: 'select', options: ['<0', '0-20', '21-40', '41-60', '61-80', '>80'] },
   customerSatisfaction: { label: 'Customer Satisfaction Score (CSAT) (%)', description: 'Select CSAT range', type: 'select', options: ['<70%', '70-80%', '81-90%', '>90%'] },
   kpiReportingFrequency: { label: 'KPI Tracking & Reporting Frequency', description: 'e.g., Weekly team dashboards, monthly executive summary.', type: 'text' },
+  specificPainPoints: { label: 'Most "Broken" or Inefficient Areas in Revenue Operations', description: 'In your own words, describe where your company feels the most pain or inefficiency', type: 'textarea' },
   challengesDescription: { label: 'Biggest GTM Challenges', description: 'Briefly describe the one or two biggest challenges you face.', type: 'textarea' },
   executiveSponsorship: { label: 'Executive Sponsorship for RevOps', description: 'On a scale of 1-5, what is the level of executive buy-in for RevOps initiatives?', type: 'slider' },
   organizationalChangeDescription: { label: 'Organizational Approach to Change', description: 'How does the organization typically handle and adopt change?', type: 'textarea' },
@@ -563,3 +569,5 @@ export function GtmReadinessForm({ onComplete, assessmentToResume }: GtmReadines
     </div>
   );
 }
+
+    

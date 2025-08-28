@@ -92,6 +92,7 @@ const GtmReadinessInputSchema = z.object({
   netPromoterScore: z.string().describe('Net Promoter Score (NPS) range'),
   customerSatisfaction: z.string().describe('Customer Satisfaction Score (CSAT) (%) range'),
   kpiReportingFrequency: z.string().describe('KPI Tracking & Reporting Frequency (across departments, to executives)'),
+  specificPainPoints: z.string().describe('Qualitative feedback on the most "broken" or inefficient areas in revenue operations.'),
   challengesDescription: z
     .string()
     .describe('A brief description of the biggest challenges faced.'),
@@ -217,6 +218,7 @@ const gtmReadinessPrompt = ai.definePrompt({
 - Net Promoter Score: {{{netPromoterScore}}}
 - Customer Satisfaction: {{{customerSatisfaction}}}
 - KPI Reporting Frequency: {{{kpiReportingFrequency}}}
+- Specific Pain Points: {{{specificPainPoints}}}
 - Description of Challenges: {{{challengesDescription}}}
 - Executive Sponsorship for RevOps (1-5): {{{executiveSponsorship}}}
 - Organizational Approach to Change: {{{organizationalChangeDescription}}}
@@ -256,3 +258,5 @@ const gtmReadinessFlow = ai.defineFlow(
     return output!;
   }
 );
+
+    
