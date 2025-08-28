@@ -17,6 +17,7 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
+  CardDescription,
 } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { useRouter } from 'next/navigation';
@@ -206,44 +207,55 @@ export default function CompaniesPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold">Companies</h1>
-        <p className="text-muted-foreground">Manage and track all companies in your system.</p>
+        <p className="text-muted-foreground">
+          Manage and track all companies in your system.
+        </p>
       </div>
-      <Separator/>
-       <div className="flex justify-end">
-          <div className="flex items-center gap-2">
-            {numSelected > 0 && (
-                <Button
-                variant="outline"
-                onClick={() => setIsBulkDeleteDialogOpen(true)}
-                >
-                <Trash2 className="h-4 w-4 mr-2" />
-                Delete ({numSelected})
-                </Button>
-            )}
+      <Separator />
+      <div className="flex justify-end">
+        <div className="flex items-center gap-2">
+          {numSelected > 0 && (
             <Button
-                variant="outline"
-                size="icon"
-                onClick={() => setIsFilterVisible(!isFilterVisible)}
-              >
-                <Filter className="h-4 w-4" />
-                <span className="sr-only">Filter</span>
-              </Button>
-              {isFilterVisible && (
-                <div className="relative">
-                  <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Filter by company name..."
-                    value={filterText}
-                    onChange={(e) => setFilterText(e.target.value)}
-                    className="pl-8 w-64"
-                  />
-                </div>
-              )}
-            <Button size="icon" onClick={openNewCompanyDialog}>
-                <Plus className="h-4 w-4" />
+              variant="outline"
+              onClick={() => setIsBulkDeleteDialogOpen(true)}
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
+              Delete ({numSelected})
             </Button>
+          )}
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => setIsFilterVisible(!isFilterVisible)}
+          >
+            <Filter className="h-4 w-4" />
+            <span className="sr-only">Filter</span>
+          </Button>
+          {isFilterVisible && (
+            <div className="relative">
+              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Filter by company name..."
+                value={filterText}
+                onChange={(e) => setFilterText(e.target.value)}
+                className="pl-8 w-64"
+              />
             </div>
+          )}
+          <Button size="sm" onClick={openNewCompanyDialog}>
+            <Plus className="h-4 w-4 mr-2" />
+            New Company
+          </Button>
+        </div>
       </div>
+      <Card>
+        <CardHeader>
+            <CardTitle>Total Companies</CardTitle>
+        </CardHeader>
+        <CardContent>
+            <p className="text-4xl font-bold">{sortedCompanies.length}</p>
+        </CardContent>
+      </Card>
       <Card>
         <CardContent className="pt-6">
           {loading ? (
@@ -430,4 +442,5 @@ export default function CompaniesPage() {
       </AlertDialog>
     </div>
   );
-}
+
+    
