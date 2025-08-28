@@ -1,3 +1,4 @@
+
 'use client';
 import * as React from 'react';
 import jsPDF from 'jspdf';
@@ -100,11 +101,23 @@ export function GtmReadinessReport({ result, onComplete }: GtmReadinessReportPro
 
   const renderBulletPoints = (text: string) => (
     <ul className="list-disc pl-5 space-y-1">
-      {text.split(/\r?\n/).filter(line => line.trim().length > 0).map((line, index) => (
+      {(text || "").split(/\r?\n/).filter(line => line.trim().length > 0).map((line, index) => (
         <li key={index}>{line.replace(/^- /, '')}</li>
       ))}
     </ul>
   );
+
+  if (!result || !result.executiveSummary) {
+    return (
+        <div className="flex flex-col items-center justify-center h-full gap-4 p-6">
+            <h2 className="text-xl font-semibold">Report Not Available</h2>
+            <p className="text-muted-foreground text-center">
+                The data for this assessment report is incomplete or could not be loaded.
+            </p>
+            <Button onClick={onComplete}>Close</Button>
+        </div>
+    );
+  }
 
   return (
     <div className="bg-muted">
@@ -231,3 +244,5 @@ export function GtmReadinessReport({ result, onComplete }: GtmReadinessReportPro
     </div>
   );
 }
+
+    
