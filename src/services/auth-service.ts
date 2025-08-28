@@ -12,7 +12,6 @@ import {
 // For this prototype, we'll auto-create a user if they don't exist.
 export const signIn = async (email: string, password: string) => {
   try {
-    // First, try to sign in the user.
     return await signInWithEmailAndPassword(auth, email, password);
   } catch (error: any) {
     // If the user is not found, create a new account.
@@ -20,15 +19,15 @@ export const signIn = async (email: string, password: string) => {
       try {
         return await createUserWithEmailAndPassword(auth, email, password);
       } catch (createError) {
-        // Handle errors during account creation.
-        console.error("Error creating user:", createError);
+        console.error('Error creating user:', createError);
+        // Throw the error from the creation attempt
         throw createError;
       }
-    } else {
-      // For any other sign-in error, re-throw it to be handled by the UI.
-      console.error("Error signing in:", error);
-      throw error;
     }
+    
+    // For any other sign-in error, re-throw it to be handled by the UI.
+    console.error("Error signing in:", error);
+    throw error;
   }
 };
 
