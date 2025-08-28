@@ -17,7 +17,7 @@ export default function LandingPage() {
           Unlock powerful AI-driven insights for your RevOps and Go-To-Market strategies
         </p>
         <Button asChild size="lg">
-          <Link href="/acme-inc/dashboard">
+          <Link href="/login">
             Get Started
             <ArrowRight className="ml-2" />
           </Link>

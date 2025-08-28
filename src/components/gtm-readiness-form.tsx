@@ -243,6 +243,8 @@ export function GtmReadinessForm({ onComplete, assessmentToResume }: GtmReadines
   const [result, setResult] = React.useState<GtmReadinessOutput | null>(null);
   const [currentSection, setCurrentSection] = React.useState(0);
   const [companies, setCompanies] = React.useState<Company[]>([]);
+  const [currentAssessmentId, setCurrentAssessmentId] = React.useState<string | null>(null);
+
 
   const form = useForm<z.infer<typeof GtmReadinessInputSchema>>({
     resolver: zodResolver(GtmReadinessInputSchema),
@@ -261,12 +263,15 @@ export function GtmReadinessForm({ onComplete, assessmentToResume }: GtmReadines
   }, []);
 
   React.useEffect(() => {
-    if (assessmentToResume?.formData) {
-        form.reset(assessmentToResume.formData);
+    if (assessmentToResume) {
+        setCurrentAssessmentId(assessmentToResume.id);
+        if (assessmentToResume.formData) {
+            form.reset(assessmentToResume.formData);
+        }
         const lastCompletedSection = formSections.findLastIndex(section =>
             section.fields.every(field => !!assessmentToResume.formData?.[field as keyof GtmReadinessInput])
         );
-        setCurrentSection(lastCompletedSection >= 0 ? lastCompletedSection : 0);
+        setCurrentSection(lastCompletedSection >= 0 ? lastCompletedSection + 1 : 0);
     }
   }, [assessmentToResume, form]);
 
@@ -279,21 +284,21 @@ export function GtmReadinessForm({ onComplete, assessmentToResume }: GtmReadines
       const assessmentName = `GTM Readiness - ${selectedCompany?.name || 'Company'}`;
       
       const response = await generateGtmReadiness(assessmentData as GtmReadinessInput);
-      const payload: Omit<Assessment, 'id'> & { id?: string } = {
-        id: assessmentToResume?.id,
+      const payload = {
         companyId: companyId,
         name: assessmentName,
-        status: 'Completed',
+        status: 'Completed' as const,
         progress: 100,
         startDate: assessmentToResume?.startDate || new Date().toISOString(),
         result: response,
         formData: values,
       };
 
-      if (payload.id) {
-          await updateAssessment(payload.id, payload);
+      if (currentAssessmentId) {
+          await updateAssessment(currentAssessmentId, payload);
       } else {
-          await createAssessment(payload);
+          const newId = await createAssessment(payload);
+          setCurrentAssessmentId(newId);
       }
 
       setResult(response);
@@ -308,7 +313,9 @@ export function GtmReadinessForm({ onComplete, assessmentToResume }: GtmReadines
     const fields = formSections[currentSection].fields as FieldName[];
     const isValid = await form.trigger(fields);
     if (isValid) {
-      setCurrentSection((prev) => prev + 1);
+      if (currentSection < formSections.length - 1) {
+        setCurrentSection((prev) => prev + 1);
+      }
     }
   };
 
@@ -335,21 +342,20 @@ export function GtmReadinessForm({ onComplete, assessmentToResume }: GtmReadines
     const selectedCompany = companies.find(c => c.id === companyId);
     const assessmentName = `GTM Readiness - ${selectedCompany?.name || 'Company'}`;
 
-
-    const payload: Omit<Assessment, 'id'> & { id?: string } = {
-        id: assessmentToResume?.id,
+    const payload = {
         companyId: companyId,
         name: assessmentName,
-        status: 'In Progress',
+        status: 'In Progress' as const,
         progress: progress,
         startDate: assessmentToResume?.startDate || new Date().toISOString(),
         formData: values,
     };
     
-    if (payload.id) {
-        await updateAssessment(payload.id, payload);
+    if (currentAssessmentId) {
+        await updateAssessment(currentAssessmentId, payload);
     } else {
-        await createAssessment(payload);
+        const newId = await createAssessment(payload);
+        setCurrentAssessmentId(newId);
     }
     onComplete();
   }
@@ -561,5 +567,3 @@ export function GtmReadinessForm({ onComplete, assessmentToResume }: GtmReadines
     </div>
   );
 }
-
-    

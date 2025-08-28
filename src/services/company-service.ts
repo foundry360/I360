@@ -1,6 +1,6 @@
 'use client';
 import { db } from '@/lib/firebase';
-import { collection, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { collection, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, writeBatch } from 'firebase/firestore';
 
 export interface Company {
   id: string;
@@ -19,57 +19,14 @@ export interface Company {
   lastActivity: string;
 }
 
-// In-memory store for prototyping
-let companiesStore: Company[] = [
-    {
-      id: 'acme-inc',
-      name: 'Acme Inc',
-      street: '123 Main St',
-      city: 'Anytown',
-      state: 'CA',
-      zip: '12345',
-      phone: '555-1234',
-      website: 'acmeinc.com',
-      contact: {
-        name: 'John Doe',
-        avatar: 'https://picsum.photos/100/100?q=1',
-      },
-      status: 'Active',
-      lastActivity: '2023-10-26',
-    },
-    {
-      id: 'widgets-co',
-      name: 'Widgets Co',
-      street: '456 Oak Ave',
-      city: 'Someplace',
-      state: 'NY',
-      zip: '54321',
-      phone: '555-5678',
-      website: 'widgetsco.com',
-      contact: {
-        name: 'Jane Smith',
-        avatar: 'https://picsum.photos/100/100?q=2',
-      },
-      status: 'Active',
-      lastActivity: '2023-10-28',
-    },
-];
-
 const companiesCollection = collection(db, 'companies');
 
-// Simulate network delay
-const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
-
 export async function getCompanies(): Promise<Company[]> {
-  await delay(100); // Reduced delay for faster UI
-  // To use firestore, uncomment the lines below and remove the return statement for the in-memory store
-  // const snapshot = await getDocs(companiesCollection);
-  // return snapshot.docs.map((doc) => doc.data() as Company);
-  return [...companiesStore];
+  const snapshot = await getDocs(companiesCollection);
+  return snapshot.docs.map((doc) => doc.data() as Company);
 }
 
 export async function searchCompanies(searchTerm: string): Promise<Company[]> {
-    await delay(100);
     const allCompanies = await getCompanies();
     if (!searchTerm) {
         return [];
@@ -83,66 +40,46 @@ export async function searchCompanies(searchTerm: string): Promise<Company[]> {
 }
 
 export async function getCompany(id: string): Promise<Company | null> {
-    await delay(500);
-    // To use firestore, uncomment the lines below and remove the return statement for the in-memory store
-    // const docRef = doc(db, 'companies', id);
-    // const docSnap = await getDoc(docRef);
-    // if (docSnap.exists()) {
-    //     return docSnap.data() as Company;
-    // } else {
-    //     return null;
-    // }
-    const company = companiesStore.find(c => c.id === id);
-    return company || null;
-}
-
-export async function createCompany(companyData: Omit<Company, 'id' | 'contact' | 'status' | 'lastActivity'>): Promise<void> {
-  await delay(500);
-  const newCompany: Company = {
-      ...companyData,
-      id: companyData.name.toLowerCase().replace(/\s+/g, '-'),
-      contact: {
-        name: 'New Contact', // Placeholder
-        avatar: `https://picsum.photos/100/100?q=${companiesStore.length + 1}`,
-      },
-      status: 'Active',
-      lastActivity: new Date().toISOString().split('T')[0],
-  };
-  
-  // To use firestore, uncomment the line below and remove the push to the in-memory store
-  // await setDoc(doc(companiesCollection, newCompany.id), newCompany);
-  companiesStore.push(newCompany);
-}
-
-export async function updateCompany(id: string, companyData: Partial<Company>): Promise<void> {
-    await delay(500);
-    // To use firestore, uncomment the lines below
-    // const docRef = doc(db, 'companies', id);
-    // await updateDoc(docRef, companyData);
-    
-    const index = companiesStore.findIndex(c => c.id === id);
-    if (index !== -1) {
-        companiesStore[index] = { ...companiesStore[index], ...companyData };
+    const docRef = doc(db, 'companies', id);
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+        return docSnap.data() as Company;
+    } else {
+        return null;
     }
 }
 
+export async function createCompany(companyData: Omit<Company, 'id' | 'contact' | 'status' | 'lastActivity'>): Promise<void> {
+  const companyId = companyData.name.toLowerCase().replace(/\s+/g, '-');
+  const newCompany: Company = {
+      ...companyData,
+      id: companyId,
+      contact: {
+        name: 'New Contact', // Placeholder
+        avatar: `https://picsum.photos/100/100?q=${Math.random()}`,
+      },
+      status: 'Active',
+      lastActivity: new Date().toISOString(),
+  };
+  
+  await setDoc(doc(companiesCollection, newCompany.id), newCompany);
+}
+
+export async function updateCompany(id: string, companyData: Partial<Company>): Promise<void> {
+    const docRef = doc(db, 'companies', id);
+    await updateDoc(docRef, companyData);
+}
+
 export async function deleteCompany(id: string): Promise<void> {
-    await delay(500);
-    // To use firestore, uncomment the lines below
-    // const docRef = doc(db, 'companies', id);
-    // await deleteDoc(docRef);
-    
-    companiesStore = companiesStore.filter(c => c.id !== id);
+    const docRef = doc(db, 'companies', id);
+    await deleteDoc(docRef);
 }
 
 export async function deleteCompanies(ids: string[]): Promise<void> {
-    await delay(500);
-    // In a real Firestore implementation, you would use a batched write
-    // const batch = writeBatch(db);
-    // ids.forEach(id => {
-    //   const docRef = doc(db, 'companies', id);
-    //   batch.delete(docRef);
-    // });
-    // await batch.commit();
-    companiesStore = companiesStore.filter(c => !ids.includes(c.id));
+    const batch = writeBatch(db);
+    ids.forEach(id => {
+      const docRef = doc(db, 'companies', id);
+      batch.delete(docRef);
+    });
+    await batch.commit();
 }

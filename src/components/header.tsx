@@ -12,16 +12,20 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { Button } from './ui/button';
-import { Plus, Search } from 'lucide-react';
+import { Plus, Search, LogOut } from 'lucide-react';
 import { useQuickAction } from '@/contexts/quick-action-context';
 import * as React from 'react';
 import { Input } from './ui/input';
 import { Company, searchCompanies } from '@/services/company-service';
+import { signOut } from '@/services/auth-service';
+import { useUser } from '@/contexts/user-context';
+
 
 export function Header() {
   const params = useParams();
   const router = useRouter();
-  const companyId = params.companyId as string;
+  const { user } = useUser();
+  const companyId = params.companyId as string || 'acme-inc';
   const { openNewCompanyDialog, globalSearchTerm, setGlobalSearchTerm } = useQuickAction();
   const [isSearchVisible, setIsSearchVisible] = React.useState(false);
   const [searchResults, setSearchResults] = React.useState<Company[]>([]);
@@ -66,6 +70,15 @@ export function Header() {
     setIsSearchVisible(false);
     setGlobalSearchTerm('');
   };
+  
+  const handleSignOut = async () => {
+    await signOut();
+    router.push('/login');
+  };
+
+  const getInitials = (email: string) => {
+    return email[0].toUpperCase();
+  }
 
   return (
     <header className="flex h-16 items-center justify-between gap-4 border-b border-sidebar-border bg-sidebar px-6 text-sidebar-foreground">
@@ -121,10 +134,10 @@ export function Header() {
           <DropdownMenuTrigger asChild>
             <Avatar className="h-8 w-8 cursor-pointer">
               <AvatarImage
-                src="https://picsum.photos/100/100"
+                src={user?.photoURL ?? `https://i.pravatar.cc/150?u=${user?.email}`}
                 data-ai-hint="user avatar"
               />
-              <AvatarFallback>U</AvatarFallback>
+              <AvatarFallback>{user?.email ? getInitials(user.email) : 'U'}</AvatarFallback>
             </Avatar>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
@@ -138,6 +151,11 @@ export function Header() {
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
                 <Link href="/dashboard/workspaces">Switch Workspace</Link>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={handleSignOut} className="text-red-600">
+                <LogOut className="mr-2 h-4 w-4" />
+                Sign Out
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

@@ -3,6 +3,8 @@ import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { QuickActionProvider } from '@/contexts/quick-action-context';
 import { NewCompanyDialog } from '@/components/new-company-dialog';
+import { UserProvider } from '@/contexts/user-context';
+import { AuthProvider } from '@/components/auth-provider';
 
 export const metadata: Metadata = {
   title: 'Insights360',
@@ -25,10 +27,14 @@ export default function RootLayout({
         />
       </head>
       <body className="font-sans antialiased h-full" suppressHydrationWarning>
-        <QuickActionProvider>
-          {children}
-          <NewCompanyDialog />
-        </QuickActionProvider>
+        <UserProvider>
+          <QuickActionProvider>
+            <AuthProvider>
+                {children}
+                <NewCompanyDialog />
+            </AuthProvider>
+          </QuickActionProvider>
+        </UserProvider>
         <Toaster />
       </body>
     </html>

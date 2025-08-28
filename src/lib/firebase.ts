@@ -1,7 +1,8 @@
 'use client';
 
-import { initializeApp, getApp, getApps, FirebaseApp } from 'firebase/app';
-import { getFirestore, Firestore } from 'firebase/firestore';
+import { initializeApp, getApp, getApps } from 'firebase/app';
+import { getFirestore, enableIndexedDbPersistence } from 'firebase/firestore';
+import { getAuth } from 'firebase/auth';
 
 const firebaseConfig = {
   projectId: 'insights360-ta9hn',
@@ -16,5 +17,17 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 const db = getFirestore(app);
+const auth = getAuth(app);
 
-export { db };
+try {
+    enableIndexedDbPersistence(db);
+} catch (error) {
+    if (error instanceof Error && error.name === 'failed-precondition') {
+        console.warn('Multiple tabs open, persistence can only be enabled in one tab at a time.');
+    } else if (error instanceof Error) {
+        console.error('Error enabling Firestore persistence:', error.message);
+    }
+}
+
+
+export { db, auth };
