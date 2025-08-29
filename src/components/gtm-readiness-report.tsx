@@ -34,10 +34,10 @@ const Section: React.FC<{ id: string; icon: React.ReactNode; title: string; chil
 const renderFormattedString = (text: string) => {
     if (!text) return null;
     const cleanedText = text.replace(/\*/g, ''); 
-    const parts = cleanedText.split(/(### .*)/g);
+    const parts = cleanedText.split(/(\r?\n### .*)/g); // Split on newlines that start with ###
     return parts.map((part, index) => {
-        if (part.startsWith('### ')) {
-            return <h4 key={index} className="font-semibold text-lg text-primary mt-4">{part.substring(4)}</h4>;
+        if (part.match(/(\r?\n### .*)/)) {
+            return <h4 key={index} className="font-semibold text-lg text-primary mt-4">{part.replace(/(\r?\n### )/, '')}</h4>;
         }
         return (
              <ul key={index} className="prose max-w-none text-foreground list-disc pl-5 space-y-1">
