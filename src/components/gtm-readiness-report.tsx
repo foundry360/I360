@@ -56,8 +56,6 @@ export function GtmReadinessReport({ result, onComplete }: GtmReadinessReportPro
     
     setIsExporting(true);
     
-    reportElement.classList.add('pdf-export');
-
     const pdf = new jsPDF('p', 'pt', 'a4');
     const pdfWidth = pdf.internal.pageSize.getWidth();
     const pdfHeight = pdf.internal.pageSize.getHeight();
@@ -66,7 +64,6 @@ export function GtmReadinessReport({ result, onComplete }: GtmReadinessReportPro
     let pageCount = 1;
 
     const addHeaderFooter = () => {
-        pdf.setFont('Arial', 'normal');
         pdf.setFontSize(8);
         pdf.setTextColor(150);
         pdf.text("PROPRIETARY & CONFIDENTIAL", margin, margin / 2);
@@ -78,11 +75,12 @@ export function GtmReadinessReport({ result, onComplete }: GtmReadinessReportPro
     const sections = Array.from(reportElement.querySelectorAll('.printable-section'));
 
     for (const section of sections) {
-        const canvas = await html2canvas(section as HTMLElement, {
-            scale: 3,
+        const htmlSection = section as HTMLElement;
+        const canvas = await html2canvas(htmlSection, {
+            scale: 3, // Render at higher resolution
             useCORS: true,
-            windowWidth: reportElement.scrollWidth,
-            windowHeight: reportElement.scrollHeight,
+            width: htmlSection.offsetWidth,
+            height: htmlSection.offsetHeight,
         });
 
         const imgData = canvas.toDataURL('image/png');
@@ -102,7 +100,6 @@ export function GtmReadinessReport({ result, onComplete }: GtmReadinessReportPro
 
     pdf.save('gtm-readiness-report.pdf');
     
-    reportElement.classList.remove('pdf-export');
     setIsExporting(false);
   };
 
@@ -172,21 +169,6 @@ export function GtmReadinessReport({ result, onComplete }: GtmReadinessReportPro
                 -webkit-print-color-adjust: exact !important;
                 color-adjust: exact !important;
             }
-        }
-        .pdf-export {
-            font-family: Arial, sans-serif !important;
-        }
-        .pdf-export .text-3xl { font-size: 24px !important; }
-        .pdf-export .text-xl { font-size: 18px !important; }
-        .pdf-export .text-lg { font-size: 16px !important; }
-        .pdf-export .text-base { font-size: 14px !important; }
-        .pdf-export .text-sm { font-size: 12px !important; }
-        .pdf-export .text-xs { font-size: 10px !important; }
-        .pdf-export h4 { font-size: 15px !important; }
-        .pdf-export .prose { font-size: 12px !important; }
-        .pdf-export * { 
-            -webkit-print-color-adjust: exact !important;
-            color-adjust: exact !important;
         }
       `}</style>
       <div className="space-y-6 p-6">
