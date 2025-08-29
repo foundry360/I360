@@ -32,7 +32,7 @@ const Section: React.FC<{ id: string; icon: React.ReactNode; title: string; chil
 
 const renderFormattedString = (text: string) => {
     if (!text) return null;
-    const cleanedText = text.replace(/\*\*/g, ''); // Remove all double asterisks
+    const cleanedText = text.replace(/\*/g, ''); // Remove all asterisks
     const parts = cleanedText.split(/(### .*)/g);
     return parts.map((part, index) => {
         if (part.startsWith('### ')) {
@@ -96,7 +96,7 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
     
     const renderMarkdown = (text: string) => {
         if(!text) return;
-        const cleanedText = text.replace(/\*\*/g, '');
+        const cleanedText = text.replace(/\*/g, '');
         const lines = cleanedText.split(/\r?\n/).filter(line => line.trim().length > 0);
         lines.forEach(line => {
              if (line.startsWith('### ')) {
@@ -131,9 +131,9 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
             theme: 'plain',
             body: [
                 [{content: `Overall Readiness: ${result.executiveSummary.overallReadinessScore}%`, styles: {fontStyle: 'bold', fontSize: 12}}],
-                [`Company Profile: ${result.executiveSummary.companyStageAndFte}`],
-                [`Industry: ${result.executiveSummary.industrySector}`],
-                [`GTM Strategy: ${result.executiveSummary.primaryGtmStrategy}`],
+                [`Company Profile: ${result.executiveSummary.companyStageAndFte.replace(/\*/g, '')}`],
+                [`Industry: ${result.executiveSummary.industrySector.replace(/\*/g, '')}`],
+                [`GTM Strategy: ${result.executiveSummary.primaryGtmStrategy.replace(/\*/g, '')}`],
             ],
             didDrawPage: (data) => { y = data.cursor?.y || y; }
         });
@@ -142,7 +142,7 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
         addPageIfNeeded(20);
         doc.setFont('helvetica', 'normal');
         doc.setFontSize(10);
-        const splitText = doc.splitTextToSize(result.executiveSummary.briefOverviewOfFindings.replace(/\*\*/g, ''), pageWidth - margin * 2);
+        const splitText = doc.splitTextToSize(result.executiveSummary.briefOverviewOfFindings.replace(/\*/g, ''), pageWidth - margin * 2);
         doc.text(splitText, margin, y);
         y += splitText.length * 12;
     });
@@ -151,17 +151,17 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
     renderSection('Top 3 Critical Findings', () => {
         result.top3CriticalFindings.forEach(finding => {
             const tableBody = [
-                [{ content: `Business Impact`, styles: { fontStyle: 'bold' } }, finding.businessImpact.replace(/\*\*/g, '')],
-                [{ content: `Current State`, styles: { fontStyle: 'bold' } }, finding.currentState.replace(/\*\*/g, '')],
-                [{ content: `Root Cause`, styles: { fontStyle: 'bold' } }, finding.rootCauseAnalysis.replace(/\*\*/g, '')],
-                [{ content: `Stakeholder Impact`, styles: { fontStyle: 'bold' } }, finding.stakeholderImpact.replace(/\*\*/g, '')],
-                [{ content: `Urgency`, styles: { fontStyle: 'bold' } }, finding.urgencyRating.replace(/\*\*/g, '')],
+                [{ content: `Business Impact`, styles: { fontStyle: 'bold' } }, finding.businessImpact.replace(/\*/g, '')],
+                [{ content: `Current State`, styles: { fontStyle: 'bold' } }, finding.currentState.replace(/\*/g, '')],
+                [{ content: `Root Cause`, styles: { fontStyle: 'bold' } }, finding.rootCauseAnalysis.replace(/\*/g, '')],
+                [{ content: `Stakeholder Impact`, styles: { fontStyle: 'bold' } }, finding.stakeholderImpact.replace(/\*/g, '')],
+                [{ content: `Urgency`, styles: { fontStyle: 'bold' } }, finding.urgencyRating.replace(/\*/g, '')],
             ];
             addPageIfNeeded(100);
             doc.setFont('helvetica', 'bold');
             doc.setFontSize(12);
             doc.setTextColor(15, 23, 42); // card-foreground
-            doc.text(finding.findingTitle.replace(/\*\*/g, ''), margin, y);
+            doc.text(finding.findingTitle.replace(/\*/g, ''), margin, y);
             y += 15;
             autoTable(doc, {
                 startY: y,
@@ -214,12 +214,12 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
           <>
               <div className="grid grid-cols-2 gap-4">
                   <p><span className="font-semibold">Overall Readiness:</span> <span className="font-bold text-lg text-primary">{result.executiveSummary.overallReadinessScore}%</span></p>
-                  <p><span className="font-semibold">Company Profile:</span> {result.executiveSummary.companyStageAndFte.replace(/\*\*/g, '')}</p>
-                  <p><span className="font-semibold">Industry:</span> {result.executiveSummary.industrySector.replace(/\*\*/g, '')}</p>
-                  <p><span className="font-semibold">GTM Strategy:</span> {result.executiveSummary.primaryGtmStrategy.replace(/\*\*/g, '')}</p>
+                  <p><span className="font-semibold">Company Profile:</span> {result.executiveSummary.companyStageAndFte.replace(/\*/g, '')}</p>
+                  <p><span className="font-semibold">Industry:</span> {result.executiveSummary.industrySector.replace(/\*/g, '')}</p>
+                  <p><span className="font-semibold">GTM Strategy:</span> {result.executiveSummary.primaryGtmStrategy.replace(/\*/g, '')}</p>
               </div>
               <Separator />
-              <p className="text-muted-foreground">{result.executiveSummary.briefOverviewOfFindings.replace(/\*\*/g, '')}</p>
+              <p className="text-muted-foreground">{result.executiveSummary.briefOverviewOfFindings.replace(/\*/g, '')}</p>
           </>
       )},
       { id: 'critical-findings', icon: <Target className="h-8 w-8 text-destructive" />, title: 'Top 3 Critical Findings', content: (
@@ -227,16 +227,16 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
               <Card key={index} className="break-inside-avoid">
                   <CardHeader>
                       <CardTitle className="flex justify-between items-center">
-                          <span>{finding.findingTitle.replace(/\*\*/g, '')}</span>
+                          <span>{finding.findingTitle.replace(/\*/g, '')}</span>
                           <Badge variant={finding.impactLevel === 'High' ? 'destructive' : 'secondary'}>Impact: {finding.impactLevel}</Badge>
                       </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-3 prose prose-sm max-w-none text-muted-foreground">
-                      <p><span className="font-semibold">Business Impact:</span> {finding.businessImpact.replace(/\*\*/g, '')}</p>
-                      <p><span className="font-semibold">Current State:</span> {finding.currentState.replace(/\*\*/g, '')}</p>
-                      <p><span className="font-semibold">Root Cause:</span> {finding.rootCauseAnalysis.replace(/\*\*/g, '')}</p>
-                      <p><span className="font-semibold">Stakeholder Impact:</span> {finding.stakeholderImpact.replace(/\*\*/g, '')}</p>
-                      <p><span className="font-semibold">Urgency:</span> {finding.urgencyRating.replace(/\*\*/g, '')}</p>
+                      <p><span className="font-semibold">Business Impact:</span> {finding.businessImpact.replace(/\*/g, '')}</p>
+                      <p><span className="font-semibold">Current State:</span> {finding.currentState.replace(/\*/g, '')}</p>
+                      <p><span className="font-semibold">Root Cause:</span> {finding.rootCauseAnalysis.replace(/\*/g, '')}</p>
+                      <p><span className="font-semibold">Stakeholder Impact:</span> {finding.stakeholderImpact.replace(/\*/g, '')}</p>
+                      <p><span className="font-semibold">Urgency:</span> {finding.urgencyRating.replace(/\*/g, '')}</p>
                   </CardContent>
               </Card>
           ))
