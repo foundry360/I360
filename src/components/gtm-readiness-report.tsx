@@ -33,6 +33,8 @@ const Section: React.FC<{ id: string; icon: React.ReactNode; title: string; chil
 
 const renderFormattedString = (text: string) => {
     if (!text) return null;
+    
+    // Clean up markdown-like characters
     const cleanedText = text.replace(/\*/g, ''); 
     const lines = cleanedText.split(/\r?\n/).filter(line => line.trim().length > 0);
 
@@ -52,9 +54,14 @@ const renderFormattedString = (text: string) => {
         }
     };
     
-    // Check for an intro paragraph
-    if (lines.length > 0 && !lines[0].startsWith('### ')) {
-        content.push(<p key="intro-para" className="text-foreground">{lines.shift()}</p>);
+    // Check if the first line is an introductory paragraph (doesn't start with '###')
+    if (lines.length > 0 && !lines[0].startsWith('### ') && !lines[0].toLowerCase().startsWith('phase')) {
+        const introParagraph = lines.shift();
+        // Also remove the heading if it got concatenated
+        const cleanIntro = introParagraph?.replace(/^Implementation Timeline Overview/, '').trim();
+        if (cleanIntro) {
+            content.push(<p key="intro-para" className="text-foreground">{cleanIntro}</p>);
+        }
     }
 
 
@@ -340,13 +347,3 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
   );
 });
 GtmReadinessReport.displayName = "GtmReadinessReport";
-
-    
-
-    
-
-    
-
-    
-
-    
