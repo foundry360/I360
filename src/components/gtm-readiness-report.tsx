@@ -38,8 +38,12 @@ const renderFormattedString = (text: string) => {
 
     let introParagraph = null;
     const firstPartLines = (parts[0] || "").split(/\r?\n/).filter(line => line.trim().length > 0);
+
     if (firstPartLines.length > 0 && !parts[0].match(/(\r?\n### .*)/)) {
-        introParagraph = <p className="text-foreground">{firstPartLines[0]}</p>;
+        const introLine = firstPartLines[0].replace(/###\s.*?\r?\n/, '');
+        if (introLine.trim().length > 0) {
+           introParagraph = <p className="text-foreground">{introLine}</p>;
+        }
         parts[0] = firstPartLines.slice(1).join('\n');
     }
 
@@ -48,7 +52,7 @@ const renderFormattedString = (text: string) => {
             {introParagraph}
             {parts.map((part, index) => {
                 if (part.match(/(\r?\n### .*)/)) {
-                    return <h4 key={index} className="font-semibold text-lg text-primary mt-4">{part.replace(/(\r?\n### )/, '')}</h4>;
+                    return <h4 key={index} className="font-semibold text-lg text-primary mt-4">{part.replace(/(\r?\n)?###\s?/, '')}</h4>;
                 }
                 
                 const lines = (part || "").split(/\r?\n/).filter(line => line.trim().length > 0 && !line.startsWith('### '));
@@ -333,6 +337,8 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
   );
 });
 GtmReadinessReport.displayName = "GtmReadinessReport";
+
+    
 
     
 
