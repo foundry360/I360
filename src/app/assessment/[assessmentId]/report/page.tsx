@@ -99,8 +99,8 @@ export default function ReportPage() {
                             <span className="sr-only">Back</span>
                         </Button>
                         <div>
-                            <h1 className="text-2xl font-bold">GTM Readiness Report</h1>
-                            <p className="text-muted-foreground">Assessment: {assessment.name}</p>
+                            <h1 className="text-2xl font-bold">{assessment.name}</h1>
+                            <p className="text-muted-foreground">GTM Readiness Report</p>
                         </div>
                     </div>
                     <Button onClick={handleExportClick}>
