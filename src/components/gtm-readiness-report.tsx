@@ -34,39 +34,42 @@ const Section: React.FC<{ id: string; icon: React.ReactNode; title: string; chil
 const renderFormattedString = (text: string) => {
     if (!text) return null;
     const cleanedText = text.replace(/\*/g, ''); 
-    const parts = cleanedText.split(/(\r?\n### .*)/g);
+    const lines = cleanedText.split(/\r?\n/).filter(line => line.trim().length > 0);
 
-    let introParagraph = null;
-    const firstPartLines = (parts[0] || "").split(/\r?\n/).filter(line => line.trim().length > 0);
+    const content: React.ReactNode[] = [];
+    let currentList: string[] = [];
 
-    if (firstPartLines.length > 0 && !parts[0].match(/(\r?\n### .*)/)) {
-        const introLine = firstPartLines[0].replace(/###\s.*?\r?\n/, '');
-        if (introLine.trim().length > 0) {
-           introParagraph = <p className="text-foreground">{introLine}</p>;
+    const flushList = () => {
+        if (currentList.length > 0) {
+            content.push(
+                <ul key={`list-${content.length}`} className="prose max-w-none text-foreground list-disc pl-5 space-y-1">
+                    {currentList.map((item, index) => (
+                        <li key={index}>{item.replace(/^- /, '')}</li>
+                    ))}
+                </ul>
+            );
+            currentList = [];
         }
-        parts[0] = firstPartLines.slice(1).join('\n');
+    };
+    
+    // Check for an intro paragraph
+    if (lines.length > 0 && !lines[0].startsWith('### ')) {
+        content.push(<p key="intro-para" className="text-foreground">{lines.shift()}</p>);
     }
 
-    return (
-        <>
-            {introParagraph}
-            {parts.map((part, index) => {
-                if (part.match(/(\r?\n### .*)/)) {
-                    return <h4 key={index} className="font-semibold text-lg text-primary mt-4">{part.replace(/(\r?\n)?###\s?/, '')}</h4>;
-                }
-                
-                const lines = (part || "").split(/\r?\n/).filter(line => line.trim().length > 0 && !line.startsWith('### '));
 
-                return (
-                    <ul key={index} className="prose max-w-none text-foreground list-disc pl-5 space-y-1">
-                        {lines.map((line, i) => (
-                            <li key={i}>{line.replace(/^- /, '')}</li>
-                        ))}
-                    </ul>
-                )
-            })}
-        </>
-    )
+    lines.forEach((line, index) => {
+        if (line.startsWith('### ')) {
+            flushList();
+            content.push(<h4 key={`h4-${index}`} className="font-semibold text-lg text-primary mt-4">{line.replace(/###\s?/, '')}</h4>);
+        } else {
+            currentList.push(line);
+        }
+    });
+
+    flushList(); // Add any remaining list items
+
+    return <>{content}</>;
 };
 
 const renderParagraphString = (text: string) => {
