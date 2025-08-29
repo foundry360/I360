@@ -8,7 +8,6 @@ import { Loader2, Download, BarChart, Clock, Target, Lightbulb, TrendingUp, Cpu,
 import { Badge } from './ui/badge';
 import { Separator } from './ui/separator';
 import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
 
 type GtmReadinessReportProps = {
   result: GtmReadinessOutput;
@@ -48,43 +47,85 @@ const renderFormattedString = (text: string) => {
 
 
 export function GtmReadinessReport({ result, onComplete }: GtmReadinessReportProps) {
-  const reportRef = React.useRef<HTMLDivElement>(null);
   const [isExporting, setIsExporting] = React.useState(false);
 
   const handlePrint = async () => {
-    if (!reportRef.current) return;
     setIsExporting(true);
 
-    const canvas = await html2canvas(reportRef.current, { scale: 2 });
-    const imgData = canvas.toDataURL('image/png');
+    const pdf = new jsPDF('p', 'pt', 'a4');
     
-    const pdf = new jsPDF('p', 'mm', 'a4');
-    const pdfWidth = pdf.internal.pageSize.getWidth();
-    const pdfHeight = pdf.internal.pageSize.getHeight();
-    
-    const imgWidth = canvas.width;
-    const imgHeight = canvas.height;
-    
-    const ratio = imgWidth / imgHeight;
-    const heightInPdf = pdfWidth / ratio;
-    
-    let heightLeft = imgHeight * (pdfWidth / imgWidth);
-    let position = 0;
-    
-    pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, heightLeft);
-    heightLeft -= pdfHeight;
+    // Convert the React components/data into a structured HTML string
+    const reportHtml = `
+      <html>
+        <head>
+          <style>
+            body { font-family: 'Helvetica', 'sans-serif'; font-size: 10px; color: #333; }
+            h1 { font-size: 24px; color: #7735e9; text-align: center; border-bottom: 1px solid #ddd; padding-bottom: 10px; margin-bottom: 20px; }
+            h2 { font-size: 16px; color: #7735e9; border-bottom: 1px solid #eee; padding-bottom: 5px; margin-top: 20px; }
+            h3 { font-size: 14px; color: #333; font-weight: bold; margin-top: 15px; }
+            h4 { font-size: 12px; color: #555; font-weight: bold; margin-top: 10px; }
+            p, li { margin-bottom: 8px; line-height: 1.4; }
+            ul { padding-left: 20px; }
+            .section { margin-bottom: 20px; page-break-inside: avoid; }
+            .summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+            .finding-card { border: 1px solid #eee; border-radius: 5px; padding: 15px; margin-bottom: 15px; }
+            .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; background-color: #eee; color: #333; font-size: 10px; }
+            .badge-destructive { background-color: #ffdddd; color: #b00020; }
+            .text-muted { color: #666; }
+          </style>
+        </head>
+        <body>
+          <h1>GTM Readiness Assessment Report</h1>
+          <p style="text-align: center; color: #888;">Generated on ${new Date().toLocaleDateString()}</p>
+          
+          <div class="section">
+            <h2>Executive Summary</h2>
+            <div class="summary-grid">
+              <p><strong>Overall Readiness:</strong> ${result.executiveSummary.overallReadinessScore}%</p>
+              <p><strong>Company Profile:</strong> ${result.executiveSummary.companyStageAndFte}</p>
+              <p><strong>Industry:</strong> ${result.executiveSummary.industrySector}</p>
+              <p><strong>GTM Strategy:</strong> ${result.executiveSummary.primaryGtmStrategy}</p>
+            </div>
+            <hr/>
+            <p>${result.executiveSummary.briefOverviewOfFindings}</p>
+          </div>
 
-    while (heightLeft > 0) {
-        position = heightLeft - (imgHeight * (pdfWidth / imgWidth));
-        pdf.addPage();
-        pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, imgHeight * (pdfWidth / imgWidth));
-        heightLeft -= pdfHeight;
-    }
-    
-    pdf.save('GTM-Readiness-Report.pdf');
-    setIsExporting(false);
+          <div class="section">
+            <h2>Top 3 Critical Findings</h2>
+            ${result.top3CriticalFindings.map(finding => `
+              <div class="finding-card">
+                <h3>${finding.findingTitle} <span class="badge ${finding.impactLevel === 'High' ? 'badge-destructive' : ''}">Impact: ${finding.impactLevel}</span></h3>
+                <p><strong>Business Impact:</strong> ${finding.businessImpact}</p>
+                <p><strong>Current State:</strong> ${finding.currentState}</p>
+                <p><strong>Root Cause:</strong> ${finding.rootCauseAnalysis}</p>
+                <p><strong>Stakeholder Impact:</strong> ${finding.stakeholderImpact}</p>
+                <p><strong>Urgency:</strong> ${finding.urgencyRating}</p>
+              </div>
+            `).join('')}
+          </div>
+
+          ${reportSectionsForHtml.map(sec => `
+             <div class="section">
+                <h2>${sec.title}</h2>
+                ${(result[sec.key as keyof GtmReadinessOutput] as string || '').replace(/### (.*)/g, '<h4>$1</h4>').replace(/\r?\n- /g, '<li>').replace(/\r?\n/g, '<br/>').replace(/<li>/g, '<ul><li>').replace(/<br\/><\/ul>/g, '</ul>')}
+             </div>
+          `).join('')}
+        </body>
+      </html>
+    `;
+
+    await pdf.html(reportHtml, {
+      callback: function (doc) {
+        doc.save('GTM-Readiness-Report.pdf');
+        setIsExporting(false);
+      },
+      margin: [40, 40, 40, 40],
+      autoPaging: 'text',
+      width: 515, // A4 width in points minus margins
+      windowWidth: 700 // Larger virtual window to help with layout
+    });
+
   };
-
 
   if (!result || !result.executiveSummary) {
     return (
@@ -140,34 +181,31 @@ export function GtmReadinessReport({ result, onComplete }: GtmReadinessReportPro
       { id: 'investment-roi', icon: <Banknote className="h-8 w-8 text-primary" />, title: 'Investment & ROI Analysis', content: renderFormattedString(result.investmentAndRoiAnalysis) },
       { id: 'next-steps', icon: <ArrowRight className="h-8 w-8 text-primary" />, title: 'Next Steps & Decision Framework', content: renderFormattedString(result.nextStepsAndDecisionFramework) },
     ];
+    
+    const reportSectionsForHtml = [
+      { key: 'strategicRecommendationSummary', title: 'Strategic Recommendation Summary' },
+      { key: 'implementationTimelineOverview', title: 'Implementation Timeline Overview' },
+      { key: 'currentStateAssessment', title: 'Current State Assessment' },
+      { key: 'performanceBenchmarking', title: 'Performance Benchmarking' },
+      { key: 'keyFindingsAndOpportunities', title: 'Key Findings & Opportunities' },
+      { key: 'prioritizedRecommendations', title: 'Prioritized Recommendations' },
+      { key: 'implementationRoadmap', title: 'Implementation Roadmap' },
+      { key: 'investmentAndRoiAnalysis', title: 'Investment & ROI Analysis' },
+      { key: 'nextStepsAndDecisionFramework', title: 'Next Steps & Decision Framework' },
+    ];
 
 
   return (
     <div className="bg-muted">
-       <style>{`
-        @media print {
-            .no-print {
-                display: none !important;
-            }
-            body {
-                -webkit-print-color-adjust: exact !important;
-                color-adjust: exact !important;
-            }
-            .printable-section {
-                border: none !important;
-                box-shadow: none !important;
-            }
-        }
-      `}</style>
       <div className="space-y-6 p-6">
-        <div ref={reportRef} className="bg-background p-8 rounded-lg shadow-sm">
+        <div className="bg-background p-8 rounded-lg shadow-sm">
             <div className="text-center pb-4 border-b mb-6">
                 <h2 className="text-3xl font-bold text-primary">GTM Readiness Assessment Report</h2>
                 <p className="text-muted-foreground">Generated on {new Date().toLocaleDateString()}</p>
             </div>
             <div className="space-y-6">
                 {reportSections.map(sec => (
-                    <div key={sec.id} className="printable-section">
+                    <div key={sec.id}>
                          <Section id={sec.id} icon={sec.icon} title={sec.title}>
                             {sec.content}
                         </Section>
@@ -175,7 +213,7 @@ export function GtmReadinessReport({ result, onComplete }: GtmReadinessReportPro
                 ))}
             </div>
         </div>
-        <div className="flex justify-between items-center gap-4 p-6 bg-background rounded-lg shadow-sm no-print">
+        <div className="flex justify-between items-center gap-4 p-6 bg-background rounded-lg shadow-sm">
             <p className="text-xs text-muted-foreground">PROPRIETARY & CONFIDENTIAL</p>
             <div className="flex gap-4">
                 <Button variant="outline" onClick={onComplete}>Done</Button>
