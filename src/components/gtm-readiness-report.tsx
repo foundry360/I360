@@ -3,7 +3,6 @@
 import * as React from 'react';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
-import html2PDF from 'jspdf-html2canvas';
 import type { GtmReadinessOutput } from '@/ai/flows/gtm-readiness-flow';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -56,6 +55,8 @@ export function GtmReadinessReport({ result, onComplete }: GtmReadinessReportPro
     if (!reportElement) return;
 
     setIsExporting(true);
+
+    const html2PDF = (await import('jspdf-html2canvas')).default;
     
     const style = document.createElement('style');
     style.innerHTML = `
