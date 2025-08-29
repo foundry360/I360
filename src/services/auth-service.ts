@@ -11,6 +11,7 @@ import {
   GoogleAuthProvider,
   signInWithPopup,
   linkWithCredential,
+  OAuthProvider,
 } from 'firebase/auth';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
@@ -55,18 +56,11 @@ export const signInWithGoogle = async () => {
              return result.user;
         } else {
             // This case handles linking the account if the user is already logged in.
-            const result = await signInWithPopup(auth.currentUser, provider);
-            const credential = GoogleAuthProvider.credentialFromResult(result);
+            const credential = GoogleAuthProvider.credentialFromResult(await signInWithPopup(auth.currentUser, provider));
 
             if (!credential) {
                 throw new Error("Could not get credential from Google sign-in.");
             }
-            
-            // This links the new credential to the existing user.
-            // Note: signInWithPopup on an already signed-in user does the linking automatically.
-            // The following line is redundant if the above call is to signInWithPopup(auth.currentUser, ...),
-            // but we keep it for clarity in case the behavior changes.
-            // await linkWithCredential(auth.currentUser, credential);
             
             await storeTokens(credential);
 

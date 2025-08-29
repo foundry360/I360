@@ -1,9 +1,9 @@
 
 'use client';
 
-import { initializeApp, getApps, getApp } from 'firebase/app';
-import { getFirestore, enableIndexedDbPersistence } from 'firebase/firestore';
-import { getAuth } from 'firebase/auth';
+import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
+import { getFirestore, Firestore, enableIndexedDbPersistence } from 'firebase/firestore';
+import { getAuth, Auth } from 'firebase/auth';
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -14,15 +14,19 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-// Simple check to see if the config is populated, to give a slightly better error message.
-if (!firebaseConfig.apiKey || !firebaseConfig.projectId) {
-    console.error("Firebase config is not loaded. Make sure you have created a .env.local file with the correct variables and restarted your development server.");
-}
+let app: FirebaseApp;
+let auth: Auth;
+let db: Firestore;
 
 // Initialize Firebase
-const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
-const db = getFirestore(app);
-const auth = getAuth(app);
+if (getApps().length === 0) {
+    app = initializeApp(firebaseConfig);
+} else {
+    app = getApp();
+}
+
+auth = getAuth(app);
+db = getFirestore(app);
 
 if (typeof window !== 'undefined') {
   try {
