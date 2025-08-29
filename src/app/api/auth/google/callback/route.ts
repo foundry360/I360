@@ -2,28 +2,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { google } from 'googleapis';
 import { cookies } from 'next/headers';
-import * as admin from 'firebase-admin';
-import { auth as clientAuth } from '@/lib/firebase';
-import { GoogleAuthProvider, signInWithCredential } from 'firebase/auth';
-
-try {
-    const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY || '{}');
-    if (!admin.apps.length) {
-        admin.initializeApp({
-            credential: admin.credential.cert(serviceAccount),
-        });
-    }
-} catch (e) {
-    console.error('Failed to initialize Firebase Admin SDK:', e);
-}
-
 
 export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const code = searchParams.get('code');
 
     if (!code) {
-        return NextResponse.redirect(new URL('/profile?error=Missing-Code', request.url));
+        const companyId = cookies().get('companyId')?.value || 'acme-inc';
+        return NextResponse.redirect(new URL(`/${companyId}/profile?error=Missing-Code`, request.url));
     }
 
     const oauth2Client = new google.auth.OAuth2(
@@ -53,22 +39,14 @@ export async function GET(request: NextRequest) {
                 path: '/',
             });
         }
-        
-        if (tokens.id_token && clientAuth.currentUser) {
-            const credential = GoogleAuthProvider.credential(tokens.id_token);
-            // This links the Google account to the existing Firebase user
-            await clientAuth.currentUser.linkWithCredential(credential);
-        } else if (!clientAuth.currentUser) {
-            console.warn("No Firebase user logged in on the client to link the Google account to.");
-        }
-
 
         // Redirect user back to their profile page
-        const companyId = cookieStore.get('companyId')?.value || 'acme-inc'; // Or get from session
+        const companyId = cookieStore.get('companyId')?.value || 'acme-inc';
         return NextResponse.redirect(new URL(`/${companyId}/profile`, request.url));
 
     } catch (error) {
         console.error('Error exchanging code for tokens:', error);
-        return NextResponse.redirect(new URL('/profile?error=Token-Exchange-Failed', request.url));
+        const companyId = cookies().get('companyId')?.value || 'acme-inc';
+        return NextResponse.redirect(new URL(`/${companyId}/profile?error=Token-Exchange-Failed`, request.url));
     }
 }

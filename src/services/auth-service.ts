@@ -20,7 +20,7 @@ export const signIn = async (email: string, password: string) => {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         await updateProfile(userCredential.user, { displayName: email.split('@')[0] });
         return userCredential;
-      } catch (createError) {
+      } catch (createError: any) {
         console.error('Error creating user:', createError);
         throw createError;
       }
