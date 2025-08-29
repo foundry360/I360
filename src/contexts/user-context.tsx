@@ -4,6 +4,7 @@
 import * as React from 'react';
 import { onAuthStateChangeObserver } from '@/services/auth-service';
 import type { User } from 'firebase/auth';
+import { auth } from '@/lib/firebase';
 
 type UserContextType = {
   user: User | null;
@@ -18,8 +19,8 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = React.useState(true);
 
   React.useEffect(() => {
-    const unsubscribe = onAuthStateChangeObserver((user) => {
-      setUser(user);
+    const unsubscribe = onAuthStateChangeObserver((currentUser) => {
+      setUser(currentUser);
       setLoading(false);
     });
     
@@ -28,8 +29,15 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 
   const reloadUser = async () => {
     if (auth.currentUser) {
+      try {
         await auth.currentUser.reload();
+        // After reloading, the onAuthStateChanged observer will trigger,
+        // which will then update the user state. We can also set it here
+        // to ensure the update is reflected as quickly as possible.
         setUser(auth.currentUser);
+      } catch (error) {
+        console.error("Error reloading user:", error);
+      }
     }
   }
 

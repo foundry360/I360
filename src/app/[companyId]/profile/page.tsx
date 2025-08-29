@@ -110,7 +110,6 @@ export default function CompanyProfilePage() {
           title: 'Success!',
           description: 'Your Google account has been connected.',
         });
-        setIsGoogleConnected(true);
       }
     } catch (error) {
       console.error('Error connecting Google account:', error);
