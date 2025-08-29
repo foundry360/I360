@@ -112,6 +112,8 @@ export function GtmReadinessReport({ result, onComplete }: GtmReadinessReportPro
     { id: 'next-steps', icon: <ArrowRight className="h-8 w-8 text-primary" />, title: 'Next Steps & Decision Framework', content: renderFormattedString(result.nextStepsAndDecisionFramework) },
   ]
 
+  const triggerRef = React.useRef<HTMLDivElement>(null);
+
   return (
     <div className="bg-muted">
        <style>{`
@@ -145,13 +147,15 @@ export function GtmReadinessReport({ result, onComplete }: GtmReadinessReportPro
             <p className="text-xs text-muted-foreground">PROPRIETARY & CONFIDENTIAL</p>
             <div className="flex gap-4">
                 <Button variant="outline" onClick={onComplete}>Done</Button>
-                <Button onClick={handlePrint} disabled={isExporting}>
-                {isExporting ? (
-                    <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Exporting...</>
-                ) : (
-                    <><Download className="mr-2 h-4 w-4" /> Export to PDF</>
-                )}
-                </Button>
+                <div onClick={handlePrint} ref={triggerRef} className="inline-block">
+                    <Button disabled={isExporting}>
+                        {isExporting ? (
+                            <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Exporting...</>
+                        ) : (
+                            <><Download className="mr-2 h-4 w-4" /> Export to PDF</>
+                        )}
+                    </Button>
+                </div>
             </div>
         </div>
       </div>
