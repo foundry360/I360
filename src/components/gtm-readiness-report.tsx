@@ -31,65 +31,72 @@ const Section: React.FC<{ id: string; icon: React.ReactNode; title: string; chil
   </Card>
 );
 
-const renderFormattedString = (text: string) => {
+const renderParagraphsAndHeadings = (text: string) => {
     if (!text) return null;
     
     // Clean up markdown-like characters
     const cleanedText = text.replace(/\*/g, ''); 
     const lines = cleanedText.split(/\r?\n/).filter(line => line.trim().length > 0);
 
+    return (
+        <div className="prose max-w-none text-foreground space-y-2">
+            {lines.map((line, i) => {
+                if (line.startsWith('### ')) {
+                    return <h4 key={`h4-${i}`} className="font-semibold text-lg text-primary mt-4">{line.replace(/###\s?/, '')}</h4>
+                }
+                return <p key={i}>{line.replace(/^- /, '')}</p>;
+            })}
+        </div>
+    );
+};
+
+const renderTimeline = (text: string) => {
+    if (!text) return null;
+
+    const cleanedText = text.replace(/\*/g, '');
+    const lines = cleanedText.split(/\r?\n/).filter(line => line.trim().length > 0);
     const content: React.ReactNode[] = [];
-    let currentList: string[] = [];
+
+    // Find the first line that doesn't start with a heading marker to be the intro
+    const introIndex = lines.findIndex(line => !line.startsWith('### '));
+    if (introIndex !== -1) {
+        // Remove the duplicated title if present
+        const introParagraph = lines[introIndex].replace(/^Implementation Timeline Overview/, '').trim();
+        if (introParagraph) {
+            content.push(<p key="intro-para" className="text-foreground">{introParagraph}</p>);
+        }
+        // Remove the intro line from the array
+        lines.splice(introIndex, 1);
+    }
+    
+    let currentListItems: string[] = [];
 
     const flushList = () => {
-        if (currentList.length > 0) {
+        if (currentListItems.length > 0) {
             content.push(
                 <ul key={`list-${content.length}`} className="prose max-w-none text-foreground list-disc pl-5 space-y-1">
-                    {currentList.map((item, index) => (
+                    {currentListItems.map((item, index) => (
                         <li key={index}>{item.replace(/^- /, '')}</li>
                     ))}
                 </ul>
             );
-            currentList = [];
+            currentListItems = [];
         }
     };
-    
-    // Check if the first line is an introductory paragraph (doesn't start with '###')
-    if (lines.length > 0 && !lines[0].startsWith('### ') && !lines[0].toLowerCase().startsWith('phase')) {
-        const introParagraph = lines.shift();
-        // Also remove the heading if it got concatenated
-        const cleanIntro = introParagraph?.replace(/^Implementation Timeline Overview/, '').trim();
-        if (cleanIntro) {
-            content.push(<p key="intro-para" className="text-foreground">{cleanIntro}</p>);
-        }
-    }
 
-
-    lines.forEach((line, index) => {
+    lines.forEach((line) => {
         if (line.startsWith('### ')) {
             flushList();
-            content.push(<h4 key={`h4-${index}`} className="font-semibold text-lg text-primary mt-4">{line.replace(/###\s?/, '')}</h4>);
+            content.push(<h4 key={`h4-${line}`} className="font-semibold text-lg text-primary mt-4">{line.replace(/###\s?/, '')}</h4>);
         } else {
-            currentList.push(line);
+            currentListItems.push(line);
         }
     });
-
+    
     flushList(); // Add any remaining list items
 
-    return <>{content}</>;
-};
-
-const renderParagraphString = (text: string) => {
-    if (!text) return null;
-    const cleanedText = text.replace(/###\s/g, '').replace(/\*/g, '');
-    return (
-        <div className="prose max-w-none text-foreground space-y-2">
-            {(cleanedText || "").split(/\r?\n/).filter(line => line.trim().length > 0).map((line, i) => (
-                <p key={i}>{line.replace(/^- /, '')}</p>
-            ))}
-        </div>
-    )
-};
+    return <div className="space-y-2">{content}</div>;
+}
 
 
 export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessReportProps>(({ title, result, onComplete }, ref) => {
@@ -246,13 +253,13 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
 
     renderSection('Strategic Recommendation Summary', () => renderMarkdown(result.strategicRecommendationSummary, true));
     renderSection('Implementation Timeline Overview', () => renderMarkdown(result.implementationTimelineOverview));
-    renderSection('Current State Assessment', () => renderMarkdown(result.currentStateAssessment));
-    renderSection('Performance Benchmarking', () => renderMarkdown(result.performanceBenchmarking));
-    renderSection('Key Findings & Opportunities', () => renderMarkdown(result.keyFindingsAndOpportunities));
-    renderSection('Prioritized Recommendations', () => renderMarkdown(result.prioritizedRecommendations));
-    renderSection('Implementation Roadmap', () => renderMarkdown(result.implementationRoadmap));
-    renderSection('Investment & ROI Analysis', () => renderMarkdown(result.investmentAndRoiAnalysis));
-    renderSection('Next Steps & Decision Framework', () => renderMarkdown(result.nextStepsAndDecisionFramework));
+    renderSection('Current State Assessment', () => renderMarkdown(result.currentStateAssessment, true));
+    renderSection('Performance Benchmarking', () => renderMarkdown(result.performanceBenchmarking, true));
+    renderSection('Key Findings & Opportunities', () => renderMarkdown(result.keyFindingsAndOpportunities, true));
+    renderSection('Prioritized Recommendations', () => renderMarkdown(result.prioritizedRecommendations, true));
+    renderSection('Implementation Roadmap', () => renderMarkdown(result.implementationRoadmap, true));
+    renderSection('Investment & ROI Analysis', () => renderMarkdown(result.investmentAndRoiAnalysis, true));
+    renderSection('Next Steps & Decision Framework', () => renderMarkdown(result.nextStepsAndDecisionFramework, true));
 
     doc.save('GTM-Readiness-Report.pdf');
     setIsExporting(false);
@@ -307,15 +314,15 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
               </Card>
           ))
       )},
-      { id: 'recommendation-summary', icon: <Lightbulb className="h-8 w-8 text-primary" />, title: 'Strategic Recommendation Summary', content: renderParagraphString(result.strategicRecommendationSummary) },
-      { id: 'timeline-overview', icon: <Clock className="h-8 w-8 text-primary" />, title: 'Implementation Timeline Overview', content: renderFormattedString(result.implementationTimelineOverview) },
-      { id: 'current-state-assessment', icon: <PieChart className="h-8 w-8 text-primary" />, title: 'Current State Assessment', content: renderFormattedString(result.currentStateAssessment) },
-      { id: 'performance-benchmarking', icon: <TrendingUp className="h-8 w-8 text-primary" />, title: 'Performance Benchmarking', content: renderFormattedString(result.performanceBenchmarking) },
-      { id: 'key-findings', icon: <Flag className="h-8 w-8 text-primary" />, title: 'Key Findings & Opportunities', content: renderFormattedString(result.keyFindingsAndOpportunities) },
-      { id: 'prioritized-recommendations', icon: <ListChecks className="h-8 w-8 text-primary" />, title: 'Prioritized Recommendations', content: renderFormattedString(result.prioritizedRecommendations) },
-      { id: 'implementation-roadmap', icon: <GanttChartSquare className="h-8 w-8 text-primary" />, title: 'Implementation Roadmap', content: renderFormattedString(result.implementationRoadmap) },
-      { id: 'investment-roi', icon: <Banknote className="h-8 w-8 text-primary" />, title: 'Investment & ROI Analysis', content: renderFormattedString(result.investmentAndRoiAnalysis) },
-      { id: 'next-steps', icon: <ArrowRight className="h-8 w-8 text-primary" />, title: 'Next Steps & Decision Framework', content: renderFormattedString(result.nextStepsAndDecisionFramework) },
+      { id: 'recommendation-summary', icon: <Lightbulb className="h-8 w-8 text-primary" />, title: 'Strategic Recommendation Summary', content: renderParagraphsAndHeadings(result.strategicRecommendationSummary) },
+      { id: 'timeline-overview', icon: <Clock className="h-8 w-8 text-primary" />, title: 'Implementation Timeline Overview', content: renderTimeline(result.implementationTimelineOverview) },
+      { id: 'current-state-assessment', icon: <PieChart className="h-8 w-8 text-primary" />, title: 'Current State Assessment', content: renderParagraphsAndHeadings(result.currentStateAssessment) },
+      { id: 'performance-benchmarking', icon: <TrendingUp className="h-8 w-8 text-primary" />, title: 'Performance Benchmarking', content: renderParagraphsAndHeadings(result.performanceBenchmarking) },
+      { id: 'key-findings', icon: <Flag className="h-8 w-8 text-primary" />, title: 'Key Findings & Opportunities', content: renderParagraphsAndHeadings(result.keyFindingsAndOpportunities) },
+      { id: 'prioritized-recommendations', icon: <ListChecks className="h-8 w-8 text-primary" />, title: 'Prioritized Recommendations', content: renderParagraphsAndHeadings(result.prioritizedRecommendations) },
+      { id: 'implementation-roadmap', icon: <GanttChartSquare className="h-8 w-8 text-primary" />, title: 'Implementation Roadmap', content: renderParagraphsAndHeadings(result.implementationRoadmap) },
+      { id: 'investment-roi', icon: <Banknote className="h-8 w-8 text-primary" />, title: 'Investment & ROI Analysis', content: renderParagraphsAndHeadings(result.investmentAndRoiAnalysis) },
+      { id: 'next-steps', icon: <ArrowRight className="h-8 w-8 text-primary" />, title: 'Next Steps & Decision Framework', content: renderParagraphsAndHeadings(result.nextStepsAndDecisionFramework) },
     ];
 
   return (
@@ -347,3 +354,5 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
   );
 });
 GtmReadinessReport.displayName = "GtmReadinessReport";
+
+    
