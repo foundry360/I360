@@ -45,45 +45,56 @@ export const signInWithGoogle = async () => {
     });
 
     try {
-        const result = await signInWithPopup(auth, provider);
-        const credential = GoogleAuthProvider.credentialFromResult(result);
-        
-        if (!credential) {
-            throw new Error("Could not get credential from Google sign-in.");
-        }
+        if (!auth.currentUser) {
+            // This case handles initial sign-in if the user is not logged in.
+             const result = await signInWithPopup(auth, provider);
+             const credential = GoogleAuthProvider.credentialFromResult(result);
+             if (credential) {
+                await storeTokens(credential);
+             }
+             return result.user;
+        } else {
+            // This case handles linking the account if the user is already logged in.
+            const result = await signInWithPopup(auth, provider);
+            const credential = GoogleAuthProvider.credentialFromResult(result);
 
-        // This handles the case where the user is already logged in and is now linking their Google account.
-        if (auth.currentUser && auth.currentUser.email !== result.user.email) {
+            if (!credential) {
+                throw new Error("Could not get credential from Google sign-in.");
+            }
+            
+            // Link the new credential to the existing user.
             await linkWithCredential(auth.currentUser, credential);
+            await storeTokens(credential);
+
+            return auth.currentUser;
         }
 
-        const accessToken = credential.accessToken;
-        // The refresh token is not always directly available on the credential object in pop-up flows.
-        // It's often managed internally by the Firebase SDK. We store what we get.
-        const refreshToken = (credential as any).refreshToken || (result.user.toJSON() as any).stsTokenManager?.refreshToken;
-
-        if (accessToken) {
-            await fetch('/api/auth/store-token', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ accessToken, refreshToken }),
-            });
-        }
-
-        return result.user;
     } catch (error: any) {
         if (error.code === 'auth/popup-closed-by-user') {
             console.log("Sign-in popup closed by user.");
             return null;
         }
         if (error.code === 'auth/credential-already-in-use') {
-            alert("This Google account is already associated with another user account. Please sign in with your original method and link your Google account from the profile page.");
+            alert("This Google account is already associated with another user account.");
             return null;
         }
         console.error("Error during Google sign-in:", error);
         throw error;
     }
 };
+
+async function storeTokens(credential: any) {
+    const accessToken = credential.accessToken;
+    const refreshToken = (credential as any).refreshToken || (credential.user?.toJSON() as any)?.stsTokenManager?.refreshToken;
+
+    if (accessToken) {
+        await fetch('/api/auth/store-token', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ accessToken, refreshToken }),
+        });
+    }
+}
 
 
 export const signOut = async () => {

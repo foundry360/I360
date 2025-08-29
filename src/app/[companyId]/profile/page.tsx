@@ -36,6 +36,7 @@ export default function CompanyProfilePage() {
 
   React.useEffect(() => {
     if (user) {
+      console.log('User provider data:', user.providerData);
       setDisplayName(user.displayName || '');
       setEmail(user.email || '');
       setAvatarPreview(user.photoURL || null);
