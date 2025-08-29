@@ -3,6 +3,7 @@
 import * as React from 'react';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
+import html2PDF from 'jspdf-html2canvas';
 import type { GtmReadinessOutput } from '@/ai/flows/gtm-readiness-flow';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -55,32 +56,14 @@ export function GtmReadinessReport({ result, onComplete }: GtmReadinessReportPro
     if (!reportElement) return;
 
     setIsExporting(true);
-
-    const pdf = new jsPDF('p', 'pt', 'a4');
-    const pdfWidth = pdf.internal.pageSize.getWidth();
-    const pdfHeight = pdf.internal.pageSize.getHeight();
-    const margin = 40;
-    let yPos = margin;
-    let pageCount = 1;
-
-    const addHeaderFooter = () => {
-        pdf.setFontSize(8);
-        pdf.setTextColor(150);
-        pdf.text("PROPRIETARY & CONFIDENTIAL", margin, margin / 2);
-        pdf.text(`Page ${pageCount}`, pdfWidth - margin, pdfHeight - margin / 2);
-    };
-
-    addHeaderFooter();
-
-    // Temporarily apply borderless styles for PDF export
+    
     const style = document.createElement('style');
     style.innerHTML = `
-      .pdf-export .printable-section,
-      .pdf-export .printable-section .border,
-      .pdf-export .printable-section .border-b,
-      .pdf-export .printable-section .border-t,
-      .pdf-export .printable-section .shadow-sm,
-      .pdf-export .printable-section .shadow-md {
+      .pdf-export .border,
+      .pdf-export .border-b,
+      .pdf-export .border-t,
+      .pdf-export .shadow-sm,
+      .pdf-export .shadow-md {
         border: none !important;
         box-shadow: none !important;
       }
@@ -88,38 +71,22 @@ export function GtmReadinessReport({ result, onComplete }: GtmReadinessReportPro
     document.head.appendChild(style);
     reportElement.classList.add('pdf-export');
 
-
-    const sections = Array.from(reportElement.querySelectorAll('.printable-section'));
-
-    for (const section of sections) {
-        const htmlSection = section as HTMLElement;
-        const canvas = await html2canvas(htmlSection, {
-            scale: 2, 
-            useCORS: true,
-        });
-
-        const imgData = canvas.toDataURL('image/png');
-        const imgWidth = pdfWidth - margin * 2;
-        const imgHeight = (canvas.height * imgWidth) / canvas.width;
-
-        if (yPos + imgHeight > pdfHeight - margin) {
-            pdf.addPage();
-            pageCount++;
-            yPos = margin;
-            addHeaderFooter();
-        }
-
-        pdf.addImage(imgData, 'PNG', margin, yPos, imgWidth, imgHeight);
-        yPos += imgHeight + 20; // Add some padding between sections
-    }
-    
-    // Clean up temporary styles
-    reportElement.classList.remove('pdf-export');
-    document.head.removeChild(style);
-
-    pdf.save('gtm-readiness-report.pdf');
-    
-    setIsExporting(false);
+    html2PDF(reportElement, {
+      jsPDF: {
+        format: 'a4',
+      },
+      html2canvas: {
+        scale: 2,
+        useCORS: true,
+      },
+      imageType: 'image/png',
+      output: 'gtm-readiness-report.pdf',
+      success: function() {
+        reportElement.classList.remove('pdf-export');
+        document.head.removeChild(style);
+        setIsExporting(false);
+      }
+    });
   };
 
   if (!result || !result.executiveSummary) {
@@ -191,19 +158,21 @@ export function GtmReadinessReport({ result, onComplete }: GtmReadinessReportPro
         }
       `}</style>
       <div className="space-y-6 p-6">
-        <div ref={reportRef} className="bg-background p-8 rounded-lg shadow-sm">
-            <div className="text-center pb-4 border-b mb-6 printable-section">
-                <h2 className="text-3xl font-bold text-primary">GTM Readiness Assessment Report</h2>
-                <p className="text-muted-foreground">Generated on {new Date().toLocaleDateString()}</p>
-            </div>
-            <div className="space-y-6">
-                {reportSections.map(sec => (
-                    <div key={sec.id} className="printable-section">
-                         <Section id={sec.id} icon={sec.icon} title={sec.title}>
-                            {sec.content}
-                        </Section>
-                    </div>
-                ))}
+        <div className="bg-background p-8 rounded-lg shadow-sm">
+            <div ref={reportRef}>
+              <div className="text-center pb-4 border-b mb-6 printable-section">
+                  <h2 className="text-3xl font-bold text-primary">GTM Readiness Assessment Report</h2>
+                  <p className="text-muted-foreground">Generated on {new Date().toLocaleDateString()}</p>
+              </div>
+              <div className="space-y-6">
+                  {reportSections.map(sec => (
+                      <div key={sec.id} className="printable-section">
+                           <Section id={sec.id} icon={sec.icon} title={sec.title}>
+                              {sec.content}
+                          </Section>
+                      </div>
+                  ))}
+              </div>
             </div>
         </div>
         <div className="flex justify-between items-center gap-4 p-6 bg-background rounded-b-lg shadow-sm no-print">
