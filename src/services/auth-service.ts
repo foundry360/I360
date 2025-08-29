@@ -9,7 +9,8 @@ import {
   updateProfile,
   type User,
   GoogleAuthProvider,
-  signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
 } from 'firebase/auth';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
@@ -39,31 +40,43 @@ export const signInWithGoogle = async () => {
   const provider = new GoogleAuthProvider();
   provider.addScope('https://www.googleapis.com/auth/gmail.readonly');
   provider.addScope('https://www.googleapis.com/auth/drive.readonly');
-  provider.addScope('https://www.googleapis:com/auth/spreadsheets.readonly');
+  provider.addScope('https://www.googleapis.com/auth/spreadsheets.readonly');
   provider.addScope('https://www.googleapis.com/auth/documents.readonly');
   
   try {
-    const result = await signInWithPopup(auth, provider);
-    const credential = GoogleAuthProvider.credentialFromResult(result);
-    const accessToken = credential?.accessToken;
-
-    // Send the access token to your server
-    if (accessToken) {
-      await fetch('/api/auth/store-token', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ accessToken }),
-      });
-    }
-
-    return result;
+    await signInWithRedirect(auth, provider);
+    // After redirecting, the result is handled by getRedirectResult
   } catch (error) {
-    console.error("Error during Google sign-in:", error);
+    console.error("Error during Google sign-in redirect:", error);
     throw error;
   }
 };
+
+// Call this function in your main app component or layout to handle the redirect result
+export const handleGoogleRedirectResult = async () => {
+  try {
+    const result = await getRedirectResult(auth);
+    if (result) {
+      const credential = GoogleAuthProvider.credentialFromResult(result);
+      const accessToken = credential?.accessToken;
+
+      if (accessToken) {
+        await fetch('/api/auth/store-token', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ accessToken }),
+        });
+      }
+      return result.user;
+    }
+    return null;
+  } catch(error) {
+    console.error("Error getting redirect result:", error);
+    return null;
+  }
+}
 
 export const signOut = async () => {
   await firebaseSignOut(auth);
