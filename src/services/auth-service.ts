@@ -39,10 +39,7 @@ export const signIn = async (email: string, password: string) => {
 
 export const signInWithGoogle = async () => {
   const provider = new GoogleAuthProvider();
-  provider.addScope('https://www.googleapis.com/auth/gmail.readonly');
   provider.addScope('https://www.googleapis.com/auth/drive.readonly');
-  provider.addScope('https://www.googleapis.com/auth/spreadsheets.readonly');
-  provider.addScope('https://www.googleapis.com/auth/documents.readonly');
   
   // This prompts the user to grant offline access, which is necessary to get a refresh token.
   provider.setCustomParameters({
@@ -51,7 +48,20 @@ export const signInWithGoogle = async () => {
   });
   
   try {
-    await signInWithRedirect(auth, provider);
+    // If there's already a user, we are linking accounts, not signing in.
+    if (auth.currentUser) {
+      const result = await getRedirectResult(auth);
+      if (result) {
+          const credential = GoogleAuthProvider.credentialFromResult(result);
+          if (credential) {
+            await linkWithCredential(auth.currentUser, credential);
+          }
+      } else {
+        await signInWithRedirect(auth, provider);
+      }
+    } else {
+       await signInWithRedirect(auth, provider);
+    }
   } catch (error) {
     console.error("Error during Google sign-in redirect:", error);
     throw error;
@@ -65,12 +75,13 @@ export const handleGoogleRedirectResult = async () => {
       const credential = GoogleAuthProvider.credentialFromResult(result);
       const accessToken = credential?.accessToken;
       // The OAuthCredential contains the refresh token after a user grants offline access.
-      const refreshToken = (credential as any)?.refreshToken;
+      const refreshToken = (credential as any)?.idToken; // Note: for some flows it might be in idToken
 
+      // If there's a logged-in user, link the new credential
       if (auth.currentUser && credential) {
           await linkWithCredential(auth.currentUser, credential);
       }
-
+      
       if (accessToken) {
         await fetch('/api/auth/store-token', {
           method: 'POST',
@@ -80,7 +91,8 @@ export const handleGoogleRedirectResult = async () => {
           body: JSON.stringify({ accessToken, refreshToken }),
         });
       }
-
+      
+      // Reload the user to get the updated provider data
       if (auth.currentUser) {
         await auth.currentUser.reload();
       }
