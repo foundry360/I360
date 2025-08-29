@@ -138,7 +138,7 @@ const GtmReadinessOutputSchema = z.object({
         urgencyRating: z.string().describe('A rating of how urgently this finding needs to be addressed (e.g., Critical, High, Medium).'),
     })).length(3),
     strategicRecommendationSummary: z.string().describe('A summary of the strategic recommendations. Use markdown ### for section titles.'),
-    implementationTimelineOverview: z.string().describe("Start with a summary paragraph providing an overview of the implementation approach. Then, detail the timeline using markdown '### ' for each phase title (e.g., ### Phase 1: Foundation & Alignment (0-30 Days))."),
+    implementationTimelineOverview: z.string().describe("Start with a summary paragraph providing an overview of the implementation approach. Then, detail the timeline using markdown '### ' for each phase title (e.g., ### Phase 1: Foundation & Alignment (0-30 Days)). For each phase, provide a 'Focus:' and 'Key Deliverables:' on separate lines."),
     currentStateAssessment: z.string().describe('A detailed assessment of the current state. Use markdown ### for section titles.'),
     performanceBenchmarking: z.string().describe('A benchmarking of performance against industry standards. Use markdown ### for section titles.'),
     keyFindingsAndOpportunities: z.string().describe('Key findings and opportunities identified. Use markdown ### for section titles.'),
