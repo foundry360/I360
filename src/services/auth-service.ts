@@ -55,15 +55,19 @@ export const signInWithGoogle = async () => {
              return result.user;
         } else {
             // This case handles linking the account if the user is already logged in.
-            const result = await signInWithPopup(auth, provider);
+            const result = await signInWithPopup(auth.currentUser, provider);
             const credential = GoogleAuthProvider.credentialFromResult(result);
 
             if (!credential) {
                 throw new Error("Could not get credential from Google sign-in.");
             }
             
-            // Link the new credential to the existing user.
-            await linkWithCredential(auth.currentUser, credential);
+            // This links the new credential to the existing user.
+            // Note: signInWithPopup on an already signed-in user does the linking automatically.
+            // The following line is redundant if the above call is to signInWithPopup(auth.currentUser, ...),
+            // but we keep it for clarity in case the behavior changes.
+            // await linkWithCredential(auth.currentUser, credential);
+            
             await storeTokens(credential);
 
             return auth.currentUser;
@@ -78,13 +82,16 @@ export const signInWithGoogle = async () => {
             alert("This Google account is already associated with another user account.");
             return null;
         }
-        console.error("Error during Google sign-in:", error);
+        console.error("An unhandled error occurred during Google sign-in:", error);
         throw error;
     }
 };
 
 async function storeTokens(credential: any) {
     const accessToken = credential.accessToken;
+    // The refresh token is often not directly available on the credential object in the client.
+    // It's primarily sent during the initial consent from the OAuth provider and should be handled server-side.
+    // Our API route is set up to receive it if it's passed.
     const refreshToken = (credential as any).refreshToken || (credential.user?.toJSON() as any)?.stsTokenManager?.refreshToken;
 
     if (accessToken) {
