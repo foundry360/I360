@@ -40,7 +40,7 @@ const renderFormattedString = (text: string) => {
             return <h4 key={index} className="font-semibold text-lg text-primary mt-4">{part.substring(4)}</h4>;
         }
         return (
-             <ul key={index} className="prose prose-sm max-w-none text-muted-foreground list-disc pl-5 space-y-1">
+             <ul key={index} className="prose max-w-none text-foreground list-disc pl-5 space-y-1">
                 {(part || "").split(/\r?\n/).filter(line => line.trim().length > 0 && !line.startsWith('### ')).map((line, i) => (
                     <li key={i}>{line.replace(/^- /, '')}</li>
                 ))}
@@ -58,7 +58,7 @@ const renderParagraphString = (text: string) => {
             return <h4 key={index} className="font-semibold text-lg text-primary mt-4">{part.substring(4)}</h4>;
         }
         return (
-            <div key={index} className="text-sm text-muted-foreground space-y-2">
+            <div key={index} className="text-foreground space-y-2">
                 {(part || "").split(/\r?\n/).filter(line => line.trim().length > 0 && !line.startsWith('### ')).map((line, i) => (
                     <p key={i}>{line.replace(/^- /, '')}</p>
                 ))}
@@ -241,7 +241,7 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
                   <p><span className="font-semibold">GTM Strategy:</span> {result.executiveSummary.primaryGtmStrategy.replace(/\*/g, '')}</p>
               </div>
               <Separator />
-              <p className="text-muted-foreground">{result.executiveSummary.briefOverviewOfFindings.replace(/\*/g, '')}</p>
+              <p className="text-foreground">{result.executiveSummary.briefOverviewOfFindings.replace(/\*/g, '')}</p>
           </>
       )},
       { id: 'critical-findings', icon: <Target className="h-8 w-8 text-destructive" />, title: 'Top 3 Critical Findings', content: (
@@ -253,7 +253,7 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
                           <Badge variant={finding.impactLevel === 'High' ? 'destructive' : 'secondary'}>Impact: {finding.impactLevel}</Badge>
                       </CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-3 prose prose-sm max-w-none text-muted-foreground">
+                  <CardContent className="space-y-3 prose max-w-none text-foreground">
                       <p><span className="font-semibold">Business Impact:</span> {finding.businessImpact.replace(/\*/g, '')}</p>
                       <p><span className="font-semibold">Current State:</span> {finding.currentState.replace(/\*/g, '')}</p>
                       <p><span className="font-semibold">Root Cause:</span> {finding.rootCauseAnalysis.replace(/\*/g, '')}</p>
@@ -303,5 +303,3 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
   );
 });
 GtmReadinessReport.displayName = "GtmReadinessReport";
-
-    
