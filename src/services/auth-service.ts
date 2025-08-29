@@ -10,7 +10,6 @@ import {
   type User,
   GoogleAuthProvider,
   signInWithPopup,
-  getRedirectResult,
   linkWithCredential,
 } from 'firebase/auth';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
@@ -38,77 +37,53 @@ export const signIn = async (email: string, password: string) => {
 };
 
 export const signInWithGoogle = async () => {
-  const provider = new GoogleAuthProvider();
-  provider.addScope('https://www.googleapis.com/auth/drive.readonly');
-  provider.setCustomParameters({
-    access_type: 'offline',
-    prompt: 'consent',
-  });
+    const provider = new GoogleAuthProvider();
+    provider.addScope('https://www.googleapis.com/auth/drive.readonly');
+    provider.setCustomParameters({
+        access_type: 'offline',
+        prompt: 'consent', // This is important to ensure a refresh token is always sent
+    });
 
-  try {
-    const result = await signInWithPopup(auth, provider);
-    const credential = GoogleAuthProvider.credentialFromResult(result);
-    
-    if (!credential) {
-        throw new Error("Could not get credential from Google sign-in.");
-    }
-      
-    const accessToken = credential.accessToken;
-    const refreshToken = (credential as any).refreshToken || (result.user.toJSON() as any).stsTokenManager.refreshToken;
+    try {
+        const result = await signInWithPopup(auth, provider);
+        const credential = GoogleAuthProvider.credentialFromResult(result);
+        
+        if (!credential) {
+            throw new Error("Could not get credential from Google sign-in.");
+        }
 
+        // This handles the case where the user is already logged in and is now linking their Google account.
+        if (auth.currentUser && auth.currentUser.email !== result.user.email) {
+            await linkWithCredential(auth.currentUser, credential);
+        }
 
-    if (auth.currentUser && auth.currentUser.uid !== result.user.uid) {
-        // This case handles linking a Google account to an already logged-in user.
-        // But signInWithPopup creates a new session, so we need to be careful.
-        // For simplicity, we'll assume the user intends to sign in with this Google account.
-        // A more complex app might handle merging accounts.
-        console.warn("Signed in with a different Google account. The app will proceed with the new account.");
-    }
+        const accessToken = credential.accessToken;
+        // The refresh token is not always directly available on the credential object in pop-up flows.
+        // It's often managed internally by the Firebase SDK. We store what we get.
+        const refreshToken = (credential as any).refreshToken || (result.user.toJSON() as any).stsTokenManager?.refreshToken;
 
-    if (accessToken) {
-      await fetch('/api/auth/store-token', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ accessToken, refreshToken }),
-      });
-    }
+        if (accessToken) {
+            await fetch('/api/auth/store-token', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ accessToken, refreshToken }),
+            });
+        }
 
-    // Reload the user to get the updated provider data
-    if (auth.currentUser) {
-      await auth.currentUser.reload();
+        return result.user;
+    } catch (error: any) {
+        if (error.code === 'auth/popup-closed-by-user') {
+            console.log("Sign-in popup closed by user.");
+            return null;
+        }
+        if (error.code === 'auth/credential-already-in-use') {
+            alert("This Google account is already associated with another user account. Please sign in with your original method and link your Google account from the profile page.");
+            return null;
+        }
+        console.error("Error during Google sign-in:", error);
+        throw error;
     }
-    
-    return result.user;
-
-  } catch (error: any) {
-    if (error.code === 'auth/popup-closed-by-user') {
-        console.log("Sign-in popup closed by user.");
-        return null;
-    }
-    if (error.code === 'auth/credential-already-in-use') {
-       alert("This Google account is already associated with another user account.");
-       return null;
-    }
-    console.error("Error during Google sign-in:", error);
-    throw error;
-  }
 };
-
-
-export const handleGoogleRedirectResult = async () => {
-  // This function is kept for potential future use with other redirect-based providers,
-  // but is no longer central to the Google Sign-In flow.
-  try {
-    const result = await getRedirectResult(auth);
-    if (result) {
-      console.log("Handled redirect result.", result);
-    }
-    return result;
-  } catch(error: any) {
-    console.error("Error getting redirect result:", error);
-    return null;
-  }
-}
 
 
 export const signOut = async () => {
