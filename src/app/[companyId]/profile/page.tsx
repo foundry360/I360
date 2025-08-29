@@ -105,7 +105,7 @@ export default function CompanyProfilePage() {
     try {
       const signedInUser = await signInWithGoogle();
       if (signedInUser) {
-        await reloadUser(); // Force a refresh of the user object
+        await reloadUser();
         toast({
           title: 'Success!',
           description: 'Your Google account has been connected.',

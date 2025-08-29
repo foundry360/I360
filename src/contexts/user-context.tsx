@@ -32,8 +32,8 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       try {
         await auth.currentUser.reload();
         // After reloading, the onAuthStateChanged observer will trigger,
-        // which will then update the user state. We can also set it here
-        // to ensure the update is reflected as quickly as possible.
+        // but we'll also set the user here to ensure the update is reflected
+        // as quickly as possible.
         setUser(auth.currentUser);
       } catch (error) {
         console.error("Error reloading user:", error);
