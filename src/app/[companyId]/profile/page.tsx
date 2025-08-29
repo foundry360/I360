@@ -19,7 +19,8 @@ import { updateUserProfile } from '@/services/auth-service';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
+import Cookies from 'js-cookie';
 
 export default function CompanyProfilePage() {
   const { user, loading: userLoading, reloadUser } = useUser();
@@ -38,12 +39,9 @@ export default function CompanyProfilePage() {
 
   React.useEffect(() => {
     if (user) {
-      const googleProvider = user.providerData.find(
-        (p) => p.providerId === 'google.com'
-      );
-      // A simple check if a Google account is linked.
-      // For server-side token validation, we'd check a custom claim or DB entry.
-      setIsGoogleConnected(!!googleProvider);
+      // Check for the server-set cookie to determine connection status
+      const accessToken = Cookies.get('google-access-token');
+      setIsGoogleConnected(!!accessToken);
       
       setDisplayName(user.displayName || '');
       setEmail(user.email || '');
@@ -104,8 +102,14 @@ export default function CompanyProfilePage() {
   };
   
   const handleConnectGoogle = async () => {
+    // Clear any potentially stale token before starting the flow.
+    Cookies.remove('google-access-token');
     try {
       const response = await fetch('/api/auth/google/consent-url');
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to get consent URL.');
+      }
       const { url } = await response.json();
       router.push(url);
     } catch (error) {

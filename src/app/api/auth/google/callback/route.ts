@@ -6,16 +6,20 @@ import { cookies } from 'next/headers';
 export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const code = searchParams.get('code');
+    const companyId = cookies().get('companyId')?.value || 'acme-inc';
 
     if (!code) {
-        const companyId = cookies().get('companyId')?.value || 'acme-inc';
         return NextResponse.redirect(new URL(`/${companyId}/profile?error=Missing-Code`, request.url));
     }
+
+    const host = request.headers.get('host') || 'localhost:3000';
+    const protocol = host.startsWith('localhost') ? 'http' : 'https';
+    const redirectUri = `${protocol}://${host}/api/auth/google/callback`;
 
     const oauth2Client = new google.auth.OAuth2(
         process.env.GOOGLE_CLIENT_ID,
         process.env.GOOGLE_CLIENT_SECRET,
-        process.env.GOOGLE_REDIRECT_URI
+        redirectUri
     );
 
     try {
@@ -41,12 +45,10 @@ export async function GET(request: NextRequest) {
         }
 
         // Redirect user back to their profile page
-        const companyId = cookieStore.get('companyId')?.value || 'acme-inc';
         return NextResponse.redirect(new URL(`/${companyId}/profile`, request.url));
 
     } catch (error) {
         console.error('Error exchanging code for tokens:', error);
-        const companyId = cookies().get('companyId')?.value || 'acme-inc';
         return NextResponse.redirect(new URL(`/${companyId}/profile?error=Token-Exchange-Failed`, request.url));
     }
 }
