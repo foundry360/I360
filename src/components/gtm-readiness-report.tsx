@@ -39,9 +39,16 @@ const renderFormattedString = (text: string) => {
         if (part.match(/(\r?\n### .*)/)) {
             return <h4 key={index} className="font-semibold text-lg text-primary mt-4">{part.replace(/(\r?\n### )/, '')}</h4>;
         }
+        
+        const lines = (part || "").split(/\r?\n/).filter(line => line.trim().length > 0 && !line.startsWith('### '));
+        
+        if (lines.length > 0 && lines[0].startsWith("Implementation Timeline Overview")) {
+           lines[0] = lines[0].replace("Implementation Timeline Overview", "").trim();
+        }
+
         return (
              <ul key={index} className="prose max-w-none text-foreground list-disc pl-5 space-y-1">
-                {(part || "").split(/\r?\n/).filter(line => line.trim().length > 0 && !line.startsWith('### ')).map((line, i) => (
+                {lines.filter(line => line.trim().length > 0).map((line, i) => (
                     <li key={i}>{line.replace(/^- /, '')}</li>
                 ))}
             </ul>
