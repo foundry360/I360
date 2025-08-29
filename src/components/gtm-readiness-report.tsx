@@ -56,8 +56,6 @@ export function GtmReadinessReport({ result, onComplete }: GtmReadinessReportPro
 
     setIsExporting(true);
 
-    const html2PDF = (await import('jspdf-html2canvas')).default;
-    
     const style = document.createElement('style');
     style.innerHTML = `
       .pdf-export .border,
@@ -72,22 +70,46 @@ export function GtmReadinessReport({ result, onComplete }: GtmReadinessReportPro
     document.head.appendChild(style);
     reportElement.classList.add('pdf-export');
 
-    html2PDF(reportElement, {
-      jsPDF: {
-        format: 'a4',
-      },
-      html2canvas: {
-        scale: 2,
-        useCORS: true,
-      },
-      imageType: 'image/png',
-      output: 'gtm-readiness-report.pdf',
-      success: function() {
+    try {
+        const canvas = await html2canvas(reportElement, {
+            scale: 2,
+            useCORS: true,
+        });
+
+        const imgData = canvas.toDataURL('image/png');
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = pdf.internal.pageSize.getHeight();
+        const imgWidth = canvas.width;
+        const imgHeight = canvas.height;
+        const ratio = imgWidth / pdfWidth;
+        const totalPages = Math.ceil(imgHeight / (pdfHeight * ratio));
+        
+        let yPos = 0;
+
+        for (let i = 0; i < totalPages; i++) {
+            if (i > 0) {
+                pdf.addPage();
+            }
+            const pageCanvas = document.createElement('canvas');
+            pageCanvas.width = imgWidth;
+            pageCanvas.height = pdfHeight * ratio;
+            const pageCtx = pageCanvas.getContext('2d');
+            if (pageCtx) {
+                pageCtx.drawImage(canvas, 0, yPos, imgWidth, pdfHeight * ratio, 0, 0, imgWidth, pdfHeight * ratio);
+                pdf.addImage(pageCanvas.toDataURL('image/png'), 'PNG', 0, 0, pdfWidth, pdfHeight);
+            }
+            yPos += pdfHeight * ratio;
+        }
+
+        pdf.save('gtm-readiness-report.pdf');
+    } catch(error) {
+        console.error("Error exporting to PDF:", error);
+    } finally {
         reportElement.classList.remove('pdf-export');
         document.head.removeChild(style);
         setIsExporting(false);
-      }
-    });
+    }
   };
 
   if (!result || !result.executiveSummary) {
