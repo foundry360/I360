@@ -16,7 +16,7 @@ const firebaseConfig = {
 
 // Simple check to see if the config is populated, to give a slightly better error message.
 if (!firebaseConfig.apiKey || !firebaseConfig.projectId) {
-    console.error("Firebase config is not loaded. Make sure you have created a .env.local file and restarted your development server.");
+    console.error("Firebase config is not loaded. Make sure you have created a .env.local file with the correct variables and restarted your development server.");
 }
 
 // Initialize Firebase
