@@ -31,7 +31,14 @@ export default function ReportPage() {
                 const assessmentDoc = await getDoc(doc(db, 'assessments', assessmentId));
 
                 if (assessmentDoc.exists()) {
-                    setAssessment(assessmentDoc.data() as Assessment);
+                    const assessmentData = assessmentDoc.data() as Assessment;
+                    if (assessmentData.companyId) {
+                        const companyDoc = await getDoc(doc(db, 'companies', assessmentData.companyId));
+                        if (companyDoc.exists()) {
+                           assessmentData.companyName = companyDoc.data().name;
+                        }
+                    }
+                    setAssessment(assessmentData);
                 } else {
                     setError('Assessment not found.');
                 }
@@ -54,6 +61,16 @@ export default function ReportPage() {
             console.error("Export function not available on report component.");
         }
     }
+    
+    const getDisplayTitle = () => {
+        if (!assessment) return '';
+        const name = assessment.name || '';
+        const companyName = assessment.companyName || '';
+        if (companyName && name.endsWith(` - ${companyName}`)) {
+            return name.substring(0, name.length - ` - ${companyName}`.length);
+        }
+        return name;
+    };
 
     if (loading) {
         return (
@@ -89,6 +106,8 @@ export default function ReportPage() {
         );
     }
 
+    const displayTitle = getDisplayTitle();
+
     return (
         <AppLayout>
             <div className="space-y-4">
@@ -99,7 +118,7 @@ export default function ReportPage() {
                             <span className="sr-only">Back</span>
                         </Button>
                         <div>
-                            <h1 className="text-2xl font-bold">{assessment.name}</h1>
+                            <h1 className="text-2xl font-bold">{displayTitle}</h1>
                             <p className="text-muted-foreground">GTM Readiness Report</p>
                         </div>
                     </div>
@@ -109,7 +128,7 @@ export default function ReportPage() {
                     </Button>
                 </div>
                 <Separator />
-                <GtmReadinessReport ref={reportRef} title={assessment.name} result={assessment.result} onComplete={() => router.back()} />
+                <GtmReadinessReport ref={reportRef} title={displayTitle} result={assessment.result} onComplete={() => router.back()} />
             </div>
         </AppLayout>
     );
