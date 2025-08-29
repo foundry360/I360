@@ -8,7 +8,7 @@ import { Loader2, Download, BarChart, Clock, Target, Lightbulb, TrendingUp, Cpu,
 import { Badge } from './ui/badge';
 import { Separator } from './ui/separator';
 import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+import autoTable from 'jspdf-autotable';
 
 
 type GtmReadinessReportProps = {
@@ -51,128 +51,145 @@ const renderFormattedString = (text: string) => {
 export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessReportProps>(({ result, onComplete }, ref) => {
   const [isExporting, setIsExporting] = React.useState(false);
 
-  const handlePrint = async () => {
+  const handlePrint = () => {
     setIsExporting(true);
 
-    const pdf = new jsPDF('p', 'pt', 'a4');
-    
-    const styles = `
-      <style>
-        body { font-family: 'Helvetica', 'sans-serif'; font-size: 10px; color: #333; }
-        h1 { font-size: 24px; color: #6f47fb; text-align: center; border-bottom: 1px solid #ddd; padding-bottom: 10px; margin-bottom: 20px; }
-        h2 { font-size: 16px; color: #6f47fb; border-bottom: 1px solid #eee; padding-bottom: 5px; margin-top: 20px; }
-        h3 { font-size: 14px; color: #333; font-weight: bold; margin-top: 15px; }
-        h4 { font-size: 12px; color: #6f47fb; font-weight: bold; margin-top: 10px; margin-bottom: 5px; }
-        p, li { margin-bottom: 8px; line-height: 1.4; color: #4a4a4a; }
-        ul { padding-left: 20px; list-style-position: outside; }
-        .section { margin-bottom: 20px; page-break-inside: avoid; }
-        .summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
-        .finding-card { border: 1px solid #eee; border-radius: 5px; padding: 15px; margin-bottom: 15px; page-break-inside: avoid; }
-        .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; background-color: #eee; color: #333; font-size: 10px; font-weight: bold; }
-        .badge-destructive { background-color: #ffdddd; color: #b00020; }
-        .text-muted { color: #666; }
-      </style>
-    `;
+    const doc = new jsPDF('p', 'pt', 'a4');
+    const pageHeight = doc.internal.pageSize.height;
+    const pageWidth = doc.internal.pageSize.width;
+    const margin = 40;
+    let y = margin;
 
-    const formatMarkdownStringForPdf = (text: string) => {
-        if (!text) return '';
-        return text
-            .split(/(### .*)/g)
-            .map(part => {
-                if (part.startsWith('### ')) {
-                    return `<h4>${part.substring(4)}</h4>`;
-                }
-                 const listItems = part.split(/\r?\n/).filter(line => line.trim().length > 0 && !line.startsWith('### '))
-                    .map(line => `<li>${line.replace(/^- /, '')}</li>`).join('');
-                return listItems ? `<ul>${listItems}</ul>` : '';
-            }).join('');
+    const addPageIfNeeded = (spaceNeeded: number) => {
+        if (y + spaceNeeded > pageHeight - margin) {
+            doc.addPage();
+            y = margin;
+        }
     };
     
-    const reportHtml = `
-      <html>
-        <head>${styles}</head>
-        <body>
-          <h1>GTM Readiness Assessment Report</h1>
-          <p style="text-align: center; color: #888;">Generated on ${new Date().toLocaleDateString()}</p>
-          
-          <div class="section">
-            <h2>Executive Summary</h2>
-            <div class="summary-grid">
-              <p><strong>Overall Readiness:</strong> ${result.executiveSummary.overallReadinessScore}%</p>
-              <p><strong>Company Profile:</strong> ${result.executiveSummary.companyStageAndFte}</p>
-              <p><strong>Industry:</strong> ${result.executiveSummary.industrySector}</p>
-              <p><strong>GTM Strategy:</strong> ${result.executiveSummary.primaryGtmStrategy}</p>
-            </div>
-            <hr/>
-            <p>${result.executiveSummary.briefOverviewOfFindings}</p>
-          </div>
+    // Title
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(24);
+    doc.setTextColor(111, 71, 251); // primary color
+    doc.text('GTM Readiness Assessment Report', pageWidth / 2, y, { align: 'center' });
+    y += 20;
 
-          <div class="section">
-            <h2>Top 3 Critical Findings</h2>
-            ${result.top3CriticalFindings.map(finding => `
-              <div class="finding-card">
-                <h3>${finding.findingTitle} <span class="badge ${finding.impactLevel === 'High' ? 'badge-destructive' : ''}">Impact: ${finding.impactLevel}</span></h3>
-                <p><strong>Business Impact:</strong> ${finding.businessImpact}</p>
-                <p><strong>Current State:</strong> ${finding.currentState}</p>
-                <p><strong>Root Cause:</strong> ${finding.rootCauseAnalysis}</p>
-                <p><strong>Stakeholder Impact:</strong> ${finding.stakeholderImpact}</p>
-                <p><strong>Urgency:</strong> ${finding.urgencyRating}</p>
-              </div>
-            `).join('')}
-          </div>
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10);
+    doc.setTextColor(100, 116, 139); // muted-foreground
+    doc.text(`Generated on ${new Date().toLocaleDateString()}`, pageWidth / 2, y, { align: 'center' });
+    y += 30;
 
-          <div class="section">
-            <h2>Strategic Recommendation Summary</h2>
-            ${formatMarkdownStringForPdf(result.strategicRecommendationSummary)}
-          </div>
-          <div class="section">
-            <h2>Implementation Timeline Overview</h2>
-            ${formatMarkdownStringForPdf(result.implementationTimelineOverview)}
-          </div>
-          <div class="section">
-            <h2>Current State Assessment</h2>
-            ${formatMarkdownStringForPdf(result.currentStateAssessment)}
-          </div>
-          <div class="section">
-            <h2>Performance Benchmarking</h2>
-            ${formatMarkdownStringForPdf(result.performanceBenchmarking)}
-          </div>
-          <div class="section">
-            <h2>Key Findings & Opportunities</h2>
-            ${formatMarkdownStringForPdf(result.keyFindingsAndOpportunities)}
-          </div>
-          <div class="section">
-            <h2>Prioritized Recommendations</h2>
-            ${formatMarkdownStringForPdf(result.prioritizedRecommendations)}
-          </div>
-          <div class="section">
-            <h2>Implementation Roadmap</h2>
-            ${formatMarkdownStringForPdf(result.implementationRoadmap)}
-          </div>
-           <div class="section">
-            <h2>Investment & ROI Analysis</h2>
-            ${formatMarkdownStringForPdf(result.investmentAndRoiAnalysis)}
-          </div>
-           <div class="section">
-            <h2>Next Steps & Decision Framework</h2>
-            ${formatMarkdownStringForPdf(result.nextStepsAndDecisionFramework)}
-          </div>
-        </body>
-      </html>
-    `;
+    const renderSection = (title: string, content: () => void) => {
+        addPageIfNeeded(40);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(16);
+        doc.setTextColor(111, 71, 251);
+        doc.text(title, margin, y);
+        y += 20;
+        doc.setDrawColor(226, 232, 240); // border color
+        doc.line(margin, y - 10, pageWidth - margin, y - 10);
+        content();
+        y += 20; // Space after section
+    };
+    
+    const renderMarkdown = (text: string) => {
+        if(!text) return;
+        const lines = text.split(/\r?\n/).filter(line => line.trim().length > 0);
+        lines.forEach(line => {
+             if (line.startsWith('### ')) {
+                addPageIfNeeded(20);
+                y += 10; // Extra space before subheading
+                doc.setFont('helvetica', 'bold');
+                doc.setFontSize(12);
+                doc.setTextColor(111, 71, 251);
+                const splitTitle = doc.splitTextToSize(line.substring(4), pageWidth - margin * 2);
+                doc.text(splitTitle, margin, y);
+                y += (splitTitle.length * 12) + 5;
 
-    await pdf.html(reportHtml, {
-      callback: function (doc) {
-        doc.save('GTM-Readiness-Report.pdf');
-        setIsExporting(false);
-      },
-      margin: [40, 40, 40, 40],
-      autoPaging: 'text',
-      width: 515, // A4 width in points minus margins
-      windowWidth: 700 // Larger virtual window to help with layout
+            } else {
+                addPageIfNeeded(15);
+                doc.setFont('helvetica', 'normal');
+                doc.setFontSize(10);
+                doc.setTextColor(51, 65, 85); // foreground
+                const bullet = '\u2022';
+                const content = line.replace(/^- /, '');
+                const splitText = doc.splitTextToSize(content, pageWidth - margin * 2 - 20); // Indent for bullet
+                doc.text(`${bullet}`, margin, y, { baseline: 'top' });
+                doc.text(splitText, margin + 20, y);
+                y += splitText.length * 12;
+            }
+        });
+    };
+
+    // Executive Summary
+    renderSection('Executive Summary', () => {
+        autoTable(doc, {
+            startY: y,
+            theme: 'plain',
+            body: [
+                [{content: `Overall Readiness: ${result.executiveSummary.overallReadinessScore}%`, styles: {fontStyle: 'bold', fontSize: 12}}],
+                [`Company Profile: ${result.executiveSummary.companyStageAndFte}`],
+                [`Industry: ${result.executiveSummary.industrySector}`],
+                [`GTM Strategy: ${result.executiveSummary.primaryGtmStrategy}`],
+            ],
+            didDrawPage: (data) => { y = data.cursor?.y || y; }
+        });
+         y = (doc as any).lastAutoTable.finalY + 10;
+
+        addPageIfNeeded(20);
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(10);
+        const splitText = doc.splitTextToSize(result.executiveSummary.briefOverviewOfFindings, pageWidth - margin * 2);
+        doc.text(splitText, margin, y);
+        y += splitText.length * 12;
     });
 
+    // Top 3 Critical Findings
+    renderSection('Top 3 Critical Findings', () => {
+        result.top3CriticalFindings.forEach(finding => {
+            const tableBody = [
+                [{ content: `Business Impact`, styles: { fontStyle: 'bold' } }, finding.businessImpact],
+                [{ content: `Current State`, styles: { fontStyle: 'bold' } }, finding.currentState],
+                [{ content: `Root Cause`, styles: { fontStyle: 'bold' } }, finding.rootCauseAnalysis],
+                [{ content: `Stakeholder Impact`, styles: { fontStyle: 'bold' } }, finding.stakeholderImpact],
+                [{ content: `Urgency`, styles: { fontStyle: 'bold' } }, finding.urgencyRating],
+            ];
+            addPageIfNeeded(100);
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(12);
+            doc.setTextColor(15, 23, 42); // card-foreground
+            doc.text(finding.findingTitle, margin, y);
+            y += 15;
+            autoTable(doc, {
+                startY: y,
+                head: [[`Impact: ${finding.impactLevel}`]],
+                body: tableBody,
+                theme: 'grid',
+                headStyles: {
+                    fillColor: finding.impactLevel === 'High' ? [239, 68, 68] : [241, 245, 249],
+                    textColor: finding.impactLevel === 'High' ? [255,255,255] : [15, 23, 42],
+                },
+                didDrawPage: (data) => { y = data.cursor?.y || y; }
+            });
+            y = (doc as any).lastAutoTable.finalY + 20;
+        });
+    });
+
+    renderSection('Strategic Recommendation Summary', () => renderMarkdown(result.strategicRecommendationSummary));
+    renderSection('Implementation Timeline Overview', () => renderMarkdown(result.implementationTimelineOverview));
+    renderSection('Current State Assessment', () => renderMarkdown(result.currentStateAssessment));
+    renderSection('Performance Benchmarking', () => renderMarkdown(result.performanceBenchmarking));
+    renderSection('Key Findings & Opportunities', () => renderMarkdown(result.keyFindingsAndOpportunities));
+    renderSection('Prioritized Recommendations', () => renderMarkdown(result.prioritizedRecommendations));
+    renderSection('Implementation Roadmap', () => renderMarkdown(result.implementationRoadmap));
+    renderSection('Investment & ROI Analysis', () => renderMarkdown(result.investmentAndRoiAnalysis));
+    renderSection('Next Steps & Decision Framework', () => renderMarkdown(result.nextStepsAndDecisionFramework));
+
+    doc.save('GTM-Readiness-Report.pdf');
+    setIsExporting(false);
   };
+
 
   React.useImperativeHandle(ref, () => ({
       handlePrint
@@ -269,3 +286,5 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
   );
 });
 GtmReadinessReport.displayName = "GtmReadinessReport";
+
+    
