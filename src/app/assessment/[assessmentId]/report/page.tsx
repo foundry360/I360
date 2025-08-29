@@ -10,7 +10,7 @@ import { GtmReadinessReport } from '@/components/gtm-readiness-report';
 import { AppLayout } from '@/components/app-layout';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button }from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Download } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 
 export default function ReportPage() {
@@ -20,6 +20,7 @@ export default function ReportPage() {
     const [assessment, setAssessment] = React.useState<Assessment | null>(null);
     const [loading, setLoading] = React.useState(true);
     const [error, setError] = React.useState<string | null>(null);
+    const reportRef = React.useRef<HTMLDivElement>(null);
 
     React.useEffect(() => {
         if (!assessmentId) return;
@@ -44,6 +45,15 @@ export default function ReportPage() {
 
         fetchAssessment();
     }, [assessmentId]);
+
+    const handleExportClick = () => {
+        const reportComponent = reportRef.current as any;
+        if (reportComponent && typeof reportComponent.handlePrint === 'function') {
+            reportComponent.handlePrint();
+        } else {
+            console.error("Export function not available on report component.");
+        }
+    }
 
     if (loading) {
         return (
@@ -82,18 +92,24 @@ export default function ReportPage() {
     return (
         <AppLayout>
             <div className="space-y-4">
-                 <div className="flex items-center gap-4">
-                    <Button onClick={() => router.back()} variant="outline" size="icon">
-                        <ArrowLeft className="h-4 w-4" />
-                        <span className="sr-only">Back</span>
-                    </Button>
-                    <div>
-                        <h1 className="text-2xl font-bold">GTM Readiness Report</h1>
-                        <p className="text-muted-foreground">Assessment: {assessment.name}</p>
+                 <div className="flex justify-between items-center">
+                    <div className="flex items-center gap-4">
+                        <Button onClick={() => router.back()} variant="outline" size="icon">
+                            <ArrowLeft className="h-4 w-4" />
+                            <span className="sr-only">Back</span>
+                        </Button>
+                        <div>
+                            <h1 className="text-2xl font-bold">GTM Readiness Report</h1>
+                            <p className="text-muted-foreground">Assessment: {assessment.name}</p>
+                        </div>
                     </div>
+                    <Button onClick={handleExportClick}>
+                        <Download className="mr-2 h-4 w-4" />
+                        Export to PDF
+                    </Button>
                 </div>
                 <Separator />
-                <GtmReadinessReport result={assessment.result} onComplete={() => router.back()} />
+                <GtmReadinessReport ref={reportRef} result={assessment.result} onComplete={() => router.back()} />
             </div>
         </AppLayout>
     );

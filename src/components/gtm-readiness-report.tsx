@@ -8,6 +8,8 @@ import { Loader2, Download, BarChart, Clock, Target, Lightbulb, TrendingUp, Cpu,
 import { Badge } from './ui/badge';
 import { Separator } from './ui/separator';
 import jsPDF from 'jspdf';
+import 'jspdf-autotable';
+
 
 type GtmReadinessReportProps = {
   result: GtmReadinessOutput;
@@ -46,7 +48,7 @@ const renderFormattedString = (text: string) => {
 };
 
 
-export function GtmReadinessReport({ result, onComplete }: GtmReadinessReportProps) {
+export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessReportProps>(({ result, onComplete }, ref) => {
   const [isExporting, setIsExporting] = React.useState(false);
 
   const handlePrint = async () => {
@@ -172,6 +174,10 @@ export function GtmReadinessReport({ result, onComplete }: GtmReadinessReportPro
 
   };
 
+  React.useImperativeHandle(ref, () => ({
+      handlePrint
+  }));
+
   if (!result || !result.executiveSummary) {
     return (
         <div className="flex flex-col items-center justify-center h-full gap-4 p-6">
@@ -208,10 +214,10 @@ export function GtmReadinessReport({ result, onComplete }: GtmReadinessReportPro
                   </CardHeader>
                   <CardContent className="space-y-3 prose prose-sm max-w-none text-muted-foreground">
                       <p><strong>Business Impact:</strong> {finding.businessImpact}</p>
-                      <p><strong>Current State:</strong> {finding.currentState}</p>
-                      <p><strong>Root Cause:</strong> {finding.rootCauseAnalysis}</p>
-                      <p><strong>Stakeholder Impact:</strong> {finding.stakeholderImpact}</p>
-                      <p><strong>Urgency:</strong> {finding.urgencyRating}</p>
+                      <p><strong>Current State:</strong> ${finding.currentState}</p>
+                      <p><strong>Root Cause:</strong> ${finding.rootCauseAnalysis}</p>
+                      <p><strong>Stakeholder Impact:</strong> ${finding.stakeholderImpact}</p>
+                      <p><strong>Urgency:</strong> ${finding.urgencyRating}</p>
                   </CardContent>
               </Card>
           ))
@@ -228,7 +234,7 @@ export function GtmReadinessReport({ result, onComplete }: GtmReadinessReportPro
     ];
 
   return (
-    <div className="bg-muted">
+    <div className="bg-muted" ref={ref}>
       <div className="space-y-6 p-6">
         <div className="bg-background p-8 rounded-lg shadow-sm">
             <div className="text-center pb-4 border-b mb-6">
@@ -261,4 +267,5 @@ export function GtmReadinessReport({ result, onComplete }: GtmReadinessReportPro
       </div>
     </div>
   );
-}
+});
+GtmReadinessReport.displayName = "GtmReadinessReport";
