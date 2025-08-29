@@ -59,14 +59,11 @@ export const handleGoogleRedirectResult = async () => {
       const credential = GoogleAuthProvider.credentialFromResult(result);
       const accessToken = credential?.accessToken;
 
-      if (accessToken) {
-        // This links the new credential to the existing user
-        if (auth.currentUser && credential) {
+      if (auth.currentUser && credential) {
           await linkWithCredential(auth.currentUser, credential);
-          // Force a refresh of the user's profile to get the latest provider data
-          await auth.currentUser.reload(); 
-        }
-        
+      }
+
+      if (accessToken) {
         await fetch('/api/auth/store-token', {
           method: 'POST',
           headers: {
@@ -75,10 +72,15 @@ export const handleGoogleRedirectResult = async () => {
           body: JSON.stringify({ accessToken }),
         });
       }
+
+      if (auth.currentUser) {
+        await auth.currentUser.reload();
+      }
+      
       return result.user;
     }
     return null;
-  } catch(error) {
+  } catch(error: any) {
     console.error("Error getting redirect result:", error);
     if (error.code === 'auth/credential-already-in-use') {
         alert("This Google account is already associated with another user.");
