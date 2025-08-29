@@ -21,7 +21,7 @@ import { Loader2 } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 
 export default function CompanyProfilePage() {
-  const { user, loading: userLoading } = useUser();
+  const { user, loading: userLoading, reloadUser } = useUser();
   const { toast } = useToast();
 
   const [displayName, setDisplayName] = React.useState('');
@@ -79,6 +79,7 @@ export default function CompanyProfilePage() {
             displayName: displayName,
             photoFile: avatarFile || undefined,
         });
+        await reloadUser();
         toast({
             title: 'Success!',
             description: 'Your profile has been updated.',
@@ -102,12 +103,15 @@ export default function CompanyProfilePage() {
   
   const handleConnectGoogle = async () => {
     try {
-      await signInWithGoogle();
-      toast({
-        title: 'Success!',
-        description: 'Your Google account has been connected.',
-      });
-      setIsGoogleConnected(true);
+      const signedInUser = await signInWithGoogle();
+      if (signedInUser) {
+        await reloadUser(); // Force a refresh of the user object
+        toast({
+          title: 'Success!',
+          description: 'Your Google account has been connected.',
+        });
+        setIsGoogleConnected(true);
+      }
     } catch (error) {
       console.error('Error connecting Google account:', error);
       toast({

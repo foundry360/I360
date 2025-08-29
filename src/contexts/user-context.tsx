@@ -2,12 +2,13 @@
 'use client';
 
 import * as React from 'react';
-import { onAuthStateChangeObserver, handleGoogleRedirectResult } from '@/services/auth-service';
+import { onAuthStateChangeObserver } from '@/services/auth-service';
 import type { User } from 'firebase/auth';
 
 type UserContextType = {
   user: User | null;
   loading: boolean;
+  reloadUser: () => Promise<void>;
 };
 
 const UserContext = React.createContext<UserContextType | undefined>(undefined);
@@ -15,30 +16,25 @@ const UserContext = React.createContext<UserContextType | undefined>(undefined);
 export function UserProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = React.useState<User | null>(null);
   const [loading, setLoading] = React.useState(true);
-  const [isHandlingRedirect, setIsHandlingRedirect] = React.useState(true);
 
   React.useEffect(() => {
-    // This effect runs once on mount to handle the redirect result.
-    handleGoogleRedirectResult()
-      .catch(console.error)
-      .finally(() => setIsHandlingRedirect(false));
-  }, []);
-
-  React.useEffect(() => {
-    // This effect sets up the auth state listener.
-    // It will run after the redirect has been handled.
-    if (isHandlingRedirect) return;
-
     const unsubscribe = onAuthStateChangeObserver((user) => {
       setUser(user);
       setLoading(false);
     });
     
     return () => unsubscribe();
-  }, [isHandlingRedirect]);
+  }, []);
+
+  const reloadUser = async () => {
+    if (auth.currentUser) {
+        await auth.currentUser.reload();
+        setUser(auth.currentUser);
+    }
+  }
 
   return (
-    <UserContext.Provider value={{ user, loading: loading || isHandlingRedirect }}>
+    <UserContext.Provider value={{ user, loading, reloadUser }}>
       {children}
     </UserContext.Provider>
   );
