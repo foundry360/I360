@@ -53,9 +53,9 @@ export function GtmReadinessReport({ result, onComplete }: GtmReadinessReportPro
   const handleExportToPdf = async () => {
     const reportElement = reportRef.current;
     if (!reportElement) return;
-    
+
     setIsExporting(true);
-    
+
     const pdf = new jsPDF('p', 'pt', 'a4');
     const pdfWidth = pdf.internal.pageSize.getWidth();
     const pdfHeight = pdf.internal.pageSize.getHeight();
@@ -72,15 +72,30 @@ export function GtmReadinessReport({ result, onComplete }: GtmReadinessReportPro
 
     addHeaderFooter();
 
+    // Temporarily apply borderless styles for PDF export
+    const style = document.createElement('style');
+    style.innerHTML = `
+      .pdf-export .printable-section,
+      .pdf-export .printable-section .border,
+      .pdf-export .printable-section .border-b,
+      .pdf-export .printable-section .border-t,
+      .pdf-export .printable-section .shadow-sm,
+      .pdf-export .printable-section .shadow-md {
+        border: none !important;
+        box-shadow: none !important;
+      }
+    `;
+    document.head.appendChild(style);
+    reportElement.classList.add('pdf-export');
+
+
     const sections = Array.from(reportElement.querySelectorAll('.printable-section'));
 
     for (const section of sections) {
         const htmlSection = section as HTMLElement;
         const canvas = await html2canvas(htmlSection, {
-            scale: 3, // Render at higher resolution
+            scale: 2, 
             useCORS: true,
-            width: htmlSection.offsetWidth,
-            height: htmlSection.offsetHeight,
         });
 
         const imgData = canvas.toDataURL('image/png');
@@ -95,8 +110,12 @@ export function GtmReadinessReport({ result, onComplete }: GtmReadinessReportPro
         }
 
         pdf.addImage(imgData, 'PNG', margin, yPos, imgWidth, imgHeight);
-        yPos += imgHeight + 20;
+        yPos += imgHeight + 20; // Add some padding between sections
     }
+    
+    // Clean up temporary styles
+    reportElement.classList.remove('pdf-export');
+    document.head.removeChild(style);
 
     pdf.save('gtm-readiness-report.pdf');
     
