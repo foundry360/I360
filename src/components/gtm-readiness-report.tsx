@@ -14,10 +14,67 @@ type GtmReadinessReportProps = {
   onComplete: () => void;
 };
 
-// A class component is required by react-to-print for the ref to work reliably.
-class ReportToPrint extends React.Component<{ result: GtmReadinessOutput }> {
-  render() {
-    const { result } = this.props;
+const Section: React.FC<{ id: string; icon: React.ReactNode; title: string; children: React.ReactNode; }> = ({ id, icon, title, children }) => (
+  <Card className="break-inside-avoid" id={id}>
+    <CardHeader>
+      <CardTitle className="flex items-center gap-3">
+        {icon}
+        <span className="text-xl">{title}</span>
+      </CardTitle>
+    </CardHeader>
+    <CardContent className="pl-12 space-y-4">
+      {children}
+    </CardContent>
+  </Card>
+);
+
+const renderFormattedString = (text: string) => {
+    if (!text) return null;
+    const parts = text.split(/(### .*)/g);
+    return parts.map((part, index) => {
+        if (part.startsWith('### ')) {
+            return <h4 key={index} className="font-semibold text-lg text-primary mt-4">{part.substring(4)}</h4>;
+        }
+        return (
+             <ul key={index} className="prose prose-sm max-w-none text-muted-foreground list-disc pl-5 space-y-1">
+                {(part || "").split(/\r?\n/).filter(line => line.trim().length > 0 && !line.startsWith('### ')).map((line, i) => (
+                    <li key={i}>{line.replace(/^- /, '')}</li>
+                ))}
+            </ul>
+        )
+    });
+};
+
+
+export function GtmReadinessReport({ result, onComplete }: GtmReadinessReportProps) {
+  const reportRef = React.useRef<HTMLDivElement>(null);
+  const [isExporting, setIsExporting] = React.useState(false);
+
+  const handlePrint = useReactToPrint({
+    content: () => reportRef.current,
+    onBeforeGetContent: () => {
+      return new Promise<void>((resolve) => {
+        setIsExporting(true);
+        resolve();
+      });
+    },
+    onAfterPrint: () => {
+      setIsExporting(false);
+    },
+    documentTitle: 'GTM-Readiness-Report',
+  });
+
+  if (!result || !result.executiveSummary) {
+    return (
+        <div className="flex flex-col items-center justify-center h-full gap-4 p-6">
+            <h2 className="text-xl font-semibold">Report Not Available</h2>
+            <p className="text-muted-foreground text-center">
+                The data for this assessment report is incomplete or could not be loaded.
+            </p>
+            <Button onClick={onComplete}>Close</Button>
+        </div>
+    );
+  }
 
     const reportSections = [
       { id: 'executive-summary', icon: <BarChart className="h-8 w-8 text-primary" />, title: 'Executive Summary', content: (
@@ -61,10 +118,28 @@ class ReportToPrint extends React.Component<{ result: GtmReadinessOutput }> {
       { id: 'investment-roi', icon: <Banknote className="h-8 w-8 text-primary" />, title: 'Investment & ROI Analysis', content: renderFormattedString(result.investmentAndRoiAnalysis) },
       { id: 'next-steps', icon: <ArrowRight className="h-8 w-8 text-primary" />, title: 'Next Steps & Decision Framework', content: renderFormattedString(result.nextStepsAndDecisionFramework) },
     ];
-    
-    return (
-        <div className="bg-background p-8 rounded-lg shadow-sm">
-            <div className="text-center pb-4 border-b mb-6 printable-section">
+
+
+  return (
+    <div className="bg-muted">
+       <style>{`
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+            body {
+                -webkit-print-color-adjust: exact !important;
+                color-adjust: exact !important;
+            }
+            .printable-section {
+                border: none !important;
+                box-shadow: none !important;
+            }
+        }
+      `}</style>
+      <div className="space-y-6 p-6">
+        <div ref={reportRef} className="bg-background p-8 rounded-lg shadow-sm">
+            <div className="text-center pb-4 border-b mb-6">
                 <h2 className="text-3xl font-bold text-primary">GTM Readiness Assessment Report</h2>
                 <p className="text-muted-foreground">Generated on {new Date().toLocaleDateString()}</p>
             </div>
@@ -78,86 +153,6 @@ class ReportToPrint extends React.Component<{ result: GtmReadinessOutput }> {
                 ))}
             </div>
         </div>
-    );
-  }
-}
-
-const Section: React.FC<{ id: string; icon: React.ReactNode; title: string; children: React.ReactNode; }> = ({ id, icon, title, children }) => (
-  <Card className="break-inside-avoid" id={id}>
-    <CardHeader>
-      <CardTitle className="flex items-center gap-3">
-        {icon}
-        <span className="text-xl">{title}</span>
-      </CardTitle>
-    </CardHeader>
-    <CardContent className="pl-12 space-y-4">
-      {children}
-    </CardContent>
-  </Card>
-);
-
-const renderFormattedString = (text: string) => {
-    const parts = text.split(/(### .*)/g);
-    return parts.map((part, index) => {
-        if (part.startsWith('### ')) {
-            return <h4 key={index} className="font-semibold text-lg text-primary mt-4">{part.substring(4)}</h4>;
-        }
-        return (
-             <ul key={index} className="prose prose-sm max-w-none text-muted-foreground list-disc pl-5 space-y-1">
-                {(part || "").split(/\r?\n/).filter(line => line.trim().length > 0 && !line.startsWith('### ')).map((line, i) => (
-                    <li key={i}>{line.replace(/^- /, '')}</li>
-                ))}
-            </ul>
-        )
-    });
-};
-
-
-export function GtmReadinessReport({ result, onComplete }: GtmReadinessReportProps) {
-  const reportRef = React.useRef<ReportToPrint>(null);
-  const [isExporting, setIsExporting] = React.useState(false);
-
-  const handlePrint = useReactToPrint({
-    content: () => reportRef.current,
-    onBeforeGetContent: () => {
-      return new Promise<void>((resolve) => {
-        setIsExporting(true);
-        resolve();
-      });
-    },
-    onAfterPrint: () => {
-      setIsExporting(false);
-    },
-    documentTitle: 'GTM-Readiness-Report',
-  });
-
-  if (!result || !result.executiveSummary) {
-    return (
-        <div className="flex flex-col items-center justify-center h-full gap-4 p-6">
-            <h2 className="text-xl font-semibold">Report Not Available</h2>
-            <p className="text-muted-foreground text-center">
-                The data for this assessment report is incomplete or could not be loaded.
-            </p>
-            <Button onClick={onComplete}>Close</Button>
-        </div>
-    );
-  }
-
-  return (
-    <div className="bg-muted">
-       <style>{`
-        @media print {
-            .no-print {
-                display: none !important;
-            }
-            body {
-                -webkit-print-color-adjust: exact !important;
-                color-adjust: exact !important;
-            }
-        }
-      `}</style>
-      <div className="space-y-6 p-6">
-        <ReportToPrint ref={reportRef} result={result} />
         <div className="flex justify-between items-center gap-4 p-6 bg-background rounded-lg shadow-sm no-print">
             <p className="text-xs text-muted-foreground">PROPRIETARY & CONFIDENTIAL</p>
             <div className="flex gap-4">
