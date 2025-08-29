@@ -12,6 +12,7 @@ import autoTable from 'jspdf-autotable';
 
 
 type GtmReadinessReportProps = {
+  title: string;
   result: GtmReadinessOutput;
   onComplete: () => void;
 };
@@ -49,7 +50,7 @@ const renderFormattedString = (text: string) => {
 };
 
 
-export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessReportProps>(({ result, onComplete }, ref) => {
+export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessReportProps>(({ title, result, onComplete }, ref) => {
   const [isExporting, setIsExporting] = React.useState(false);
 
   const handlePrint = () => {
@@ -72,7 +73,7 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(24);
     doc.setTextColor(111, 71, 251); // primary color
-    doc.text('GTM Readiness Assessment Report', pageWidth / 2, y, { align: 'center' });
+    doc.text(title, pageWidth / 2, y, { align: 'center' });
     y += 20;
 
     doc.setFont('helvetica', 'normal');
@@ -257,7 +258,7 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
       <div className="space-y-6 p-6">
         <div className="bg-background p-8 rounded-lg shadow-sm">
             <div className="text-center pb-4 border-b mb-6">
-                <h2 className="text-3xl font-bold text-primary">GTM Readiness Assessment Report</h2>
+                <h2 className="text-3xl font-bold text-primary">{title}</h2>
                 <p className="text-muted-foreground">Generated on {new Date().toLocaleDateString()}</p>
             </div>
             <div className="space-y-6">

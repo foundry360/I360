@@ -109,7 +109,7 @@ export default function ReportPage() {
                     </Button>
                 </div>
                 <Separator />
-                <GtmReadinessReport ref={reportRef} result={assessment.result} onComplete={() => router.back()} />
+                <GtmReadinessReport ref={reportRef} title={assessment.name} result={assessment.result} onComplete={() => router.back()} />
             </div>
         </AppLayout>
     );
