@@ -58,7 +58,7 @@ const renderParagraphString = (text: string) => {
             return <h4 key={index} className="font-semibold text-lg text-primary mt-4">{part.substring(4)}</h4>;
         }
         return (
-            <div key={index} className="text-foreground space-y-2">
+            <div key={index} className="prose max-w-none text-foreground space-y-2">
                 {(part || "").split(/\r?\n/).filter(line => line.trim().length > 0 && !line.startsWith('### ')).map((line, i) => (
                     <p key={i}>{line.replace(/^- /, '')}</p>
                 ))}
@@ -263,7 +263,7 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
               </Card>
           ))
       )},
-      { id: 'recommendation-summary', icon: <Lightbulb className="h-8 w-8 text-primary" />, title: 'Strategic Recommendation Summary', content: renderParagraphString(result.strategicRecommendationSummary) },
+      { id: 'recommendation-summary', icon: <Lightbulb className="h-8 w-8 text-primary" />, title: 'Strategic Recommendation Summary', content: renderFormattedString(result.strategicRecommendationSummary) },
       { id: 'timeline-overview', icon: <Clock className="h-8 w-8 text-primary" />, title: 'Implementation Timeline Overview', content: renderFormattedString(result.implementationTimelineOverview) },
       { id: 'current-state-assessment', icon: <PieChart className="h-8 w-8 text-primary" />, title: 'Current State Assessment', content: renderFormattedString(result.currentStateAssessment) },
       { id: 'performance-benchmarking', icon: <TrendingUp className="h-8 w-8 text-primary" />, title: 'Performance Benchmarking', content: renderFormattedString(result.performanceBenchmarking) },
