@@ -49,6 +49,24 @@ const renderFormattedString = (text: string) => {
     });
 };
 
+const renderParagraphString = (text: string) => {
+    if (!text) return null;
+    const cleanedText = text.replace(/\*/g, '');
+    const parts = cleanedText.split(/(### .*)/g);
+    return parts.map((part, index) => {
+        if (part.startsWith('### ')) {
+            return <h4 key={index} className="font-semibold text-lg text-primary mt-4">{part.substring(4)}</h4>;
+        }
+        return (
+            <div key={index} className="prose prose-sm max-w-none text-muted-foreground space-y-2">
+                {(part || "").split(/\r?\n/).filter(line => line.trim().length > 0 && !line.startsWith('### ')).map((line, i) => (
+                    <p key={i}>{line.replace(/^- /, '')}</p>
+                ))}
+            </div>
+        )
+    });
+};
+
 
 export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessReportProps>(({ title, result, onComplete }, ref) => {
   const [isExporting, setIsExporting] = React.useState(false);
@@ -242,7 +260,7 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
               </Card>
           ))
       )},
-      { id: 'recommendation-summary', icon: <Lightbulb className="h-8 w-8 text-primary" />, title: 'Strategic Recommendation Summary', content: renderFormattedString(result.strategicRecommendationSummary) },
+      { id: 'recommendation-summary', icon: <Lightbulb className="h-8 w-8 text-primary" />, title: 'Strategic Recommendation Summary', content: renderParagraphString(result.strategicRecommendationSummary) },
       { id: 'timeline-overview', icon: <Clock className="h-8 w-8 text-primary" />, title: 'Implementation Timeline Overview', content: renderFormattedString(result.implementationTimelineOverview) },
       { id: 'current-state-assessment', icon: <PieChart className="h-8 w-8 text-primary" />, title: 'Current State Assessment', content: renderFormattedString(result.currentStateAssessment) },
       { id: 'performance-benchmarking', icon: <TrendingUp className="h-8 w-8 text-primary" />, title: 'Performance Benchmarking', content: renderFormattedString(result.performanceBenchmarking) },
