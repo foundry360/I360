@@ -20,7 +20,7 @@ export default function ReportPage() {
     const [assessment, setAssessment] = React.useState<Assessment | null>(null);
     const [loading, setLoading] = React.useState(true);
     const [error, setError] = React.useState<string | null>(null);
-    const reportRef = React.useRef<HTMLDivElement>(null);
+    const reportRef = React.useRef<{ handlePrint: () => void }>(null);
 
     React.useEffect(() => {
         if (!assessmentId) return;
@@ -54,15 +54,14 @@ export default function ReportPage() {
     }, [assessmentId]);
 
     const handleExportClick = () => {
-        const reportComponent = reportRef.current as any;
-        if (reportComponent && typeof reportComponent.handlePrint === 'function') {
-            reportComponent.handlePrint();
+        if (reportRef.current) {
+            reportRef.current.handlePrint();
         } else {
             console.error("Export function not available on report component.");
         }
     }
     
-    const getDisplayTitle = () => {
+    const getReportTitle = () => {
         if (!assessment) return '';
         const name = assessment.name || '';
         const companyName = assessment.companyName || '';
@@ -106,7 +105,8 @@ export default function ReportPage() {
         );
     }
 
-    const displayTitle = getDisplayTitle();
+    const reportTitle = getReportTitle();
+    const pageTitle = assessment.name || 'GTM Readiness Report';
 
     return (
         <AppLayout>
@@ -118,7 +118,7 @@ export default function ReportPage() {
                             <span className="sr-only">Back</span>
                         </Button>
                         <div>
-                            <h1 className="text-2xl font-bold">{displayTitle}</h1>
+                            <h1 className="text-2xl font-bold">{pageTitle}</h1>
                             <p className="text-muted-foreground">GTM Readiness Report</p>
                         </div>
                     </div>
@@ -128,7 +128,7 @@ export default function ReportPage() {
                     </Button>
                 </div>
                 <Separator />
-                <GtmReadinessReport ref={reportRef} title={displayTitle} result={assessment.result} onComplete={() => router.back()} />
+                <GtmReadinessReport ref={reportRef} title={reportTitle} result={assessment.result} onComplete={() => router.back()} />
             </div>
         </AppLayout>
     );
