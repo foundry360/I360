@@ -14,7 +14,7 @@ export async function GET(request: Request) {
     }
     
     const oauth2Client = new google.auth.OAuth2(
-        process.env.GOOGLE_CLIENT_ID, // Correctly use the Google Client ID
+        process.env.GOOGLE_CLIENT_ID,
         process.env.GOOGLE_CLIENT_SECRET,
         undefined // Redirect URI is not needed for server-side calls
     );
@@ -25,7 +25,7 @@ export async function GET(request: Request) {
     });
 
     // Handle token expiration
-    const isTokenExpired = !accessToken || new Date() >= (await oauth2Client.getTokenInfo(accessToken)).expiry_date - 60000;
+    const isTokenExpired = !accessToken || (await oauth2Client.getTokenInfo(accessToken)).expiry_date <= Date.now() + 60000;
 
     if (isTokenExpired && refreshToken) {
         try {
