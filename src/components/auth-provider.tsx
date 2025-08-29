@@ -5,7 +5,6 @@ import * as React from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useUser } from '@/contexts/user-context';
 import { Skeleton } from './ui/skeleton';
-import { handleGoogleRedirectResult } from '@/services/auth-service';
 
 const unprotectedRoutes = ['/', '/login'];
 
@@ -17,8 +16,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   React.useEffect(() => {
     setIsMounted(true);
-    // Handle the redirect result from Google Sign-In as soon as the app loads
-    handleGoogleRedirectResult().catch(console.error);
   }, []);
 
   React.useEffect(() => {

@@ -2,7 +2,7 @@
 'use client';
 
 import * as React from 'react';
-import { onAuthStateChangeObserver } from '@/services/auth-service';
+import { onAuthStateChangeObserver, handleGoogleRedirectResult } from '@/services/auth-service';
 import type { User } from 'firebase/auth';
 
 type UserContextType = {
@@ -17,6 +17,9 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = React.useState(true);
 
   React.useEffect(() => {
+    // Handle the redirect result from Google Sign-In as soon as the app loads
+    handleGoogleRedirectResult().catch(console.error);
+    
     const unsubscribe = onAuthStateChangeObserver((user) => {
       setUser(user);
       setLoading(false);
