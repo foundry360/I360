@@ -1,8 +1,13 @@
+
 'use client';
 
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getFirestore, enableIndexedDbPersistence } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
+
+if (!process.env.NEXT_PUBLIC_FIREBASE_API_KEY) {
+  throw new Error('Firebase API key is not set. Please check your .env.local file.');
+}
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,

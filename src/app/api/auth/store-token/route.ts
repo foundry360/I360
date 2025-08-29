@@ -14,21 +14,31 @@ if (!admin.apps.length) {
 
 export async function POST(request: Request) {
   try {
-    const { accessToken } = await request.json();
+    const { accessToken, refreshToken } = await request.json();
 
     if (!accessToken) {
       return NextResponse.json({ success: false, error: 'Access token is required.' }, { status: 400 });
     }
 
-    // You would typically store this token in a secure way, associated with the user.
-    // For this example, we'll store it in an HttpOnly cookie.
-    // In a real application, consider using Firestore or another secure database.
-    cookies().set('google-access-token', accessToken, {
+    const cookieStore = cookies();
+
+    // Store the access token in an HttpOnly cookie.
+    cookieStore.set('google-access-token', accessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       maxAge: 3600, // 1 hour
       path: '/',
     });
+    
+    // Store the refresh token securely if it exists.
+    if (refreshToken) {
+        cookieStore.set('google-refresh-token', refreshToken, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          maxAge: 60 * 60 * 24 * 90, // 90 days
+          path: '/',
+        });
+    }
     
     return NextResponse.json({ success: true });
   } catch (error) {

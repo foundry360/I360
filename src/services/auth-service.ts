@@ -44,6 +44,12 @@ export const signInWithGoogle = async () => {
   provider.addScope('https://www.googleapis.com/auth/spreadsheets.readonly');
   provider.addScope('https://www.googleapis.com/auth/documents.readonly');
   
+  // This prompts the user to grant offline access, which is necessary to get a refresh token.
+  provider.setCustomParameters({
+    access_type: 'offline',
+    prompt: 'consent', // Force consent screen to ensure refresh token is sent
+  });
+  
   try {
     await signInWithRedirect(auth, provider);
   } catch (error) {
@@ -58,6 +64,8 @@ export const handleGoogleRedirectResult = async () => {
     if (result) {
       const credential = GoogleAuthProvider.credentialFromResult(result);
       const accessToken = credential?.accessToken;
+      // The OAuthCredential contains the refresh token after a user grants offline access.
+      const refreshToken = (credential as any)?.refreshToken;
 
       if (auth.currentUser && credential) {
           await linkWithCredential(auth.currentUser, credential);
@@ -69,7 +77,7 @@ export const handleGoogleRedirectResult = async () => {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ accessToken }),
+          body: JSON.stringify({ accessToken, refreshToken }),
         });
       }
 
