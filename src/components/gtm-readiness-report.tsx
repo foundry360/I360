@@ -34,31 +34,38 @@ const Section: React.FC<{ id: string; icon: React.ReactNode; title: string; chil
 const renderFormattedString = (text: string) => {
     if (!text) return null;
     const cleanedText = text.replace(/\*/g, ''); 
-    const parts = cleanedText.split(/(\r?\n### .*)/g); // Split on newlines that start with ###
+    const parts = cleanedText.split(/(\r?\n### .*)/g);
     return parts.map((part, index) => {
         if (part.match(/(\r?\n### .*)/)) {
             return <h4 key={index} className="font-semibold text-lg text-primary mt-4">{part.replace(/(\r?\n### )/, '')}</h4>;
         }
         
-        const lines = (part || "").split(/\r?\n/).filter(line => line.trim().length > 0 && !line.startsWith('### '));
-        
+        let lines = (part || "").split(/\r?\n/).filter(line => line.trim().length > 0 && !line.startsWith('### '));
+        let introParagraph = null;
+
         if (lines.length > 0 && lines[0].startsWith("Implementation Timeline Overview")) {
-           lines[0] = lines[0].replace("Implementation Timeline Overview", "").trim();
+           const firstLineContent = lines[0].replace("Implementation Timeline Overview", "").trim();
+           if(firstLineContent) {
+               introParagraph = <p className="text-foreground">{firstLineContent}</p>;
+           }
+           lines = lines.slice(1);
         }
 
         return (
-             <ul key={index} className="prose max-w-none text-foreground list-disc pl-5 space-y-1">
-                {lines.filter(line => line.trim().length > 0).map((line, i) => (
-                    <li key={i}>{line.replace(/^- /, '')}</li>
-                ))}
-            </ul>
+             <React.Fragment key={index}>
+                {introParagraph}
+                <ul className="prose max-w-none text-foreground list-disc pl-5 space-y-1">
+                    {lines.map((line, i) => (
+                        <li key={i}>{line.replace(/^- /, '')}</li>
+                    ))}
+                </ul>
+            </React.Fragment>
         )
     });
 };
 
 const renderParagraphString = (text: string) => {
     if (!text) return null;
-    // This function will now correctly clean and render simple paragraphs.
     const cleanedText = text.replace(/###\s/g, '').replace(/\*/g, '');
     return (
         <div className="prose max-w-none text-foreground space-y-2">
@@ -136,7 +143,13 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
                 doc.setFontSize(10);
                 doc.setTextColor(51, 65, 85); // foreground
                 
-                const content = line.replace(/^- /, '');
+                let content = line.replace(/^- /, '');
+                if (content.startsWith("Implementation Timeline Overview")) {
+                    content = content.replace("Implementation Timeline Overview", "").trim();
+                }
+
+                if (!content) return;
+
                 const splitText = doc.splitTextToSize(content, pageWidth - margin * 2 - (isParagraph ? 0 : 20));
                 if (!isParagraph) {
                     const bullet = '\u2022';
@@ -305,6 +318,8 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
   );
 });
 GtmReadinessReport.displayName = "GtmReadinessReport";
+
+    
 
     
 
