@@ -33,7 +33,7 @@ const Section: React.FC<{ id: string; icon: React.ReactNode; title: string; chil
 
 const renderFormattedString = (text: string) => {
     if (!text) return null;
-    const cleanedText = text.replace(/\*/g, ''); // Remove all asterisks
+    const cleanedText = text.replace(/\*/g, ''); 
     const parts = cleanedText.split(/(### .*)/g);
     return parts.map((part, index) => {
         if (part.startsWith('### ')) {
@@ -58,7 +58,7 @@ const renderParagraphString = (text: string) => {
             return <h4 key={index} className="font-semibold text-lg text-primary mt-4">{part.substring(4)}</h4>;
         }
         return (
-            <div key={index} className="prose prose-sm max-w-none text-muted-foreground space-y-2">
+            <div key={index} className="text-sm text-muted-foreground space-y-2">
                 {(part || "").split(/\r?\n/).filter(line => line.trim().length > 0 && !line.startsWith('### ')).map((line, i) => (
                     <p key={i}>{line.replace(/^- /, '')}</p>
                 ))}
@@ -113,7 +113,7 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
         y += 20; // Space after section
     };
     
-    const renderMarkdown = (text: string) => {
+    const renderMarkdown = (text: string, isParagraph = false) => {
         if(!text) return;
         const cleanedText = text.replace(/\*/g, '');
         const lines = cleanedText.split(/\r?\n/).filter(line => line.trim().length > 0);
@@ -133,11 +133,14 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
                 doc.setFont('helvetica', 'normal');
                 doc.setFontSize(10);
                 doc.setTextColor(51, 65, 85); // foreground
-                const bullet = '\u2022';
+                
                 const content = line.replace(/^- /, '');
-                const splitText = doc.splitTextToSize(content, pageWidth - margin * 2 - 20); // Indent for bullet
-                doc.text(`${bullet}`, margin, y, { baseline: 'top' });
-                doc.text(splitText, margin + 20, y);
+                const splitText = doc.splitTextToSize(content, pageWidth - margin * 2 - (isParagraph ? 0 : 20));
+                if (!isParagraph) {
+                    const bullet = '\u2022';
+                    doc.text(`${bullet}`, margin, y, { baseline: 'top' });
+                }
+                doc.text(splitText, margin + (isParagraph ? 0 : 20), y);
                 y += splitText.length * 12;
             }
         });
@@ -197,7 +200,7 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
         });
     });
 
-    renderSection('Strategic Recommendation Summary', () => renderMarkdown(result.strategicRecommendationSummary));
+    renderSection('Strategic Recommendation Summary', () => renderMarkdown(result.strategicRecommendationSummary, true));
     renderSection('Implementation Timeline Overview', () => renderMarkdown(result.implementationTimelineOverview));
     renderSection('Current State Assessment', () => renderMarkdown(result.currentStateAssessment));
     renderSection('Performance Benchmarking', () => renderMarkdown(result.performanceBenchmarking));
@@ -300,3 +303,5 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
   );
 });
 GtmReadinessReport.displayName = "GtmReadinessReport";
+
+    
