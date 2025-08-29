@@ -15,9 +15,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { AppLayout } from '@/components/app-layout';
 import { useUser } from '@/contexts/user-context';
-import { updateUserProfile } from '@/services/auth-service';
+import { updateUserProfile, signInWithGoogle } from '@/services/auth-service';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
+import { Separator } from '@/components/ui/separator';
 
 export default function CompanyProfilePage() {
   const { user, loading: userLoading } = useUser();
@@ -29,6 +30,7 @@ export default function CompanyProfilePage() {
   const [avatarFile, setAvatarFile] = React.useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = React.useState<string | null>(null);
   const [loading, setLoading] = React.useState(false);
+  const [isGoogleConnected, setIsGoogleConnected] = React.useState(false);
   
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
@@ -37,6 +39,12 @@ export default function CompanyProfilePage() {
       setDisplayName(user.displayName || '');
       setEmail(user.email || '');
       setAvatarPreview(user.photoURL || null);
+      
+      // Check if the user has a Google connection
+      const googleProvider = user.providerData.find(
+        (p) => p.providerId === 'google.com'
+      );
+      setIsGoogleConnected(!!googleProvider);
     }
   }, [user]);
 
@@ -89,6 +97,24 @@ export default function CompanyProfilePage() {
           fileInputRef.current.value = '';
         }
         setAvatarFile(null); 
+    }
+  };
+  
+  const handleConnectGoogle = async () => {
+    try {
+      await signInWithGoogle();
+      toast({
+        title: 'Success!',
+        description: 'Your Google account has been connected.',
+      });
+      setIsGoogleConnected(true);
+    } catch (error) {
+      console.error('Error connecting Google account:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Connection failed',
+        description: 'Could not connect your Google account.',
+      });
     }
   };
 
@@ -160,6 +186,29 @@ export default function CompanyProfilePage() {
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Update Profile
             </Button>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>Connected Accounts</CardTitle>
+            <CardDescription>
+              Manage your connected third-party accounts.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center justify-between p-4 border rounded-lg">
+                <div>
+                    <h3 className="font-medium">Google Workspace</h3>
+                    <p className="text-sm text-muted-foreground">
+                        {isGoogleConnected ? "Connected" : "Not Connected"}
+                    </p>
+                </div>
+                {isGoogleConnected ? (
+                    <Button variant="destructive" disabled>Disconnect</Button>
+                ) : (
+                    <Button onClick={handleConnectGoogle}>Connect</Button>
+                )}
+            </div>
           </CardContent>
         </Card>
       </div>

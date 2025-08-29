@@ -8,6 +8,8 @@ import {
   onAuthStateChanged,
   updateProfile,
   type User,
+  GoogleAuthProvider,
+  signInWithPopup,
 } from 'firebase/auth';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
@@ -29,6 +31,36 @@ export const signIn = async (email: string, password: string) => {
     }
     
     console.error("Error signing in:", error);
+    throw error;
+  }
+};
+
+export const signInWithGoogle = async () => {
+  const provider = new GoogleAuthProvider();
+  provider.addScope('https://www.googleapis.com/auth/gmail.readonly');
+  provider.addScope('https://www.googleapis.com/auth/drive.readonly');
+  provider.addScope('https://www.googleapis:com/auth/spreadsheets.readonly');
+  provider.addScope('https://www.googleapis.com/auth/documents.readonly');
+  
+  try {
+    const result = await signInWithPopup(auth, provider);
+    const credential = GoogleAuthProvider.credentialFromResult(result);
+    const accessToken = credential?.accessToken;
+
+    // Send the access token to your server
+    if (accessToken) {
+      await fetch('/api/auth/store-token', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ accessToken }),
+      });
+    }
+
+    return result;
+  } catch (error) {
+    console.error("Error during Google sign-in:", error);
     throw error;
   }
 };
