@@ -42,6 +42,7 @@ import { TablePagination } from '@/components/table-pagination';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { useQuickAction } from '@/contexts/quick-action-context';
+import { useRouter } from 'next/navigation';
 
 type SortKey = keyof Assessment;
 
@@ -62,6 +63,7 @@ export default function AssessmentsPage() {
   const [sortConfig, setSortConfig] = React.useState<{ key: SortKey; direction: 'ascending' | 'descending' } | null>({ key: 'startDate', direction: 'descending' });
 
   const { openAssessmentModal, setOnAssessmentCompleted, globalSearchTerm } = useQuickAction();
+  const router = useRouter();
 
   const fetchAssessments = React.useCallback(async () => {
     try {
@@ -87,6 +89,14 @@ export default function AssessmentsPage() {
   const openDeleteDialog = (assessment: Assessment) => {
     setAssessmentToDelete(assessment);
     setIsDeleteDialogOpen(true);
+  };
+
+  const handleOpenAssessment = (assessment: Assessment) => {
+    if (assessment.status === 'Completed') {
+        router.push(`/assessment/${assessment.id}/report`);
+    } else {
+        openAssessmentModal(assessment);
+    }
   };
 
   const handleDeleteAssessment = async () => {
@@ -270,7 +280,7 @@ export default function AssessmentsPage() {
                         />
                       </TableCell>
                       <TableCell className="font-medium p-2">
-                        <span onClick={() => openAssessmentModal(assessment)} className="hover:text-primary cursor-pointer">
+                        <span onClick={() => handleOpenAssessment(assessment)} className="hover:text-primary cursor-pointer">
                           {assessment.name}
                         </span>
                       </TableCell>
@@ -297,7 +307,7 @@ export default function AssessmentsPage() {
                       <TableCell className="text-right p-2">
                         <div className="flex justify-end items-center">
                           {assessment.status === 'Completed' && (
-                            <Button variant="ghost" size="icon" onClick={() => openAssessmentModal(assessment)}>
+                            <Button variant="ghost" size="icon" onClick={() => handleOpenAssessment(assessment)}>
                                 <FileText className="h-4 w-4" />
                                 <span className="sr-only">View Report</span>
                             </Button>
@@ -311,7 +321,7 @@ export default function AssessmentsPage() {
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
                               <DropdownMenuItem
-                                onClick={() => openAssessmentModal(assessment)}
+                                onClick={() => handleOpenAssessment(assessment)}
                               >
                                 <FileText className="mr-2 h-4 w-4" />
                                 {assessment.status === 'Completed' ? 'View Report' : 'Resume'}
@@ -374,8 +384,3 @@ export default function AssessmentsPage() {
       </AlertDialog>
     </div>
   );
-
-    
-
-
-    

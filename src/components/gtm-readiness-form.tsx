@@ -44,7 +44,6 @@ import {
 import { cn } from '@/lib/utils';
 import { getCompanies, type Company } from '@/services/company-service';
 import { createAssessment, updateAssessment, type Assessment } from '@/services/assessment-service';
-import { GtmReadinessReport } from './gtm-readiness-report';
 import { Separator } from './ui/separator';
 
 
@@ -284,13 +283,12 @@ const defaultValues = Object.entries(fieldConfig).reduce((acc, [key, value]) => 
 
 
 type GtmReadinessFormProps = {
-  onComplete: () => void;
+  onComplete: (assessmentId?: string) => void;
   assessmentToResume?: Assessment | null;
 };
 
 export function GtmReadinessForm({ onComplete, assessmentToResume }: GtmReadinessFormProps) {
   const [loading, setLoading] = React.useState(false);
-  const [result, setResult] = React.useState<GtmReadinessOutput | null>(null);
   const [currentSection, setCurrentSection] = React.useState(0);
   const [companies, setCompanies] = React.useState<Company[]>([]);
   const [currentAssessmentId, setCurrentAssessmentId] = React.useState<string | null>(null);
@@ -327,7 +325,6 @@ export function GtmReadinessForm({ onComplete, assessmentToResume }: GtmReadines
 
   async function onSubmit(values: z.infer<typeof GtmReadinessInputSchema>) {
     setLoading(true);
-    setResult(null);
     try {
       const { companyId, assessmentName, ...assessmentData } = values;
       const company = companies.find(c => c.id === companyId);
@@ -344,19 +341,20 @@ export function GtmReadinessForm({ onComplete, assessmentToResume }: GtmReadines
         formData: values,
       };
 
-      if (currentAssessmentId) {
-          await updateAssessment(currentAssessmentId, payload);
+      let finalAssessmentId = currentAssessmentId;
+      if (finalAssessmentId) {
+          await updateAssessment(finalAssessmentId, payload);
       } else {
           const newId = await createAssessment(payload);
           setCurrentAssessmentId(newId);
+          finalAssessmentId = newId;
       }
 
-      setResult(response);
+      onComplete(finalAssessmentId!);
     } catch (error) {
       console.error('Error generating GTM readiness report:', error);
-    } finally {
       setLoading(false);
-    }
+    } 
   }
 
   const handleNext = async () => {
@@ -431,22 +429,6 @@ export function GtmReadinessForm({ onComplete, assessmentToResume }: GtmReadines
     });
   }
 
-  if (loading) {
-    return (
-      <div className="flex flex-col items-center justify-center h-full gap-4">
-        <Loader2 className="h-12 w-12 animate-spin text-primary" />
-        <p className="text-lg text-muted-foreground">Analyzing your data...</p>
-        <p className="text-sm text-muted-foreground">This may take a moment. The AI is generating your personalized recommendations.</p>
-      </div>
-    );
-  }
-
-  if (result) {
-    return (
-      <GtmReadinessReport result={result} onComplete={onComplete} />
-    );
-  }
-  
   const companyOptions = companies.map(c => ({ label: c.name, value: c.id }));
 
   const isFinalStep = currentSection === formSections.length;
@@ -619,4 +601,3 @@ export function GtmReadinessForm({ onComplete, assessmentToResume }: GtmReadines
     </div>
   );
 }
-

@@ -56,7 +56,6 @@ export function GtmReadinessReport({ result, onComplete }: GtmReadinessReportPro
     
     setIsExporting(true);
     
-    // Add a class to apply PDF-specific styles
     reportElement.classList.add('pdf-export');
 
     const pdf = new jsPDF('p', 'pt', 'a4');
@@ -82,7 +81,8 @@ export function GtmReadinessReport({ result, onComplete }: GtmReadinessReportPro
         const canvas = await html2canvas(section as HTMLElement, {
             scale: 3,
             useCORS: true,
-            scrollY: -window.scrollY,
+            windowWidth: reportElement.scrollWidth,
+            windowHeight: reportElement.scrollHeight,
         });
 
         const imgData = canvas.toDataURL('image/png');
@@ -102,7 +102,6 @@ export function GtmReadinessReport({ result, onComplete }: GtmReadinessReportPro
 
     pdf.save('gtm-readiness-report.pdf');
     
-    // Clean up the class after export
     reportElement.classList.remove('pdf-export');
     setIsExporting(false);
   };
@@ -165,17 +164,26 @@ export function GtmReadinessReport({ result, onComplete }: GtmReadinessReportPro
   return (
     <div className="bg-muted">
        <style>{`
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+            body {
+                -webkit-print-color-adjust: exact !important;
+                color-adjust: exact !important;
+            }
+        }
         .pdf-export {
             font-family: Arial, sans-serif !important;
-            font-size: 14px !important;
         }
-        .pdf-export .text-3xl { font-size: 28px !important; }
-        .pdf-export .text-xl { font-size: 20px !important; }
-        .pdf-export .text-lg { font-size: 18px !important; }
-        .pdf-export .text-sm { font-size: 14px !important; }
-        .pdf-export .text-xs { font-size: 12px !important; }
-        .pdf-export h4 { font-size: 16px !important; }
-        .pdf-export .prose { font-size: 14px !important; }
+        .pdf-export .text-3xl { font-size: 24px !important; }
+        .pdf-export .text-xl { font-size: 18px !important; }
+        .pdf-export .text-lg { font-size: 16px !important; }
+        .pdf-export .text-base { font-size: 14px !important; }
+        .pdf-export .text-sm { font-size: 12px !important; }
+        .pdf-export .text-xs { font-size: 10px !important; }
+        .pdf-export h4 { font-size: 15px !important; }
+        .pdf-export .prose { font-size: 12px !important; }
         .pdf-export * { 
             -webkit-print-color-adjust: exact !important;
             color-adjust: exact !important;
@@ -197,7 +205,7 @@ export function GtmReadinessReport({ result, onComplete }: GtmReadinessReportPro
                 ))}
             </div>
         </div>
-        <div className="flex justify-between items-center gap-4 p-6 bg-background rounded-b-lg shadow-sm">
+        <div className="flex justify-between items-center gap-4 p-6 bg-background rounded-b-lg shadow-sm no-print">
             <p className="text-xs text-muted-foreground">PROPRIETARY & CONFIDENTIAL</p>
             <div className="flex gap-4">
                 <Button variant="outline" onClick={onComplete}>Done</Button>
@@ -214,4 +222,3 @@ export function GtmReadinessReport({ result, onComplete }: GtmReadinessReportPro
     </div>
   );
 }
-    

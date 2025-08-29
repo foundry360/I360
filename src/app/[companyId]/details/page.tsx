@@ -18,7 +18,7 @@ import {
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { AppLayout } from '@/components/app-layout';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import React from 'react';
 import { Progress } from '@/components/ui/progress';
 import { Phone, Globe, MapPin, ArrowLeft, Plus, Pencil, FileText, Trash2 } from 'lucide-react';
@@ -59,6 +59,7 @@ type ActivityItem = {
 
 export default function CompanyDetailsPage() {
   const params = useParams();
+  const router = useRouter();
   const companyId = params.companyId as string;
   const { openAssessmentModal, setOnAssessmentCompleted, openNewContactDialog, setOnContactCreated } = useQuickAction();
   const [companyData, setCompanyData] = React.useState<Company | null>(null);
@@ -138,7 +139,11 @@ export default function CompanyDetailsPage() {
   }, [fetchCompanyData, setOnAssessmentCompleted, setOnContactCreated]);
   
   const handleOpenAssessment = (assessment: Assessment) => {
-    openAssessmentModal(assessment);
+    if (assessment.status === 'Completed') {
+        router.push(`/assessment/${assessment.id}/report`);
+    } else {
+        openAssessmentModal(assessment);
+    }
   }
 
   const handleCompanyUpdate = async (updatedData: Partial<Company>) => {
@@ -565,6 +570,3 @@ export default function CompanyDetailsPage() {
     </AppLayout>
   );
 }
-    
-
-    

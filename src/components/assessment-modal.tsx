@@ -10,7 +10,7 @@ import {
 import { GtmReadinessForm } from './gtm-readiness-form';
 import { useQuickAction } from '@/contexts/quick-action-context';
 import * as React from 'react';
-import { GtmReadinessReport } from './gtm-readiness-report';
+import { useRouter } from 'next/navigation';
 
 
 export function AssessmentModal() {
@@ -20,14 +20,19 @@ export function AssessmentModal() {
     onAssessmentCompleted, 
     assessmentToResume 
   } = useQuickAction();
+  const router = useRouter();
 
-  const handleAssessmentComplete = React.useCallback(() => {
+
+  const handleAssessmentComplete = React.useCallback((assessmentId?: string) => {
+    closeAssessmentModal();
     if (onAssessmentCompleted) {
       onAssessmentCompleted();
     }
-  }, [onAssessmentCompleted]);
+    if (assessmentId) {
+      router.push(`/assessment/${assessmentId}/report`);
+    }
+  }, [closeAssessmentModal, onAssessmentCompleted, router]);
 
-  const isCompletedReport = assessmentToResume?.status === 'Completed' && assessmentToResume.result;
 
   return (
     <Dialog open={isAssessmentModalOpen} onOpenChange={closeAssessmentModal}>
@@ -35,30 +40,16 @@ export function AssessmentModal() {
         <DialogHeader className="p-6 pb-0">
           <DialogTitle>GTM Readiness Assessment</DialogTitle>
           <DialogDescription>
-            {isCompletedReport
-              ? `Report for ${assessmentToResume.name}`
-              : 'Complete the form below to receive an AI-powered analysis of your go-to-market readiness.'}
+            {assessmentToResume ? `Resuming assessment: ${assessmentToResume.name}` : 'Complete the form below to receive an AI-powered analysis of your go-to-market readiness.'}
           </DialogDescription>
         </DialogHeader>
         <div className="flex-1 overflow-y-auto">
-          {isCompletedReport ? (
-            <GtmReadinessReport 
-              result={assessmentToResume.result!}
-              onComplete={closeAssessmentModal}
-            />
-          ) : (
-            <GtmReadinessForm 
-              onComplete={() => {
-                closeAssessmentModal();
-                handleAssessmentComplete();
-              }}
-              assessmentToResume={assessmentToResume}
-            />
-          )}
+          <GtmReadinessForm 
+            onComplete={handleAssessmentComplete}
+            assessmentToResume={assessmentToResume}
+          />
         </div>
       </DialogContent>
     </Dialog>
   );
 }
-
-    
