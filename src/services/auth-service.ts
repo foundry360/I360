@@ -11,6 +11,7 @@ import {
   GoogleAuthProvider,
   signInWithRedirect,
   getRedirectResult,
+  linkWithCredential,
 } from 'firebase/auth';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
@@ -45,14 +46,12 @@ export const signInWithGoogle = async () => {
   
   try {
     await signInWithRedirect(auth, provider);
-    // After redirecting, the result is handled by getRedirectResult
   } catch (error) {
     console.error("Error during Google sign-in redirect:", error);
     throw error;
   }
 };
 
-// Call this function in your main app component or layout to handle the redirect result
 export const handleGoogleRedirectResult = async () => {
   try {
     const result = await getRedirectResult(auth);
@@ -61,6 +60,13 @@ export const handleGoogleRedirectResult = async () => {
       const accessToken = credential?.accessToken;
 
       if (accessToken) {
+        // This links the new credential to the existing user
+        if (auth.currentUser && credential) {
+          await linkWithCredential(auth.currentUser, credential);
+          // Force a refresh of the user's profile to get the latest provider data
+          await auth.currentUser.reload(); 
+        }
+        
         await fetch('/api/auth/store-token', {
           method: 'POST',
           headers: {
@@ -74,9 +80,13 @@ export const handleGoogleRedirectResult = async () => {
     return null;
   } catch(error) {
     console.error("Error getting redirect result:", error);
+    if (error.code === 'auth/credential-already-in-use') {
+        alert("This Google account is already associated with another user.");
+    }
     return null;
   }
 }
+
 
 export const signOut = async () => {
   await firebaseSignOut(auth);

@@ -15,20 +15,30 @@ const UserContext = React.createContext<UserContextType | undefined>(undefined);
 export function UserProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = React.useState<User | null>(null);
   const [loading, setLoading] = React.useState(true);
+  const [isHandlingRedirect, setIsHandlingRedirect] = React.useState(true);
 
   React.useEffect(() => {
-    // Handle the redirect result from Google Sign-In as soon as the app loads
-    handleGoogleRedirectResult().catch(console.error);
-    
+    // This effect runs once on mount to handle the redirect result.
+    handleGoogleRedirectResult()
+      .catch(console.error)
+      .finally(() => setIsHandlingRedirect(false));
+  }, []);
+
+  React.useEffect(() => {
+    // This effect sets up the auth state listener.
+    // It will run after the redirect has been handled.
+    if (isHandlingRedirect) return;
+
     const unsubscribe = onAuthStateChangeObserver((user) => {
       setUser(user);
       setLoading(false);
     });
+    
     return () => unsubscribe();
-  }, []);
+  }, [isHandlingRedirect]);
 
   return (
-    <UserContext.Provider value={{ user, loading }}>
+    <UserContext.Provider value={{ user, loading: loading || isHandlingRedirect }}>
       {children}
     </UserContext.Provider>
   );
