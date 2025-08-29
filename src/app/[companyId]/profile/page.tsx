@@ -15,14 +15,16 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { AppLayout } from '@/components/app-layout';
 import { useUser } from '@/contexts/user-context';
-import { updateUserProfile, signInWithGoogle } from '@/services/auth-service';
+import { updateUserProfile } from '@/services/auth-service';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 export default function CompanyProfilePage() {
   const { user, loading: userLoading, reloadUser } = useUser();
   const { toast } = useToast();
+  const router = useRouter();
 
   const [displayName, setDisplayName] = React.useState('');
   const [email, setEmail] = React.useState('');
@@ -36,16 +38,16 @@ export default function CompanyProfilePage() {
 
   React.useEffect(() => {
     if (user) {
-      console.log('User provider data:', user.providerData);
-      setDisplayName(user.displayName || '');
-      setEmail(user.email || '');
-      setAvatarPreview(user.photoURL || null);
-      
-      // Check if the user has a Google connection
       const googleProvider = user.providerData.find(
         (p) => p.providerId === 'google.com'
       );
+      // A simple check if a Google account is linked.
+      // For server-side token validation, we'd check a custom claim or DB entry.
       setIsGoogleConnected(!!googleProvider);
+      
+      setDisplayName(user.displayName || '');
+      setEmail(user.email || '');
+      setAvatarPreview(user.photoURL || null);
     }
   }, [user]);
 
@@ -94,7 +96,6 @@ export default function CompanyProfilePage() {
         });
     } finally {
         setLoading(false);
-        // Reset file input to allow re-uploading the same file if needed
         if (fileInputRef.current) {
           fileInputRef.current.value = '';
         }
@@ -104,15 +105,16 @@ export default function CompanyProfilePage() {
   
   const handleConnectGoogle = async () => {
     try {
-      // This will now trigger a redirect
-      await signInWithGoogle();
+      const response = await fetch('/api/auth/google/consent-url');
+      const { url } = await response.json();
+      router.push(url);
     } catch (error) {
-      console.error('Error connecting Google account:', error);
-      toast({
-        variant: 'destructive',
-        title: 'Connection failed',
-        description: 'Could not connect your Google account.',
-      });
+        console.error('Error starting Google connection:', error);
+        toast({
+            variant: 'destructive',
+            title: 'Connection failed',
+            description: 'Could not connect your Google account.',
+        });
     }
   };
 
