@@ -32,7 +32,8 @@ const Section: React.FC<{ id: string; icon: React.ReactNode; title: string; chil
 
 const renderFormattedString = (text: string) => {
     if (!text) return null;
-    const parts = text.split(/(### .*)/g);
+    const cleanedText = text.replace(/\*\*/g, ''); // Remove all double asterisks
+    const parts = cleanedText.split(/(### .*)/g);
     return parts.map((part, index) => {
         if (part.startsWith('### ')) {
             return <h4 key={index} className="font-semibold text-lg text-primary mt-4">{part.substring(4)}</h4>;
@@ -95,7 +96,8 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
     
     const renderMarkdown = (text: string) => {
         if(!text) return;
-        const lines = text.split(/\r?\n/).filter(line => line.trim().length > 0);
+        const cleanedText = text.replace(/\*\*/g, '');
+        const lines = cleanedText.split(/\r?\n/).filter(line => line.trim().length > 0);
         lines.forEach(line => {
              if (line.startsWith('### ')) {
                 addPageIfNeeded(20);
@@ -140,7 +142,7 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
         addPageIfNeeded(20);
         doc.setFont('helvetica', 'normal');
         doc.setFontSize(10);
-        const splitText = doc.splitTextToSize(result.executiveSummary.briefOverviewOfFindings, pageWidth - margin * 2);
+        const splitText = doc.splitTextToSize(result.executiveSummary.briefOverviewOfFindings.replace(/\*\*/g, ''), pageWidth - margin * 2);
         doc.text(splitText, margin, y);
         y += splitText.length * 12;
     });
@@ -149,17 +151,17 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
     renderSection('Top 3 Critical Findings', () => {
         result.top3CriticalFindings.forEach(finding => {
             const tableBody = [
-                [{ content: `Business Impact`, styles: { fontStyle: 'bold' } }, finding.businessImpact],
-                [{ content: `Current State`, styles: { fontStyle: 'bold' } }, finding.currentState],
-                [{ content: `Root Cause`, styles: { fontStyle: 'bold' } }, finding.rootCauseAnalysis],
-                [{ content: `Stakeholder Impact`, styles: { fontStyle: 'bold' } }, finding.stakeholderImpact],
-                [{ content: `Urgency`, styles: { fontStyle: 'bold' } }, finding.urgencyRating],
+                [{ content: `Business Impact`, styles: { fontStyle: 'bold' } }, finding.businessImpact.replace(/\*\*/g, '')],
+                [{ content: `Current State`, styles: { fontStyle: 'bold' } }, finding.currentState.replace(/\*\*/g, '')],
+                [{ content: `Root Cause`, styles: { fontStyle: 'bold' } }, finding.rootCauseAnalysis.replace(/\*\*/g, '')],
+                [{ content: `Stakeholder Impact`, styles: { fontStyle: 'bold' } }, finding.stakeholderImpact.replace(/\*\*/g, '')],
+                [{ content: `Urgency`, styles: { fontStyle: 'bold' } }, finding.urgencyRating.replace(/\*\*/g, '')],
             ];
             addPageIfNeeded(100);
             doc.setFont('helvetica', 'bold');
             doc.setFontSize(12);
             doc.setTextColor(15, 23, 42); // card-foreground
-            doc.text(finding.findingTitle, margin, y);
+            doc.text(finding.findingTitle.replace(/\*\*/g, ''), margin, y);
             y += 15;
             autoTable(doc, {
                 startY: y,
@@ -212,12 +214,12 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
           <>
               <div className="grid grid-cols-2 gap-4">
                   <p><span className="font-semibold">Overall Readiness:</span> <span className="font-bold text-lg text-primary">{result.executiveSummary.overallReadinessScore}%</span></p>
-                  <p><span className="font-semibold">Company Profile:</span> {result.executiveSummary.companyStageAndFte}</p>
-                  <p><span className="font-semibold">Industry:</span> {result.executiveSummary.industrySector}</p>
-                  <p><span className="font-semibold">GTM Strategy:</span> {result.executiveSummary.primaryGtmStrategy}</p>
+                  <p><span className="font-semibold">Company Profile:</span> {result.executiveSummary.companyStageAndFte.replace(/\*\*/g, '')}</p>
+                  <p><span className="font-semibold">Industry:</span> {result.executiveSummary.industrySector.replace(/\*\*/g, '')}</p>
+                  <p><span className="font-semibold">GTM Strategy:</span> {result.executiveSummary.primaryGtmStrategy.replace(/\*\*/g, '')}</p>
               </div>
               <Separator />
-              <p className="text-muted-foreground">{result.executiveSummary.briefOverviewOfFindings}</p>
+              <p className="text-muted-foreground">{result.executiveSummary.briefOverviewOfFindings.replace(/\*\*/g, '')}</p>
           </>
       )},
       { id: 'critical-findings', icon: <Target className="h-8 w-8 text-destructive" />, title: 'Top 3 Critical Findings', content: (
@@ -225,16 +227,16 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
               <Card key={index} className="break-inside-avoid">
                   <CardHeader>
                       <CardTitle className="flex justify-between items-center">
-                          <span>{finding.findingTitle}</span>
+                          <span>{finding.findingTitle.replace(/\*\*/g, '')}</span>
                           <Badge variant={finding.impactLevel === 'High' ? 'destructive' : 'secondary'}>Impact: {finding.impactLevel}</Badge>
                       </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-3 prose prose-sm max-w-none text-muted-foreground">
-                      <p><span className="font-semibold">Business Impact:</span> {finding.businessImpact}</p>
-                      <p><span className="font-semibold">Current State:</span> ${finding.currentState}</p>
-                      <p><span className="font-semibold">Root Cause:</span> ${finding.rootCauseAnalysis}</p>
-                      <p><span className="font-semibold">Stakeholder Impact:</span> ${finding.stakeholderImpact}</p>
-                      <p><span className="font-semibold">Urgency:</span> ${finding.urgencyRating}</p>
+                      <p><span className="font-semibold">Business Impact:</span> {finding.businessImpact.replace(/\*\*/g, '')}</p>
+                      <p><span className="font-semibold">Current State:</span> {finding.currentState.replace(/\*\*/g, '')}</p>
+                      <p><span className="font-semibold">Root Cause:</span> {finding.rootCauseAnalysis.replace(/\*\*/g, '')}</p>
+                      <p><span className="font-semibold">Stakeholder Impact:</span> {finding.stakeholderImpact.replace(/\*\*/g, '')}</p>
+                      <p><span className="font-semibold">Urgency:</span> {finding.urgencyRating.replace(/\*\*/g, '')}</p>
                   </CardContent>
               </Card>
           ))
@@ -272,13 +274,6 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
             <p className="text-xs text-muted-foreground">PROPRIETARY & CONFIDENTIAL</p>
             <div className="flex gap-4">
                 <Button variant="outline" onClick={onComplete}>Done</Button>
-                <Button onClick={handlePrint} disabled={isExporting}>
-                    {isExporting ? (
-                        <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Exporting...</>
-                    ) : (
-                        <><Download className="mr-2 h-4 w-4" /> Export to PDF</>
-                    )}
-                </Button>
             </div>
         </div>
       </div>
