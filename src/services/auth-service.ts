@@ -9,7 +9,8 @@ import {
   updateProfile,
   type User,
   GoogleAuthProvider,
-  signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   linkWithCredential,
   OAuthProvider,
 } from 'firebase/auth';
@@ -42,50 +43,31 @@ export const signInWithGoogle = async () => {
     provider.addScope('https://www.googleapis.com/auth/drive.readonly');
     provider.setCustomParameters({
         access_type: 'offline',
-        prompt: 'consent', // This is important to ensure a refresh token is always sent
+        prompt: 'consent', 
     });
 
-    try {
-        if (!auth.currentUser) {
-            // This case handles initial sign-in if the user is not logged in.
-             const result = await signInWithPopup(auth, provider);
-             const credential = GoogleAuthProvider.credentialFromResult(result);
-             if (credential) {
-                await storeTokens(credential);
-             }
-             return result.user;
-        } else {
-            // This case handles linking the account if the user is already logged in.
-            const credential = GoogleAuthProvider.credentialFromResult(await signInWithPopup(auth.currentUser, provider));
-
-            if (!credential) {
-                throw new Error("Could not get credential from Google sign-in.");
-            }
-            
-            await storeTokens(credential);
-
-            return auth.currentUser;
-        }
-
-    } catch (error: any) {
-        if (error.code === 'auth/popup-closed-by-user') {
-            console.log("Sign-in popup closed by user.");
-            return null;
-        }
-        if (error.code === 'auth/credential-already-in-use') {
-            alert("This Google account is already associated with another user account.");
-            return null;
-        }
-        console.error("An unhandled error occurred during Google sign-in:", error);
-        throw error;
-    }
+    await signInWithRedirect(auth, provider);
 };
+
+export const handleGoogleRedirectResult = async () => {
+    try {
+        const result = await getRedirectResult(auth);
+        if (result) {
+            const credential = GoogleAuthProvider.credentialFromResult(result);
+            if (credential) {
+                await storeTokens(credential);
+            }
+            return result.user;
+        }
+        return null;
+    } catch (error) {
+        console.error("Error handling redirect result:", error);
+        return null;
+    }
+}
 
 async function storeTokens(credential: any) {
     const accessToken = credential.accessToken;
-    // The refresh token is often not directly available on the credential object in the client.
-    // It's primarily sent during the initial consent from the OAuth provider and should be handled server-side.
-    // Our API route is set up to receive it if it's passed.
     const refreshToken = (credential as any).refreshToken || (credential.user?.toJSON() as any)?.stsTokenManager?.refreshToken;
 
     if (accessToken) {

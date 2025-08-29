@@ -104,14 +104,8 @@ export default function CompanyProfilePage() {
   
   const handleConnectGoogle = async () => {
     try {
-      const signedInUser = await signInWithGoogle();
-      if (signedInUser) {
-        await reloadUser();
-        toast({
-          title: 'Success!',
-          description: 'Your Google account has been connected.',
-        });
-      }
+      // This will now trigger a redirect
+      await signInWithGoogle();
     } catch (error) {
       console.error('Error connecting Google account:', error);
       toast({

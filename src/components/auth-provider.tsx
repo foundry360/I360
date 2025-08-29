@@ -5,11 +5,13 @@ import * as React from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useUser } from '@/contexts/user-context';
 import { Skeleton } from './ui/skeleton';
+import { handleGoogleRedirectResult } from '@/services/auth-service';
+
 
 const unprotectedRoutes = ['/', '/login'];
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useUser();
+  const { user, loading, reloadUser } = useUser();
   const router = useRouter();
   const pathname = usePathname();
   const [isMounted, setIsMounted] = React.useState(false);
@@ -17,6 +19,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   React.useEffect(() => {
     setIsMounted(true);
   }, []);
+
+  React.useEffect(() => {
+    const handleRedirect = async () => {
+      // This will only run once on mount, after the app has loaded
+      // It checks if the user is returning from a Google redirect
+      const userFromRedirect = await handleGoogleRedirectResult();
+      if (userFromRedirect) {
+          await reloadUser();
+          router.push('/dashboard/profile'); // Navigate to a relevant page after sign-in
+      }
+    }
+    
+    if (isMounted) {
+      handleRedirect();
+    }
+  }, [isMounted, reloadUser, router]);
+
 
   React.useEffect(() => {
     if (loading || !isMounted) {
