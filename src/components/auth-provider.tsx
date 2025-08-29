@@ -17,7 +17,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   React.useEffect(() => {
     setIsMounted(true);
-    // Handle the redirect result from Google Sign-In
+    // Handle the redirect result from Google Sign-In as soon as the app loads
     handleGoogleRedirectResult().catch(console.error);
   }, []);
 
