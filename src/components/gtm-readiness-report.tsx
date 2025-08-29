@@ -1,7 +1,7 @@
 
 'use client';
 import * as React from 'react';
-import ReactToPrint from 'react-to-print';
+import { useReactToPrint } from 'react-to-print';
 import type { GtmReadinessOutput } from '@/ai/flows/gtm-readiness-flow';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -48,6 +48,20 @@ const renderFormattedString = (text: string) => {
 export function GtmReadinessReport({ result, onComplete }: GtmReadinessReportProps) {
   const reportRef = React.useRef<HTMLDivElement>(null);
   const [isExporting, setIsExporting] = React.useState(false);
+
+  const handlePrint = useReactToPrint({
+    content: () => reportRef.current,
+    onBeforeGetContent: () => {
+      return new Promise<void>((resolve) => {
+        setIsExporting(true);
+        resolve();
+      });
+    },
+    onAfterPrint: () => {
+      setIsExporting(false);
+    },
+    documentTitle: 'GTM-Readiness-Report',
+  });
 
   if (!result || !result.executiveSummary) {
     return (
@@ -137,26 +151,13 @@ export function GtmReadinessReport({ result, onComplete }: GtmReadinessReportPro
             <p className="text-xs text-muted-foreground">PROPRIETARY & CONFIDENTIAL</p>
             <div className="flex gap-4">
                 <Button variant="outline" onClick={onComplete}>Done</Button>
-                 <ReactToPrint
-                    trigger={() => (
-                        <Button disabled={isExporting}>
-                            {isExporting ? (
-                                <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Exporting...</>
-                            ) : (
-                                <><Download className="mr-2 h-4 w-4" /> Export to PDF</>
-                            )}
-                        </Button>
+                <Button onClick={handlePrint} disabled={isExporting}>
+                    {isExporting ? (
+                        <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Exporting...</>
+                    ) : (
+                        <><Download className="mr-2 h-4 w-4" /> Export to PDF</>
                     )}
-                    content={() => reportRef.current}
-                    onBeforeGetContent={() => {
-                        return new Promise<void>((resolve) => {
-                          setIsExporting(true);
-                          resolve();
-                        });
-                      }}
-                    onAfterPrint={() => setIsExporting(false)}
-                    documentTitle='GTM-Readiness-Report'
-                 />
+                </Button>
             </div>
         </div>
       </div>
