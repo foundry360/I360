@@ -1,8 +1,7 @@
 
 'use client';
 import * as React from 'react';
-import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
+import { useReactToPrint } from 'react-to-print';
 import type { GtmReadinessOutput } from '@/ai/flows/gtm-readiness-flow';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -50,67 +49,13 @@ export function GtmReadinessReport({ result, onComplete }: GtmReadinessReportPro
   const reportRef = React.useRef<HTMLDivElement>(null);
   const [isExporting, setIsExporting] = React.useState(false);
 
-  const handleExportToPdf = async () => {
-    const reportElement = reportRef.current;
-    if (!reportElement) return;
-
-    setIsExporting(true);
-
-    const style = document.createElement('style');
-    style.innerHTML = `
-      .pdf-export .border,
-      .pdf-export .border-b,
-      .pdf-export .border-t,
-      .pdf-export .shadow-sm,
-      .pdf-export .shadow-md {
-        border: none !important;
-        box-shadow: none !important;
-      }
-    `;
-    document.head.appendChild(style);
-    reportElement.classList.add('pdf-export');
-
-    try {
-        const canvas = await html2canvas(reportElement, {
-            scale: 2,
-            useCORS: true,
-        });
-
-        const imgData = canvas.toDataURL('image/png');
-        const pdf = new jsPDF('p', 'mm', 'a4');
-        const pdfWidth = pdf.internal.pageSize.getWidth();
-        const pdfHeight = pdf.internal.pageSize.getHeight();
-        const imgWidth = canvas.width;
-        const imgHeight = canvas.height;
-        const ratio = imgWidth / pdfWidth;
-        const totalPages = Math.ceil(imgHeight / (pdfHeight * ratio));
-        
-        let yPos = 0;
-
-        for (let i = 0; i < totalPages; i++) {
-            if (i > 0) {
-                pdf.addPage();
-            }
-            const pageCanvas = document.createElement('canvas');
-            pageCanvas.width = imgWidth;
-            pageCanvas.height = pdfHeight * ratio;
-            const pageCtx = pageCanvas.getContext('2d');
-            if (pageCtx) {
-                pageCtx.drawImage(canvas, 0, yPos, imgWidth, pdfHeight * ratio, 0, 0, imgWidth, pdfHeight * ratio);
-                pdf.addImage(pageCanvas.toDataURL('image/png'), 'PNG', 0, 0, pdfWidth, pdfHeight);
-            }
-            yPos += pdfHeight * ratio;
-        }
-
-        pdf.save('gtm-readiness-report.pdf');
-    } catch(error) {
-        console.error("Error exporting to PDF:", error);
-    } finally {
-        reportElement.classList.remove('pdf-export');
-        document.head.removeChild(style);
-        setIsExporting(false);
-    }
-  };
+  const handlePrint = useReactToPrint({
+    content: () => reportRef.current,
+    documentTitle: 'GTM-Readiness-Report',
+    onBeforeGetContent: () => setIsExporting(true),
+    onAfterPrint: () => setIsExporting(false),
+    removeAfterPrint: true,
+  });
 
   if (!result || !result.executiveSummary) {
     return (
@@ -181,28 +126,26 @@ export function GtmReadinessReport({ result, onComplete }: GtmReadinessReportPro
         }
       `}</style>
       <div className="space-y-6 p-6">
-        <div className="bg-background p-8 rounded-lg shadow-sm">
-            <div ref={reportRef}>
-              <div className="text-center pb-4 border-b mb-6 printable-section">
-                  <h2 className="text-3xl font-bold text-primary">GTM Readiness Assessment Report</h2>
-                  <p className="text-muted-foreground">Generated on {new Date().toLocaleDateString()}</p>
-              </div>
-              <div className="space-y-6">
-                  {reportSections.map(sec => (
-                      <div key={sec.id} className="printable-section">
-                           <Section id={sec.id} icon={sec.icon} title={sec.title}>
-                              {sec.content}
-                          </Section>
-                      </div>
-                  ))}
-              </div>
+        <div ref={reportRef} className="bg-background p-8 rounded-lg shadow-sm">
+            <div className="text-center pb-4 border-b mb-6 printable-section">
+                <h2 className="text-3xl font-bold text-primary">GTM Readiness Assessment Report</h2>
+                <p className="text-muted-foreground">Generated on {new Date().toLocaleDateString()}</p>
+            </div>
+            <div className="space-y-6">
+                {reportSections.map(sec => (
+                    <div key={sec.id} className="printable-section">
+                         <Section id={sec.id} icon={sec.icon} title={sec.title}>
+                            {sec.content}
+                        </Section>
+                    </div>
+                ))}
             </div>
         </div>
-        <div className="flex justify-between items-center gap-4 p-6 bg-background rounded-b-lg shadow-sm no-print">
+        <div className="flex justify-between items-center gap-4 p-6 bg-background rounded-lg shadow-sm no-print">
             <p className="text-xs text-muted-foreground">PROPRIETARY & CONFIDENTIAL</p>
             <div className="flex gap-4">
                 <Button variant="outline" onClick={onComplete}>Done</Button>
-                <Button onClick={handleExportToPdf} disabled={isExporting}>
+                <Button onClick={handlePrint} disabled={isExporting}>
                 {isExporting ? (
                     <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Exporting...</>
                 ) : (
