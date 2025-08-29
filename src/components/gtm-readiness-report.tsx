@@ -211,10 +211,10 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
       { id: 'executive-summary', icon: <BarChart className="h-8 w-8 text-primary" />, title: 'Executive Summary', content: (
           <>
               <div className="grid grid-cols-2 gap-4">
-                  <p><strong>Overall Readiness:</strong> <span className="font-bold text-lg text-primary">{result.executiveSummary.overallReadinessScore}%</span></p>
-                  <p><strong>Company Profile:</strong> {result.executiveSummary.companyStageAndFte}</p>
-                  <p><strong>Industry:</strong> {result.executiveSummary.industrySector}</p>
-                  <p><strong>GTM Strategy:</strong> {result.executiveSummary.primaryGtmStrategy}</p>
+                  <p><span className="font-semibold">Overall Readiness:</span> <span className="font-bold text-lg text-primary">{result.executiveSummary.overallReadinessScore}%</span></p>
+                  <p><span className="font-semibold">Company Profile:</span> {result.executiveSummary.companyStageAndFte}</p>
+                  <p><span className="font-semibold">Industry:</span> {result.executiveSummary.industrySector}</p>
+                  <p><span className="font-semibold">GTM Strategy:</span> {result.executiveSummary.primaryGtmStrategy}</p>
               </div>
               <Separator />
               <p className="text-muted-foreground">{result.executiveSummary.briefOverviewOfFindings}</p>
@@ -230,11 +230,11 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
                       </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-3 prose prose-sm max-w-none text-muted-foreground">
-                      <p><strong>Business Impact:</strong> {finding.businessImpact}</p>
-                      <p><strong>Current State:</strong> ${finding.currentState}</p>
-                      <p><strong>Root Cause:</strong> ${finding.rootCauseAnalysis}</p>
-                      <p><strong>Stakeholder Impact:</strong> ${finding.stakeholderImpact}</p>
-                      <p><strong>Urgency:</strong> ${finding.urgencyRating}</p>
+                      <p><span className="font-semibold">Business Impact:</span> {finding.businessImpact}</p>
+                      <p><span className="font-semibold">Current State:</span> ${finding.currentState}</p>
+                      <p><span className="font-semibold">Root Cause:</span> ${finding.rootCauseAnalysis}</p>
+                      <p><span className="font-semibold">Stakeholder Impact:</span> ${finding.stakeholderImpact}</p>
+                      <p><span className="font-semibold">Urgency:</span> ${finding.urgencyRating}</p>
                   </CardContent>
               </Card>
           ))
@@ -286,5 +286,3 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
   );
 });
 GtmReadinessReport.displayName = "GtmReadinessReport";
-
-    
