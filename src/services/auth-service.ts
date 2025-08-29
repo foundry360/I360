@@ -9,10 +9,9 @@ import {
   updateProfile,
   type User,
   GoogleAuthProvider,
-  signInWithPopup,
-  linkWithCredential,
   signInWithRedirect,
   getRedirectResult,
+  linkWithCredential,
 } from 'firebase/auth';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
@@ -20,14 +19,12 @@ export const signIn = async (email: string, password: string) => {
   try {
     return await signInWithEmailAndPassword(auth, email, password);
   } catch (error: any) {
-    // If user not found, create a new user.
     if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
       try {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        // Set a default display name if none is provided
         await updateProfile(userCredential.user, { displayName: email.split('@')[0] });
         return userCredential;
-      } catch (createError: any) {
+      } catch (createError) {
         console.error('Error creating user:', createError);
         throw createError;
       }
@@ -74,8 +71,6 @@ export const handleGoogleRedirectResult = async () => {
 
 async function storeTokens(credential: any) {
     const accessToken = credential.accessToken;
-    // Note: The refresh token is often null on re-authentication.
-    // It's most reliably retrieved the very first time the user grants offline access.
     const refreshToken = credential.refreshToken;
 
     if (accessToken) {
