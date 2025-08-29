@@ -147,7 +147,7 @@ export function GtmReadinessReport({ result, onComplete }: GtmReadinessReportPro
             <p className="text-xs text-muted-foreground">PROPRIETARY & CONFIDENTIAL</p>
             <div className="flex gap-4">
                 <Button variant="outline" onClick={onComplete}>Done</Button>
-                <div onClick={handlePrint} ref={triggerRef} className="inline-block">
+                <div onClick={handlePrint} ref={triggerRef} className="inline-block cursor-pointer">
                     <Button disabled={isExporting}>
                         {isExporting ? (
                             <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Exporting...</>
