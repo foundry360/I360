@@ -14,8 +14,8 @@ export async function GET(request: Request) {
     }
     
     const oauth2Client = new google.auth.OAuth2(
-        process.env.NEXT_PUBLIC_FIREBASE_API_KEY, // This should be your Google Client ID
-        process.env.GOOGLE_CLIENT_SECRET, // This should be your Google Client Secret
+        process.env.GOOGLE_CLIENT_ID, // Correctly use the Google Client ID
+        process.env.GOOGLE_CLIENT_SECRET,
         undefined // Redirect URI is not needed for server-side calls
     );
 
@@ -36,7 +36,7 @@ export async function GET(request: Request) {
               throw new Error("Failed to refresh access token.");
             }
 
-            oauth2Clien.setCredentials(tokens);
+            oauth2Client.setCredentials(tokens);
 
             // Update the cookie with the new access token
             cookieStore.set('google-access-token', accessToken, {
