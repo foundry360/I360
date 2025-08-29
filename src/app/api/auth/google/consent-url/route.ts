@@ -3,9 +3,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { google } from 'googleapis';
 
 export async function GET(request: NextRequest) {
-  const host = request.headers.get('host') || 'localhost:3000';
-  const protocol = host.startsWith('localhost') ? 'http' : 'https';
-  const redirectUri = `${protocol}://${host}/api/auth/google/callback`;
+  const redirectUri = process.env.GOOGLE_REDIRECT_URI;
+
+  if (!redirectUri) {
+    throw new Error('GOOGLE_REDIRECT_URI is not defined in .env file');
+  }
 
   const oauth2Client = new google.auth.OAuth2(
     process.env.GOOGLE_CLIENT_ID,
