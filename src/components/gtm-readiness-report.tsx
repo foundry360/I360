@@ -35,33 +35,34 @@ const renderFormattedString = (text: string) => {
     if (!text) return null;
     const cleanedText = text.replace(/\*/g, ''); 
     const parts = cleanedText.split(/(\r?\n### .*)/g);
-    return parts.map((part, index) => {
-        if (part.match(/(\r?\n### .*)/)) {
-            return <h4 key={index} className="font-semibold text-lg text-primary mt-4">{part.replace(/(\r?\n### )/, '')}</h4>;
-        }
-        
-        let lines = (part || "").split(/\r?\n/).filter(line => line.trim().length > 0 && !line.startsWith('### '));
-        let introParagraph = null;
 
-        if (lines.length > 0 && lines[0].startsWith("Implementation Timeline Overview")) {
-           const firstLineContent = lines[0].replace("Implementation Timeline Overview", "").trim();
-           if(firstLineContent) {
-               introParagraph = <p className="text-foreground">{firstLineContent}</p>;
-           }
-           lines = lines.slice(1);
-        }
+    let introParagraph = null;
+    const firstPartLines = (parts[0] || "").split(/\r?\n/).filter(line => line.trim().length > 0);
+    if (firstPartLines.length > 0 && !parts[0].match(/(\r?\n### .*)/)) {
+        introParagraph = <p className="text-foreground">{firstPartLines[0]}</p>;
+        parts[0] = firstPartLines.slice(1).join('\n');
+    }
 
-        return (
-             <React.Fragment key={index}>
-                {introParagraph}
-                <ul className="prose max-w-none text-foreground list-disc pl-5 space-y-1">
-                    {lines.map((line, i) => (
-                        <li key={i}>{line.replace(/^- /, '')}</li>
-                    ))}
-                </ul>
-            </React.Fragment>
-        )
-    });
+    return (
+        <>
+            {introParagraph}
+            {parts.map((part, index) => {
+                if (part.match(/(\r?\n### .*)/)) {
+                    return <h4 key={index} className="font-semibold text-lg text-primary mt-4">{part.replace(/(\r?\n### )/, '')}</h4>;
+                }
+                
+                const lines = (part || "").split(/\r?\n/).filter(line => line.trim().length > 0 && !line.startsWith('### '));
+
+                return (
+                    <ul key={index} className="prose max-w-none text-foreground list-disc pl-5 space-y-1">
+                        {lines.map((line, i) => (
+                            <li key={i}>{line.replace(/^- /, '')}</li>
+                        ))}
+                    </ul>
+                )
+            })}
+        </>
+    )
 };
 
 const renderParagraphString = (text: string) => {
@@ -126,7 +127,10 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
         if(!text) return;
         const cleanedText = text.replace(/###\s/g, '').replace(/\*/g, '');
         const lines = cleanedText.split(/\r?\n/).filter(line => line.trim().length > 0);
-        lines.forEach(line => {
+        
+        let firstLineRenderedAsParagraph = isParagraph;
+
+        lines.forEach((line, index) => {
              if (line.startsWith('### ')) {
                 addPageIfNeeded(20);
                 y += 10; // Extra space before subheading
@@ -136,7 +140,6 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
                 const splitTitle = doc.splitTextToSize(line.substring(4), pageWidth - margin * 2);
                 doc.text(splitTitle, margin, y);
                 y += (splitTitle.length * 12) + 5;
-
             } else {
                 addPageIfNeeded(15);
                 doc.setFont('helvetica', 'normal');
@@ -144,19 +147,31 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
                 doc.setTextColor(51, 65, 85); // foreground
                 
                 let content = line.replace(/^- /, '');
-                if (content.startsWith("Implementation Timeline Overview")) {
-                    content = content.replace("Implementation Timeline Overview", "").trim();
+                const isBulletedList = line.trim().startsWith('Focus:') || line.trim().startsWith('Key Deliverables:');
+
+                if (index === 0 && !isParagraph && !isBulletedList && !line.startsWith('###')) {
+                    const splitText = doc.splitTextToSize(content, pageWidth - margin * 2);
+                    doc.text(splitText, margin, y);
+                    y += splitText.length * 12 + 10; // add extra space after intro para
+                    firstLineRenderedAsParagraph = true;
+                    return;
                 }
 
-                if (!content) return;
-
-                const splitText = doc.splitTextToSize(content, pageWidth - margin * 2 - (isParagraph ? 0 : 20));
-                if (!isParagraph) {
+                if(isBulletedList) {
+                    const splitText = doc.splitTextToSize(content, pageWidth - margin * 2 - 20);
                     const bullet = '\u2022';
                     doc.text(`${bullet}`, margin, y, { baseline: 'top' });
+                    doc.text(splitText, margin + 20, y);
+                    y += splitText.length * 12;
+                } else {
+                     const splitText = doc.splitTextToSize(content, pageWidth - margin * 2 - (firstLineRenderedAsParagraph ? 20 : 0));
+                    if (!isParagraph) {
+                        const bullet = '\u2022';
+                        doc.text(`${bullet}`, margin, y, { baseline: 'top' });
+                    }
+                    doc.text(splitText, margin + (isParagraph ? 0 : 20), y);
+                    y += splitText.length * 12;
                 }
-                doc.text(splitText, margin + (isParagraph ? 0 : 20), y);
-                y += splitText.length * 12;
             }
         });
     };
@@ -318,6 +333,8 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
   );
 });
 GtmReadinessReport.displayName = "GtmReadinessReport";
+
+    
 
     
 
