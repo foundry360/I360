@@ -54,26 +54,41 @@ export function GtmReadinessReport({ result, onComplete }: GtmReadinessReportPro
 
     const pdf = new jsPDF('p', 'pt', 'a4');
     
-    // Convert the React components/data into a structured HTML string
+    const styles = `
+      <style>
+        body { font-family: 'Helvetica', 'sans-serif'; font-size: 10px; color: #333; }
+        h1 { font-size: 24px; color: #6f47fb; text-align: center; border-bottom: 1px solid #ddd; padding-bottom: 10px; margin-bottom: 20px; }
+        h2 { font-size: 16px; color: #6f47fb; border-bottom: 1px solid #eee; padding-bottom: 5px; margin-top: 20px; }
+        h3 { font-size: 14px; color: #333; font-weight: bold; margin-top: 15px; }
+        h4 { font-size: 12px; color: #6f47fb; font-weight: bold; margin-top: 10px; margin-bottom: 5px; }
+        p, li { margin-bottom: 8px; line-height: 1.4; color: #4a4a4a; }
+        ul { padding-left: 20px; list-style-position: outside; }
+        .section { margin-bottom: 20px; page-break-inside: avoid; }
+        .summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+        .finding-card { border: 1px solid #eee; border-radius: 5px; padding: 15px; margin-bottom: 15px; page-break-inside: avoid; }
+        .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; background-color: #eee; color: #333; font-size: 10px; font-weight: bold; }
+        .badge-destructive { background-color: #ffdddd; color: #b00020; }
+        .text-muted { color: #666; }
+      </style>
+    `;
+
+    const formatMarkdownStringForPdf = (text: string) => {
+        if (!text) return '';
+        return text
+            .split(/(### .*)/g)
+            .map(part => {
+                if (part.startsWith('### ')) {
+                    return `<h4>${part.substring(4)}</h4>`;
+                }
+                 const listItems = part.split(/\r?\n/).filter(line => line.trim().length > 0 && !line.startsWith('### '))
+                    .map(line => `<li>${line.replace(/^- /, '')}</li>`).join('');
+                return listItems ? `<ul>${listItems}</ul>` : '';
+            }).join('');
+    };
+    
     const reportHtml = `
       <html>
-        <head>
-          <style>
-            body { font-family: 'Helvetica', 'sans-serif'; font-size: 10px; color: #333; }
-            h1 { font-size: 24px; color: #7735e9; text-align: center; border-bottom: 1px solid #ddd; padding-bottom: 10px; margin-bottom: 20px; }
-            h2 { font-size: 16px; color: #7735e9; border-bottom: 1px solid #eee; padding-bottom: 5px; margin-top: 20px; }
-            h3 { font-size: 14px; color: #333; font-weight: bold; margin-top: 15px; }
-            h4 { font-size: 12px; color: #555; font-weight: bold; margin-top: 10px; }
-            p, li { margin-bottom: 8px; line-height: 1.4; }
-            ul { padding-left: 20px; }
-            .section { margin-bottom: 20px; page-break-inside: avoid; }
-            .summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
-            .finding-card { border: 1px solid #eee; border-radius: 5px; padding: 15px; margin-bottom: 15px; }
-            .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; background-color: #eee; color: #333; font-size: 10px; }
-            .badge-destructive { background-color: #ffdddd; color: #b00020; }
-            .text-muted { color: #666; }
-          </style>
-        </head>
+        <head>${styles}</head>
         <body>
           <h1>GTM Readiness Assessment Report</h1>
           <p style="text-align: center; color: #888;">Generated on ${new Date().toLocaleDateString()}</p>
@@ -104,12 +119,42 @@ export function GtmReadinessReport({ result, onComplete }: GtmReadinessReportPro
             `).join('')}
           </div>
 
-          ${reportSectionsForHtml.map(sec => `
-             <div class="section">
-                <h2>${sec.title}</h2>
-                ${(result[sec.key as keyof GtmReadinessOutput] as string || '').replace(/### (.*)/g, '<h4>$1</h4>').replace(/\r?\n- /g, '<li>').replace(/\r?\n/g, '<br/>').replace(/<li>/g, '<ul><li>').replace(/<br\/><\/ul>/g, '</ul>')}
-             </div>
-          `).join('')}
+          <div class="section">
+            <h2>Strategic Recommendation Summary</h2>
+            ${formatMarkdownStringForPdf(result.strategicRecommendationSummary)}
+          </div>
+          <div class="section">
+            <h2>Implementation Timeline Overview</h2>
+            ${formatMarkdownStringForPdf(result.implementationTimelineOverview)}
+          </div>
+          <div class="section">
+            <h2>Current State Assessment</h2>
+            ${formatMarkdownStringForPdf(result.currentStateAssessment)}
+          </div>
+          <div class="section">
+            <h2>Performance Benchmarking</h2>
+            ${formatMarkdownStringForPdf(result.performanceBenchmarking)}
+          </div>
+          <div class="section">
+            <h2>Key Findings & Opportunities</h2>
+            ${formatMarkdownStringForPdf(result.keyFindingsAndOpportunities)}
+          </div>
+          <div class="section">
+            <h2>Prioritized Recommendations</h2>
+            ${formatMarkdownStringForPdf(result.prioritizedRecommendations)}
+          </div>
+          <div class="section">
+            <h2>Implementation Roadmap</h2>
+            ${formatMarkdownStringForPdf(result.implementationRoadmap)}
+          </div>
+           <div class="section">
+            <h2>Investment & ROI Analysis</h2>
+            ${formatMarkdownStringForPdf(result.investmentAndRoiAnalysis)}
+          </div>
+           <div class="section">
+            <h2>Next Steps & Decision Framework</h2>
+            ${formatMarkdownStringForPdf(result.nextStepsAndDecisionFramework)}
+          </div>
         </body>
       </html>
     `;
@@ -181,19 +226,6 @@ export function GtmReadinessReport({ result, onComplete }: GtmReadinessReportPro
       { id: 'investment-roi', icon: <Banknote className="h-8 w-8 text-primary" />, title: 'Investment & ROI Analysis', content: renderFormattedString(result.investmentAndRoiAnalysis) },
       { id: 'next-steps', icon: <ArrowRight className="h-8 w-8 text-primary" />, title: 'Next Steps & Decision Framework', content: renderFormattedString(result.nextStepsAndDecisionFramework) },
     ];
-    
-    const reportSectionsForHtml = [
-      { key: 'strategicRecommendationSummary', title: 'Strategic Recommendation Summary' },
-      { key: 'implementationTimelineOverview', title: 'Implementation Timeline Overview' },
-      { key: 'currentStateAssessment', title: 'Current State Assessment' },
-      { key: 'performanceBenchmarking', title: 'Performance Benchmarking' },
-      { key: 'keyFindingsAndOpportunities', title: 'Key Findings & Opportunities' },
-      { key: 'prioritizedRecommendations', title: 'Prioritized Recommendations' },
-      { key: 'implementationRoadmap', title: 'Implementation Roadmap' },
-      { key: 'investmentAndRoiAnalysis', title: 'Investment & ROI Analysis' },
-      { key: 'nextStepsAndDecisionFramework', title: 'Next Steps & Decision Framework' },
-    ];
-
 
   return (
     <div className="bg-muted">
