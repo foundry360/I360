@@ -1,13 +1,14 @@
 
 'use client';
 import * as React from 'react';
-import { useReactToPrint } from 'react-to-print';
 import type { GtmReadinessOutput } from '@/ai/flows/gtm-readiness-flow';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Loader2, Download, BarChart, Clock, Target, Lightbulb, TrendingUp, Cpu, ListChecks, PieChart, Users, GanttChartSquare, ClipboardList, Milestone, LineChart, Banknote, ShieldQuestion, ArrowRight, Flag } from 'lucide-react';
 import { Badge } from './ui/badge';
 import { Separator } from './ui/separator';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 
 type GtmReadinessReportProps = {
   result: GtmReadinessOutput;
@@ -50,19 +51,40 @@ export function GtmReadinessReport({ result, onComplete }: GtmReadinessReportPro
   const reportRef = React.useRef<HTMLDivElement>(null);
   const [isExporting, setIsExporting] = React.useState(false);
 
-  const handlePrint = useReactToPrint({
-    content: () => reportRef.current,
-    onBeforeGetContent: () => {
-      return new Promise<void>((resolve) => {
-        setIsExporting(true);
-        resolve();
-      });
-    },
-    onAfterPrint: () => {
-      setIsExporting(false);
-    },
-    documentTitle: 'GTM-Readiness-Report',
-  });
+  const handlePrint = async () => {
+    if (!reportRef.current) return;
+    setIsExporting(true);
+
+    const canvas = await html2canvas(reportRef.current, { scale: 2 });
+    const imgData = canvas.toDataURL('image/png');
+    
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const pdfHeight = pdf.internal.pageSize.getHeight();
+    
+    const imgWidth = canvas.width;
+    const imgHeight = canvas.height;
+    
+    const ratio = imgWidth / imgHeight;
+    const heightInPdf = pdfWidth / ratio;
+    
+    let heightLeft = imgHeight * (pdfWidth / imgWidth);
+    let position = 0;
+    
+    pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, heightLeft);
+    heightLeft -= pdfHeight;
+
+    while (heightLeft > 0) {
+        position = heightLeft - (imgHeight * (pdfWidth / imgWidth));
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, imgHeight * (pdfWidth / imgWidth));
+        heightLeft -= pdfHeight;
+    }
+    
+    pdf.save('GTM-Readiness-Report.pdf');
+    setIsExporting(false);
+  };
+
 
   if (!result || !result.executiveSummary) {
     return (
