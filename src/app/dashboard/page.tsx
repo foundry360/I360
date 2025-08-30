@@ -2,5 +2,6 @@
 import { redirect } from 'next/navigation';
 
 export default function DashboardPage() {
-  redirect('/dashboard/workspaces');
+  // Redirect to the default company dashboard
+  redirect('/acme-inc/dashboard');
 }

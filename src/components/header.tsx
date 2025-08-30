@@ -78,6 +78,7 @@ export function Header() {
   };
 
   const getInitials = (email: string) => {
+    if (!email) return 'U';
     return email[0].toUpperCase();
   }
 
@@ -158,10 +159,6 @@ export function Header() {
               <Link href={`/${companyId}/profile`}>Profile</Link>
             </DropdownMenuItem>
             <DropdownMenuItem>Settings</DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem asChild>
-                <Link href="/dashboard/workspaces">Switch Workspace</Link>
-            </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleSignOut}>
                 <LogOut className="mr-2 h-4 w-4" />
