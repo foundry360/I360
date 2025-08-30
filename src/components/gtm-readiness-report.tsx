@@ -140,11 +140,11 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
                       </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-3 prose max-w-none text-foreground">
-                      <p className="whitespace-pre-wrap text-sm"><strong>Business Impact:</strong> {finding.businessImpact}</p>
-                      <p className="whitespace-pre-wrap text-sm"><strong>Current State:</strong> {finding.currentState}</p>
-                      <p className="whitespace-pre-wrap text-sm"><strong>Root Cause:</strong> {finding.rootCauseAnalysis}</p>
-                      <p className="whitespace-pre-wrap text-sm"><strong>Stakeholder Impact:</strong> {finding.stakeholderImpact}</p>
-                      <p className="whitespace-pre-wrap text-sm"><strong>Urgency:</strong> {finding.urgencyRating}</p>
+                      <p><strong>Business Impact:</strong> {finding.businessImpact}</p>
+                      <p><strong>Current State:</strong> {finding.currentState}</p>
+                      <p><strong>Root Cause:</strong> {finding.rootCauseAnalysis}</p>
+                      <p><strong>Stakeholder Impact:</strong> {finding.stakeholderImpact}</p>
+                      <p><strong>Urgency:</strong> {finding.urgencyRating}</p>
                   </CardContent>
               </Card>
           ))
