@@ -120,6 +120,8 @@ const GtmReadinessInputSchema = z.object({
 
 export type GtmReadinessInput = z.infer<typeof GtmReadinessInputSchema>;
 
+const markdownFormattingInstructions = "Format the content using markdown. Use '### ' for section titles and '- ' for bullet points. Start with a summary paragraph.";
+
 const GtmReadinessOutputSchema = z.object({
     executiveSummary: z.object({
         overallReadinessScore: z.number().describe('A score from 0-100 representing the overall GTM readiness.'),
@@ -137,15 +139,15 @@ const GtmReadinessOutputSchema = z.object({
         stakeholderImpact: z.string().describe('Which departments or roles are most affected by this issue.'),
         urgencyRating: z.string().describe('A rating of how urgently this finding needs to be addressed (e.g., Critical, High, Medium).'),
     })).length(3),
-    strategicRecommendationSummary: z.string().describe("A summary of the strategic recommendations. Use markdown '### ' for section titles and '- ' for bullet points."),
+    strategicRecommendationSummary: z.string().describe(markdownFormattingInstructions),
     implementationTimelineOverview: z.string().describe("Start with a summary paragraph providing an overview of the implementation approach. Then, detail the timeline using markdown '### ' for each phase title (e.g., ### Phase 1: Foundation & Alignment (0-30 Days)). For each phase, provide a 'Focus:' and 'Key Deliverables:' on separate lines, using '- ' for bullet points under deliverables."),
-    currentStateAssessment: z.string().describe("A detailed assessment of the current state, starting with a summary paragraph. Use markdown '### ' for section titles and '- ' for bullet points."),
-    performanceBenchmarking: z.string().describe("A benchmarking of performance against industry standards, starting with a summary paragraph. Use markdown '### ' for section titles and '- ' for bullet points."),
-    keyFindingsAndOpportunities: z.string().describe("Key findings and opportunities identified, starting with a summary paragraph. Use markdown '### ' for section titles and '- ' for bullet points."),
-    prioritizedRecommendations: z.string().describe("A list of prioritized recommendations, starting with a summary paragraph. Use markdown '### ' for section titles and '- ' for bullet points."),
-    implementationRoadmap: z.string().describe("A detailed implementation roadmap, starting with a summary paragraph. Use markdown '### ' for section titles and '- ' for bullet points."),
-    investmentAndRoiAnalysis: z.string().describe("An analysis of required investment and expected ROI, starting with a summary paragraph. Use markdown '### ' for section titles and '- ' for bullet points."),
-    nextStepsAndDecisionFramework: z.string().describe("Next steps and a framework for decision-making, starting with a summary paragraph. Use markdown '### ' for section titles and '- ' for bullet points."),
+    currentStateAssessment: z.string().describe(markdownFormattingInstructions),
+    performanceBenchmarking: z.string().describe(markdownFormattingInstructions),
+    keyFindingsAndOpportunities: z.string().describe(markdownFormattingInstructions),
+    prioritizedRecommendations: z.string().describe(markdownFormattingInstructions),
+    implementationRoadmap: z.string().describe(markdownFormattingInstructions),
+    investmentAndRoiAnalysis: z.string().describe(markdownFormattingInstructions),
+    nextStepsAndDecisionFramework: z.string().describe(markdownFormattingInstructions),
 });
 
 export type GtmReadinessOutput = z.infer<typeof GtmReadinessOutputSchema>;
@@ -224,9 +226,9 @@ const prompt = ai.definePrompt({
           ## Formatting Guidelines:
 
           ### 1. Use Clear Headers
-          - Main sections: \`## Section Name\`
-          - Subsections: \`### Subsection Name\`
-          - Key topics: \`#### Topic Name\`
+          - Main sections: \`## Section Name\` (Not applicable for these fields, use ###)
+          - Subsections: \`### Subsection Name\` (Make these bold)
+          - Key topics: \`#### Topic Name\` (Make these bold)
 
           ### 2. Structure Information Hierarchically
           - Start with an overview/summary paragraph.
@@ -255,7 +257,7 @@ const prompt = ai.definePrompt({
           - **Recommended focus areas:** Data hygiene.
           \`\`\`
           
-          **IMPORTANT**: Apply these formatting instructions ONLY to the string content of the fields in the GtmReadinessOutputSchema. Do not alter the JSON structure itself. Calculate an overall readiness score based on a holistic analysis of all inputs. Be direct, professional, and use the language of a seasoned RevOps consultant.
+          **IMPORTANT**: Apply these formatting instructions ONLY to the string content of the fields in the GtmReadinessOutputSchema that have formatting instructions in their description. Do not alter the JSON structure itself. Calculate an overall readiness score based on a holistic analysis of all inputs. Be direct, professional, and use the language of a seasoned RevOps consultant.
   `,
 });
 
@@ -270,3 +272,5 @@ const generateGtmReadinessFlow = ai.defineFlow(
     return output!;
   }
 );
+
+    
