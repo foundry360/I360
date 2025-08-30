@@ -4,7 +4,7 @@ import * as React from 'react';
 import type { GtmReadinessOutput } from '@/ai/flows/gtm-readiness-flow';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Loader2, ArrowRight, BarChart, Clock, Target, Lightbulb, TrendingUp, PieChart, ListChecks, GanttChartSquare, Banknote, Flag } from 'lucide-react';
+import { ArrowRight, BarChart, Clock, Target, Lightbulb, TrendingUp, PieChart, ListChecks, GanttChartSquare, Banknote, Flag } from 'lucide-react';
 import { Badge } from './ui/badge';
 import { Separator } from './ui/separator';
 import jsPDF from 'jspdf';
@@ -43,9 +43,18 @@ const renderContent = (text: string | undefined) => {
         if (listItems.length > 0) {
             elements.push(
                 <ul key={`ul-${elements.length}`} className="list-disc pl-5 space-y-2">
-                    {listItems.map((item, index) => (
-                         <li key={`li-${index}`} className="text-foreground" dangerouslySetInnerHTML={{ __html: item }}></li>
-                    ))}
+                    {listItems.map((item, index) => {
+                        const parts = item.split(/:(.*)/s);
+                        if (parts.length > 1) {
+                            return (
+                                <li key={`li-${index}`} className="text-foreground">
+                                    <strong>{parts[0]}:</strong>
+                                    {parts[1]}
+                                </li>
+                            );
+                        }
+                        return <li key={`li-${index}`} className="text-foreground">{item}</li>;
+                    })}
                 </ul>
             );
             listItems = [];
@@ -57,13 +66,13 @@ const renderContent = (text: string | undefined) => {
 
         if (cleanedLine.startsWith('## ')) {
             flushList();
-            elements.push(<h3 key={`h3-${i}`} className="text-foreground text-base mt-6 mb-3">{cleanedLine.replace(/##\s?/, '')}</h3>);
+            elements.push(<h3 key={`h3-${i}`} className="text-foreground text-lg font-semibold mt-6 mb-3">{cleanedLine.replace(/##\s?/, '')}</h3>);
         } else if (cleanedLine.startsWith('### ')) {
             flushList();
-            elements.push(<h4 key={`h4-${i}`} className="text-foreground text-base mt-4 mb-2">{cleanedLine.replace(/###\s?/, '')}</h4>);
+            elements.push(<h4 key={`h4-${i}`} className="text-foreground text-base font-semibold mt-4 mb-2">{cleanedLine.replace(/###\s?/, '')}</h4>);
         } else if (cleanedLine.startsWith('#### ')) {
             flushList();
-            elements.push(<h5 key={`h5-${i}`} className="text-foreground text-base mt-3 mb-1">{cleanedLine.replace(/####\s?/, '')}</h5>);
+            elements.push(<h5 key={`h5-${i}`} className="text-foreground text-sm font-semibold mt-3 mb-1">{cleanedLine.replace(/####\s?/, '')}</h5>);
         } else if (cleanedLine.trim().startsWith('- ')) {
             const itemText = cleanedLine.trim().substring(2);
             listItems.push(itemText);
@@ -82,11 +91,8 @@ const renderContent = (text: string | undefined) => {
 };
 
 export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessReportProps>(({ title, result, onComplete }, ref) => {
-  const [isExporting, setIsExporting] = React.useState(false);
 
   const handlePrint = () => {
-    setIsExporting(true);
-
     const doc = new jsPDF('p', 'pt', 'a4');
     const pageHeight = doc.internal.pageSize.height;
     const pageWidth = doc.internal.pageSize.width;
@@ -100,43 +106,30 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
         }
     };
     
+    // Main Title
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(24);
     doc.setTextColor(111, 71, 251); 
     doc.text(title, pageWidth / 2, y, { align: 'center' });
     y += 20;
 
+    // Subtitle
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(10);
     doc.setTextColor(100, 116, 139); 
     doc.text(`Generated on ${new Date().toLocaleDateString()}`, pageWidth / 2, y, { align: 'center' });
-    y += 30;
+    y += 40;
 
-    const renderSection = (title: string, content: () => void) => {
-        addPageIfNeeded(40);
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(16);
-        doc.setTextColor(111, 71, 251);
-        doc.text(title, margin, y);
-        y += 20;
-        doc.setDrawColor(226, 232, 240); 
-        doc.line(margin, y - 10, pageWidth - margin, y - 10);
-        y += 10;
-        content();
-        y += 20; 
-    };
-    
-    const renderMarkdown = (text: string | undefined) => {
-        if(!text) return;
-        const processedText = text.replace(/`([^`]+)`/g, '$1').replace(/\*\*/g, '').replace(/(\S)(##|###)/g, '$1\n$2');
-        const lines = processedText.split(/\r?\n/);
+    const renderMarkdownToPdf = (text: string) => {
+        if (!text) return;
+        const lines = text.replace(/`([^`]+)`/g, '$1').replace(/\*\*/g, '').replace(/(\S)(##|###)/g, '$1\n$2').split(/\r?\n/);
         
-        lines.forEach((line) => {
-             const trimmedLine = line.trim();
-             addPageIfNeeded(15); 
-            
-             if (trimmedLine.startsWith('## ')) {
+        lines.forEach(line => {
+            const trimmedLine = line.trim();
+            if (trimmedLine.startsWith('## ')) {
+                flushList();
                 y += 10;
+                addPageIfNeeded(20);
                 doc.setFont('helvetica', 'bold');
                 doc.setFontSize(14);
                 doc.setTextColor(15, 23, 42); 
@@ -144,7 +137,9 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
                 doc.text(splitTitle, margin, y);
                 y += (splitTitle.length * 14) + 6;
             } else if (trimmedLine.startsWith('### ')) {
+                flushList();
                 y += 8;
+                addPageIfNeeded(18);
                 doc.setFont('helvetica', 'bold');
                 doc.setFontSize(12);
                 doc.setTextColor(15, 23, 42);
@@ -152,83 +147,149 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
                 doc.text(splitTitle, margin, y);
                 y += (splitTitle.length * 12) + 5;
             } else if (trimmedLine.startsWith('- ')) {
-                doc.setFont('helvetica', 'normal');
-                doc.setFontSize(10);
-                doc.setTextColor(51, 65, 85);
-                
-                const bullet = '\u2022';
-                const content = trimmedLine.substring(2);
-                const indent = margin + 15;
-                const textWidth = pageWidth - indent - margin;
-
-                const splitContent = doc.splitTextToSize(content, textWidth);
-
-                addPageIfNeeded(splitContent.length * 12 + 5);
-                doc.text(bullet, margin + 5, y);
-                doc.text(splitContent, indent, y);
-                y += (splitContent.length * 12) + 5;
-
+                listBuffer.push(trimmedLine.substring(2));
             } else if (trimmedLine.length > 0) {
+                flushList();
+                addPageIfNeeded(15);
                 doc.setFont('helvetica', 'normal');
                 doc.setFontSize(10);
                 doc.setTextColor(51, 65, 85);
-                const textWidth = pageWidth - margin * 2;
-                
-                const splitText = doc.splitTextToSize(trimmedLine, textWidth);
-                addPageIfNeeded(splitText.length * 12 + 5);
+                const splitText = doc.splitTextToSize(trimmedLine, pageWidth - margin * 2);
                 doc.text(splitText, margin, y);
-                y += (splitText.length * 12) + 5;
+                y += (splitText.length * 10) + 5;
             } else {
+                flushList();
                 y += 6; 
             }
         });
+        flushList(); // Make sure any remaining list items are printed
     };
+    
+    let listBuffer: string[] = [];
+
+    const flushList = () => {
+        if (listBuffer.length === 0) return;
+
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(10);
+        doc.setTextColor(51, 65, 85);
+
+        listBuffer.forEach(item => {
+            const bullet = '\u2022';
+            const itemParts = item.split(/:(.*)/s);
+            const indent = margin + 15;
+            const textWidth = pageWidth - indent - margin;
+
+            addPageIfNeeded(15);
+            doc.text(bullet, margin + 5, y);
+
+            if (itemParts.length > 1) {
+                const label = itemParts[0] + ':';
+                const value = itemParts[1].trim();
+
+                doc.setFont('helvetica', 'bold');
+                doc.text(label, indent, y, { maxWidth: textWidth });
+                
+                const labelWidth = doc.getTextWidth(label);
+                const remainingWidth = textWidth - labelWidth - 5; // 5 for spacing
+
+                doc.setFont('helvetica', 'normal');
+                if (remainingWidth > 10) { // Check if there's enough space on the same line
+                    const splitValue = doc.splitTextToSize(value, remainingWidth);
+                    doc.text(splitValue, indent + labelWidth + 5, y);
+                    y += (splitValue.length * 10) + 5;
+                } else { // If not enough space, move value to next line
+                    y += 12; 
+                    addPageIfNeeded(15);
+                    const splitValue = doc.splitTextToSize(value, textWidth);
+                    doc.text(splitValue, indent, y);
+                    y += (splitValue.length * 10) + 5;
+                }
+            } else {
+                 doc.setFont('helvetica', 'normal');
+                 const splitItem = doc.splitTextToSize(item, textWidth);
+                 doc.text(splitItem, indent, y);
+                 y += (splitItem.length * 10) + 5;
+            }
+        });
+        listBuffer = [];
+        y += 5;
+    };
+
+
+    const renderSection = (title: string, content: () => void) => {
+        flushList();
+        y += 10;
+        addPageIfNeeded(40);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(16);
+        doc.setTextColor(111, 71, 251);
+        doc.text(title, margin, y);
+        y += 15;
+        doc.setDrawColor(226, 232, 240); 
+        doc.line(margin, y, pageWidth - margin, y);
+        y += 20;
+        content();
+        y += 20; 
+    };
+    
+    // --- RENDER SECTIONS ---
 
     renderSection('Executive Summary', () => {
         autoTable(doc, {
             startY: y,
             theme: 'plain',
             body: [
-                [{content: `Overall Readiness: ${result.executiveSummary.overallReadinessScore}%`, styles: {fontStyle: 'bold', fontSize: 12}}],
+                [{content: `Overall Readiness: ${result.executiveSummary.overallReadinessScore}%`, styles: {fontStyle: 'bold', fontSize: 12, textColor: [111,71,251]}}],
                 [`Company Profile: ${result.executiveSummary.companyStageAndFte}`],
                 [`Industry: ${result.executiveSummary.industrySector}`],
                 [`GTM Strategy: ${result.executiveSummary.primaryGtmStrategy}`],
             ],
+            styles: {
+                font: 'helvetica',
+                fontSize: 10,
+                textColor: [51, 65, 85]
+            },
             didDrawPage: (data) => { y = data.cursor?.y || y; }
         });
-         y = (doc as any).lastAutoTable.finalY + 10;
-
+        y = (doc as any).lastAutoTable.finalY + 10;
+        
         addPageIfNeeded(20);
-        doc.setFont('helvetica', 'normal');
-        doc.setFontSize(10);
-        const splitText = doc.splitTextToSize(result.executiveSummary.briefOverviewOfFindings, pageWidth - margin * 2);
-        doc.text(splitText, margin, y);
-        y += splitText.length * 12;
+        renderMarkdownToPdf(result.executiveSummary.briefOverviewOfFindings);
     });
 
     renderSection('Top 3 Critical Findings', () => {
         result.top3CriticalFindings.forEach(finding => {
             const tableBody = [
-                [{ content: `Business Impact`, styles: { fontStyle: 'bold' } }, finding.businessImpact],
-                [{ content: `Current State`, styles: { fontStyle: 'bold' } }, finding.currentState],
-                [{ content: `Root Cause`, styles: { fontStyle: 'bold' } }, finding.rootCauseAnalysis],
-                [{ content: `Stakeholder Impact`, styles: { fontStyle: 'bold' } }, finding.stakeholderImpact],
-                [{ content: `Urgency`, styles: { fontStyle: 'bold' } }, finding.urgencyRating],
+                [{ content: `Business Impact`, styles: { fontStyle: 'bold' } }, { content: finding.businessImpact }],
+                [{ content: `Current State`, styles: { fontStyle: 'bold' } }, { content: finding.currentState }],
+                [{ content: `Root Cause`, styles: { fontStyle: 'bold' } }, { content: finding.rootCauseAnalysis }],
+                [{ content: `Stakeholder Impact`, styles: { fontStyle: 'bold' } }, { content: finding.stakeholderImpact }],
+                [{ content: `Urgency`, styles: { fontStyle: 'bold' } }, { content: finding.urgencyRating }],
             ];
-            addPageIfNeeded(100);
+            
+            y += 10;
+            addPageIfNeeded(120);
+
             doc.setFont('helvetica', 'bold');
             doc.setFontSize(12);
             doc.setTextColor(15, 23, 42); 
-            doc.text(finding.findingTitle, margin, y);
-            y += 20;
+            const splitTitle = doc.splitTextToSize(finding.findingTitle, pageWidth - margin * 2);
+            doc.text(splitTitle, margin, y);
+            y += (splitTitle.length * 12) + 10;
+
             autoTable(doc, {
                 startY: y,
                 head: [[`Impact: ${finding.impactLevel}`]],
                 body: tableBody,
                 theme: 'grid',
                 headStyles: {
-                    fillColor: finding.impactLevel === 'High' ? [239, 68, 68] : [241, 245, 249],
-                    textColor: finding.impactLevel === 'High' ? [255,255,255] : [15, 23, 42],
+                    fillColor: finding.impactLevel === 'High' ? [220, 38, 38] : finding.impactLevel === 'Medium' ? [245, 158, 11] : [241, 245, 249],
+                    textColor: finding.impactLevel === 'High' || finding.impactLevel === 'Medium' ? [255,255,255] : [15, 23, 42],
+                    fontStyle: 'bold'
+                },
+                 columnStyles: {
+                    0: { cellWidth: 120, fontStyle: 'bold' },
                 },
                 didDrawPage: (data) => { y = data.cursor?.y || y; }
             });
@@ -236,18 +297,17 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
         });
     });
 
-    renderSection('Strategic Recommendation Summary', () => renderMarkdown(result.strategicRecommendationSummary));
-    renderSection('Implementation Timeline Overview', () => renderMarkdown(result.implementationTimelineOverview));
-    renderSection('Current State Assessment', () => renderMarkdown(result.currentStateAssessment));
-    renderSection('Performance Benchmarking', () => renderMarkdown(result.performanceBenchmarking));
-    renderSection('Key Findings & Opportunities', () => renderMarkdown(result.keyFindingsAndOpportunities));
-    renderSection('Prioritized Recommendations', () => renderMarkdown(result.prioritizedRecommendations));
-    renderSection('Implementation Roadmap', () => renderMarkdown(result.implementationRoadmap));
-    renderSection('Investment & ROI Analysis', () => renderMarkdown(result.investmentAndRoiAnalysis));
-    renderSection('Next Steps & Decision Framework', () => renderMarkdown(result.nextStepsAndDecisionFramework));
+    renderSection('Strategic Recommendation Summary', () => renderMarkdownToPdf(result.strategicRecommendationSummary));
+    renderSection('Implementation Timeline Overview', () => renderMarkdownToPdf(result.implementationTimelineOverview));
+    renderSection('Current State Assessment', () => renderMarkdownToPdf(result.currentStateAssessment));
+    renderSection('Performance Benchmarking', () => renderMarkdownToPdf(result.performanceBenchmarking));
+    renderSection('Key Findings & Opportunities', () => renderMarkdownToPdf(result.keyFindingsAndOpportunities));
+    renderSection('Prioritized Recommendations', () => renderMarkdownToPdf(result.prioritizedRecommendations));
+    renderSection('Implementation Roadmap', () => renderMarkdownToPdf(result.implementationRoadmap));
+    renderSection('Investment & ROI Analysis', () => renderMarkdownToPdf(result.investmentAndRoiAnalysis));
+    renderSection('Next Steps & Decision Framework', () => renderMarkdownToPdf(result.nextStepsAndDecisionFramework));
 
     doc.save('GTM-Readiness-Report.pdf');
-    setIsExporting(false);
   };
 
 
@@ -290,11 +350,11 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
                       </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-3 prose max-w-none text-foreground">
-                      <p><strong className="text-primary">Business Impact:</strong> {finding.businessImpact}</p>
-                      <p><strong className="text-primary">Current State:</strong> {finding.currentState}</p>
-                      <p><strong className="text-primary">Root Cause:</strong> {finding.rootCauseAnalysis}</p>
-                      <p><strong className="text-primary">Stakeholder Impact:</strong> {finding.stakeholderImpact}</p>
-                      <p><strong className="text-primary">Urgency:</strong> {finding.urgencyRating}</p>
+                      <p><strong>Business Impact:</strong> {finding.businessImpact}</p>
+                      <p><strong>Current State:</strong> {finding.currentState}</p>
+                      <p><strong>Root Cause:</strong> {finding.rootCauseAnalysis}</p>
+                      <p><strong>Stakeholder Impact:</strong> {finding.stakeholderImpact}</p>
+                      <p><strong>Urgency:</strong> {finding.urgencyRating}</p>
                   </CardContent>
               </Card>
           ))
