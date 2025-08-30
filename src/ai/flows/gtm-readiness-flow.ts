@@ -215,12 +215,47 @@ const prompt = ai.definePrompt({
           - AI Adoption Barriers: {{{aiAdoptionBarriers}}}
           - Business Model Testing Frequency: {{{businessModelTesting}}}
           
-          **Your Task:**
-          Based on the data above, generate a detailed GTM Readiness Assessment report. The report should be structured according to the GtmReadinessOutputSchema. Provide deep, actionable insights. Be direct, professional, and use the language of a seasoned RevOps consultant. 
-          
-          For all long-form text fields, start with a summary paragraph. Then, use markdown for '###' for sub-headers and '- ' for bullet points to structure the detailed analysis.
+          **Your Task & Formatting Instructions:**
 
-          Calculate an overall readiness score based on a holistic analysis of all inputs.
+          Based on the data above, generate a detailed GTM Readiness Assessment report. The report must be structured according to the GtmReadinessOutputSchema.
+          
+          For all long-form text fields in the output schema (like 'strategicRecommendationSummary', 'currentStateAssessment', etc.), you MUST format the content using the following markdown structure to enhance readability for an executive audience.
+
+          ## Formatting Guidelines:
+
+          ### 1. Use Clear Headers
+          - Main sections: \`## Section Name\`
+          - Subsections: \`### Subsection Name\`
+          - Key topics: \`#### Topic Name\`
+
+          ### 2. Structure Information Hierarchically
+          - Start with an overview/summary paragraph.
+          - Group related topics under logical headers.
+
+          ### 3. Use Lists
+          - Use bullet points (\`- \`) for lists of findings or recommendations.
+
+          ### 4. Highlight Critical Information
+          - Use bold formatting for key terms or findings, especially words preceding a colon (e.g., **Key Finding 1:** Description...).
+          - Use \`code formatting\` for specific tools or systems mentioned.
+
+          ## Example Structure for a Field's Content:
+          \`\`\`
+          This is a brief overview paragraph summarizing this category's findings.
+
+          ### Specific Area
+          - **Key Finding 1:** Description and rating.
+          - **Key Finding 2:** Specific details and implications.
+          - **Key Finding 3:** Quantified results where available, mentioning \`Salesforce\`.
+
+          ### Another Area
+          Detailed explanation of findings, including:
+          - **Specific metrics:** Rating 2/5
+          - **Impact assessment:** High
+          - **Recommended focus areas:** Data hygiene.
+          \`\`\`
+          
+          **IMPORTANT**: Apply these formatting instructions ONLY to the string content of the fields in the GtmReadinessOutputSchema. Do not alter the JSON structure itself. Calculate an overall readiness score based on a holistic analysis of all inputs. Be direct, professional, and use the language of a seasoned RevOps consultant.
   `,
 });
 
