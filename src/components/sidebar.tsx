@@ -12,7 +12,6 @@ import {
   Briefcase,
   Users,
   ClipboardList,
-  Folder,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -72,12 +71,6 @@ export function Sidebar() {
       links: [
         { href: `/dashboard/assessments`, label: 'Assessments', icon: ClipboardList },
       ],
-    },
-    {
-      group: 'INTEGRATIONS',
-      links: [
-        { href: `/${companyId}/dashboard/drive`, label: 'Google Drive', icon: Folder },
-      ]
     },
     {
       group: 'SETTINGS',
