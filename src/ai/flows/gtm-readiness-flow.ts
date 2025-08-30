@@ -227,8 +227,8 @@ const prompt = ai.definePrompt({
 
           ### 1. Use Clear Headers
           - Main sections: \`## Section Name\` (Not applicable for these fields, use ###)
-          - Subsections: \`### Subsection Name\` (Make these bold)
-          - Key topics: \`#### Topic Name\` (Make these bold)
+          - Subsections: \`### Subsection Name\`
+          - Key topics: \`#### Topic Name\`
 
           ### 2. Structure Information Hierarchically
           - Start with an overview/summary paragraph.
@@ -272,5 +272,3 @@ const generateGtmReadinessFlow = ai.defineFlow(
     return output!;
   }
 );
-
-    
