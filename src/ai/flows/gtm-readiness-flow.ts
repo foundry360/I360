@@ -137,15 +137,15 @@ const GtmReadinessOutputSchema = z.object({
         stakeholderImpact: z.string().describe('Which departments or roles are most affected by this issue.'),
         urgencyRating: z.string().describe('A rating of how urgently this finding needs to be addressed (e.g., Critical, High, Medium).'),
     })).length(3),
-    strategicRecommendationSummary: z.string().describe("Content formatted with markdown."),
-    implementationTimelineOverview: z.string().describe("Content formatted with markdown."),
-    currentStateAssessment: z.string().describe("Content formatted with markdown."),
-    performanceBenchmarking: z.string().describe("Content formatted with markdown."),
-    keyFindingsAndOpportunities: z.string().describe("Content formatted with markdown."),
-    prioritizedRecommendations: z.string().describe("Content formatted with markdown."),
-    implementationRoadmap: z.string().describe("Content formatted with markdown."),
-    investmentAndRoiAnalysis: z.string().describe("Content formatted with markdown."),
-    nextStepsAndDecisionFramework: z.string().describe("Content formatted with markdown."),
+    strategicRecommendationSummary: z.string().describe("A summary of strategic recommendations."),
+    implementationTimelineOverview: z.string().describe("An overview of the implementation timeline."),
+    currentStateAssessment: z.string().describe("An assessment of the company's current state."),
+    performanceBenchmarking: z.string().describe("Benchmarking of performance against industry standards."),
+    keyFindingsAndOpportunities: z.string().describe("Key findings and opportunities for improvement."),
+    prioritizedRecommendations: z.string().describe("A list of prioritized recommendations."),
+    implementationRoadmap: z.string().describe("A roadmap for implementing the recommendations."),
+    investmentAndRoiAnalysis: z.string().describe("An analysis of the required investment and expected ROI."),
+    nextStepsAndDecisionFramework: z.string().describe("Next steps and a framework for decision-making."),
 });
 
 export type GtmReadinessOutput = z.infer<typeof GtmReadinessOutputSchema>;
@@ -161,7 +161,7 @@ const prompt = ai.definePrompt({
   input: { schema: GtmReadinessInputSchema },
   output: { schema: GtmReadinessOutputSchema },
   prompt: `
-          You are an expert RevOps and Go-To-Market (GTM) strategist. Your task is to analyze the provided company data and generate a comprehensive GTM Readiness Assessment report.
+          You are an expert RevOps and Go-To-Market (GTM) strategist. Your task is to analyze the provided company data and generate a comprehensive GTM Readiness Assessment report. Provide clear, direct, and professional analysis for each section.
 
           **User-Provided Data:**
           - Company Stage: {{{companyStage}}}
@@ -215,71 +215,9 @@ const prompt = ai.definePrompt({
           - AI Adoption Barriers: {{{aiAdoptionBarriers}}}
           - Business Model Testing Frequency: {{{businessModelTesting}}}
           
-          **Your Task & AI Text Formatting Instructions:**
-
           Based on the data above, generate a detailed GTM Readiness Assessment report structured according to the GtmReadinessOutputSchema.
-          
-          For all long-form text fields in the output schema (e.g., 'strategicRecommendationSummary', 'currentStateAssessment', etc.), you MUST format the content using the markdown instructions below to create a readable and professional report.
-
-          ## Required Formatting Rules:
-
-          ### 1. Document Structure
-          - Always start with a brief executive summary paragraph
-          - Use two hash symbols for main section headers
-          - Use three hash symbols for subsection headers within each main section
-          - Separate sections with blank lines
-
-          ### 2. Content Organization
-          - Group related findings under logical section headers
-          - Present information in a hierarchical structure
-          - Start each section with the most critical information
-
-          ### 3. Text Emphasis
-          - Use single asterisks for *emphasis* on important concepts
-          - Use backticks for \`system names\`, \`tools\`, and \`specific metrics\`
-          - Use dashes for bullet points within sections
-          - Bold important ratings and scores
-
-          ### 4. Metrics and Ratings
-          - Format ratings clearly: "Rated 2/5" or "Rating: 2/5"
-          - Include specific numbers and percentages
-          - Highlight critical performance indicators
-
-          ### 5. Spacing and Layout
-          - Add blank lines before and after each section header
-          - Use consistent indentation for bullet points
-          - Ensure paragraphs are separated by blank lines
-
-          ## Example Output Format:
-
-          \`\`\`
-          The company's current state reveals significant challenges across core business functions. This analysis identifies critical gaps that require immediate attention to drive sustainable growth.
-
-          ## Strategic Alignment
-
-          The organization struggles with fundamental strategic clarity and execution.
-
-          ### GTM Strategy
-          - Primary approach: Product-led strategy with execution challenges
-          - ICP last updated: 12 months ago, indicating potential market disconnect
-          - Value proposition consistency: Rated 2/5, creating market confusion
-
-          ### Organizational Structure  
-          - Departmental alignment: Rated 2/5, showing internal silos
-          - Communication effectiveness: Monthly meetings but poor outcomes
-          - Executive sponsorship: Requires stronger leadership commitment
-
-          ## Operational Efficiency
-
-          Current operations are characterized by manual processes and system fragmentation.
-
-          ### Technology Stack
-          - CRM platform: \`Salesforce\` underutilized despite implementation
-          - Integration effectiveness: Critically low at 1/5 rating
-          - Automation level: Minimal, resulting in 30 hours/week manual effort
-          \`\`\`
-          
-          **IMPORTANT**: Apply these formatting instructions ONLY to the string content of the fields in the GtmReadinessOutputSchema that are described as "Content formatted with markdown.". Do not alter the JSON structure itself. Calculate an overall readiness score based on a holistic analysis of all inputs. Be direct, professional, and use the language of a seasoned RevOps consultant.
+          Calculate an overall readiness score based on a holistic analysis of all inputs. Be direct, professional, and use the language of a seasoned RevOps consultant.
+          For the long-form text fields, use markdown for headers (##, ###) and lists (-) to structure your response.
   `,
 });
 

@@ -33,13 +33,15 @@ const Section: React.FC<{ id: string; icon: React.ReactNode; title: string; chil
 
 const formatText = (text: string | undefined): string => {
     if (!text) return '';
-    return text.replace(/\*\*/g, '');
+    // Bolds text between colons, like "Label: Value"
+    let formattedText = text.replace(/([^:\n]+:)/g, '<strong>$1</strong>');
+    return formattedText;
 }
 
 const renderContent = (text: string | undefined) => {
     if (!text) return null;
 
-    const lines = text.replace(/\*\*/g, '').split(/\r?\n/);
+    const lines = text.split(/\r?\n/);
     const elements: (JSX.Element | string)[] = [];
     let listItems: string[] = [];
 
@@ -50,7 +52,7 @@ const renderContent = (text: string | undefined) => {
                     {listItems.map((item, index) => {
                        const formattedItem = item
                         .replace(/`(.*?)`/g, '<code class="bg-muted px-1 py-0.5 rounded text-sm">$1</code>')
-                        .replace(/^(- Focus:|- Key Deliverables:)/, '<strong>$1</strong>');
+                        .replace(/(- Focus:|- Key Deliverables:)/g, '<strong>$1</strong>');
                        return <li key={`li-${index}`} dangerouslySetInnerHTML={{ __html: formattedItem }} />
                     })}
                 </ul>
@@ -70,7 +72,7 @@ const renderContent = (text: string | undefined) => {
             flushList();
             elements.push(<h5 key={`h5-${i}`} className="font-semibold text-md text-primary mt-3 mb-1" dangerouslySetInnerHTML={{ __html: line.replace(/####\s?/, '') }}/>);
         } else if (line.trim().startsWith('- ')) {
-            listItems.push(line.trim());
+            listItems.push(line.trim().substring(2));
         } else if (line.trim().length > 0) {
             flushList();
             elements.push(<p key={i} dangerouslySetInnerHTML={{ __html: line.replace(/`(.*?)`/g, '<code class="bg-muted px-1 py-0.5 rounded text-sm">$1</code>') }} />);
@@ -164,7 +166,7 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
                     for (const part of textParts) {
                         if (remainingTextInLine.length === 0) break;
 
-                        const partTextToRender = remainingTextInLine.match(new RegExp(`^${part.text.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\$&')}`)) ? part.text : remainingTextInLine;
+                        const partTextToRender = remainingTextInLine.match(new RegExp(`^${part.text.replace(/[.*+?^${}()|[[\\]\\\\]/g, '\\$&')}`)) ? part.text : remainingTextInLine;
 
                         if (remainingTextInLine.startsWith(part.text)) {
                             doc.setFont('helvetica', part.bold ? 'bold' : 'normal');
@@ -268,9 +270,9 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
             theme: 'plain',
             body: [
                 [{content: `Overall Readiness: ${result.executiveSummary.overallReadinessScore}%`, styles: {fontStyle: 'bold', fontSize: 12}}],
-                [`Company Profile: ${result.executiveSummary.companyStageAndFte.replace(/\*/g, '')}`],
-                [`Industry: ${result.executiveSummary.industrySector.replace(/\*/g, '')}`],
-                [`GTM Strategy: ${result.executiveSummary.primaryGtmStrategy.replace(/\*/g, '')}`],
+                [`Company Profile: ${result.executiveSummary.companyStageAndFte}`],
+                [`Industry: ${result.executiveSummary.industrySector}`],
+                [`GTM Strategy: ${result.executiveSummary.primaryGtmStrategy}`],
             ],
             didDrawPage: (data) => { y = data.cursor?.y || y; }
         });
@@ -279,7 +281,7 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
         addPageIfNeeded(20);
         doc.setFont('helvetica', 'normal');
         doc.setFontSize(10);
-        const splitText = doc.splitTextToSize(result.executiveSummary.briefOverviewOfFindings.replace(/\*/g, ''), pageWidth - margin * 2);
+        const splitText = doc.splitTextToSize(result.executiveSummary.briefOverviewOfFindings, pageWidth - margin * 2);
         doc.text(splitText, margin, y);
         y += splitText.length * 12;
     });
@@ -288,17 +290,17 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
     renderSection('Top 3 Critical Findings', () => {
         result.top3CriticalFindings.forEach(finding => {
             const tableBody = [
-                [{ content: `Business Impact`, styles: { fontStyle: 'bold' } }, finding.businessImpact.replace(/\*/g, '')],
-                [{ content: `Current State`, styles: { fontStyle: 'bold' } }, finding.currentState.replace(/\*/g, '')],
-                [{ content: `Root Cause`, styles: { fontStyle: 'bold' } }, finding.rootCauseAnalysis.replace(/\*/g, '')],
-                [{ content: `Stakeholder Impact`, styles: { fontStyle: 'bold' } }, finding.stakeholderImpact.replace(/\*/g, '')],
-                [{ content: `Urgency`, styles: { fontStyle: 'bold' } }, finding.urgencyRating.replace(/\*/g, '')],
+                [{ content: `Business Impact`, styles: { fontStyle: 'bold' } }, finding.businessImpact],
+                [{ content: `Current State`, styles: { fontStyle: 'bold' } }, finding.currentState],
+                [{ content: `Root Cause`, styles: { fontStyle: 'bold' } }, finding.rootCauseAnalysis],
+                [{ content: `Stakeholder Impact`, styles: { fontStyle: 'bold' } }, finding.stakeholderImpact],
+                [{ content: `Urgency`, styles: { fontStyle: 'bold' } }, finding.urgencyRating],
             ];
             addPageIfNeeded(100);
             doc.setFont('helvetica', 'bold');
             doc.setFontSize(12);
             doc.setTextColor(15, 23, 42); // card-foreground
-            doc.text(finding.findingTitle.replace(/\*/g, ''), margin, y);
+            doc.text(finding.findingTitle, margin, y);
             y += 15;
             autoTable(doc, {
                 startY: y,
@@ -351,9 +353,9 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
           <>
               <div className="grid grid-cols-2 gap-4">
                   <p><strong>Overall Readiness:</strong> <span className="font-bold text-lg text-primary">{result.executiveSummary.overallReadinessScore}%</span></p>
-                  <p><strong>Company Profile:</strong> {result.executiveSummary.companyStageAndFte.replace(/\*/g, '')}</p>
-                  <p><strong>Industry:</strong> {result.executiveSummary.industrySector.replace(/\*/g, '')}</p>
-                  <p><strong>GTM Strategy:</strong> {result.executiveSummary.primaryGtmStrategy.replace(/\*/g, '')}</p>
+                  <p><strong className="text-primary">Company Profile:</strong> {result.executiveSummary.companyStageAndFte}</p>
+                  <p><strong className="text-primary">Industry:</strong> {result.executiveSummary.industrySector}</p>
+                  <p><strong className="text-primary">GTM Strategy:</strong> {result.executiveSummary.primaryGtmStrategy}</p>
               </div>
               <Separator />
               <p className="text-foreground" dangerouslySetInnerHTML={{ __html: formatText(result.executiveSummary.briefOverviewOfFindings) }} />
@@ -364,16 +366,16 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
               <Card key={index} className="break-inside-avoid">
                   <CardHeader>
                       <CardTitle className="flex justify-between items-center">
-                          <span>{finding.findingTitle.replace(/\*/g, '')}</span>
+                          <span>{finding.findingTitle}</span>
                           <Badge variant={finding.impactLevel === 'High' ? 'destructive' : 'secondary'}>Impact: {finding.impactLevel}</Badge>
                       </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-3 prose max-w-none text-foreground">
-                      <p dangerouslySetInnerHTML={{ __html: formatText(`Business Impact: ${finding.businessImpact}`) }} />
-                      <p dangerouslySetInnerHTML={{ __html: formatText(`Current State: ${finding.currentState}`) }} />
-                      <p dangerouslySetInnerHTML={{ __html: formatText(`Root Cause: ${finding.rootCauseAnalysis}`) }} />
-                      <p dangerouslySetInnerHTML={{ __html: formatText(`Stakeholder Impact: ${finding.stakeholderImpact}`) }} />
-                      <p dangerouslySetInnerHTML={{ __html: formatText(`Urgency: ${finding.urgencyRating}`) }} />
+                      <p><strong className="text-primary">Business Impact:</strong> <span dangerouslySetInnerHTML={{ __html: formatText(finding.businessImpact) }} /></p>
+                      <p><strong className="text-primary">Current State:</strong> <span dangerouslySetInnerHTML={{ __html: formatText(finding.currentState) }} /></p>
+                      <p><strong className="text-primary">Root Cause:</strong> <span dangerouslySetInnerHTML={{ __html: formatText(finding.rootCauseAnalysis) }} /></p>
+                      <p><strong className="text-primary">Stakeholder Impact:</strong> <span dangerouslySetInnerHTML={{ __html: formatText(finding.stakeholderImpact) }} /></p>
+                      <p><strong className="text-primary">Urgency:</strong> <span dangerouslySetInnerHTML={{ __html: formatText(finding.urgencyRating) }} /></p>
                   </CardContent>
               </Card>
           ))
@@ -418,5 +420,3 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
   );
 });
 GtmReadinessReport.displayName = "GtmReadinessReport";
-
-    
