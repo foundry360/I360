@@ -49,7 +49,7 @@ const renderContent = (text: string | undefined) => {
             elements.push(
                 <ul key={`ul-${elements.length}`} className="list-disc pl-5 space-y-2">
                     {listItems.map((item, index) => (
-                       <li key={`li-${index}`} dangerouslySetInnerHTML={{ __html: item.replace(/^(.+?):/g, '<strong>$1:</strong>').replace(/`(.*?)`/g, '<code class="bg-muted px-1 py-0.5 rounded text-sm">$1</code>') }} />
+                       <li key={`li-${index}`} dangerouslySetInnerHTML={{ __html: item.replace(/^(.*?):/, '<strong>$1:</strong>').replace(/`(.*?)`/g, '<code class="bg-muted px-1 py-0.5 rounded text-sm">$1</code>') }} />
                     ))}
                 </ul>
             );
@@ -223,7 +223,7 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
 
                 doc.text(bullet, margin + 5, y, { baseline: 'top' });
                 
-                const contentBoldRegex = /^(.+?):/g;
+                const contentBoldRegex = /^(.*?):/;
                 let contentParts = [];
                 let lastContentIndex = 0;
                 let contentMatch;
@@ -233,7 +233,7 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
                          contentParts.push({text: content.substring(lastContentIndex, contentMatch.index), bold: false});
                      }
                      contentParts.push({text: `${contentMatch[1]}:`, bold: true});
-                     lastContentIndex = contentMatch.index + contentMatch[0].length;
+                     lastContentIndex = contentMatch.index + match[0].length;
                  }
                  if (lastContentIndex < content.length) {
                     contentParts.push({text: content.substring(lastContentIndex), bold: false});
@@ -416,3 +416,5 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
   );
 });
 GtmReadinessReport.displayName = "GtmReadinessReport";
+
+    
