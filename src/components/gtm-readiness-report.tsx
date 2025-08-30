@@ -34,28 +34,47 @@ const Section: React.FC<{ id: string; icon: React.ReactNode; title: string; chil
 const renderContent = (text: string | undefined) => {
     if (!text) return null;
 
-    const cleanedText = text.replace(/\*/g, '');
-    const lines = cleanedText.split(/\r?\n/).filter(line => line.trim().length > 0);
+    const lines = text.split(/\r?\n/).filter(line => line.trim().length > 0);
+    const elements: JSX.Element[] = [];
+    let listItems: string[] = [];
 
-    return (
-        <div className="prose max-w-none text-foreground space-y-2">
-            {lines.map((line, i) => {
-                if (line.startsWith('### ')) {
-                    return <h4 key={`h4-${i}`} className="font-semibold text-lg text-primary mt-4">{line.replace(/###\s?/, '')}</h4>
-                }
-                if (line.startsWith('Focus:') || line.startsWith('Key Deliverables:')) {
-                    const [label, ...rest] = line.split(':');
-                    return (
-                        <p key={i}>
-                            <span className="font-semibold">{label}:</span>
-                            {rest.join(':')}
-                        </p>
-                    )
-                }
-                return <p key={i}>{line.replace(/^- /, '')}</p>;
-            })}
-        </div>
-    );
+    const flushList = () => {
+        if (listItems.length > 0) {
+            elements.push(
+                <ul key={`ul-${elements.length}`} className="list-disc pl-5 space-y-2">
+                    {listItems.map((item, index) => (
+                        <li key={`li-${index}`}>{item}</li>
+                    ))}
+                </ul>
+            );
+            listItems = [];
+        }
+    };
+
+    lines.forEach((line, i) => {
+        if (line.startsWith('### ')) {
+            flushList();
+            elements.push(<h4 key={`h4-${i}`} className="font-semibold text-lg text-primary mt-4 mb-2">{line.replace(/###\s?/, '')}</h4>);
+        } else if (line.startsWith('- ')) {
+            listItems.push(line.substring(2));
+        } else if (line.startsWith('Focus:') || line.startsWith('Key Deliverables:')) {
+            flushList();
+            const [label, ...rest] = line.split(':');
+            elements.push(
+                 <p key={i} className="mt-2">
+                    <span className="font-semibold">{label}:</span>
+                    {rest.join(':')}
+                </p>
+            )
+        } else {
+            flushList();
+            elements.push(<p key={i}>{line}</p>);
+        }
+    });
+
+    flushList(); // Make sure any trailing list is rendered
+
+    return <div className="prose max-w-none text-foreground space-y-2">{elements}</div>;
 };
 
 export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessReportProps>(({ title, result, onComplete }, ref) => {
@@ -105,7 +124,7 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
     
     const renderMarkdown = (text: string | undefined) => {
         if(!text) return;
-        const cleanedText = text.replace(/###\s/g, '').replace(/\*/g, '');
+        const cleanedText = text.replace(/\*/g, ''); // Remove asterisks for bolding, as we handle fonts manually
         const lines = cleanedText.split(/\r?\n/).filter(line => line.trim().length > 0);
         
         lines.forEach((line) => {
@@ -114,26 +133,34 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
                 y += 10; // Extra space before subheading
                 doc.setFont('helvetica', 'bold');
                 doc.setFontSize(12);
-                doc.setTextColor(111, 71, 251);
+                doc.setTextColor(15, 23, 42); // foreground
                 const splitTitle = doc.splitTextToSize(line.substring(4), pageWidth - margin * 2);
                 doc.text(splitTitle, margin, y);
                 y += (splitTitle.length * 12) + 5;
+            } else if (line.trim().startsWith('- ')) {
+                addPageIfNeeded(15);
+                doc.setFont('helvetica', 'normal');
+                doc.setFontSize(10);
+                doc.setTextColor(51, 65, 85); // foreground
+                
+                const bullet = '\u2022';
+                const content = line.substring(line.indexOf('- ') + 2);
+                const indent = margin + 15;
+                const textWidth = pageWidth - indent - margin;
+
+                doc.text(bullet, margin, y, { baseline: 'top' });
+                const splitText = doc.splitTextToSize(content, textWidth);
+                doc.text(splitText, indent, y);
+                y += splitText.length * 12 + 5;
             } else {
                 addPageIfNeeded(15);
                 doc.setFont('helvetica', 'normal');
                 doc.setFontSize(10);
                 doc.setTextColor(51, 65, 85); // foreground
                 
-                const isBulletedList = line.trim().startsWith('Focus:') || line.trim().startsWith('Key Deliverables:');
-                const bullet = '\u2022';
-                let content = line.replace(/^- /, '');
-
-                const indent = isBulletedList ? margin + 15 : margin;
+                let content = line;
+                const indent = margin;
                 const textWidth = pageWidth - indent - margin;
-
-                if (isBulletedList) {
-                    doc.text(bullet, margin, y, { baseline: 'top' });
-                }
 
                 const splitText = doc.splitTextToSize(content, textWidth);
                 doc.text(splitText, indent, y);
@@ -299,5 +326,3 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
   );
 });
 GtmReadinessReport.displayName = "GtmReadinessReport";
-
-    
