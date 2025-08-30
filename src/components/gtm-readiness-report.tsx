@@ -8,7 +8,7 @@ import { ArrowRight, BarChart, Clock, Target, Lightbulb, TrendingUp, PieChart, L
 import { Badge } from './ui/badge';
 import { Separator } from './ui/separator';
 import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
+import html2canvas from 'html2canvas';
 
 
 type GtmReadinessReportProps = {
@@ -44,16 +44,16 @@ const renderContent = (text: string | undefined) => {
             elements.push(
                 <ul key={`ul-${elements.length}`} className="list-disc pl-5 space-y-2">
                     {listItems.map((item, index) => {
-                        const parts = item.split(/:(.*)/s);
-                        if (parts.length > 1) {
-                            return (
-                                <li key={`li-${index}`} className="text-foreground">
-                                    <strong>{parts[0]}:</strong>
-                                    {parts[1]}
-                                </li>
-                            );
-                        }
-                        return <li key={`li-${index}`} className="text-foreground">{item}</li>;
+                         const parts = item.split(/:(.*)/s);
+                         if (parts.length > 1) {
+                             return (
+                                 <li key={`li-${index}`} className="text-foreground">
+                                     <strong>{parts[0]}:</strong>
+                                     {parts[1]}
+                                 </li>
+                             );
+                         }
+                         return <li key={`li-${index}`} className="text-foreground">{item}</li>;
                     })}
                 </ul>
             );
@@ -66,13 +66,13 @@ const renderContent = (text: string | undefined) => {
 
         if (cleanedLine.startsWith('## ')) {
             flushList();
-            elements.push(<h3 key={`h3-${i}`} className="text-foreground text-lg font-semibold mt-6 mb-3">{cleanedLine.replace(/##\s?/, '')}</h3>);
+            elements.push(<h3 key={`h3-${i}`} className="text-foreground text-lg mt-6 mb-3">{cleanedLine.replace(/##\s?/, '')}</h3>);
         } else if (cleanedLine.startsWith('### ')) {
             flushList();
-            elements.push(<h4 key={`h4-${i}`} className="text-foreground text-base font-semibold mt-4 mb-2">{cleanedLine.replace(/###\s?/, '')}</h4>);
+            elements.push(<h4 key={`h4-${i}`} className="text-foreground text-base mt-4 mb-2">{cleanedLine.replace(/###\s?/, '')}</h4>);
         } else if (cleanedLine.startsWith('#### ')) {
             flushList();
-            elements.push(<h5 key={`h5-${i}`} className="text-foreground text-sm font-semibold mt-3 mb-1">{cleanedLine.replace(/####\s?/, '')}</h5>);
+            elements.push(<h5 key={`h5-${i}`} className="text-foreground text-sm mt-3 mb-1">{cleanedLine.replace(/####\s?/, '')}</h5>);
         } else if (cleanedLine.trim().startsWith('- ')) {
             const itemText = cleanedLine.trim().substring(2);
             listItems.push(itemText);
@@ -91,225 +91,47 @@ const renderContent = (text: string | undefined) => {
 };
 
 export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessReportProps>(({ title, result, onComplete }, ref) => {
+  const reportContentRef = React.useRef<HTMLDivElement>(null);
 
   const handlePrint = () => {
-    const doc = new jsPDF('p', 'pt', 'a4');
-    const pageHeight = doc.internal.pageSize.height;
-    const pageWidth = doc.internal.pageSize.width;
-    const margin = 40;
-    let y = margin;
+      const input = reportContentRef.current;
+      if (!input) {
+          console.error("Report content ref not found");
+          return;
+      }
 
-    const addPageIfNeeded = (spaceNeeded: number) => {
-        if (y + spaceNeeded > pageHeight - margin) {
-            doc.addPage();
-            y = margin;
-        }
-    };
-    
-    // Main Title
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(24);
-    doc.setTextColor(111, 71, 251); 
-    doc.text(title, pageWidth / 2, y, { align: 'center' });
-    y += 20;
+      html2canvas(input, {
+          scale: 2, // Higher scale for better quality
+          useCORS: true,
+          logging: true,
+          windowWidth: document.documentElement.offsetWidth,
+          windowHeight: document.documentElement.offsetHeight,
+      }).then(canvas => {
+          const imgData = canvas.toDataURL('image/png');
+          const pdf = new jsPDF('p', 'mm', 'a4');
+          const pdfWidth = pdf.internal.pageSize.getWidth();
+          const pdfHeight = pdf.internal.pageSize.getHeight();
+          const canvasWidth = canvas.width;
+          const canvasHeight = canvas.height;
+          const ratio = canvasWidth / canvasHeight;
+          const imgWidth = pdfWidth;
+          const imgHeight = imgWidth / ratio;
+          
+          let heightLeft = imgHeight;
+          let position = 0;
 
-    // Subtitle
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(10);
-    doc.setTextColor(100, 116, 139); 
-    doc.text(`Generated on ${new Date().toLocaleDateString()}`, pageWidth / 2, y, { align: 'center' });
-    y += 40;
+          pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+          heightLeft -= pdfHeight;
 
-    const renderMarkdownToPdf = (text: string) => {
-        if (!text) return;
-        const lines = text.replace(/`([^`]+)`/g, '$1').replace(/\*\*/g, '').replace(/(\S)(##|###)/g, '$1\n$2').split(/\r?\n/);
-        
-        lines.forEach(line => {
-            const trimmedLine = line.trim();
-            if (trimmedLine.startsWith('## ')) {
-                flushList();
-                y += 10;
-                addPageIfNeeded(20);
-                doc.setFont('helvetica', 'bold');
-                doc.setFontSize(14);
-                doc.setTextColor(15, 23, 42); 
-                const splitTitle = doc.splitTextToSize(trimmedLine.substring(3), pageWidth - margin * 2);
-                doc.text(splitTitle, margin, y);
-                y += (splitTitle.length * 14) + 6;
-            } else if (trimmedLine.startsWith('### ')) {
-                flushList();
-                y += 8;
-                addPageIfNeeded(18);
-                doc.setFont('helvetica', 'bold');
-                doc.setFontSize(12);
-                doc.setTextColor(15, 23, 42);
-                const splitTitle = doc.splitTextToSize(trimmedLine.substring(4), pageWidth - margin * 2);
-                doc.text(splitTitle, margin, y);
-                y += (splitTitle.length * 12) + 5;
-            } else if (trimmedLine.startsWith('- ')) {
-                listBuffer.push(trimmedLine.substring(2));
-            } else if (trimmedLine.length > 0) {
-                flushList();
-                addPageIfNeeded(15);
-                doc.setFont('helvetica', 'normal');
-                doc.setFontSize(10);
-                doc.setTextColor(51, 65, 85);
-                const splitText = doc.splitTextToSize(trimmedLine, pageWidth - margin * 2);
-                doc.text(splitText, margin, y);
-                y += (splitText.length * 10) + 5;
-            } else {
-                flushList();
-                y += 6; 
-            }
-        });
-        flushList(); // Make sure any remaining list items are printed
-    };
-    
-    let listBuffer: string[] = [];
-
-    const flushList = () => {
-        if (listBuffer.length === 0) return;
-
-        doc.setFont('helvetica', 'normal');
-        doc.setFontSize(10);
-        doc.setTextColor(51, 65, 85);
-
-        listBuffer.forEach(item => {
-            const bullet = '\u2022';
-            const itemParts = item.split(/:(.*)/s);
-            const indent = margin + 15;
-            const textWidth = pageWidth - indent - margin;
-
-            addPageIfNeeded(15);
-            doc.text(bullet, margin + 5, y);
-
-            if (itemParts.length > 1) {
-                const label = itemParts[0] + ':';
-                const value = itemParts[1].trim();
-
-                doc.setFont('helvetica', 'bold');
-                doc.text(label, indent, y, { maxWidth: textWidth });
-                
-                const labelWidth = doc.getTextWidth(label);
-                const remainingWidth = textWidth - labelWidth - 5; // 5 for spacing
-
-                doc.setFont('helvetica', 'normal');
-                if (remainingWidth > 10) { // Check if there's enough space on the same line
-                    const splitValue = doc.splitTextToSize(value, remainingWidth);
-                    doc.text(splitValue, indent + labelWidth + 5, y);
-                    y += (splitValue.length * 10) + 5;
-                } else { // If not enough space, move value to next line
-                    y += 12; 
-                    addPageIfNeeded(15);
-                    const splitValue = doc.splitTextToSize(value, textWidth);
-                    doc.text(splitValue, indent, y);
-                    y += (splitValue.length * 10) + 5;
-                }
-            } else {
-                 doc.setFont('helvetica', 'normal');
-                 const splitItem = doc.splitTextToSize(item, textWidth);
-                 doc.text(splitItem, indent, y);
-                 y += (splitItem.length * 10) + 5;
-            }
-        });
-        listBuffer = [];
-        y += 5;
-    };
-
-
-    const renderSection = (title: string, content: () => void) => {
-        flushList();
-        y += 10;
-        addPageIfNeeded(40);
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(16);
-        doc.setTextColor(111, 71, 251);
-        doc.text(title, margin, y);
-        y += 15;
-        doc.setDrawColor(226, 232, 240); 
-        doc.line(margin, y, pageWidth - margin, y);
-        y += 20;
-        content();
-        y += 20; 
-    };
-    
-    // --- RENDER SECTIONS ---
-
-    renderSection('Executive Summary', () => {
-        autoTable(doc, {
-            startY: y,
-            theme: 'plain',
-            body: [
-                [{content: `Overall Readiness: ${result.executiveSummary.overallReadinessScore}%`, styles: {fontStyle: 'bold', fontSize: 12, textColor: [111,71,251]}}],
-                [`Company Profile: ${result.executiveSummary.companyStageAndFte}`],
-                [`Industry: ${result.executiveSummary.industrySector}`],
-                [`GTM Strategy: ${result.executiveSummary.primaryGtmStrategy}`],
-            ],
-            styles: {
-                font: 'helvetica',
-                fontSize: 10,
-                textColor: [51, 65, 85]
-            },
-            didDrawPage: (data) => { y = data.cursor?.y || y; }
-        });
-        y = (doc as any).lastAutoTable.finalY + 10;
-        
-        addPageIfNeeded(20);
-        renderMarkdownToPdf(result.executiveSummary.briefOverviewOfFindings);
-    });
-
-    renderSection('Top 3 Critical Findings', () => {
-        result.top3CriticalFindings.forEach(finding => {
-            const tableBody = [
-                [{ content: `Business Impact`, styles: { fontStyle: 'bold' } }, { content: finding.businessImpact }],
-                [{ content: `Current State`, styles: { fontStyle: 'bold' } }, { content: finding.currentState }],
-                [{ content: `Root Cause`, styles: { fontStyle: 'bold' } }, { content: finding.rootCauseAnalysis }],
-                [{ content: `Stakeholder Impact`, styles: { fontStyle: 'bold' } }, { content: finding.stakeholderImpact }],
-                [{ content: `Urgency`, styles: { fontStyle: 'bold' } }, { content: finding.urgencyRating }],
-            ];
-            
-            y += 10;
-            addPageIfNeeded(120);
-
-            doc.setFont('helvetica', 'bold');
-            doc.setFontSize(12);
-            doc.setTextColor(15, 23, 42); 
-            const splitTitle = doc.splitTextToSize(finding.findingTitle, pageWidth - margin * 2);
-            doc.text(splitTitle, margin, y);
-            y += (splitTitle.length * 12) + 10;
-
-            autoTable(doc, {
-                startY: y,
-                head: [[`Impact: ${finding.impactLevel}`]],
-                body: tableBody,
-                theme: 'grid',
-                headStyles: {
-                    fillColor: finding.impactLevel === 'High' ? [220, 38, 38] : finding.impactLevel === 'Medium' ? [245, 158, 11] : [241, 245, 249],
-                    textColor: finding.impactLevel === 'High' || finding.impactLevel === 'Medium' ? [255,255,255] : [15, 23, 42],
-                    fontStyle: 'bold'
-                },
-                 columnStyles: {
-                    0: { cellWidth: 120, fontStyle: 'bold' },
-                },
-                didDrawPage: (data) => { y = data.cursor?.y || y; }
-            });
-            y = (doc as any).lastAutoTable.finalY + 20;
-        });
-    });
-
-    renderSection('Strategic Recommendation Summary', () => renderMarkdownToPdf(result.strategicRecommendationSummary));
-    renderSection('Implementation Timeline Overview', () => renderMarkdownToPdf(result.implementationTimelineOverview));
-    renderSection('Current State Assessment', () => renderMarkdownToPdf(result.currentStateAssessment));
-    renderSection('Performance Benchmarking', () => renderMarkdownToPdf(result.performanceBenchmarking));
-    renderSection('Key Findings & Opportunities', () => renderMarkdownToPdf(result.keyFindingsAndOpportunities));
-    renderSection('Prioritized Recommendations', () => renderMarkdownToPdf(result.prioritizedRecommendations));
-    renderSection('Implementation Roadmap', () => renderMarkdownToPdf(result.implementationRoadmap));
-    renderSection('Investment & ROI Analysis', () => renderMarkdownToPdf(result.investmentAndRoiAnalysis));
-    renderSection('Next Steps & Decision Framework', () => renderMarkdownToPdf(result.nextStepsAndDecisionFramework));
-
-    doc.save('GTM-Readiness-Report.pdf');
+          while (heightLeft > 0) {
+              position = heightLeft - imgHeight;
+              pdf.addPage();
+              pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+              heightLeft -= pdfHeight;
+          }
+          pdf.save('GTM-Readiness-Report.pdf');
+      });
   };
-
 
   React.useImperativeHandle(ref, () => ({
       handlePrint
@@ -372,32 +194,32 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
 
   return (
     <div className="bg-muted" ref={ref}>
-      <div className="space-y-6 p-6">
-        <div className="bg-background p-8 rounded-lg shadow-sm">
-            <div className="text-center pb-4 border-b mb-6">
-                <h2 className="text-3xl font-bold text-primary">{title}</h2>
-                <p className="text-muted-foreground">Generated on {new Date().toLocaleDateString()}</p>
-            </div>
-            <div className="space-y-6">
-                {reportSections.map(sec => (
-                    <div key={sec.id}>
-                         <Section id={sec.id} icon={sec.icon} title={sec.title}>
-                            {sec.content}
-                        </Section>
-                    </div>
-                ))}
-            </div>
-        </div>
-        <div className="flex justify-between items-center gap-4 p-6 bg-background rounded-lg shadow-sm">
-            <p className="text-xs text-muted-foreground">PROPRIETARY & CONFIDENTIAL</p>
-            <div className="flex gap-4">
-                <Button variant="outline" onClick={onComplete}>Done</Button>
+       <div ref={reportContentRef}>
+        <div className="space-y-6 p-6">
+            <div className="bg-background p-8 rounded-lg shadow-sm">
+                <div className="text-center pb-4 border-b mb-6">
+                    <h2 className="text-3xl font-bold text-primary">{title}</h2>
+                    <p className="text-muted-foreground">Generated on {new Date().toLocaleDateString()}</p>
+                </div>
+                <div className="space-y-6">
+                    {reportSections.map(sec => (
+                        <div key={sec.id}>
+                            <Section id={sec.id} icon={sec.icon} title={sec.title}>
+                                {sec.content}
+                            </Section>
+                        </div>
+                    ))}
+                </div>
             </div>
         </div>
+      </div>
+      <div className="flex justify-between items-center gap-4 p-6 bg-background rounded-lg shadow-sm">
+          <p className="text-xs text-muted-foreground">PROPRIETARY & CONFIDENTIAL</p>
+          <div className="flex gap-4">
+              <Button variant="outline" onClick={onComplete}>Done</Button>
+          </div>
       </div>
     </div>
   );
 });
 GtmReadinessReport.displayName = "GtmReadinessReport";
-
-    
