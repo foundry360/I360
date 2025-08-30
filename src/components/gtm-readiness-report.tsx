@@ -49,7 +49,7 @@ const renderContent = (text: string | undefined) => {
             elements.push(
                 <ul key={`ul-${elements.length}`} className="list-disc pl-5 space-y-2">
                     {listItems.map((item, index) => (
-                       <li key={`li-${index}`} dangerouslySetInnerHTML={{ __html: item.replace(/(\w+):/g, '<strong>$1:</strong>').replace(/`(.*?)`/g, '<code class="bg-muted px-1 py-0.5 rounded text-sm">$1</code>') }} />
+                       <li key={`li-${index}`} dangerouslySetInnerHTML={{ __html: item.replace(/^([^:]+):/g, '<strong>$1:</strong>').replace(/`(.*?)`/g, '<code class="bg-muted px-1 py-0.5 rounded text-sm">$1</code>') }} />
                     ))}
                 </ul>
             );
@@ -134,7 +134,7 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
         const lines = cleanedText.split(/\r?\n/);
         
         lines.forEach((line) => {
-             const boldRegex = /(\w+):/g;
+             const boldRegex = /^([^:]+):/g;
              let parts = [];
              let lastIndex = 0;
              let match;
@@ -223,7 +223,7 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
 
                 doc.text(bullet, margin + 5, y, { baseline: 'top' });
                 
-                const contentBoldRegex = /(\w+):/g;
+                const contentBoldRegex = /^([^:]+):/g;
                 let contentParts = [];
                 let lastContentIndex = 0;
                 let contentMatch;
