@@ -35,16 +35,18 @@ const renderContent = (text: string | undefined) => {
     if (!text) return null;
 
     const lines = text.split(/\r?\n/);
-    const elements: JSX.Element[] = [];
+    const elements: (JSX.Element | string)[] = [];
     let listItems: string[] = [];
     let inCodeBlock = false;
+    let codeBlockContent: string[] = [];
+    let codeBlockKey = '';
 
     const flushList = () => {
         if (listItems.length > 0) {
             elements.push(
                 <ul key={`ul-${elements.length}`} className="list-disc pl-5 space-y-2">
                     {listItems.map((item, index) => (
-                       <li key={`li-${index}`} dangerouslySetInnerHTML={{ __html: item.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/`(.*?)`/g, '<code>$1</code>') }} />
+                       <li key={`li-${index}`} dangerouslySetInnerHTML={{ __html: item.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/`(.*?)`/g, '<code class="bg-muted px-1 py-0.5 rounded text-sm">$1</code>') }} />
                     ))}
                 </ul>
             );
@@ -52,27 +54,34 @@ const renderContent = (text: string | undefined) => {
         }
     };
     
+    const flushCodeBlock = () => {
+        if (codeBlockContent.length > 0) {
+            elements.push(
+                <pre key={codeBlockKey} className="bg-muted p-4 rounded-md text-sm whitespace-pre-wrap">
+                    <code>{codeBlockContent.join('\n')}</code>
+                </pre>
+            );
+            codeBlockContent = [];
+            codeBlockKey = '';
+        }
+    }
+
     lines.forEach((line, i) => {
         if (line.trim().startsWith('```')) {
-            flushList();
-            inCodeBlock = !inCodeBlock;
             if (inCodeBlock) {
-                 elements.push(<pre key={`pre-start-${i}`} className="bg-muted p-4 rounded-md text-sm whitespace-pre-wrap"><code>);
+                flushList();
+                flushCodeBlock();
             } else {
-                 elements.push(</code></pre>);
+                codeBlockKey = `code-${i}`;
             }
+            inCodeBlock = !inCodeBlock;
             return;
         }
 
         if (inCodeBlock) {
-            const lastElement = elements[elements.length - 1];
-            if (lastElement && lastElement.type === 'pre') {
-                 const newContent = (lastElement.props.children.props.children || '') + line + '\n';
-                 elements[elements.length - 1] = <pre {...lastElement.props}><code {...lastElement.props.children.props}>{newContent}</code></pre>;
-            }
+            codeBlockContent.push(line);
             return;
         }
-
 
         if (line.startsWith('## ')) {
             flushList();
@@ -87,14 +96,15 @@ const renderContent = (text: string | undefined) => {
             listItems.push(line.trim().substring(2));
         } else if (line.trim().length > 0) {
             flushList();
-            elements.push(<p key={i} dangerouslySetInnerHTML={{ __html: line.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/`(.*?)`/g, '<code>$1</code>') }} />);
+            elements.push(<p key={i} dangerouslySetInnerHTML={{ __html: line.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/`(.*?)`/g, '<code class="bg-muted px-1 py-0.5 rounded text-sm">$1</code>') }} />);
         } else {
-             // We can push an empty line to preserve spacing if needed, e.g. <br /> or an empty p
+             flushList();
              elements.push(<div key={`br-${i}`} className="h-4" />);
         }
     });
 
     flushList();
+    flushCodeBlock();
 
     return <div className="prose max-w-none text-foreground space-y-2">{elements}</div>;
 };
@@ -275,6 +285,7 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
                 splitText.forEach((textLine: string) => {
                     let currentX = indent;
                     let processedLength = 0;
+                    let tempY = y; // define tempY here
                     parts.forEach(part => {
                         let remainingPart = part.text;
                         while(remainingPart.length > 0) {
