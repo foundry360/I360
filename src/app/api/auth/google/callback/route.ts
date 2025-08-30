@@ -8,12 +8,18 @@ export async function GET(request: NextRequest) {
     const code = searchParams.get('code');
 
     if (!code) {
-        return NextResponse.redirect(new URL(`/dashboard/profile?error=Missing-Code`, request.url));
+        // Redirect to a stable error page if code is missing
+        const errorUrl = new URL(`/dashboard/profile`, request.url);
+        errorUrl.searchParams.set('error', 'Missing authorization code.');
+        return NextResponse.redirect(errorUrl);
     }
 
+    // Use the exact redirect URI from environment variables
     const redirectUri = process.env.GOOGLE_REDIRECT_URI;
     if (!redirectUri) {
-        throw new Error('GOOGLE_REDIRECT_URI is not defined in .env file');
+        console.error('GOOGLE_REDIRECT_URI is not defined in .env file');
+        // Return a server error response
+        return new NextResponse('Server configuration error.', { status: 500 });
     }
 
     const oauth2Client = new google.auth.OAuth2(
@@ -50,6 +56,8 @@ export async function GET(request: NextRequest) {
 
     } catch (error) {
         console.error('Error exchanging code for tokens:', error);
-        return NextResponse.redirect(new URL(`/dashboard?error=Token-Exchange-Failed`, request.url));
+        const errorUrl = new URL(`/dashboard/profile`, request.url);
+        errorUrl.searchParams.set('error', 'Token exchange failed.');
+        return NextResponse.redirect(errorUrl);
     }
 }

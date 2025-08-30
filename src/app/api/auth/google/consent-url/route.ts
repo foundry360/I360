@@ -6,7 +6,8 @@ export async function GET(request: NextRequest) {
   const redirectUri = process.env.GOOGLE_REDIRECT_URI;
 
   if (!redirectUri) {
-    throw new Error('GOOGLE_REDIRECT_URI is not defined in .env file');
+    console.error('GOOGLE_REDIRECT_URI is not defined in .env file');
+    return new NextResponse('Server configuration error.', { status: 500 });
   }
 
   const oauth2Client = new google.auth.OAuth2(
