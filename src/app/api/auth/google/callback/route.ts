@@ -6,10 +6,9 @@ import { cookies } from 'next/headers';
 export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const code = searchParams.get('code');
-    const companyId = cookies().get('companyId')?.value || 'acme-inc';
 
     if (!code) {
-        return NextResponse.redirect(new URL(`/${companyId}/profile?error=Missing-Code`, request.url));
+        return NextResponse.redirect(new URL(`/dashboard/profile?error=Missing-Code`, request.url));
     }
 
     const redirectUri = process.env.GOOGLE_REDIRECT_URI;
@@ -45,11 +44,12 @@ export async function GET(request: NextRequest) {
             });
         }
 
-        // Redirect user back to their profile page
-        return NextResponse.redirect(new URL(`/${companyId}/profile`, request.url));
+        // Redirect user back to a stable dashboard or profile page
+        // The app router will handle getting them to the right company context.
+        return NextResponse.redirect(new URL(`/dashboard`, request.url));
 
     } catch (error) {
         console.error('Error exchanging code for tokens:', error);
-        return NextResponse.redirect(new URL(`/${companyId}/profile?error=Token-Exchange-Failed`, request.url));
+        return NextResponse.redirect(new URL(`/dashboard?error=Token-Exchange-Failed`, request.url));
     }
 }
