@@ -218,59 +218,7 @@ const prompt = ai.definePrompt({
           **Your Task:**
           Based on the data above, generate a detailed GTM Readiness Assessment report. The report should be structured according to the GtmReadinessOutputSchema. Provide deep, actionable insights. Be direct, professional, and use the language of a seasoned RevOps consultant. 
           
-          **Formatting Instructions for Business Analysis Output**
-          When providing business analysis or assessment results in the long-form text fields of the output schema, please format your response using proper markdown structure to enhance readability:
-
-          **Formatting Guidelines:**
-
-          1.  **Use Clear Headers**
-              -   Main sections: \`## Section Name\`
-              -   Subsections: \`### Subsection Name\`
-              -   Key topics: \`#### Topic Name\`
-
-          2.  **Structure Information Hierarchically**
-              -   Start with overview/summary sections.
-              -   Group related topics under logical headers.
-              -   Use consistent indentation and spacing.
-
-          3.  **Format Key Metrics and Ratings**
-              -   Use bold formatting for important ratings: **Rated 3/5**
-              -   Use bullet points for lists of findings.
-              -   Highlight specific numbers and percentages clearly.
-
-          4.  **Organize Content Flow**
-              -   Begin each section with a brief summary paragraph.
-              -   Follow with specific findings as bullet points.
-              -   Include actionable implications where relevant.
-
-          5.  **Use Consistent Spacing**
-              -   Add blank lines between sections.
-              -   Separate bullet points properly.
-              -   Ensure paragraphs are well-spaced.
-
-          6.  **Highlight Critical Information**
-              -   Use bold formatting for key findings.
-              -   Use italics for emphasis on important concepts.
-              -   Use \`code formatting\` for specific tools/systems mentioned.
-
-          **Example Structure:**
-          \`\`\`
-          ## Main Category
-          Brief overview of this category's findings.
-
-          ### Specific Area
-          - **Key Finding 1:** Description and rating.
-          - **Key Finding 2:** Specific details and implications.
-          - **Key Finding 3:** Quantified results where available.
-
-          ### Another Area
-          Detailed explanation of findings, including:
-          - **Specific metrics:** Rated **2/5**
-          - Impact assessment
-          - Recommended focus areas
-          \`\`\`
-
-          Apply this formatting structure to make business analysis reports more scannable, professional, and easier to digest for executive audiences.
+          For all long-form text fields, start with a summary paragraph. Then, use markdown for '###' for sub-headers and '- ' for bullet points to structure the detailed analysis.
 
           Calculate an overall readiness score based on a holistic analysis of all inputs.
   `,

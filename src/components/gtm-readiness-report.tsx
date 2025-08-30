@@ -33,76 +33,45 @@ const Section: React.FC<{ id: string; icon: React.ReactNode; title: string; chil
 
 const formatText = (text: string | undefined): string => {
     if (!text) return '';
+    // Remove "**" and bold any word preceding a colon
     return text.replace(/\*\*/g, '').replace(/(\w+):/g, '<strong>$1:</strong>');
 }
 
 const renderContent = (text: string | undefined) => {
     if (!text) return null;
 
-    const formattedText = formatText(text);
-    const lines = formattedText.split(/\r?\n/);
+    const lines = text.replace(/\*\*/g, '').split(/\r?\n/);
     const elements: (JSX.Element | string)[] = [];
     let listItems: string[] = [];
-    let inCodeBlock = false;
-    let codeBlockContent: string[] = [];
-    let codeBlockKey = '';
 
     const flushList = () => {
         if (listItems.length > 0) {
             elements.push(
                 <ul key={`ul-${elements.length}`} className="list-disc pl-5 space-y-2">
                     {listItems.map((item, index) => (
-                       <li key={`li-${index}`} dangerouslySetInnerHTML={{ __html: item.replace(/`(.*?)`/g, '<code class="bg-muted px-1 py-0.5 rounded text-sm">$1</code>') }} />
+                       <li key={`li-${index}`} dangerouslySetInnerHTML={{ __html: item.replace(/(\w+):/g, '<strong>$1:</strong>').replace(/`(.*?)`/g, '<code class="bg-muted px-1 py-0.5 rounded text-sm">$1</code>') }} />
                     ))}
                 </ul>
             );
             listItems = [];
         }
     };
-    
-    const flushCodeBlock = () => {
-        if (codeBlockContent.length > 0) {
-            elements.push(
-                <pre key={codeBlockKey} className="bg-muted p-4 rounded-md text-sm whitespace-pre-wrap">
-                    <code>{codeBlockContent.join('\n')}</code>
-                </pre>
-            );
-            codeBlockContent = [];
-            codeBlockKey = '';
-        }
-    }
 
     lines.forEach((line, i) => {
-        if (line.trim().startsWith('```')) {
-            flushList();
-            if (inCodeBlock) {
-                flushCodeBlock();
-            } else {
-                codeBlockKey = `code-${i}`;
-            }
-            inCodeBlock = !inCodeBlock;
-            return;
-        }
-
-        if (inCodeBlock) {
-            codeBlockContent.push(line);
-            return;
-        }
-
         if (line.startsWith('## ')) {
             flushList();
-            elements.push(<h3 key={`h3-${i}`} className="font-semibold text-xl text-primary mt-6 mb-3" dangerouslySetInnerHTML={{ __html: line.replace(/##\s?/, '') }}/>);
+            elements.push(<h3 key={`h3-${i}`} className="font-semibold text-xl text-primary mt-6 mb-3" dangerouslySetInnerHTML={{ __html: line.replace(/##\s?/, '').replace(/(\w+):/g, '<strong>$1:</strong>') }}/>);
         } else if (line.startsWith('### ')) {
             flushList();
-            elements.push(<h4 key={`h4-${i}`} className="font-semibold text-lg text-primary mt-4 mb-2" dangerouslySetInnerHTML={{ __html: line.replace(/###\s?/, '') }}/>);
+            elements.push(<h4 key={`h4-${i}`} className="font-semibold text-lg text-primary mt-4 mb-2" dangerouslySetInnerHTML={{ __html: line.replace(/###\s?/, '').replace(/(\w+):/g, '<strong>$1:</strong>') }}/>);
         } else if (line.startsWith('#### ')) {
             flushList();
-            elements.push(<h5 key={`h5-${i}`} className="font-semibold text-md text-primary mt-3 mb-1" dangerouslySetInnerHTML={{ __html: line.replace(/####\s?/, '') }}/>);
+            elements.push(<h5 key={`h5-${i}`} className="font-semibold text-md text-primary mt-3 mb-1" dangerouslySetInnerHTML={{ __html: line.replace(/####\s?/, '').replace(/(\w+):/g, '<strong>$1:</strong>') }}/>);
         } else if (line.trim().startsWith('- ')) {
             listItems.push(line.trim().substring(2));
         } else if (line.trim().length > 0) {
             flushList();
-            elements.push(<p key={i} dangerouslySetInnerHTML={{ __html: line.replace(/`(.*?)`/g, '<code class="bg-muted px-1 py-0.5 rounded text-sm">$1</code>') }} />);
+            elements.push(<p key={i} dangerouslySetInnerHTML={{ __html: line.replace(/(\w+):/g, '<strong>$1:</strong>').replace(/`(.*?)`/g, '<code class="bg-muted px-1 py-0.5 rounded text-sm">$1</code>') }} />);
         } else {
              flushList();
              elements.push(<div key={`br-${i}`} className="h-4" />);
@@ -110,7 +79,6 @@ const renderContent = (text: string | undefined) => {
     });
 
     flushList();
-    flushCodeBlock();
 
     return <div className="prose max-w-none text-foreground space-y-2">{elements}</div>;
 };
@@ -187,11 +155,14 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
                 const splitLines = doc.splitTextToSize(fullLineText, width);
                 
                 splitLines.forEach((splitLineText: string, lineIndex: number) => {
+                    addPageIfNeeded(12);
                     let currentX = xOffset;
                     let remainingTextInLine = splitLineText;
 
                     for (const part of textParts) {
                         if (remainingTextInLine.length === 0) break;
+
+                        const partTextToRender = remainingTextInLine.match(new RegExp(`^${part.text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`)) ? part.text : remainingTextInLine;
 
                         if (remainingTextInLine.startsWith(part.text)) {
                             doc.setFont('helvetica', part.bold ? 'bold' : 'normal');
@@ -207,7 +178,6 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
                     }
                     if (lineIndex < splitLines.length - 1) {
                          y += 12;
-                         addPageIfNeeded(12);
                     }
                 });
              }
