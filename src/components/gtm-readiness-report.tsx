@@ -34,45 +34,67 @@ const Section: React.FC<{ id: string; icon: React.ReactNode; title: string; chil
 const renderContent = (text: string | undefined) => {
     if (!text) return null;
 
-    const lines = text.split(/\r?\n/).filter(line => line.trim().length > 0);
+    const lines = text.split(/\r?\n/);
     const elements: JSX.Element[] = [];
     let listItems: string[] = [];
+    let inCodeBlock = false;
 
     const flushList = () => {
         if (listItems.length > 0) {
             elements.push(
                 <ul key={`ul-${elements.length}`} className="list-disc pl-5 space-y-2">
                     {listItems.map((item, index) => (
-                        <li key={`li-${index}`}>{item}</li>
+                       <li key={`li-${index}`} dangerouslySetInnerHTML={{ __html: item.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/`(.*?)`/g, '<code>$1</code>') }} />
                     ))}
                 </ul>
             );
             listItems = [];
         }
     };
-
+    
     lines.forEach((line, i) => {
-        if (line.startsWith('### ')) {
+        if (line.trim().startsWith('```')) {
+            flushList();
+            inCodeBlock = !inCodeBlock;
+            if (inCodeBlock) {
+                 elements.push(<pre key={`pre-start-${i}`} className="bg-muted p-4 rounded-md text-sm whitespace-pre-wrap"><code>);
+            } else {
+                 elements.push(</code></pre>);
+            }
+            return;
+        }
+
+        if (inCodeBlock) {
+            const lastElement = elements[elements.length - 1];
+            if (lastElement && lastElement.type === 'pre') {
+                 const newContent = (lastElement.props.children.props.children || '') + line + '\n';
+                 elements[elements.length - 1] = <pre {...lastElement.props}><code {...lastElement.props.children.props}>{newContent}</code></pre>;
+            }
+            return;
+        }
+
+
+        if (line.startsWith('## ')) {
+            flushList();
+            elements.push(<h3 key={`h3-${i}`} className="font-semibold text-xl text-primary mt-6 mb-3">{line.replace(/##\s?/, '')}</h3>);
+        } else if (line.startsWith('### ')) {
             flushList();
             elements.push(<h4 key={`h4-${i}`} className="font-semibold text-lg text-primary mt-4 mb-2">{line.replace(/###\s?/, '')}</h4>);
-        } else if (line.startsWith('- ')) {
-            listItems.push(line.substring(2));
-        } else if (line.startsWith('Focus:') || line.startsWith('Key Deliverables:')) {
+        } else if (line.startsWith('#### ')) {
             flushList();
-            const [label, ...rest] = line.split(':');
-            elements.push(
-                 <p key={i} className="mt-2">
-                    <span className="font-semibold">{label}:</span>
-                    {rest.join(':')}
-                </p>
-            )
+            elements.push(<h5 key={`h5-${i}`} className="font-semibold text-md text-primary mt-3 mb-1">{line.replace(/####\s?/, '')}</h5>);
+        } else if (line.trim().startsWith('- ')) {
+            listItems.push(line.trim().substring(2));
+        } else if (line.trim().length > 0) {
+            flushList();
+            elements.push(<p key={i} dangerouslySetInnerHTML={{ __html: line.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/`(.*?)`/g, '<code>$1</code>') }} />);
         } else {
-            flushList();
-            elements.push(<p key={i}>{line}</p>);
+             // We can push an empty line to preserve spacing if needed, e.g. <br /> or an empty p
+             elements.push(<div key={`br-${i}`} className="h-4" />);
         }
     });
 
-    flushList(); // Make sure any trailing list is rendered
+    flushList();
 
     return <div className="prose max-w-none text-foreground space-y-2">{elements}</div>;
 };
@@ -124,47 +146,162 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
     
     const renderMarkdown = (text: string | undefined) => {
         if(!text) return;
-        const cleanedText = text.replace(/\*/g, ''); // Remove asterisks for bolding, as we handle fonts manually
-        const lines = cleanedText.split(/\r?\n/).filter(line => line.trim().length > 0);
+        const cleanedText = text.replace(/`([^`]+)`/g, '$1');
+        const lines = cleanedText.split(/\r?\n/);
         
         lines.forEach((line) => {
-             if (line.startsWith('### ')) {
+             const boldRegex = /\*\*(.*?)\*\*/g;
+             let parts = [];
+             let lastIndex = 0;
+             let match;
+
+             while ((match = boldRegex.exec(line)) !== null) {
+                 if (match.index > lastIndex) {
+                     parts.push({text: line.substring(lastIndex, match.index), bold: false});
+                 }
+                 parts.push({text: match[1], bold: true});
+                 lastIndex = match.index + match[0].length;
+             }
+             if (lastIndex < line.length) {
+                parts.push({text: line.substring(lastIndex), bold: false});
+             }
+
+             const renderLine = (textParts: {text: string, bold: boolean}[], xOffset: number) => {
+                let currentX = xOffset;
+                textParts.forEach(part => {
+                    doc.setFont('helvetica', part.bold ? 'bold' : 'normal');
+                    doc.text(part.text, currentX, y);
+                    currentX += doc.getStringUnitWidth(part.text) * doc.getFontSize();
+                });
+             }
+
+
+             if (line.startsWith('## ')) {
+                addPageIfNeeded(24);
+                y += 14; 
+                doc.setFont('helvetica', 'bold');
+                doc.setFontSize(14);
+                doc.setTextColor(15, 23, 42); 
+                const splitTitle = doc.splitTextToSize(line.substring(3), pageWidth - margin * 2);
+                doc.text(splitTitle, margin, y);
+                y += (splitTitle.length * 14) + 6;
+            } else if (line.startsWith('### ')) {
                 addPageIfNeeded(20);
-                y += 10; // Extra space before subheading
+                y += 10;
                 doc.setFont('helvetica', 'bold');
                 doc.setFontSize(12);
-                doc.setTextColor(15, 23, 42); // foreground
+                doc.setTextColor(15, 23, 42);
                 const splitTitle = doc.splitTextToSize(line.substring(4), pageWidth - margin * 2);
                 doc.text(splitTitle, margin, y);
                 y += (splitTitle.length * 12) + 5;
+            } else if (line.startsWith('#### ')) {
+                addPageIfNeeded(18);
+                y += 8;
+                doc.setFont('helvetica', 'bold');
+                doc.setFontSize(11);
+                doc.setTextColor(15, 23, 42);
+                const splitTitle = doc.splitTextToSize(line.substring(5), pageWidth - margin * 2);
+                doc.text(splitTitle, margin, y);
+                y += (splitTitle.length * 11) + 4;
             } else if (line.trim().startsWith('- ')) {
                 addPageIfNeeded(15);
                 doc.setFont('helvetica', 'normal');
                 doc.setFontSize(10);
-                doc.setTextColor(51, 65, 85); // foreground
+                doc.setTextColor(51, 65, 85);
                 
                 const bullet = '\u2022';
                 const content = line.substring(line.indexOf('- ') + 2);
                 const indent = margin + 15;
                 const textWidth = pageWidth - indent - margin;
 
-                doc.text(bullet, margin, y, { baseline: 'top' });
-                const splitText = doc.splitTextToSize(content, textWidth);
-                doc.text(splitText, indent, y);
-                y += splitText.length * 12 + 5;
-            } else {
-                addPageIfNeeded(15);
-                doc.setFont('helvetica', 'normal');
-                doc.setFontSize(10);
-                doc.setTextColor(51, 65, 85); // foreground
+                doc.text(bullet, margin + 5, y, { baseline: 'top' });
                 
-                let content = line;
+                const boldContentRegex = /\*\*(.*?)\*\*/g;
+                let contentParts = [];
+                let lastContentIndex = 0;
+                let contentMatch;
+
+                 while ((contentMatch = boldContentRegex.exec(content)) !== null) {
+                     if (contentMatch.index > lastContentIndex) {
+                         contentParts.push({text: content.substring(lastContentIndex, contentMatch.index), bold: false});
+                     }
+                     contentParts.push({text: contentMatch[1], bold: true});
+                     lastContentIndex = contentMatch.index + contentMatch[0].length;
+                 }
+                 if (lastContentIndex < content.length) {
+                    contentParts.push({text: content.substring(lastContentIndex), bold: false});
+                 }
+                
+                let tempY = y;
+                let fullText = contentParts.map(p => p.text).join('');
+                const splitTextArray = doc.splitTextToSize(fullText, textWidth);
+
+                splitTextArray.forEach((textLine: string) => {
+                    let currentX = indent;
+                    let processedLength = 0;
+                    contentParts.forEach(part => {
+                        let remainingPart = part.text;
+                        while(remainingPart.length > 0) {
+                            const lineSubstr = textLine.substring(processedLength);
+                            if (lineSubstr.startsWith(remainingPart)) {
+                                doc.setFont('helvetica', part.bold ? 'bold' : 'normal');
+                                doc.text(remainingPart, currentX, tempY);
+                                currentX += doc.getStringUnitWidth(remainingPart) * doc.getFontSize();
+                                processedLength += remainingPart.length;
+                                remainingPart = '';
+                            } else if (remainingPart.startsWith(lineSubstr)) {
+                                doc.setFont('helvetica', part.bold ? 'bold' : 'normal');
+                                doc.text(lineSubstr, currentX, tempY);
+                                currentX += doc.getStringUnitWidth(lineSubstr) * doc.getFontSize();
+                                processedLength += lineSubstr.length;
+                                remainingPart = remainingPart.substring(lineSubstr.length);
+                                break; 
+                            } else {
+                                break;
+                            }
+                        }
+                    });
+                    tempY += 12;
+                });
+                y = tempY + 5;
+
+
+            } else if (line.trim().length > 0) {
+                addPageIfNeeded(15);
                 const indent = margin;
                 const textWidth = pageWidth - indent - margin;
-
-                const splitText = doc.splitTextToSize(content, textWidth);
-                doc.text(splitText, indent, y);
-                y += splitText.length * 12 + 5;
+                const splitText = doc.splitTextToSize(line, textWidth);
+                
+                splitText.forEach((textLine: string) => {
+                    let currentX = indent;
+                    let processedLength = 0;
+                    parts.forEach(part => {
+                        let remainingPart = part.text;
+                        while(remainingPart.length > 0) {
+                            const lineSubstr = textLine.substring(processedLength);
+                            if (lineSubstr.startsWith(remainingPart)) {
+                                doc.setFont('helvetica', part.bold ? 'bold' : 'normal');
+                                doc.text(remainingPart, currentX, tempY);
+                                currentX += doc.getStringUnitWidth(remainingPart) * doc.getFontSize();
+                                processedLength += remainingPart.length;
+                                remainingPart = '';
+                            } else if (remainingPart.startsWith(lineSubstr)) {
+                                doc.setFont('helvetica', part.bold ? 'bold' : 'normal');
+                                doc.text(lineSubstr, currentX, tempY);
+                                currentX += doc.getStringUnitWidth(lineSubstr) * doc.getFontSize();
+                                processedLength += lineSubstr.length;
+                                remainingPart = remainingPart.substring(lineSubstr.length);
+                                break;
+                            } else {
+                                break;
+                            }
+                        }
+                    });
+                    y += 12;
+                });
+                y += 5;
+            } else {
+                y += 6; // small space for empty lines
             }
         });
     };
