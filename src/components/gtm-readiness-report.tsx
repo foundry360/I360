@@ -34,7 +34,8 @@ const generateMarkdownExport = (title: string, result: GtmReadinessOutput): stri
 
   const processTextForMarkdown = (text: string | undefined): string => {
     if (!text) return '';
-    return text;
+    // This is a simple replacement, a more robust markdown generator would be needed for complex cases
+    return text.replace(/### (.*?)\n/g, '### $1\n').replace(/- \*\*(.*?)\*\*:(.*?)(\n|$)/g, '- **$1**:$2\n');
   };
 
   // Executive Summary
@@ -116,7 +117,9 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
                   <p><strong>GTM Strategy:</strong> {result.executiveSummary.primaryGtmStrategy}</p>
               </div>
               <Separator />
-              <div className="preserve-linebreaks text-foreground">{result.executiveSummary.briefOverviewOfFindings}</div>
+              <div className="prose max-w-none text-foreground preserve-linebreaks">
+                {"Line 1\nLine 2\nLine 3\n\nParagraph 2 starts here"}
+              </div>
           </>
       )},
       { id: 'critical-findings', icon: <Target className="h-8 w-8 text-destructive" />, title: 'Top 3 Critical Findings', content: (
@@ -182,3 +185,5 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
   );
 });
 GtmReadinessReport.displayName = "GtmReadinessReport";
+
+    
