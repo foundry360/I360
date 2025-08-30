@@ -107,7 +107,4 @@ body {
   body {
     @apply bg-background text-foreground;
   }
-  .preserve-linebreaks {
-    white-space: pre-wrap;
-  }
 }

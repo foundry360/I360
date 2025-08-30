@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { ArrowRight, BarChart, Clock, Target, Lightbulb, TrendingUp, PieChart, ListChecks, GanttChartSquare, Banknote, Flag, Download } from 'lucide-react';
 import { Badge } from './ui/badge';
 import { Separator } from './ui/separator';
+import ReactMarkdown from 'react-markdown';
 
 type GtmReadinessReportProps = {
   title: string;
@@ -117,8 +118,8 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
                   <p><strong>GTM Strategy:</strong> {result.executiveSummary.primaryGtmStrategy}</p>
               </div>
               <Separator />
-              <div className="preserve-linebreaks text-foreground">
-                {result.executiveSummary.briefOverviewOfFindings}
+              <div className="prose max-w-none text-foreground">
+                <ReactMarkdown>{result.executiveSummary.briefOverviewOfFindings}</ReactMarkdown>
               </div>
           </>
       )},
@@ -131,25 +132,25 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
                           <Badge variant={finding.impactLevel === 'High' ? 'destructive' : 'secondary'}>Impact: {finding.impactLevel}</Badge>
                       </CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-3 text-foreground">
-                      <p><strong>Business Impact:</strong> <span className="preserve-linebreaks">{finding.businessImpact}</span></p>
-                      <p><strong>Current State:</strong> <span className="preserve-linebreaks">{finding.currentState}</span></p>
-                      <p><strong>Root Cause:</strong> <span className="preserve-linebreaks">{finding.rootCauseAnalysis}</span></p>
-                      <p><strong>Stakeholder Impact:</strong> <span className="preserve-linebreaks">{finding.stakeholderImpact}</span></p>
-                      <p><strong>Urgency:</strong> <span className="preserve-linebreaks">{finding.urgencyRating}</span></p>
+                  <CardContent className="space-y-3 text-foreground prose max-w-none">
+                      <p><strong>Business Impact:</strong> <ReactMarkdown>{finding.businessImpact}</ReactMarkdown></p>
+                      <p><strong>Current State:</strong> <ReactMarkdown>{finding.currentState}</ReactMarkdown></p>
+                      <p><strong>Root Cause:</strong> <ReactMarkdown>{finding.rootCauseAnalysis}</ReactMarkdown></p>
+                      <p><strong>Stakeholder Impact:</strong> <ReactMarkdown>{finding.stakeholderImpact}</ReactMarkdown></p>
+                      <p><strong>Urgency:</strong> <ReactMarkdown>{finding.urgencyRating}</ReactMarkdown></p>
                   </CardContent>
               </Card>
           ))
       )},
-      { id: 'recommendation-summary', icon: <Lightbulb className="h-8 w-8 text-primary" />, title: 'Strategic Recommendation Summary', content: <div className="preserve-linebreaks text-foreground">{result.strategicRecommendationSummary}</div> },
-      { id: 'timeline-overview', icon: <Clock className="h-8 w-8 text-primary" />, title: 'Implementation Timeline Overview', content: <div className="preserve-linebreaks text-foreground">{result.implementationTimelineOverview}</div> },
-      { id: 'current-state-assessment', icon: <PieChart className="h-8 w-8 text-primary" />, title: 'Current State Assessment', content: <div className="preserve-linebreaks text-foreground">{result.currentStateAssessment}</div> },
-      { id: 'performance-benchmarking', icon: <TrendingUp className="h-8 w-8 text-primary" />, title: 'Performance Benchmarking', content: <div className="preserve-linebreaks text-foreground">{result.performanceBenchmarking}</div> },
-      { id: 'key-findings', icon: <Flag className="h-8 w-8 text-primary" />, title: 'Key Findings & Opportunities', content: <div className="preserve-linebreaks text-foreground">{result.keyFindingsAndOpportunities}</div> },
-      { id: 'prioritized-recommendations', icon: <ListChecks className="h-8 w-8 text-primary" />, title: 'Prioritized Recommendations', content: <div className="preserve-linebreaks text-foreground">{result.prioritizedRecommendations}</div> },
-      { id: 'implementation-roadmap', icon: <GanttChartSquare className="h-8 w-8 text-primary" />, title: 'Implementation Roadmap', content: <div className="preserve-linebreaks text-foreground">{result.implementationRoadmap}</div> },
-      { id: 'investment-roi', icon: <Banknote className="h-8 w-8 text-primary" />, title: 'Investment & ROI Analysis', content: <div className="preserve-linebreaks text-foreground">{result.investmentAndRoiAnalysis}</div> },
-      { id: 'next-steps', icon: <ArrowRight className="h-8 w-8 text-primary" />, title: 'Next Steps & Decision Framework', content: <div className="preserve-linebreaks text-foreground">{result.nextStepsAndDecisionFramework}</div> },
+      { id: 'recommendation-summary', icon: <Lightbulb className="h-8 w-8 text-primary" />, title: 'Strategic Recommendation Summary', content: <div className="prose max-w-none text-foreground"><ReactMarkdown>{result.strategicRecommendationSummary}</ReactMarkdown></div> },
+      { id: 'timeline-overview', icon: <Clock className="h-8 w-8 text-primary" />, title: 'Implementation Timeline Overview', content: <div className="prose max-w-none text-foreground"><ReactMarkdown>{result.implementationTimelineOverview}</ReactMarkdown></div> },
+      { id: 'current-state-assessment', icon: <PieChart className="h-8 w-8 text-primary" />, title: 'Current State Assessment', content: <div className="prose max-w-none text-foreground"><ReactMarkdown>{result.currentStateAssessment}</ReactMarkdown></div> },
+      { id: 'performance-benchmarking', icon: <TrendingUp className="h-8 w-8 text-primary" />, title: 'Performance Benchmarking', content: <div className="prose max-w-none text-foreground"><ReactMarkdown>{result.performanceBenchmarking}</ReactMarkdown></div> },
+      { id: 'key-findings', icon: <Flag className="h-8 w-8 text-primary" />, title: 'Key Findings & Opportunities', content: <div className="prose max-w-none text-foreground"><ReactMarkdown>{result.keyFindingsAndOpportunities}</ReactMarkdown></div> },
+      { id: 'prioritized-recommendations', icon: <ListChecks className="h-8 w-8 text-primary" />, title: 'Prioritized Recommendations', content: <div className="prose max-w-none text-foreground"><ReactMarkdown>{result.prioritizedRecommendations}</ReactMarkdown></div> },
+      { id: 'implementation-roadmap', icon: <GanttChartSquare className="h-8 w-8 text-primary" />, title: 'Implementation Roadmap', content: <div className="prose max-w-none text-foreground"><ReactMarkdown>{result.implementationRoadmap}</ReactMarkdown></div> },
+      { id: 'investment-roi', icon: <Banknote className="h-8 w-8 text-primary" />, title: 'Investment & ROI Analysis', content: <div className="prose max-w-none text-foreground"><ReactMarkdown>{result.investmentAndRoiAnalysis}</ReactMarkdown></div> },
+      { id: 'next-steps', icon: <ArrowRight className="h-8 w-8 text-primary" />, title: 'Next Steps & Decision Framework', content: <div className="prose max-w-none text-foreground"><ReactMarkdown>{result.nextStepsAndDecisionFramework}</ReactMarkdown></div> },
     ];
 
   return (
