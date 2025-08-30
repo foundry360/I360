@@ -18,14 +18,12 @@ import { useUser } from '@/contexts/user-context';
 import { updateUserProfile } from '@/services/auth-service';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
-import { Separator } from '@/components/ui/separator';
-import { useRouter } from 'next/navigation';
 import Cookies from 'js-cookie';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 export default function CompanyProfilePage() {
   const { user, loading: userLoading, reloadUser } = useUser();
   const { toast } = useToast();
-  const router = useRouter();
 
   const [displayName, setDisplayName] = React.useState('');
   const [email, setEmail] = React.useState('');
@@ -39,9 +37,14 @@ export default function CompanyProfilePage() {
 
   React.useEffect(() => {
     if (user) {
-      // Check for the server-set cookie to determine connection status
-      const accessToken = Cookies.get('google-access-token');
-      setIsGoogleConnected(!!accessToken);
+      // Check for the server-set cookie to determine connection status.
+      // Note: This cookie is http-only and cannot be read by JS, 
+      // so we check for its existence on the server.
+      // For the client, we can infer connection if the user logged in with Google.
+      const isGoogleLogin = user.providerData.some(p => p.providerId === 'google.com');
+      const googleTokenExists = Cookies.get('google-access-token-exists');
+
+      setIsGoogleConnected(isGoogleLogin || googleTokenExists === 'true');
       
       setDisplayName(user.displayName || '');
       setEmail(user.email || '');
@@ -98,27 +101,6 @@ export default function CompanyProfilePage() {
           fileInputRef.current.value = '';
         }
         setAvatarFile(null); 
-    }
-  };
-  
-  const handleConnectGoogle = async () => {
-    // Clear any potentially stale token before starting the flow.
-    Cookies.remove('google-access-token');
-    try {
-      const response = await fetch('/api/auth/google/consent-url');
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to get consent URL.');
-      }
-      const { url } = await response.json();
-      router.push(url);
-    } catch (error) {
-        console.error('Error starting Google connection:', error);
-        toast({
-            variant: 'destructive',
-            title: 'Connection failed',
-            description: 'Could not connect your Google account.',
-        });
     }
   };
 
@@ -200,19 +182,16 @@ export default function CompanyProfilePage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="flex items-center justify-between p-4 border rounded-lg">
-                <div>
-                    <h3 className="font-medium">Google Workspace</h3>
-                    <p className="text-sm text-muted-foreground">
-                        {isGoogleConnected ? "Connected" : "Not Connected"}
-                    </p>
-                </div>
-                {isGoogleConnected ? (
-                    <Button variant="destructive" disabled>Disconnect</Button>
-                ) : (
-                    <Button onClick={handleConnectGoogle}>Connect</Button>
-                )}
-            </div>
+            <Alert variant={isGoogleConnected ? "default" : "destructive"}>
+                <AlertTitle>
+                  {isGoogleConnected ? "Google Account Connected" : "Google Account Not Connected"}
+                </AlertTitle>
+                <AlertDescription>
+                  {isGoogleConnected 
+                    ? "Your Google account is connected, allowing access to services like Google Drive."
+                    : "Connect your Google account by signing out and signing back in using the 'Sign in with Google' option."}
+                </AlertDescription>
+            </Alert>
           </CardContent>
         </Card>
       </div>
