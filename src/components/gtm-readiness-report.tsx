@@ -4,12 +4,9 @@ import * as React from 'react';
 import type { GtmReadinessOutput } from '@/ai/flows/gtm-readiness-flow';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, BarChart, Clock, Target, Lightbulb, TrendingUp, PieChart, ListChecks, GanttChartSquare, Banknote, Flag } from 'lucide-react';
+import { ArrowRight, BarChart, Clock, Target, Lightbulb, TrendingUp, PieChart, ListChecks, GanttChartSquare, Banknote, Flag, Download } from 'lucide-react';
 import { Badge } from './ui/badge';
 import { Separator } from './ui/separator';
-import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
-
 
 type GtmReadinessReportProps = {
   title: string;
@@ -48,7 +45,7 @@ const renderContent = (text: string | undefined) => {
                          if (parts.length > 1) {
                              return (
                                  <li key={`li-${index}`} className="text-foreground">
-                                     <strong>{parts[0]}:</strong>
+                                     <span className="font-semibold">{parts[0]}:</span>
                                      {parts[1]}
                                  </li>
                              );
@@ -66,13 +63,13 @@ const renderContent = (text: string | undefined) => {
 
         if (cleanedLine.startsWith('## ')) {
             flushList();
-            elements.push(<h3 key={`h3-${i}`} className="text-foreground text-lg mt-6 mb-3">{cleanedLine.replace(/##\s?/, '')}</h3>);
+            elements.push(<h3 key={`h3-${i}`} className="text-foreground text-lg font-semibold mt-6 mb-3">{cleanedLine.replace(/##\s?/, '')}</h3>);
         } else if (cleanedLine.startsWith('### ')) {
             flushList();
-            elements.push(<h4 key={`h4-${i}`} className="text-foreground text-base mt-4 mb-2">{cleanedLine.replace(/###\s?/, '')}</h4>);
+            elements.push(<h4 key={`h4-${i}`} className="text-foreground text-base font-semibold mt-4 mb-2">{cleanedLine.replace(/###\s?/, '')}</h4>);
         } else if (cleanedLine.startsWith('#### ')) {
             flushList();
-            elements.push(<h5 key={`h5-${i}`} className="text-foreground text-sm mt-3 mb-1">{cleanedLine.replace(/####\s?/, '')}</h5>);
+            elements.push(<h5 key={`h5-${i}`} className="text-foreground text-sm font-semibold mt-3 mb-1">{cleanedLine.replace(/####\s?/, '')}</h5>);
         } else if (cleanedLine.trim().startsWith('- ')) {
             const itemText = cleanedLine.trim().substring(2);
             listItems.push(itemText);
@@ -90,52 +87,69 @@ const renderContent = (text: string | undefined) => {
     return <div className="prose max-w-none text-foreground space-y-2">{elements}</div>;
 };
 
-export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessReportProps>(({ title, result, onComplete }, ref) => {
-  const reportContentRef = React.useRef<HTMLDivElement>(null);
+const generateMarkdown = (title: string, result: GtmReadinessOutput): string => {
+  let markdown = `# ${title}\n\n`;
+  markdown += `Generated on ${new Date().toLocaleDateString()}\n\n`;
 
-  const handlePrint = () => {
-      const input = reportContentRef.current;
-      if (!input) {
-          console.error("Report content ref not found");
-          return;
-      }
-
-      html2canvas(input, {
-          scale: 2, // Higher scale for better quality
-          useCORS: true,
-          logging: true,
-          windowWidth: document.documentElement.offsetWidth,
-          windowHeight: document.documentElement.offsetHeight,
-      }).then(canvas => {
-          const imgData = canvas.toDataURL('image/png');
-          const pdf = new jsPDF('p', 'mm', 'a4');
-          const pdfWidth = pdf.internal.pageSize.getWidth();
-          const pdfHeight = pdf.internal.pageSize.getHeight();
-          const canvasWidth = canvas.width;
-          const canvasHeight = canvas.height;
-          const ratio = canvasWidth / canvasHeight;
-          const imgWidth = pdfWidth;
-          const imgHeight = imgWidth / ratio;
-          
-          let heightLeft = imgHeight;
-          let position = 0;
-
-          pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-          heightLeft -= pdfHeight;
-
-          while (heightLeft > 0) {
-              position = heightLeft - imgHeight;
-              pdf.addPage();
-              pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-              heightLeft -= pdfHeight;
-          }
-          pdf.save('GTM-Readiness-Report.pdf');
-      });
+  const processTextForMarkdown = (text: string | undefined): string => {
+    if (!text) return '';
+    return text.replace(/`([^`]+)`/g, '`$1`').replace(/\*\*/g, '**');
   };
 
-  React.useImperativeHandle(ref, () => ({
-      handlePrint
-  }));
+  // Executive Summary
+  markdown += `## Executive Summary\n\n`;
+  markdown += `**Overall Readiness:** ${result.executiveSummary.overallReadinessScore}%\n`;
+  markdown += `**Company Profile:** ${result.executiveSummary.companyStageAndFte}\n`;
+  markdown += `**Industry:** ${result.executiveSummary.industrySector}\n`;
+  markdown += `**GTM Strategy:** ${result.executiveSummary.primaryGtmStrategy}\n\n`;
+  markdown += `${processTextForMarkdown(result.executiveSummary.briefOverviewOfFindings)}\n\n`;
+
+  // Top 3 Critical Findings
+  markdown += `## Top 3 Critical Findings\n\n`;
+  result.top3CriticalFindings.forEach(finding => {
+    markdown += `### ${finding.findingTitle}\n\n`;
+    markdown += `**Impact Level:** ${finding.impactLevel}\n\n`;
+    markdown += `**Business Impact:** ${finding.businessImpact}\n\n`;
+    markdown += `**Current State:** ${finding.currentState}\n\n`;
+    markdown += `**Root Cause:** ${finding.rootCauseAnalysis}\n\n`;
+    markdown += `**Stakeholder Impact:** ${finding.stakeholderImpact}\n\n`;
+    markdown += `**Urgency:** ${finding.urgencyRating}\n\n`;
+  });
+
+  const reportSectionsMd = [
+    { title: 'Strategic Recommendation Summary', content: result.strategicRecommendationSummary },
+    { title: 'Implementation Timeline Overview', content: result.implementationTimelineOverview },
+    { title: 'Current State Assessment', content: result.currentStateAssessment },
+    { title: 'Performance Benchmarking', content: result.performanceBenchmarking },
+    { title: 'Key Findings & Opportunities', content: result.keyFindingsAndOpportunities },
+    { title: 'Prioritized Recommendations', content: result.prioritizedRecommendations },
+    { title: 'Implementation Roadmap', content: result.implementationRoadmap },
+    { title: 'Investment & ROI Analysis', content: result.investmentAndRoiAnalysis },
+    { title: 'Next Steps & Decision Framework', content: result.nextStepsAndDecisionFramework },
+  ];
+
+  reportSectionsMd.forEach(section => {
+    markdown += `## ${section.title}\n\n`;
+    markdown += `${processTextForMarkdown(section.content)}\n\n`;
+  });
+
+  return markdown;
+};
+
+export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessReportProps>(({ title, result, onComplete }, ref) => {
+  const handleExport = () => {
+    const markdownContent = generateMarkdown(title, result);
+    const blob = new Blob([markdownContent], { type: 'text/markdown;charset=utf-8;' });
+    const link = document.createElement('a');
+    if (link.href) {
+      URL.revokeObjectURL(link.href);
+    }
+    link.href = URL.createObjectURL(blob);
+    link.download = 'GTM-Readiness-Report.md';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   if (!result || !result.executiveSummary) {
     return (
@@ -194,7 +208,6 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
 
   return (
     <div className="bg-muted" ref={ref}>
-       <div ref={reportContentRef}>
         <div className="space-y-6 p-6">
             <div className="bg-background p-8 rounded-lg shadow-sm">
                 <div className="text-center pb-4 border-b mb-6">
@@ -212,11 +225,14 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
                 </div>
             </div>
         </div>
-      </div>
       <div className="flex justify-between items-center gap-4 p-6 bg-background rounded-lg shadow-sm">
           <p className="text-xs text-muted-foreground">PROPRIETARY & CONFIDENTIAL</p>
           <div className="flex gap-4">
               <Button variant="outline" onClick={onComplete}>Done</Button>
+              <Button onClick={handleExport}>
+                <Download className="mr-2 h-4 w-4" />
+                Export to Markdown
+              </Button>
           </div>
       </div>
     </div>

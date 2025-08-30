@@ -20,7 +20,7 @@ export default function ReportPage() {
     const [assessment, setAssessment] = React.useState<Assessment | null>(null);
     const [loading, setLoading] = React.useState(true);
     const [error, setError] = React.useState<string | null>(null);
-    const reportRef = React.useRef<{ handlePrint: () => void }>(null);
+    const reportRef = React.useRef<HTMLDivElement>(null);
 
     React.useEffect(() => {
         if (!assessmentId) return;
@@ -53,14 +53,6 @@ export default function ReportPage() {
         fetchAssessment();
     }, [assessmentId]);
 
-    const handleExportClick = () => {
-        if (reportRef.current) {
-            reportRef.current.handlePrint();
-        } else {
-            console.error("Export function not available on report component.");
-        }
-    }
-    
     const getReportTitle = () => {
         if (!assessment) return '';
         const name = assessment.name || '';
@@ -122,10 +114,6 @@ export default function ReportPage() {
                             <p className="text-muted-foreground">GTM Readiness Report</p>
                         </div>
                     </div>
-                    <Button onClick={handleExportClick}>
-                        <Download className="mr-2 h-4 w-4" />
-                        Export to PDF
-                    </Button>
                 </div>
                 <Separator />
                 <GtmReadinessReport ref={reportRef} title={reportTitle} result={assessment.result} onComplete={() => router.back()} />
