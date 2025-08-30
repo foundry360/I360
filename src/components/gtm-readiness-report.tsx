@@ -36,21 +36,32 @@ const renderMarkdown = (text: string | undefined) => {
     return (
         <div className="prose prose-sm max-w-none text-foreground">
             {lines.map((line, index) => {
-                if (line.startsWith('##')) {
-                    return <h3 key={index} className="text-lg font-semibold mt-4">{line.replace(/##\s?/, '')}</h3>;
+                if (line.startsWith('###')) {
+                    return <h3 key={index} className="text-lg font-semibold mt-4 mb-2">{line.replace(/###\s?/, '')}</h3>;
+                }
+                if (line.startsWith('- **')) {
+                    const content = line.substring(2);
+                    const parts = content.split(':**');
+                    if (parts.length > 1) {
+                         return (
+                            <div key={index} className="!mt-2 flex">
+                                <span className="mr-2">–</span>
+                                <div>
+                                    <strong>{parts[0].replace(/\*\*/g, '')}:</strong>
+                                    {parts.slice(1).join(':**')}
+                                </div>
+                            </div>
+                        );
+                    }
                 }
                 if (line.startsWith('- ')) {
                     const content = line.substring(2);
-                    const parts = content.split(':');
-                    if (parts.length > 1) {
-                        return (
-                            <p key={index} className="!mt-2">
-                                <strong className="font-semibold">{parts[0]}:</strong>
-                                {parts.slice(1).join(':')}
-                            </p>
-                        );
-                    }
-                    return <p key={index} className="!mt-2">{content}</p>;
+                    return (
+                        <div key={index} className="!mt-2 flex">
+                             <span className="mr-2">–</span>
+                             <p>{content}</p>
+                        </div>
+                    );
                 }
                 return <p key={index} className="!mt-2">{line}</p>;
             })}
