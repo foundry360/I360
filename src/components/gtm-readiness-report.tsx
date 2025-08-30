@@ -48,11 +48,9 @@ const renderContent = (text: string | undefined) => {
         if (listItems.length > 0) {
             elements.push(
                 <ul key={`ul-${elements.length}`} className="list-disc pl-5 space-y-2">
-                    {listItems.map((item, index) => {
-                       const formattedItem = item
-                        .replace(/(- Focus:|- Key Deliverables:)/g, '<strong>$1</strong>');
-                       return <li key={`li-${index}`} className="text-foreground" dangerouslySetInnerHTML={{ __html: formattedItem }} />
-                    })}
+                    {listItems.map((item, index) => (
+                        <li key={`li-${index}`} className="text-foreground">{item}</li>
+                    ))}
                 </ul>
             );
             listItems = [];
@@ -62,18 +60,18 @@ const renderContent = (text: string | undefined) => {
     lines.forEach((line, i) => {
         if (line.startsWith('## ')) {
             flushList();
-            elements.push(<h3 key={`h3-${i}`} className="text-foreground text-base mt-6 mb-3" dangerouslySetInnerHTML={{ __html: line.replace(/##\s?/, '') }}/>);
+            elements.push(<h3 key={`h3-${i}`} className="text-foreground text-base mt-6 mb-3">{line.replace(/##\s?/, '')}</h3>);
         } else if (line.startsWith('### ')) {
             flushList();
-            elements.push(<h4 key={`h4-${i}`} className="text-foreground text-base mt-4 mb-2" dangerouslySetInnerHTML={{ __html: line.replace(/###\s?/, '') }}/>);
+            elements.push(<h4 key={`h4-${i}`} className="text-foreground text-base mt-4 mb-2">{line.replace(/###\s?/, '')}</h4>);
         } else if (line.startsWith('#### ')) {
             flushList();
-            elements.push(<h5 key={`h5-${i}`} className="text-foreground text-base mt-3 mb-1" dangerouslySetInnerHTML={{ __html: line.replace(/####\s?/, '') }}/>);
+            elements.push(<h5 key={`h5-${i}`} className="text-foreground text-base mt-3 mb-1">{line.replace(/####\s?/, '')}</h5>);
         } else if (line.trim().startsWith('- ')) {
             listItems.push(line.trim().substring(2));
         } else if (line.trim().length > 0) {
             flushList();
-            elements.push(<p key={i} className="text-foreground" dangerouslySetInnerHTML={{ __html: line.replace(/`(.*?)`/g, '<code class="bg-muted px-1 py-0.5 rounded text-sm">$1</code>') }} />);
+            elements.push(<p key={i} className="text-foreground">{line}</p>);
         } else {
              flushList();
              elements.push(<div key={`br-${i}`} className="h-4" />);
@@ -420,4 +418,6 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
 GtmReadinessReport.displayName = "GtmReadinessReport";
 
     
+    
+
     
