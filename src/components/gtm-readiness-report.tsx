@@ -79,6 +79,12 @@ const generateMarkdownExport = (title: string, result: GtmReadinessOutput): stri
 
 export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessReportProps>(({ title, result, onComplete }, ref) => {
   
+  React.useEffect(() => {
+    if (result) {
+      console.log("Verifying GTM Readiness Report Data:", result);
+    }
+  }, [result]);
+
   if (!result || !result.executiveSummary || !result.top3CriticalFindings) {
     return (
         <div className="flex flex-col items-center justify-center h-full gap-4 p-6">
