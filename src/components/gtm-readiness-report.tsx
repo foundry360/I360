@@ -28,13 +28,6 @@ const Section: React.FC<{ id: string; icon: React.ReactNode; title: string; chil
   </Card>
 );
 
-const renderSimpleContent = (text: string | undefined) => {
-    if (!text) return null;
-    return text.split('\n').map((line, index) => (
-        <p key={index}>{line}</p>
-    ));
-};
-
 const generateMarkdownExport = (title: string, result: GtmReadinessOutput): string => {
   let markdown = `# ${title}\n\n`;
   markdown += `Generated on ${new Date().toLocaleDateString()}\n\n`;
@@ -123,7 +116,7 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
                   <p><strong>GTM Strategy:</strong> {result.executiveSummary.primaryGtmStrategy}</p>
               </div>
               <Separator />
-              <div className="prose prose-sm max-w-none text-foreground space-y-2">{renderSimpleContent(result.executiveSummary.briefOverviewOfFindings)}</div>
+              <div className="prose prose-sm max-w-none text-foreground space-y-2 whitespace-pre-wrap">{result.executiveSummary.briefOverviewOfFindings}</div>
           </>
       )},
       { id: 'critical-findings', icon: <Target className="h-8 w-8 text-destructive" />, title: 'Top 3 Critical Findings', content: (
@@ -136,24 +129,24 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
                       </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-3 prose prose-sm max-w-none text-foreground">
-                      <p><strong>Business Impact:</strong> {finding.businessImpact}</p>
-                      <p><strong>Current State:</strong> {finding.currentState}</p>
-                      <p><strong>Root Cause:</strong> {finding.rootCauseAnalysis}</p>
-                      <p><strong>Stakeholder Impact:</strong> {finding.stakeholderImpact}</p>
-                      <p><strong>Urgency:</strong> {finding.urgencyRating}</p>
+                      <p className="whitespace-pre-wrap"><strong>Business Impact:</strong> {finding.businessImpact}</p>
+                      <p className="whitespace-pre-wrap"><strong>Current State:</strong> {finding.currentState}</p>
+                      <p className="whitespace-pre-wrap"><strong>Root Cause:</strong> {finding.rootCauseAnalysis}</p>
+                      <p className="whitespace-pre-wrap"><strong>Stakeholder Impact:</strong> {finding.stakeholderImpact}</p>
+                      <p className="whitespace-pre-wrap"><strong>Urgency:</strong> {finding.urgencyRating}</p>
                   </CardContent>
               </Card>
           ))
       )},
-      { id: 'recommendation-summary', icon: <Lightbulb className="h-8 w-8 text-primary" />, title: 'Strategic Recommendation Summary', content: renderSimpleContent(result.strategicRecommendationSummary) },
-      { id: 'timeline-overview', icon: <Clock className="h-8 w-8 text-primary" />, title: 'Implementation Timeline Overview', content: renderSimpleContent(result.implementationTimelineOverview) },
-      { id: 'current-state-assessment', icon: <PieChart className="h-8 w-8 text-primary" />, title: 'Current State Assessment', content: renderSimpleContent(result.currentStateAssessment) },
-      { id: 'performance-benchmarking', icon: <TrendingUp className="h-8 w-8 text-primary" />, title: 'Performance Benchmarking', content: renderSimpleContent(result.performanceBenchmarking) },
-      { id: 'key-findings', icon: <Flag className="h-8 w-8 text-primary" />, title: 'Key Findings & Opportunities', content: renderSimpleContent(result.keyFindingsAndOpportunities) },
-      { id: 'prioritized-recommendations', icon: <ListChecks className="h-8 w-8 text-primary" />, title: 'Prioritized Recommendations', content: renderSimpleContent(result.prioritizedRecommendations) },
-      { id: 'implementation-roadmap', icon: <GanttChartSquare className="h-8 w-8 text-primary" />, title: 'Implementation Roadmap', content: renderSimpleContent(result.implementationRoadmap) },
-      { id: 'investment-roi', icon: <Banknote className="h-8 w-8 text-primary" />, title: 'Investment & ROI Analysis', content: renderSimpleContent(result.investmentAndRoiAnalysis) },
-      { id: 'next-steps', icon: <ArrowRight className="h-8 w-8 text-primary" />, title: 'Next Steps & Decision Framework', content: renderSimpleContent(result.nextStepsAndDecisionFramework) },
+      { id: 'recommendation-summary', icon: <Lightbulb className="h-8 w-8 text-primary" />, title: 'Strategic Recommendation Summary', content: <p className="whitespace-pre-wrap">{result.strategicRecommendationSummary}</p> },
+      { id: 'timeline-overview', icon: <Clock className="h-8 w-8 text-primary" />, title: 'Implementation Timeline Overview', content: <p className="whitespace-pre-wrap">{result.implementationTimelineOverview}</p> },
+      { id: 'current-state-assessment', icon: <PieChart className="h-8 w-8 text-primary" />, title: 'Current State Assessment', content: <p className="whitespace-pre-wrap">{result.currentStateAssessment}</p> },
+      { id: 'performance-benchmarking', icon: <TrendingUp className="h-8 w-8 text-primary" />, title: 'Performance Benchmarking', content: <p className="whitespace-pre-wrap">{result.performanceBenchmarking}</p> },
+      { id: 'key-findings', icon: <Flag className="h-8 w-8 text-primary" />, title: 'Key Findings & Opportunities', content: <p className="whitespace-pre-wrap">{result.keyFindingsAndOpportunities}</p> },
+      { id: 'prioritized-recommendations', icon: <ListChecks className="h-8 w-8 text-primary" />, title: 'Prioritized Recommendations', content: <p className="whitespace-pre-wrap">{result.prioritizedRecommendations}</p> },
+      { id: 'implementation-roadmap', icon: <GanttChartSquare className="h-8 w-8 text-primary" />, title: 'Implementation Roadmap', content: <p className="whitespace-pre-wrap">{result.implementationRoadmap}</p> },
+      { id: 'investment-roi', icon: <Banknote className="h-8 w-8 text-primary" />, title: 'Investment & ROI Analysis', content: <p className="whitespace-pre-wrap">{result.investmentAndRoiAnalysis}</p> },
+      { id: 'next-steps', icon: <ArrowRight className="h-8 w-8 text-primary" />, title: 'Next Steps & Decision Framework', content: <p className="whitespace-pre-wrap">{result.nextStepsAndDecisionFramework}</p> },
     ];
 
   return (
@@ -189,3 +182,4 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
   );
 });
 GtmReadinessReport.displayName = "GtmReadinessReport";
+
