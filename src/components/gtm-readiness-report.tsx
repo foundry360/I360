@@ -117,8 +117,8 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
                   <p><strong>GTM Strategy:</strong> {result.executiveSummary.primaryGtmStrategy}</p>
               </div>
               <Separator />
-              <div className="prose max-w-none text-foreground preserve-linebreaks">
-                {"Line 1\nLine 2\nLine 3\n\nParagraph 2 starts here"}
+              <div className="preserve-linebreaks text-foreground">
+                {result.executiveSummary.briefOverviewOfFindings}
               </div>
           </>
       )},
@@ -185,5 +185,3 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
   );
 });
 GtmReadinessReport.displayName = "GtmReadinessReport";
-
-    

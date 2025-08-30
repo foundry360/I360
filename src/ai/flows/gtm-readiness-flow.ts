@@ -218,11 +218,11 @@ const prompt = ai.definePrompt({
           Based on the data above, generate a detailed GTM Readiness Assessment report structured according to the GtmReadinessOutputSchema.
           Calculate an overall readiness score based on a holistic analysis of all inputs. Be direct, professional, and use the language of a seasoned RevOps consultant.
           
-          **IMPORTANT FORMATTING INSTRUCTIONS:**
-          For all long-form text fields (like 'briefOverviewOfFindings', 'currentStateAssessment', etc.), use markdown for structure. 
+          **VERY IMPORTANT FORMATTING INSTRUCTIONS:**
+          For all long-form text fields (like 'briefOverviewOfFindings', 'currentStateAssessment', etc.), YOU MUST use markdown for structure. 
           - Use '###' for subheadings.
           - Use '- ' for list items.
-          - **Crucially, ensure you use newline characters (\n) to separate paragraphs, headings, and list items to ensure proper rendering.**
+          - **Crucially, you absolutely must use literal newline characters (\n) to separate paragraphs, headings, and list items to ensure proper rendering. This is not optional.** For example, to create a heading followed by a list, the output MUST look like this: '### My Heading\n- First item\n- Second item'. Do not skip the \n characters.
   `,
 });
 
