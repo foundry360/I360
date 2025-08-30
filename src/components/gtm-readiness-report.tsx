@@ -49,7 +49,7 @@ const renderContent = (text: string | undefined) => {
             elements.push(
                 <ul key={`ul-${elements.length}`} className="list-disc pl-5 space-y-2">
                     {listItems.map((item, index) => (
-                       <li key={`li-${index}`} dangerouslySetInnerHTML={{ __html: item.replace(/^([^:]+):/g, '<strong>$1:</strong>').replace(/`(.*?)`/g, '<code class="bg-muted px-1 py-0.5 rounded text-sm">$1</code>') }} />
+                       <li key={`li-${index}`} dangerouslySetInnerHTML={{ __html: item.replace(/^(.+?):/g, '<strong>$1:</strong>').replace(/`(.*?)`/g, '<code class="bg-muted px-1 py-0.5 rounded text-sm">$1</code>') }} />
                     ))}
                 </ul>
             );
@@ -60,18 +60,18 @@ const renderContent = (text: string | undefined) => {
     lines.forEach((line, i) => {
         if (line.startsWith('## ')) {
             flushList();
-            elements.push(<h3 key={`h3-${i}`} className="font-semibold text-xl text-primary mt-6 mb-3" dangerouslySetInnerHTML={{ __html: line.replace(/##\s?/, '').replace(/(\w+):/g, '<strong>$1:</strong>') }}/>);
+            elements.push(<h3 key={`h3-${i}`} className="font-semibold text-xl text-primary mt-6 mb-3" dangerouslySetInnerHTML={{ __html: line.replace(/##\s?/, '').replace(/(.+?):/g, '<strong>$1:</strong>') }}/>);
         } else if (line.startsWith('### ')) {
             flushList();
-            elements.push(<h4 key={`h4-${i}`} className="font-semibold text-lg text-primary mt-4 mb-2" dangerouslySetInnerHTML={{ __html: line.replace(/###\s?/, '').replace(/(\w+):/g, '<strong>$1:</strong>') }}/>);
+            elements.push(<h4 key={`h4-${i}`} className="font-semibold text-lg text-primary mt-4 mb-2" dangerouslySetInnerHTML={{ __html: line.replace(/###\s?/, '').replace(/(.+?):/g, '<strong>$1:</strong>') }}/>);
         } else if (line.startsWith('#### ')) {
             flushList();
-            elements.push(<h5 key={`h5-${i}`} className="font-semibold text-md text-primary mt-3 mb-1" dangerouslySetInnerHTML={{ __html: line.replace(/####\s?/, '').replace(/(\w+):/g, '<strong>$1:</strong>') }}/>);
+            elements.push(<h5 key={`h5-${i}`} className="font-semibold text-md text-primary mt-3 mb-1" dangerouslySetInnerHTML={{ __html: line.replace(/####\s?/, '').replace(/(.+?):/g, '<strong>$1:</strong>') }}/>);
         } else if (line.trim().startsWith('- ')) {
             listItems.push(line.trim().substring(2));
         } else if (line.trim().length > 0) {
             flushList();
-            elements.push(<p key={i} dangerouslySetInnerHTML={{ __html: line.replace(/(\w+):/g, '<strong>$1:</strong>').replace(/`(.*?)`/g, '<code class="bg-muted px-1 py-0.5 rounded text-sm">$1</code>') }} />);
+            elements.push(<p key={i} dangerouslySetInnerHTML={{ __html: line.replace(/(.+?):/g, '<strong>$1:</strong>').replace(/`(.*?)`/g, '<code class="bg-muted px-1 py-0.5 rounded text-sm">$1</code>') }} />);
         } else {
              flushList();
              elements.push(<div key={`br-${i}`} className="h-4" />);
@@ -134,7 +134,7 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
         const lines = cleanedText.split(/\r?\n/);
         
         lines.forEach((line) => {
-             const boldRegex = /^([^:]+):/g;
+             const boldRegex = /^(.+?):/g;
              let parts = [];
              let lastIndex = 0;
              let match;
@@ -223,7 +223,7 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
 
                 doc.text(bullet, margin + 5, y, { baseline: 'top' });
                 
-                const contentBoldRegex = /^([^:]+):/g;
+                const contentBoldRegex = /^(.+?):/g;
                 let contentParts = [];
                 let lastContentIndex = 0;
                 let contentMatch;
