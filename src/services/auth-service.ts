@@ -7,8 +7,6 @@ import {
   signOut as firebaseSignOut,
   onAuthStateChanged,
   updateProfile,
-  GoogleAuthProvider,
-  signInWithPopup,
   type User,
 } from 'firebase/auth';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
@@ -32,36 +30,6 @@ export const signIn = async (email: string, password: string) => {
     throw error;
   }
 };
-
-export const signInWithGoogle = async () => {
-    const provider = new GoogleAuthProvider();
-    provider.addScope('https://www.googleapis.com/auth/drive.readonly');
-
-    try {
-        const result = await signInWithPopup(auth, provider);
-        const credential = GoogleAuthProvider.credentialFromResult(result);
-        const accessToken = credential?.accessToken;
-        
-        // This is a simplified way to get the refresh token if available.
-        // In a real production app, you would handle the OAuth flow on the server
-        // to securely store the refresh token.
-        const gapiCredential = credential?.toJSON();
-        const refreshToken = (gapiCredential as any)?.refreshToken;
-        
-        if (accessToken) {
-            await fetch('/api/auth/store-token', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ accessToken, refreshToken }),
-            });
-        }
-        return result;
-    } catch (error) {
-        console.error("Error during Google sign-in:", error);
-        throw error;
-    }
-};
-
 
 export const signOut = async () => {
   await firebaseSignOut(auth);

@@ -18,8 +18,6 @@ import { useUser } from '@/contexts/user-context';
 import { updateUserProfile } from '@/services/auth-service';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
-import Cookies from 'js-cookie';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 export default function CompanyProfilePage() {
   const { user, loading: userLoading, reloadUser } = useUser();
@@ -28,46 +26,15 @@ export default function CompanyProfilePage() {
   const [displayName, setDisplayName] = React.useState('');
   const [email, setEmail] = React.useState('');
   const [phone, setPhone] = React.useState('');
-  const [avatarFile, setAvatarFile] = React.useState<File | null>(null);
-  const [avatarPreview, setAvatarPreview] = React.useState<string | null>(null);
   const [loading, setLoading] = React.useState(false);
-  const [isGoogleConnected, setIsGoogleConnected] = React.useState(false);
   
-  const fileInputRef = React.useRef<HTMLInputElement>(null);
-
   React.useEffect(() => {
     if (user) {
-      // Check for the server-set cookie to determine connection status.
-      // Note: This cookie is http-only and cannot be read by JS, 
-      // so we check for its existence on the server.
-      // For the client, we can infer connection if the user logged in with Google.
-      const isGoogleLogin = user.providerData.some(p => p.providerId === 'google.com');
-      const googleTokenExists = Cookies.get('google-access-token-exists');
-
-      setIsGoogleConnected(isGoogleLogin || googleTokenExists === 'true');
-      
       setDisplayName(user.displayName || '');
       setEmail(user.email || '');
-      setAvatarPreview(user.photoURL || null);
     }
   }, [user]);
 
-  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      setAvatarFile(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setAvatarPreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleAvatarClick = () => {
-    fileInputRef.current?.click();
-  };
-  
   const handleUpdateProfile = async () => {
     if (!user) {
         toast({
@@ -81,7 +48,6 @@ export default function CompanyProfilePage() {
     try {
         await updateUserProfile(user, {
             displayName: displayName,
-            photoFile: avatarFile || undefined,
         });
         await reloadUser();
         toast({
@@ -97,10 +63,6 @@ export default function CompanyProfilePage() {
         });
     } finally {
         setLoading(false);
-        if (fileInputRef.current) {
-          fileInputRef.current.value = '';
-        }
-        setAvatarFile(null); 
     }
   };
 
@@ -130,29 +92,15 @@ export default function CompanyProfilePage() {
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="flex items-center space-x-4">
-              <input
-                type="file"
-                ref={fileInputRef}
-                onChange={handleAvatarChange}
-                className="hidden"
-                accept="image/*"
-              />
               <Avatar
-                className="h-24 w-24 cursor-pointer"
-                onClick={handleAvatarClick}
+                className="h-24 w-24"
               >
                 <AvatarImage
-                  src={avatarPreview ?? ''}
+                  src={user?.photoURL ?? ''}
                   data-ai-hint="user avatar"
                 />
                 <AvatarFallback>{getInitials(displayName)}</AvatarFallback>
               </Avatar>
-              <div className="flex flex-col gap-2">
-                 <Button variant="outline" size="sm" onClick={handleAvatarClick}>
-                    Change Avatar
-                 </Button>
-                 <p className="text-xs text-muted-foreground">JPG, GIF or PNG. 1MB max.</p>
-              </div>
             </div>
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
@@ -172,26 +120,6 @@ export default function CompanyProfilePage() {
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Update Profile
             </Button>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>Connected Accounts</CardTitle>
-            <CardDescription>
-              Manage your connected third-party accounts.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Alert variant={isGoogleConnected ? "default" : "destructive"}>
-                <AlertTitle>
-                  {isGoogleConnected ? "Google Account Connected" : "Google Account Not Connected"}
-                </AlertTitle>
-                <AlertDescription>
-                  {isGoogleConnected 
-                    ? "Your Google account is connected, allowing access to services like Google Drive."
-                    : "Connect your Google account by signing out and signing back in using the 'Sign in with Google' option."}
-                </AlertDescription>
-            </Alert>
           </CardContent>
         </Card>
       </div>
