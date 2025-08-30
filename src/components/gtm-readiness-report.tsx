@@ -39,7 +39,6 @@ const formatText = (text: string | undefined): string => {
 const renderContent = (text: string | undefined) => {
     if (!text) return null;
 
-    // Ensure headers always start on a new line
     const processedText = text.replace(/(\S)(##|###)/g, '$1\n$2');
     const lines = processedText.split(/\r?\n/);
     const elements: (JSX.Element | string)[] = [];
@@ -63,18 +62,18 @@ const renderContent = (text: string | undefined) => {
     lines.forEach((line, i) => {
         if (line.startsWith('## ')) {
             flushList();
-            elements.push(<h3 key={`h3-${i}`} className="text-xl text-foreground mt-6 mb-3" dangerouslySetInnerHTML={{ __html: line.replace(/##\s?/, '') }}/>);
+            elements.push(<h3 key={`h3-${i}`} className="text-foreground font-semibold mt-6 mb-3" dangerouslySetInnerHTML={{ __html: line.replace(/##\s?/, '') }}/>);
         } else if (line.startsWith('### ')) {
             flushList();
-            elements.push(<h4 key={`h4-${i}`} className="text-lg text-foreground mt-4 mb-2" dangerouslySetInnerHTML={{ __html: line.replace(/###\s?/, '') }}/>);
+            elements.push(<h4 key={`h4-${i}`} className="text-foreground font-semibold mt-4 mb-2" dangerouslySetInnerHTML={{ __html: line.replace(/###\s?/, '') }}/>);
         } else if (line.startsWith('#### ')) {
             flushList();
-            elements.push(<h5 key={`h5-${i}`} className="text-md text-foreground mt-3 mb-1" dangerouslySetInnerHTML={{ __html: line.replace(/####\s?/, '') }}/>);
+            elements.push(<h5 key={`h5-${i}`} className="text-foreground font-semibold mt-3 mb-1" dangerouslySetInnerHTML={{ __html: line.replace(/####\s?/, '') }}/>);
         } else if (line.trim().startsWith('- ')) {
             listItems.push(line.trim().substring(2));
         } else if (line.trim().length > 0) {
             flushList();
-            elements.push(<p key={i} dangerouslySetInnerHTML={{ __html: line.replace(/`(.*?)`/g, '<code class="bg-muted px-1 py-0.5 rounded text-sm">$1</code>') }} />);
+            elements.push(<p key={i} className="text-foreground" dangerouslySetInnerHTML={{ __html: line.replace(/`(.*?)`/g, '<code class="bg-muted px-1 py-0.5 rounded text-sm">$1</code>') }} />);
         } else {
              flushList();
              elements.push(<div key={`br-${i}`} className="h-4" />);
