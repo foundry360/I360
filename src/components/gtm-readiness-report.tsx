@@ -31,11 +31,6 @@ const Section: React.FC<{ id: string; icon: React.ReactNode; title: string; chil
   </Card>
 );
 
-const formatText = (text: string | undefined): string => {
-    if (!text) return '';
-    return text;
-}
-
 const renderContent = (text: string | undefined) => {
     if (!text) return null;
 
@@ -49,7 +44,7 @@ const renderContent = (text: string | undefined) => {
             elements.push(
                 <ul key={`ul-${elements.length}`} className="list-disc pl-5 space-y-2">
                     {listItems.map((item, index) => (
-                        <li key={`li-${index}`} className="text-foreground">{item}</li>
+                         <li key={`li-${index}`} className="text-foreground" dangerouslySetInnerHTML={{ __html: item }}></li>
                     ))}
                 </ul>
             );
@@ -58,20 +53,23 @@ const renderContent = (text: string | undefined) => {
     };
 
     lines.forEach((line, i) => {
-        if (line.startsWith('## ')) {
+        const cleanedLine = line.replace(/`([^`]+)`/g, '$1').replace(/\*\*/g, '');
+
+        if (cleanedLine.startsWith('## ')) {
             flushList();
-            elements.push(<h3 key={`h3-${i}`} className="text-foreground text-base mt-6 mb-3">{line.replace(/##\s?/, '')}</h3>);
-        } else if (line.startsWith('### ')) {
+            elements.push(<h3 key={`h3-${i}`} className="text-foreground text-base mt-6 mb-3">{cleanedLine.replace(/##\s?/, '')}</h3>);
+        } else if (cleanedLine.startsWith('### ')) {
             flushList();
-            elements.push(<h4 key={`h4-${i}`} className="text-foreground text-base mt-4 mb-2">{line.replace(/###\s?/, '')}</h4>);
-        } else if (line.startsWith('#### ')) {
+            elements.push(<h4 key={`h4-${i}`} className="text-foreground text-base mt-4 mb-2">{cleanedLine.replace(/###\s?/, '')}</h4>);
+        } else if (cleanedLine.startsWith('#### ')) {
             flushList();
-            elements.push(<h5 key={`h5-${i}`} className="text-foreground text-base mt-3 mb-1">{line.replace(/####\s?/, '')}</h5>);
-        } else if (line.trim().startsWith('- ')) {
-            listItems.push(line.trim().substring(2));
-        } else if (line.trim().length > 0) {
+            elements.push(<h5 key={`h5-${i}`} className="text-foreground text-base mt-3 mb-1">{cleanedLine.replace(/####\s?/, '')}</h5>);
+        } else if (cleanedLine.trim().startsWith('- ')) {
+            const itemText = cleanedLine.trim().substring(2);
+            listItems.push(itemText);
+        } else if (cleanedLine.trim().length > 0) {
             flushList();
-            elements.push(<p key={i} className="text-foreground">{line}</p>);
+            elements.push(<p key={i} className="text-foreground">{cleanedLine}</p>);
         } else {
              flushList();
              elements.push(<div key={`br-${i}`} className="h-4" />);
@@ -102,16 +100,15 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
         }
     };
     
-    // Title
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(24);
-    doc.setTextColor(111, 71, 251); // primary color
+    doc.setTextColor(111, 71, 251); 
     doc.text(title, pageWidth / 2, y, { align: 'center' });
     y += 20;
 
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(10);
-    doc.setTextColor(100, 116, 139); // muted-foreground
+    doc.setTextColor(100, 116, 139); 
     doc.text(`Generated on ${new Date().toLocaleDateString()}`, pageWidth / 2, y, { align: 'center' });
     y += 30;
 
@@ -122,144 +119,71 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
         doc.setTextColor(111, 71, 251);
         doc.text(title, margin, y);
         y += 20;
-        doc.setDrawColor(226, 232, 240); // border color
+        doc.setDrawColor(226, 232, 240); 
         doc.line(margin, y - 10, pageWidth - margin, y - 10);
+        y += 10;
         content();
-        y += 20; // Space after section
+        y += 20; 
     };
     
     const renderMarkdown = (text: string | undefined) => {
         if(!text) return;
-        const cleanedText = text.replace(/`([^`]+)`/g, '$1').replace(/\*\*/g, '');
-        const lines = cleanedText.split(/\r?\n/);
+        const processedText = text.replace(/`([^`]+)`/g, '$1').replace(/\*\*/g, '').replace(/(\S)(##|###)/g, '$1\n$2');
+        const lines = processedText.split(/\r?\n/);
         
         lines.forEach((line) => {
-             const boldRegex = /^(Focus:|Key Deliverables:)/g;
-             let parts = [];
-             let lastIndex = 0;
-             let match;
-
-             while ((match = boldRegex.exec(line)) !== null) {
-                 if (match.index > lastIndex) {
-                     parts.push({text: line.substring(lastIndex, match.index), bold: false});
-                 }
-                 parts.push({text: `${match[1]}`, bold: true});
-                 lastIndex = match.index + match[0].length;
-             }
-             if (lastIndex < line.length) {
-                parts.push({text: line.substring(lastIndex), bold: false});
-             }
-
-             const renderLine = (textParts: {text: string, bold: boolean}[], xOffset: number, width: number) => {
-                const fullLineText = textParts.map(p => p.text).join('');
-                const splitLines = doc.splitTextToSize(fullLineText, width);
-                
-                splitLines.forEach((splitLineText: string, lineIndex: number) => {
-                    addPageIfNeeded(12);
-                    let currentX = xOffset;
-                    let remainingTextInLine = splitLineText;
-
-                    for (const part of textParts) {
-                        if (remainingTextInLine.length === 0) break;
-
-                        const partTextToRender = remainingTextInLine.match(new RegExp(`^${part.text.replace(/[.*+?^${}()|[[\\]\\\\]/g, '\\$&')}`)) ? part.text : remainingTextInLine;
-
-                        if (remainingTextInLine.startsWith(part.text)) {
-                            doc.setFont('helvetica', part.bold ? 'bold' : 'normal');
-                            doc.text(part.text, currentX, y);
-                            currentX += doc.getStringUnitWidth(part.text) * doc.getFontSize();
-                            remainingTextInLine = remainingTextInLine.substring(part.text.length);
-                        } else if (part.text.startsWith(remainingTextInLine)) {
-                            doc.setFont('helvetica', part.bold ? 'bold' : 'normal');
-                            doc.text(remainingTextInLine, currentX, y);
-                            currentX += doc.getStringUnitWidth(remainingTextInLine) * doc.getFontSize();
-                            remainingTextInLine = '';
-                        }
-                    }
-                    if (lineIndex < splitLines.length - 1) {
-                         y += 12;
-                    }
-                });
-             }
-
-
-             if (line.startsWith('## ')) {
-                addPageIfNeeded(24);
-                y += 14; 
+             const trimmedLine = line.trim();
+             addPageIfNeeded(15); 
+            
+             if (trimmedLine.startsWith('## ')) {
+                y += 10;
                 doc.setFont('helvetica', 'bold');
                 doc.setFontSize(14);
                 doc.setTextColor(15, 23, 42); 
-                const splitTitle = doc.splitTextToSize(line.substring(3), pageWidth - margin * 2);
+                const splitTitle = doc.splitTextToSize(trimmedLine.substring(3), pageWidth - margin * 2);
                 doc.text(splitTitle, margin, y);
                 y += (splitTitle.length * 14) + 6;
-            } else if (line.startsWith('### ')) {
-                addPageIfNeeded(20);
-                y += 10;
+            } else if (trimmedLine.startsWith('### ')) {
+                y += 8;
                 doc.setFont('helvetica', 'bold');
                 doc.setFontSize(12);
                 doc.setTextColor(15, 23, 42);
-                const splitTitle = doc.splitTextToSize(line.substring(4), pageWidth - margin * 2);
+                const splitTitle = doc.splitTextToSize(trimmedLine.substring(4), pageWidth - margin * 2);
                 doc.text(splitTitle, margin, y);
                 y += (splitTitle.length * 12) + 5;
-            } else if (line.startsWith('#### ')) {
-                addPageIfNeeded(18);
-                y += 8;
-                doc.setFont('helvetica', 'bold');
-                doc.setFontSize(11);
-                doc.setTextColor(15, 23, 42);
-                const splitTitle = doc.splitTextToSize(line.substring(5), pageWidth - margin * 2);
-                doc.text(splitTitle, margin, y);
-                y += (splitTitle.length * 11) + 4;
-            } else if (line.trim().startsWith('- ')) {
-                addPageIfNeeded(15);
+            } else if (trimmedLine.startsWith('- ')) {
                 doc.setFont('helvetica', 'normal');
                 doc.setFontSize(10);
                 doc.setTextColor(51, 65, 85);
                 
                 const bullet = '\u2022';
-                const content = line.substring(line.indexOf('- ') + 2);
+                const content = trimmedLine.substring(2);
                 const indent = margin + 15;
                 const textWidth = pageWidth - indent - margin;
 
-                doc.text(bullet, margin + 5, y, { baseline: 'top' });
-                
-                const contentBoldRegex = /^(Focus:|Key Deliverables:)/;
-                let contentParts = [];
-                let lastContentIndex = 0;
-                let contentMatch;
+                const splitContent = doc.splitTextToSize(content, textWidth);
 
-                 while ((contentMatch = contentBoldRegex.exec(content)) !== null) {
-                     if (contentMatch.index > lastContentIndex) {
-                         contentParts.push({text: content.substring(lastContentIndex, contentMatch.index), bold: false});
-                     }
-                     contentParts.push({text: `${contentMatch[1]}`, bold: true});
-                     lastContentIndex = contentMatch.index + contentMatch[0].length;
-                 }
-                 if (lastContentIndex < content.length) {
-                    contentParts.push({text: content.substring(lastContentIndex), bold: false});
-                 }
-                
-                renderLine(contentParts, indent, textWidth);
-                y += 12 + 5;
+                addPageIfNeeded(splitContent.length * 12 + 5);
+                doc.text(bullet, margin + 5, y);
+                doc.text(splitContent, indent, y);
+                y += (splitContent.length * 12) + 5;
 
-
-            } else if (line.trim().length > 0) {
-                addPageIfNeeded(15);
+            } else if (trimmedLine.length > 0) {
                 doc.setFont('helvetica', 'normal');
                 doc.setFontSize(10);
                 doc.setTextColor(51, 65, 85);
-                const indent = margin;
-                const textWidth = pageWidth - indent - margin;
+                const textWidth = pageWidth - margin * 2;
                 
-                renderLine(parts, indent, textWidth);
-                y += 12 + 5;
+                const splitText = doc.splitTextToSize(trimmedLine, textWidth);
+                addPageIfNeeded(splitText.length * 12 + 5);
+                doc.text(splitText, margin, y);
+                y += (splitText.length * 12) + 5;
             } else {
-                y += 6; // small space for empty lines
+                y += 6; 
             }
         });
     };
 
-    // Executive Summary
     renderSection('Executive Summary', () => {
         autoTable(doc, {
             startY: y,
@@ -282,7 +206,6 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
         y += splitText.length * 12;
     });
 
-    // Top 3 Critical Findings
     renderSection('Top 3 Critical Findings', () => {
         result.top3CriticalFindings.forEach(finding => {
             const tableBody = [
@@ -295,9 +218,9 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
             addPageIfNeeded(100);
             doc.setFont('helvetica', 'bold');
             doc.setFontSize(12);
-            doc.setTextColor(15, 23, 42); // card-foreground
+            doc.setTextColor(15, 23, 42); 
             doc.text(finding.findingTitle, margin, y);
-            y += 15;
+            y += 20;
             autoTable(doc, {
                 startY: y,
                 head: [[`Impact: ${finding.impactLevel}`]],
@@ -354,7 +277,7 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
                   <p><strong className="text-primary">GTM Strategy:</strong> {result.executiveSummary.primaryGtmStrategy}</p>
               </div>
               <Separator />
-              <p className="text-foreground" dangerouslySetInnerHTML={{ __html: formatText(result.executiveSummary.briefOverviewOfFindings) }} />
+              <p className="text-foreground">{result.executiveSummary.briefOverviewOfFindings}</p>
           </>
       )},
       { id: 'critical-findings', icon: <Target className="h-8 w-8 text-destructive" />, title: 'Top 3 Critical Findings', content: (
@@ -367,11 +290,11 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
                       </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-3 prose max-w-none text-foreground">
-                      <p><strong className="text-primary">Business Impact:</strong> <span dangerouslySetInnerHTML={{ __html: formatText(finding.businessImpact) }} /></p>
-                      <p><strong className="text-primary">Current State:</strong> <span dangerouslySetInnerHTML={{ __html: formatText(finding.currentState) }} /></p>
-                      <p><strong className="text-primary">Root Cause:</strong> <span dangerouslySetInnerHTML={{ __html: formatText(finding.rootCauseAnalysis) }} /></p>
-                      <p><strong className="text-primary">Stakeholder Impact:</strong> <span dangerouslySetInnerHTML={{ __html: formatText(finding.stakeholderImpact) }} /></p>
-                      <p><strong className="text-primary">Urgency:</strong> <span dangerouslySetInnerHTML={{ __html: formatText(finding.urgencyRating) }} /></p>
+                      <p><strong className="text-primary">Business Impact:</strong> {finding.businessImpact}</p>
+                      <p><strong className="text-primary">Current State:</strong> {finding.currentState}</p>
+                      <p><strong className="text-primary">Root Cause:</strong> {finding.rootCauseAnalysis}</p>
+                      <p><strong className="text-primary">Stakeholder Impact:</strong> {finding.stakeholderImpact}</p>
+                      <p><strong className="text-primary">Urgency:</strong> {finding.urgencyRating}</p>
                   </CardContent>
               </Card>
           ))
@@ -416,8 +339,5 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
   );
 });
 GtmReadinessReport.displayName = "GtmReadinessReport";
-
-    
-    
 
     
