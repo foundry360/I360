@@ -116,7 +116,7 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
                   <p><strong>GTM Strategy:</strong> {result.executiveSummary.primaryGtmStrategy}</p>
               </div>
               <Separator />
-              <div className="prose prose-sm max-w-none text-foreground space-y-2 whitespace-pre-wrap">{result.executiveSummary.briefOverviewOfFindings}</div>
+              <p className="whitespace-pre-wrap">{result.executiveSummary.briefOverviewOfFindings}</p>
           </>
       )},
       { id: 'critical-findings', icon: <Target className="h-8 w-8 text-destructive" />, title: 'Top 3 Critical Findings', content: (
@@ -182,4 +182,3 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
   );
 });
 GtmReadinessReport.displayName = "GtmReadinessReport";
-
