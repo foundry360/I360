@@ -77,6 +77,17 @@ const generateMarkdownExport = (title: string, result: GtmReadinessOutput): stri
   return markdown;
 };
 
+// A simple utility to render text with line breaks as separate paragraphs.
+const renderFormattedText = (text: string) => {
+  if (!text) return null;
+  return text.split('\n').map((line, index) => (
+    <p key={index} className="text-sm">
+      {line}
+    </p>
+  ));
+};
+
+
 export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessReportProps>(({ title, result, onComplete }, ref) => {
   
   if (!result || !result.executiveSummary || !result.top3CriticalFindings) {
@@ -116,7 +127,7 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
                   <p><strong>GTM Strategy:</strong> {result.executiveSummary.primaryGtmStrategy}</p>
               </div>
               <Separator />
-              <p className="whitespace-pre-wrap">{result.executiveSummary.briefOverviewOfFindings}</p>
+              <div className="prose prose-sm max-w-none text-foreground">{renderFormattedText(result.executiveSummary.briefOverviewOfFindings)}</div>
           </>
       )},
       { id: 'critical-findings', icon: <Target className="h-8 w-8 text-destructive" />, title: 'Top 3 Critical Findings', content: (
@@ -138,15 +149,15 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
               </Card>
           ))
       )},
-      { id: 'recommendation-summary', icon: <Lightbulb className="h-8 w-8 text-primary" />, title: 'Strategic Recommendation Summary', content: <p className="whitespace-pre-wrap">{result.strategicRecommendationSummary}</p> },
-      { id: 'timeline-overview', icon: <Clock className="h-8 w-8 text-primary" />, title: 'Implementation Timeline Overview', content: <p className="whitespace-pre-wrap">{result.implementationTimelineOverview}</p> },
-      { id: 'current-state-assessment', icon: <PieChart className="h-8 w-8 text-primary" />, title: 'Current State Assessment', content: <p className="whitespace-pre-wrap">{result.currentStateAssessment}</p> },
-      { id: 'performance-benchmarking', icon: <TrendingUp className="h-8 w-8 text-primary" />, title: 'Performance Benchmarking', content: <p className="whitespace-pre-wrap">{result.performanceBenchmarking}</p> },
-      { id: 'key-findings', icon: <Flag className="h-8 w-8 text-primary" />, title: 'Key Findings & Opportunities', content: <p className="whitespace-pre-wrap">{result.keyFindingsAndOpportunities}</p> },
-      { id: 'prioritized-recommendations', icon: <ListChecks className="h-8 w-8 text-primary" />, title: 'Prioritized Recommendations', content: <p className="whitespace-pre-wrap">{result.prioritizedRecommendations}</p> },
-      { id: 'implementation-roadmap', icon: <GanttChartSquare className="h-8 w-8 text-primary" />, title: 'Implementation Roadmap', content: <p className="whitespace-pre-wrap">{result.implementationRoadmap}</p> },
-      { id: 'investment-roi', icon: <Banknote className="h-8 w-8 text-primary" />, title: 'Investment & ROI Analysis', content: <p className="whitespace-pre-wrap">{result.investmentAndRoiAnalysis}</p> },
-      { id: 'next-steps', icon: <ArrowRight className="h-8 w-8 text-primary" />, title: 'Next Steps & Decision Framework', content: <p className="whitespace-pre-wrap">{result.nextStepsAndDecisionFramework}</p> },
+      { id: 'recommendation-summary', icon: <Lightbulb className="h-8 w-8 text-primary" />, title: 'Strategic Recommendation Summary', content: <div className="prose prose-sm max-w-none text-foreground">{renderFormattedText(result.strategicRecommendationSummary)}</div> },
+      { id: 'timeline-overview', icon: <Clock className="h-8 w-8 text-primary" />, title: 'Implementation Timeline Overview', content: <div className="prose prose-sm max-w-none text-foreground">{renderFormattedText(result.implementationTimelineOverview)}</div> },
+      { id: 'current-state-assessment', icon: <PieChart className="h-8 w-8 text-primary" />, title: 'Current State Assessment', content: <div className="prose prose-sm max-w-none text-foreground">{renderFormattedText(result.currentStateAssessment)}</div> },
+      { id: 'performance-benchmarking', icon: <TrendingUp className="h-8 w-8 text-primary" />, title: 'Performance Benchmarking', content: <div className="prose prose-sm max-w-none text-foreground">{renderFormattedText(result.performanceBenchmarking)}</div> },
+      { id: 'key-findings', icon: <Flag className="h-8 w-8 text-primary" />, title: 'Key Findings & Opportunities', content: <div className="prose prose-sm max-w-none text-foreground">{renderFormattedText(result.keyFindingsAndOpportunities)}</div> },
+      { id: 'prioritized-recommendations', icon: <ListChecks className="h-8 w-8 text-primary" />, title: 'Prioritized Recommendations', content: <div className="prose prose-sm max-w-none text-foreground">{renderFormattedText(result.prioritizedRecommendations)}</div> },
+      { id: 'implementation-roadmap', icon: <GanttChartSquare className="h-8 w-8 text-primary" />, title: 'Implementation Roadmap', content: <div className="prose prose-sm max-w-none text-foreground">{renderFormattedText(result.implementationRoadmap)}</div> },
+      { id: 'investment-roi', icon: <Banknote className="h-8 w-8 text-primary" />, title: 'Investment & ROI Analysis', content: <div className="prose prose-sm max-w-none text-foreground">{renderFormattedText(result.investmentAndRoiAnalysis)}</div> },
+      { id: 'next-steps', icon: <ArrowRight className="h-8 w-8 text-primary" />, title: 'Next Steps & Decision Framework', content: <div className="prose prose-sm max-w-none text-foreground">{renderFormattedText(result.nextStepsAndDecisionFramework)}</div> },
     ];
 
   return (
