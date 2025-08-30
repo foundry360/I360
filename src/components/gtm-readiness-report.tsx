@@ -33,8 +33,7 @@ const Section: React.FC<{ id: string; icon: React.ReactNode; title: string; chil
 
 const formatText = (text: string | undefined): string => {
     if (!text) return '';
-    // Remove "**" and bold any word preceding a colon
-    return text.replace(/\*\*/g, '').replace(/(\w+):/g, '<strong>$1:</strong>');
+    return text.replace(/\*\*/g, '');
 }
 
 const renderContent = (text: string | undefined) => {
@@ -49,7 +48,7 @@ const renderContent = (text: string | undefined) => {
             elements.push(
                 <ul key={`ul-${elements.length}`} className="list-disc pl-5 space-y-2">
                     {listItems.map((item, index) => (
-                       <li key={`li-${index}`} dangerouslySetInnerHTML={{ __html: item.replace(/^(.*?):/, '<strong>$1:</strong>').replace(/`(.*?)`/g, '<code class="bg-muted px-1 py-0.5 rounded text-sm">$1</code>') }} />
+                       <li key={`li-${index}`} dangerouslySetInnerHTML={{ __html: item.replace(/`(.*?)`/g, '<code class="bg-muted px-1 py-0.5 rounded text-sm">$1</code>') }} />
                     ))}
                 </ul>
             );
@@ -60,18 +59,18 @@ const renderContent = (text: string | undefined) => {
     lines.forEach((line, i) => {
         if (line.startsWith('## ')) {
             flushList();
-            elements.push(<h3 key={`h3-${i}`} className="font-semibold text-xl text-primary mt-6 mb-3" dangerouslySetInnerHTML={{ __html: line.replace(/##\s?/, '').replace(/(.+?):/g, '<strong>$1:</strong>') }}/>);
+            elements.push(<h3 key={`h3-${i}`} className="font-semibold text-xl text-primary mt-6 mb-3" dangerouslySetInnerHTML={{ __html: line.replace(/##\s?/, '') }}/>);
         } else if (line.startsWith('### ')) {
             flushList();
-            elements.push(<h4 key={`h4-${i}`} className="font-semibold text-lg text-primary mt-4 mb-2" dangerouslySetInnerHTML={{ __html: line.replace(/###\s?/, '').replace(/(.+?):/g, '<strong>$1:</strong>') }}/>);
+            elements.push(<h4 key={`h4-${i}`} className="font-semibold text-lg text-primary mt-4 mb-2" dangerouslySetInnerHTML={{ __html: line.replace(/###\s?/, '') }}/>);
         } else if (line.startsWith('#### ')) {
             flushList();
-            elements.push(<h5 key={`h5-${i}`} className="font-semibold text-md text-primary mt-3 mb-1" dangerouslySetInnerHTML={{ __html: line.replace(/####\s?/, '').replace(/(.+?):/g, '<strong>$1:</strong>') }}/>);
+            elements.push(<h5 key={`h5-${i}`} className="font-semibold text-md text-primary mt-3 mb-1" dangerouslySetInnerHTML={{ __html: line.replace(/####\s?/, '') }}/>);
         } else if (line.trim().startsWith('- ')) {
             listItems.push(line.trim().substring(2));
         } else if (line.trim().length > 0) {
             flushList();
-            elements.push(<p key={i} dangerouslySetInnerHTML={{ __html: line.replace(/(.+?):/g, '<strong>$1:</strong>').replace(/`(.*?)`/g, '<code class="bg-muted px-1 py-0.5 rounded text-sm">$1</code>') }} />);
+            elements.push(<p key={i} dangerouslySetInnerHTML={{ __html: line.replace(/`(.*?)`/g, '<code class="bg-muted px-1 py-0.5 rounded text-sm">$1</code>') }} />);
         } else {
              flushList();
              elements.push(<div key={`br-${i}`} className="h-4" />);
@@ -162,7 +161,7 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
                     for (const part of textParts) {
                         if (remainingTextInLine.length === 0) break;
 
-                        const partTextToRender = remainingTextInLine.match(new RegExp(`^${part.text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`)) ? part.text : remainingTextInLine;
+                        const partTextToRender = remainingTextInLine.match(new RegExp(`^${part.text.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\$&')}`)) ? part.text : remainingTextInLine;
 
                         if (remainingTextInLine.startsWith(part.text)) {
                             doc.setFont('helvetica', part.bold ? 'bold' : 'normal');
@@ -348,10 +347,10 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
       { id: 'executive-summary', icon: <BarChart className="h-8 w-8 text-primary" />, title: 'Executive Summary', content: (
           <>
               <div className="grid grid-cols-2 gap-4">
-                  <p><strong className="font-semibold">Overall Readiness:</strong> <span className="font-bold text-lg text-primary">{result.executiveSummary.overallReadinessScore}%</span></p>
-                  <p><strong className="font-semibold">Company Profile:</strong> {result.executiveSummary.companyStageAndFte.replace(/\*/g, '')}</p>
-                  <p><strong className="font-semibold">Industry:</strong> {result.executiveSummary.industrySector.replace(/\*/g, '')}</p>
-                  <p><strong className="font-semibold">GTM Strategy:</strong> {result.executiveSummary.primaryGtmStrategy.replace(/\*/g, '')}</p>
+                  <p><strong>Overall Readiness:</strong> <span className="font-bold text-lg text-primary">{result.executiveSummary.overallReadinessScore}%</span></p>
+                  <p><strong>Company Profile:</strong> {result.executiveSummary.companyStageAndFte.replace(/\*/g, '')}</p>
+                  <p><strong>Industry:</strong> {result.executiveSummary.industrySector.replace(/\*/g, '')}</p>
+                  <p><strong>GTM Strategy:</strong> {result.executiveSummary.primaryGtmStrategy.replace(/\*/g, '')}</p>
               </div>
               <Separator />
               <p className="text-foreground" dangerouslySetInnerHTML={{ __html: formatText(result.executiveSummary.briefOverviewOfFindings) }} />
@@ -416,5 +415,3 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
   );
 });
 GtmReadinessReport.displayName = "GtmReadinessReport";
-
-    
