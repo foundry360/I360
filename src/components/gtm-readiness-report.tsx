@@ -82,28 +82,42 @@ const FormattedText = ({ text }: { text?: string }) => {
     return null;
   }
 
-  // Pre-process text to add structure
-  const formattedText = text
+  const processedText = text
     .replace(/###\s/g, '\n\n### ')
     .replace(/- \*\*/g, '\n- **')
-    .replace(/\*\*([^*]+)\*\*:/g, '\n**$1**:')
-    .replace(/^- /gm, '• ');
+    .replace(/\*\*([^*]+)\*\*:/g, '\n**$1**:');
 
-  // Split text into parts based on markdown-like syntax
-  const parts = formattedText.split(/(\n|###[^\n]+|\*\*[^*]+\*\*)/g);
-  
+  const paragraphs = processedText.split('\n').filter(p => p.trim() !== '');
+
   return (
-    <div className="preserve-linebreaks text-foreground">
-      {parts.map((part, index) => {
-        if (part.startsWith('### ')) {
-          return <h3 key={index} className="text-lg font-bold mt-4 mb-2">{part.slice(4)}</h3>;
-        } else if (part.startsWith('**') && part.endsWith('**')) {
-          return <strong key={index}>{part.slice(2, -2)}</strong>;
-        } else if (part === '\n') {
-          return <br key={index} />;
-        } else {
-          return part;
+    <div className="space-y-2 text-foreground">
+      {paragraphs.map((paragraph, pIndex) => {
+        if (paragraph.startsWith('### ')) {
+          return <h3 key={pIndex} className="text-lg font-bold mt-4 mb-2">{paragraph.substring(4)}</h3>;
         }
+
+        const subheadingMatch = paragraph.match(/^\*\*(.*?):\*\*(.*)/);
+        if (subheadingMatch) {
+            const title = subheadingMatch[1];
+            const content = subheadingMatch[2].trim();
+            return (
+                <div key={pIndex} className="mt-2">
+                    <h4 className="font-semibold text-base">{title}:</h4>
+                    {content && <p className="ml-1">{content.replace(/^- /gm, '• ')}</p>}
+                </div>
+            );
+        }
+        
+        if (paragraph.startsWith('- ') || paragraph.startsWith('• ')) {
+            return (
+                <div key={pIndex} className="flex flex-row items-start">
+                    <span className="mr-2 mt-1">•</span>
+                    <p className="flex-1">{paragraph.substring(2)}</p>
+                </div>
+            );
+        }
+
+        return <p key={pIndex}>{paragraph}</p>;
       })}
     </div>
   );
@@ -215,3 +229,4 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
   );
 });
 GtmReadinessReport.displayName = "GtmReadinessReport";
+
