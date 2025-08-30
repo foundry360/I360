@@ -33,15 +33,15 @@ const Section: React.FC<{ id: string; icon: React.ReactNode; title: string; chil
 
 const formatText = (text: string | undefined): string => {
     if (!text) return '';
-    // Bolds text between colons, like "Label: Value"
-    let formattedText = text.replace(/([^:\n]+:)/g, '<strong>$1</strong>');
-    return formattedText;
+    return text;
 }
 
 const renderContent = (text: string | undefined) => {
     if (!text) return null;
 
-    const lines = text.split(/\r?\n/);
+    // Ensure headers always start on a new line
+    const processedText = text.replace(/(\S)(##|###)/g, '$1\n$2');
+    const lines = processedText.split(/\r?\n/);
     const elements: (JSX.Element | string)[] = [];
     let listItems: string[] = [];
 
@@ -51,7 +51,6 @@ const renderContent = (text: string | undefined) => {
                 <ul key={`ul-${elements.length}`} className="list-disc pl-5 space-y-2">
                     {listItems.map((item, index) => {
                        const formattedItem = item
-                        .replace(/`(.*?)`/g, '<code class="bg-muted px-1 py-0.5 rounded text-sm">$1</code>')
                         .replace(/(- Focus:|- Key Deliverables:)/g, '<strong>$1</strong>');
                        return <li key={`li-${index}`} dangerouslySetInnerHTML={{ __html: formattedItem }} />
                     })}
@@ -420,3 +419,5 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
   );
 });
 GtmReadinessReport.displayName = "GtmReadinessReport";
+
+    
