@@ -8,7 +8,8 @@ import {
   onAuthStateChanged,
   updateProfile,
   GoogleAuthProvider,
-  signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   type User,
 } from 'firebase/auth';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
@@ -47,27 +48,36 @@ export const signInWithGoogle = async () => {
     });
 
     try {
-        const result = await signInWithPopup(auth, provider);
-        const credential = GoogleAuthProvider.credentialFromResult(result);
-        const accessToken = credential?.accessToken;
-        
-        // This is a special OAuth credential that includes the refresh token.
-        const gapiCredential = credential?.toJSON();
-        const refreshToken = (gapiCredential as any)?.refreshToken;
-        
-        if (accessToken) {
-             // Securely store tokens on the server via an API route.
-            await fetch('/api/auth/store-token', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ accessToken, refreshToken }),
-            });
-        }
+        await signInWithRedirect(auth, provider);
     } catch (error) {
-        console.error("Error during Google sign-in:", error);
+        console.error("Error during Google sign-in redirect:", error);
         throw error;
     }
 };
+
+export const handleRedirectResult = async () => {
+    try {
+        const result = await getRedirectResult(auth);
+        if (result) {
+            const credential = GoogleAuthProvider.credentialFromResult(result);
+            const accessToken = credential?.accessToken;
+            
+            const gapiCredential = credential?.toJSON();
+            const refreshToken = (gapiCredential as any)?.refreshToken;
+            
+            if (accessToken) {
+                await fetch('/api/auth/store-token', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ accessToken, refreshToken }),
+                });
+            }
+        }
+    } catch (error) {
+        console.error("Error handling redirect result:", error);
+    }
+};
+
 
 export const signOut = async () => {
   await firebaseSignOut(auth);
