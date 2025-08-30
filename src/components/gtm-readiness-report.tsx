@@ -28,18 +28,38 @@ const Section: React.FC<{ id: string; icon: React.ReactNode; title: string; chil
   </Card>
 );
 
-const renderSimpleContent = (text: string | undefined) => {
+const renderMarkdown = (text: string | undefined) => {
     if (!text) return null;
-    return text.split('\n').map((line, index) => {
-        if (line.trim() === '') return null;
-        if (line.startsWith('##')) {
-            return <h3 key={index} className="text-lg font-semibold mt-4">{line.replace(/##\s?/, '')}</h3>;
-        }
-        return <p key={index}>{line.replace(/-\s?/, '')}</p>;
-    });
+
+    const lines = text.split('\n').filter(line => line.trim() !== '');
+
+    return (
+        <div className="prose prose-sm max-w-none text-foreground">
+            {lines.map((line, index) => {
+                if (line.startsWith('##')) {
+                    return <h3 key={index} className="text-lg font-semibold mt-4">{line.replace(/##\s?/, '')}</h3>;
+                }
+                if (line.startsWith('- ')) {
+                    const content = line.substring(2);
+                    const parts = content.split(':');
+                    if (parts.length > 1) {
+                        return (
+                            <p key={index} className="!mt-2">
+                                <strong className="font-semibold">{parts[0]}:</strong>
+                                {parts.slice(1).join(':')}
+                            </p>
+                        );
+                    }
+                    return <p key={index} className="!mt-2">{content}</p>;
+                }
+                return <p key={index} className="!mt-2">{line}</p>;
+            })}
+        </div>
+    );
 };
 
-const generateMarkdown = (title: string, result: GtmReadinessOutput): string => {
+
+const generateMarkdownExport = (title: string, result: GtmReadinessOutput): string => {
   let markdown = `# ${title}\n\n`;
   markdown += `Generated on ${new Date().toLocaleDateString()}\n\n`;
 
@@ -103,7 +123,7 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
   }
 
   const handleExport = () => {
-    const markdownContent = generateMarkdown(title, result);
+    const markdownContent = generateMarkdownExport(title, result);
     const blob = new Blob([markdownContent], { type: 'text/markdown;charset=utf-8;' });
     const link = document.createElement('a');
     if (link.href) {
@@ -127,7 +147,7 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
                   <p><strong>GTM Strategy:</strong> {result.executiveSummary.primaryGtmStrategy}</p>
               </div>
               <Separator />
-              <div className="prose max-w-none text-foreground space-y-2">{renderSimpleContent(result.executiveSummary.briefOverviewOfFindings)}</div>
+              <div className="prose prose-sm max-w-none text-foreground space-y-2">{renderMarkdown(result.executiveSummary.briefOverviewOfFindings)}</div>
           </>
       )},
       { id: 'critical-findings', icon: <Target className="h-8 w-8 text-destructive" />, title: 'Top 3 Critical Findings', content: (
@@ -139,7 +159,7 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
                           <Badge variant={finding.impactLevel === 'High' ? 'destructive' : 'secondary'}>Impact: {finding.impactLevel}</Badge>
                       </CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-3 prose max-w-none text-foreground">
+                  <CardContent className="space-y-3 prose prose-sm max-w-none text-foreground">
                       <p><strong>Business Impact:</strong> {finding.businessImpact}</p>
                       <p><strong>Current State:</strong> {finding.currentState}</p>
                       <p><strong>Root Cause:</strong> {finding.rootCauseAnalysis}</p>
@@ -149,15 +169,15 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
               </Card>
           ))
       )},
-      { id: 'recommendation-summary', icon: <Lightbulb className="h-8 w-8 text-primary" />, title: 'Strategic Recommendation Summary', content: renderSimpleContent(result.strategicRecommendationSummary) },
-      { id: 'timeline-overview', icon: <Clock className="h-8 w-8 text-primary" />, title: 'Implementation Timeline Overview', content: renderSimpleContent(result.implementationTimelineOverview) },
-      { id: 'current-state-assessment', icon: <PieChart className="h-8 w-8 text-primary" />, title: 'Current State Assessment', content: renderSimpleContent(result.currentStateAssessment) },
-      { id: 'performance-benchmarking', icon: <TrendingUp className="h-8 w-8 text-primary" />, title: 'Performance Benchmarking', content: renderSimpleContent(result.performanceBenchmarking) },
-      { id: 'key-findings', icon: <Flag className="h-8 w-8 text-primary" />, title: 'Key Findings & Opportunities', content: renderSimpleContent(result.keyFindingsAndOpportunities) },
-      { id: 'prioritized-recommendations', icon: <ListChecks className="h-8 w-8 text-primary" />, title: 'Prioritized Recommendations', content: renderSimpleContent(result.prioritizedRecommendations) },
-      { id: 'implementation-roadmap', icon: <GanttChartSquare className="h-8 w-8 text-primary" />, title: 'Implementation Roadmap', content: renderSimpleContent(result.implementationRoadmap) },
-      { id: 'investment-roi', icon: <Banknote className="h-8 w-8 text-primary" />, title: 'Investment & ROI Analysis', content: renderSimpleContent(result.investmentAndRoiAnalysis) },
-      { id: 'next-steps', icon: <ArrowRight className="h-8 w-8 text-primary" />, title: 'Next Steps & Decision Framework', content: renderSimpleContent(result.nextStepsAndDecisionFramework) },
+      { id: 'recommendation-summary', icon: <Lightbulb className="h-8 w-8 text-primary" />, title: 'Strategic Recommendation Summary', content: renderMarkdown(result.strategicRecommendationSummary) },
+      { id: 'timeline-overview', icon: <Clock className="h-8 w-8 text-primary" />, title: 'Implementation Timeline Overview', content: renderMarkdown(result.implementationTimelineOverview) },
+      { id: 'current-state-assessment', icon: <PieChart className="h-8 w-8 text-primary" />, title: 'Current State Assessment', content: renderMarkdown(result.currentStateAssessment) },
+      { id: 'performance-benchmarking', icon: <TrendingUp className="h-8 w-8 text-primary" />, title: 'Performance Benchmarking', content: renderMarkdown(result.performanceBenchmarking) },
+      { id: 'key-findings', icon: <Flag className="h-8 w-8 text-primary" />, title: 'Key Findings & Opportunities', content: renderMarkdown(result.keyFindingsAndOpportunities) },
+      { id: 'prioritized-recommendations', icon: <ListChecks className="h-8 w-8 text-primary" />, title: 'Prioritized Recommendations', content: renderMarkdown(result.prioritizedRecommendations) },
+      { id: 'implementation-roadmap', icon: <GanttChartSquare className="h-8 w-8 text-primary" />, title: 'Implementation Roadmap', content: renderMarkdown(result.implementationRoadmap) },
+      { id: 'investment-roi', icon: <Banknote className="h-8 w-8 text-primary" />, title: 'Investment & ROI Analysis', content: renderMarkdown(result.investmentAndRoiAnalysis) },
+      { id: 'next-steps', icon: <ArrowRight className="h-8 w-8 text-primary" />, title: 'Next Steps & Decision Framework', content: renderMarkdown(result.nextStepsAndDecisionFramework) },
     ];
 
   return (
@@ -193,5 +213,3 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
   );
 });
 GtmReadinessReport.displayName = "GtmReadinessReport";
-
-    
