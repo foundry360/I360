@@ -34,7 +34,6 @@ const generateMarkdownExport = (title: string, result: GtmReadinessOutput): stri
 
   const processTextForMarkdown = (text: string | undefined): string => {
     if (!text) return '';
-    // This is a simple replacement, a more robust markdown generator would be needed for complex cases
     return text.replace(/### (.*?)\n/g, '### $1\n').replace(/- \*\*(.*?)\*\*:(.*?)(\n|$)/g, '- **$1**:$2\n');
   };
 
@@ -78,13 +77,36 @@ const generateMarkdownExport = (title: string, result: GtmReadinessOutput): stri
   return markdown;
 };
 
-const formatText = (text: string | undefined) => {
-  if (!text) return '';
-  return text
-    .replace(/###\s/g, '\n\n### ')  // Add newlines before headings
-    .replace(/- \*\*/g, '\n- **')   // Add newlines before bullet points
-    .replace(/\*\*([^*]+)\*\*/g, '\n**$1**\n') // Add space around bold text
-    .trim();
+const FormattedText = ({ text }: { text?: string }) => {
+  if (!text) {
+    return null;
+  }
+
+  // Pre-process text to add structure
+  const formattedText = text
+    .replace(/###\s/g, '\n\n### ')
+    .replace(/- \*\*/g, '\n- **')
+    .replace(/\*\*([^*]+)\*\*:/g, '\n**$1**:')
+    .replace(/^- /gm, '• ');
+
+  // Split text into parts based on markdown-like syntax
+  const parts = formattedText.split(/(\n|###[^\n]+|\*\*[^*]+\*\*)/g);
+  
+  return (
+    <div className="preserve-linebreaks text-foreground">
+      {parts.map((part, index) => {
+        if (part.startsWith('### ')) {
+          return <h3 key={index} className="text-lg font-bold mt-4 mb-2">{part.slice(4)}</h3>;
+        } else if (part.startsWith('**') && part.endsWith('**')) {
+          return <strong key={index}>{part.slice(2, -2)}</strong>;
+        } else if (part === '\n') {
+          return <br key={index} />;
+        } else {
+          return part;
+        }
+      })}
+    </div>
+  );
 };
 
 
@@ -127,9 +149,7 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
                   <p><strong>GTM Strategy:</strong> {result.executiveSummary.primaryGtmStrategy}</p>
               </div>
               <Separator />
-              <div className="preserve-linebreaks text-foreground">
-                {formatText(result.executiveSummary.briefOverviewOfFindings)}
-              </div>
+              <FormattedText text={result.executiveSummary.briefOverviewOfFindings} />
           </>
       )},
       { id: 'critical-findings', icon: <Target className="h-8 w-8 text-destructive" />, title: 'Top 3 Critical Findings', content: (
@@ -142,24 +162,24 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
                       </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-3 text-foreground">
-                      <div><strong>Business Impact:</strong> <div className="preserve-linebreaks">{formatText(finding.businessImpact)}</div></div>
-                      <div><strong>Current State:</strong> <div className="preserve-linebreaks">{formatText(finding.currentState)}</div></div>
-                      <div><strong>Root Cause:</strong> <div className="preserve-linebreaks">{formatText(finding.rootCauseAnalysis)}</div></div>
-                      <div><strong>Stakeholder Impact:</strong> <div className="preserve-linebreaks">{formatText(finding.stakeholderImpact)}</div></div>
-                      <div><strong>Urgency:</strong> <div className="preserve-linebreaks">{formatText(finding.urgencyRating)}</div></div>
+                      <div><strong>Business Impact:</strong> <FormattedText text={finding.businessImpact} /></div>
+                      <div><strong>Current State:</strong> <FormattedText text={finding.currentState} /></div>
+                      <div><strong>Root Cause:</strong> <FormattedText text={finding.rootCauseAnalysis} /></div>
+                      <div><strong>Stakeholder Impact:</strong> <FormattedText text={finding.stakeholderImpact} /></div>
+                      <div><strong>Urgency:</strong> <FormattedText text={finding.urgencyRating} /></div>
                   </CardContent>
               </Card>
           ))
       )},
-      { id: 'recommendation-summary', icon: <Lightbulb className="h-8 w-8 text-primary" />, title: 'Strategic Recommendation Summary', content: <div className="preserve-linebreaks text-foreground">{formatText(result.strategicRecommendationSummary)}</div> },
-      { id: 'timeline-overview', icon: <Clock className="h-8 w-8 text-primary" />, title: 'Implementation Timeline Overview', content: <div className="preserve-linebreaks text-foreground">{formatText(result.implementationTimelineOverview)}</div> },
-      { id: 'current-state-assessment', icon: <PieChart className="h-8 w-8 text-primary" />, title: 'Current State Assessment', content: <div className="preserve-linebreaks text-foreground">{formatText(result.currentStateAssessment)}</div> },
-      { id: 'performance-benchmarking', icon: <TrendingUp className="h-8 w-8 text-primary" />, title: 'Performance Benchmarking', content: <div className="preserve-linebreaks text-foreground">{formatText(result.performanceBenchmarking)}</div> },
-      { id: 'key-findings', icon: <Flag className="h-8 w-8 text-primary" />, title: 'Key Findings & Opportunities', content: <div className="preserve-linebreaks text-foreground">{formatText(result.keyFindingsAndOpportunities)}</div> },
-      { id: 'prioritized-recommendations', icon: <ListChecks className="h-8 w-8 text-primary" />, title: 'Prioritized Recommendations', content: <div className="preserve-linebreaks text-foreground">{formatText(result.prioritizedRecommendations)}</div> },
-      { id: 'implementation-roadmap', icon: <GanttChartSquare className="h-8 w-8 text-primary" />, title: 'Implementation Roadmap', content: <div className="preserve-linebreaks text-foreground">{formatText(result.implementationRoadmap)}</div> },
-      { id: 'investment-roi', icon: <Banknote className="h-8 w-8 text-primary" />, title: 'Investment & ROI Analysis', content: <div className="preserve-linebreaks text-foreground">{formatText(result.investmentAndRoiAnalysis)}</div> },
-      { id: 'next-steps', icon: <ArrowRight className="h-8 w-8 text-primary" />, title: 'Next Steps & Decision Framework', content: <div className="preserve-linebreaks text-foreground">{formatText(result.nextStepsAndDecisionFramework)}</div> },
+      { id: 'recommendation-summary', icon: <Lightbulb className="h-8 w-8 text-primary" />, title: 'Strategic Recommendation Summary', content: <FormattedText text={result.strategicRecommendationSummary} /> },
+      { id: 'timeline-overview', icon: <Clock className="h-8 w-8 text-primary" />, title: 'Implementation Timeline Overview', content: <FormattedText text={result.implementationTimelineOverview} /> },
+      { id: 'current-state-assessment', icon: <PieChart className="h-8 w-8 text-primary" />, title: 'Current State Assessment', content: <FormattedText text={result.currentStateAssessment} /> },
+      { id: 'performance-benchmarking', icon: <TrendingUp className="h-8 w-8 text-primary" />, title: 'Performance Benchmarking', content: <FormattedText text={result.performanceBenchmarking} /> },
+      { id: 'key-findings', icon: <Flag className="h-8 w-8 text-primary" />, title: 'Key Findings & Opportunities', content: <FormattedText text={result.keyFindingsAndOpportunities} /> },
+      { id: 'prioritized-recommendations', icon: <ListChecks className="h-8 w-8 text-primary" />, title: 'Prioritized Recommendations', content: <FormattedText text={result.prioritizedRecommendations} /> },
+      { id: 'implementation-roadmap', icon: <GanttChartSquare className="h-8 w-8 text-primary" />, title: 'Implementation Roadmap', content: <FormattedText text={result.implementationRoadmap} /> },
+      { id: 'investment-roi', icon: <Banknote className="h-8 w-8 text-primary" />, title: 'Investment & ROI Analysis', content: <FormattedText text={result.investmentAndRoiAnalysis} /> },
+      { id: 'next-steps', icon: <ArrowRight className="h-8 w-8 text-primary" />, title: 'Next Steps & Decision Framework', content: <FormattedText text={result.nextStepsAndDecisionFramework} /> },
     ];
 
   return (
