@@ -50,8 +50,8 @@ const renderContent = (text: string | undefined) => {
                 <ul key={`ul-${elements.length}`} className="list-disc pl-5 space-y-2">
                     {listItems.map((item, index) => {
                        const formattedItem = item
-                        .replace(/(- Focus:|- Key Deliverables:)/g, '$1');
-                       return <li key={`li-${index}`} dangerouslySetInnerHTML={{ __html: formattedItem }} />
+                        .replace(/(- Focus:|- Key Deliverables:)/g, '<strong>$1</strong>');
+                       return <li key={`li-${index}`} className="text-foreground" dangerouslySetInnerHTML={{ __html: formattedItem }} />
                     })}
                 </ul>
             );
@@ -62,13 +62,13 @@ const renderContent = (text: string | undefined) => {
     lines.forEach((line, i) => {
         if (line.startsWith('## ')) {
             flushList();
-            elements.push(<h3 key={`h3-${i}`} className="text-foreground font-semibold mt-6 mb-3" dangerouslySetInnerHTML={{ __html: line.replace(/##\s?/, '') }}/>);
+            elements.push(<h3 key={`h3-${i}`} className="text-foreground text-base mt-6 mb-3" dangerouslySetInnerHTML={{ __html: line.replace(/##\s?/, '') }}/>);
         } else if (line.startsWith('### ')) {
             flushList();
-            elements.push(<h4 key={`h4-${i}`} className="text-foreground font-semibold mt-4 mb-2" dangerouslySetInnerHTML={{ __html: line.replace(/###\s?/, '') }}/>);
+            elements.push(<h4 key={`h4-${i}`} className="text-foreground text-base mt-4 mb-2" dangerouslySetInnerHTML={{ __html: line.replace(/###\s?/, '') }}/>);
         } else if (line.startsWith('#### ')) {
             flushList();
-            elements.push(<h5 key={`h5-${i}`} className="text-foreground font-semibold mt-3 mb-1" dangerouslySetInnerHTML={{ __html: line.replace(/####\s?/, '') }}/>);
+            elements.push(<h5 key={`h5-${i}`} className="text-foreground text-base mt-3 mb-1" dangerouslySetInnerHTML={{ __html: line.replace(/####\s?/, '') }}/>);
         } else if (line.trim().startsWith('- ')) {
             listItems.push(line.trim().substring(2));
         } else if (line.trim().length > 0) {
