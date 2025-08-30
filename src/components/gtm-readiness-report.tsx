@@ -28,63 +28,15 @@ const Section: React.FC<{ id: string; icon: React.ReactNode; title: string; chil
   </Card>
 );
 
-const renderContent = (text: string | undefined) => {
+const renderSimpleContent = (text: string | undefined) => {
     if (!text) return null;
-
-    const processedText = text.replace(/(\S)(##|###)/g, '$1\n$2');
-    const lines = processedText.split(/\r?\n/);
-    const elements: (JSX.Element | string)[] = [];
-    let listItems: string[] = [];
-
-    const flushList = () => {
-        if (listItems.length > 0) {
-            elements.push(
-                <ul key={`ul-${elements.length}`} className="list-disc pl-5 space-y-2">
-                    {listItems.map((item, index) => {
-                         const parts = item.split(/:(.*)/s);
-                         if (parts.length > 1) {
-                             return (
-                                 <li key={`li-${index}`} className="text-foreground">
-                                     <span className="font-semibold">{parts[0]}:</span>
-                                     {parts[1]}
-                                 </li>
-                             );
-                         }
-                         return <li key={`li-${index}`} className="text-foreground">{item}</li>;
-                    })}
-                </ul>
-            );
-            listItems = [];
+    return text.split('\n').map((line, index) => {
+        if (line.trim() === '') return null;
+        if (line.startsWith('##')) {
+            return <h3 key={index} className="text-lg font-semibold mt-4">{line.replace(/##\s?/, '')}</h3>;
         }
-    };
-
-    lines.forEach((line, i) => {
-        const cleanedLine = line.replace(/`([^`]+)`/g, '$1').replace(/\*\*/g, '');
-
-        if (cleanedLine.startsWith('## ')) {
-            flushList();
-            elements.push(<h3 key={`h3-${i}`} className="text-foreground text-lg font-semibold mt-6 mb-3">{cleanedLine.replace(/##\s?/, '')}</h3>);
-        } else if (cleanedLine.startsWith('### ')) {
-            flushList();
-            elements.push(<h4 key={`h4-${i}`} className="text-foreground text-base font-semibold mt-4 mb-2">{cleanedLine.replace(/###\s?/, '')}</h4>);
-        } else if (cleanedLine.startsWith('#### ')) {
-            flushList();
-            elements.push(<h5 key={`h5-${i}`} className="text-foreground text-sm font-semibold mt-3 mb-1">{cleanedLine.replace(/####\s?/, '')}</h5>);
-        } else if (cleanedLine.trim().startsWith('- ')) {
-            const itemText = cleanedLine.trim().substring(2);
-            listItems.push(itemText);
-        } else if (cleanedLine.trim().length > 0) {
-            flushList();
-            elements.push(<p key={i} className="text-foreground">{cleanedLine}</p>);
-        } else {
-             flushList();
-             elements.push(<div key={`br-${i}`} className="h-4" />);
-        }
+        return <p key={index}>{line.replace(/-\s?/, '')}</p>;
     });
-
-    flushList();
-
-    return <div className="prose max-w-none text-foreground space-y-2">{elements}</div>;
 };
 
 const generateMarkdown = (title: string, result: GtmReadinessOutput): string => {
@@ -93,7 +45,7 @@ const generateMarkdown = (title: string, result: GtmReadinessOutput): string => 
 
   const processTextForMarkdown = (text: string | undefined): string => {
     if (!text) return '';
-    return text.replace(/`([^`]+)`/g, '`$1`').replace(/\*\*/g, '**');
+    return text;
   };
 
   // Executive Summary
@@ -137,6 +89,19 @@ const generateMarkdown = (title: string, result: GtmReadinessOutput): string => 
 };
 
 export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessReportProps>(({ title, result, onComplete }, ref) => {
+  
+  if (!result || !result.executiveSummary || !result.top3CriticalFindings) {
+    return (
+        <div className="flex flex-col items-center justify-center h-full gap-4 p-6">
+            <h2 className="text-xl font-semibold">Report Not Available</h2>
+            <p className="text-muted-foreground text-center">
+                The data for this assessment report is incomplete or could not be loaded.
+            </p>
+            <Button onClick={onComplete}>Close</Button>
+        </div>
+    );
+  }
+
   const handleExport = () => {
     const markdownContent = generateMarkdown(title, result);
     const blob = new Blob([markdownContent], { type: 'text/markdown;charset=utf-8;' });
@@ -151,29 +116,18 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
     document.body.removeChild(link);
   };
 
-  if (!result || !result.executiveSummary) {
-    return (
-        <div className="flex flex-col items-center justify-center h-full gap-4 p-6">
-            <h2 className="text-xl font-semibold">Report Not Available</h2>
-            <p className="text-muted-foreground text-center">
-                The data for this assessment report is incomplete or could not be loaded.
-            </p>
-            <Button onClick={onComplete}>Close</Button>
-        </div>
-    );
-  }
 
     const reportSections = [
       { id: 'executive-summary', icon: <BarChart className="h-8 w-8 text-primary" />, title: 'Executive Summary', content: (
           <>
               <div className="grid grid-cols-2 gap-4">
                   <p><strong>Overall Readiness:</strong> <span className="font-bold text-lg text-primary">{result.executiveSummary.overallReadinessScore}%</span></p>
-                  <p><strong className="text-primary">Company Profile:</strong> {result.executiveSummary.companyStageAndFte}</p>
-                  <p><strong className="text-primary">Industry:</strong> {result.executiveSummary.industrySector}</p>
-                  <p><strong className="text-primary">GTM Strategy:</strong> {result.executiveSummary.primaryGtmStrategy}</p>
+                  <p><strong>Company Profile:</strong> {result.executiveSummary.companyStageAndFte}</p>
+                  <p><strong>Industry:</strong> {result.executiveSummary.industrySector}</p>
+                  <p><strong>GTM Strategy:</strong> {result.executiveSummary.primaryGtmStrategy}</p>
               </div>
               <Separator />
-              <p className="text-foreground">{result.executiveSummary.briefOverviewOfFindings}</p>
+              <div className="prose max-w-none text-foreground space-y-2">{renderSimpleContent(result.executiveSummary.briefOverviewOfFindings)}</div>
           </>
       )},
       { id: 'critical-findings', icon: <Target className="h-8 w-8 text-destructive" />, title: 'Top 3 Critical Findings', content: (
@@ -195,15 +149,15 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
               </Card>
           ))
       )},
-      { id: 'recommendation-summary', icon: <Lightbulb className="h-8 w-8 text-primary" />, title: 'Strategic Recommendation Summary', content: renderContent(result.strategicRecommendationSummary) },
-      { id: 'timeline-overview', icon: <Clock className="h-8 w-8 text-primary" />, title: 'Implementation Timeline Overview', content: renderContent(result.implementationTimelineOverview) },
-      { id: 'current-state-assessment', icon: <PieChart className="h-8 w-8 text-primary" />, title: 'Current State Assessment', content: renderContent(result.currentStateAssessment) },
-      { id: 'performance-benchmarking', icon: <TrendingUp className="h-8 w-8 text-primary" />, title: 'Performance Benchmarking', content: renderContent(result.performanceBenchmarking) },
-      { id: 'key-findings', icon: <Flag className="h-8 w-8 text-primary" />, title: 'Key Findings & Opportunities', content: renderContent(result.keyFindingsAndOpportunities) },
-      { id: 'prioritized-recommendations', icon: <ListChecks className="h-8 w-8 text-primary" />, title: 'Prioritized Recommendations', content: renderContent(result.prioritizedRecommendations) },
-      { id: 'implementation-roadmap', icon: <GanttChartSquare className="h-8 w-8 text-primary" />, title: 'Implementation Roadmap', content: renderContent(result.implementationRoadmap) },
-      { id: 'investment-roi', icon: <Banknote className="h-8 w-8 text-primary" />, title: 'Investment & ROI Analysis', content: renderContent(result.investmentAndRoiAnalysis) },
-      { id: 'next-steps', icon: <ArrowRight className="h-8 w-8 text-primary" />, title: 'Next Steps & Decision Framework', content: renderContent(result.nextStepsAndDecisionFramework) },
+      { id: 'recommendation-summary', icon: <Lightbulb className="h-8 w-8 text-primary" />, title: 'Strategic Recommendation Summary', content: renderSimpleContent(result.strategicRecommendationSummary) },
+      { id: 'timeline-overview', icon: <Clock className="h-8 w-8 text-primary" />, title: 'Implementation Timeline Overview', content: renderSimpleContent(result.implementationTimelineOverview) },
+      { id: 'current-state-assessment', icon: <PieChart className="h-8 w-8 text-primary" />, title: 'Current State Assessment', content: renderSimpleContent(result.currentStateAssessment) },
+      { id: 'performance-benchmarking', icon: <TrendingUp className="h-8 w-8 text-primary" />, title: 'Performance Benchmarking', content: renderSimpleContent(result.performanceBenchmarking) },
+      { id: 'key-findings', icon: <Flag className="h-8 w-8 text-primary" />, title: 'Key Findings & Opportunities', content: renderSimpleContent(result.keyFindingsAndOpportunities) },
+      { id: 'prioritized-recommendations', icon: <ListChecks className="h-8 w-8 text-primary" />, title: 'Prioritized Recommendations', content: renderSimpleContent(result.prioritizedRecommendations) },
+      { id: 'implementation-roadmap', icon: <GanttChartSquare className="h-8 w-8 text-primary" />, title: 'Implementation Roadmap', content: renderSimpleContent(result.implementationRoadmap) },
+      { id: 'investment-roi', icon: <Banknote className="h-8 w-8 text-primary" />, title: 'Investment & ROI Analysis', content: renderSimpleContent(result.investmentAndRoiAnalysis) },
+      { id: 'next-steps', icon: <ArrowRight className="h-8 w-8 text-primary" />, title: 'Next Steps & Decision Framework', content: renderSimpleContent(result.nextStepsAndDecisionFramework) },
     ];
 
   return (
@@ -239,3 +193,5 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
   );
 });
 GtmReadinessReport.displayName = "GtmReadinessReport";
+
+    

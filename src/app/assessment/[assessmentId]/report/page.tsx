@@ -10,7 +10,7 @@ import { GtmReadinessReport } from '@/components/gtm-readiness-report';
 import { AppLayout } from '@/components/app-layout';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button }from '@/components/ui/button';
-import { ArrowLeft, Download } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 
 export default function ReportPage() {
@@ -121,3 +121,5 @@ export default function ReportPage() {
         </AppLayout>
     );
 }
+
+    

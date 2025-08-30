@@ -3,7 +3,7 @@
 
 import { GtmReadinessOutput, GtmReadinessInput } from "@/ai/flows/gtm-readiness-flow";
 import { db } from '@/lib/firebase';
-import { collection, doc, getDocs, setDoc, updateDoc, query, where, writeBatch, getDoc } from 'firebase/firestore';
+import { collection, doc, getDocs, setDoc, updateDoc, query, where, writeBatch, getDoc, addDoc } from 'firebase/firestore';
 import type { Company } from "./company-service";
 
 
@@ -39,17 +39,13 @@ export async function getAssessments(): Promise<Assessment[]> {
 export async function getAssessmentsForCompany(companyId: string): Promise<Assessment[]> {
     const q = query(assessmentsCollection, where("companyId", "==", companyId));
     const snapshot = await getDocs(q);
-    return snapshot.docs.map(doc => doc.data() as Assessment);
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Assessment));
 }
 
 export async function createAssessment(assessmentData: Omit<Assessment, 'id'>): Promise<string> {
-    const docRef = doc(assessmentsCollection);
-    const newAssessment: Assessment = {
-        ...assessmentData,
-        id: docRef.id,
-    };
-    await setDoc(docRef, newAssessment);
-    return newAssessment.id;
+    const docRef = await addDoc(assessmentsCollection, assessmentData);
+    await updateDoc(docRef, { id: docRef.id });
+    return docRef.id;
 }
 
 export async function updateAssessment(id: string, assessmentData: Partial<Omit<Assessment, 'id'>>): Promise<void> {
@@ -65,3 +61,5 @@ export async function deleteAssessments(ids: string[]): Promise<void> {
     });
     await batch.commit();
 }
+
+    
