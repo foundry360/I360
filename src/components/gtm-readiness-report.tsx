@@ -51,7 +51,7 @@ const renderContent = (text: string | undefined) => {
                 <ul key={`ul-${elements.length}`} className="list-disc pl-5 space-y-2">
                     {listItems.map((item, index) => {
                        const formattedItem = item
-                        .replace(/(- Focus:|- Key Deliverables:)/g, '<strong>$1</strong>');
+                        .replace(/(- Focus:|- Key Deliverables:)/g, '$1');
                        return <li key={`li-${index}`} dangerouslySetInnerHTML={{ __html: formattedItem }} />
                     })}
                 </ul>
@@ -63,13 +63,13 @@ const renderContent = (text: string | undefined) => {
     lines.forEach((line, i) => {
         if (line.startsWith('## ')) {
             flushList();
-            elements.push(<h3 key={`h3-${i}`} className="font-semibold text-xl text-primary mt-6 mb-3" dangerouslySetInnerHTML={{ __html: line.replace(/##\s?/, '') }}/>);
+            elements.push(<h3 key={`h3-${i}`} className="text-xl text-foreground mt-6 mb-3" dangerouslySetInnerHTML={{ __html: line.replace(/##\s?/, '') }}/>);
         } else if (line.startsWith('### ')) {
             flushList();
-            elements.push(<h4 key={`h4-${i}`} className="font-semibold text-lg text-primary mt-4 mb-2" dangerouslySetInnerHTML={{ __html: line.replace(/###\s?/, '') }}/>);
+            elements.push(<h4 key={`h4-${i}`} className="text-lg text-foreground mt-4 mb-2" dangerouslySetInnerHTML={{ __html: line.replace(/###\s?/, '') }}/>);
         } else if (line.startsWith('#### ')) {
             flushList();
-            elements.push(<h5 key={`h5-${i}`} className="font-semibold text-md text-primary mt-3 mb-1" dangerouslySetInnerHTML={{ __html: line.replace(/####\s?/, '') }}/>);
+            elements.push(<h5 key={`h5-${i}`} className="text-md text-foreground mt-3 mb-1" dangerouslySetInnerHTML={{ __html: line.replace(/####\s?/, '') }}/>);
         } else if (line.trim().startsWith('- ')) {
             listItems.push(line.trim().substring(2));
         } else if (line.trim().length > 0) {
@@ -420,4 +420,5 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
 });
 GtmReadinessReport.displayName = "GtmReadinessReport";
 
+    
     
