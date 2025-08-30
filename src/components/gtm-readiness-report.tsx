@@ -78,7 +78,7 @@ const generateMarkdownExport = (title: string, result: GtmReadinessOutput): stri
 };
 
 // A simple utility to render text with line breaks as separate paragraphs.
-const renderFormattedText = (text: string) => {
+const renderFormattedText = (text: string | undefined) => {
   if (!text) return null;
   return text.split('\n').map((line, index) => (
     <p key={index} className="text-sm">
@@ -140,11 +140,11 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
                       </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-3 prose prose-sm max-w-none text-foreground">
-                      <p className="whitespace-pre-wrap"><strong>Business Impact:</strong> {finding.businessImpact}</p>
-                      <p className="whitespace-pre-wrap"><strong>Current State:</strong> {finding.currentState}</p>
-                      <p className="whitespace-pre-wrap"><strong>Root Cause:</strong> {finding.rootCauseAnalysis}</p>
-                      <p className="whitespace-pre-wrap"><strong>Stakeholder Impact:</strong> {finding.stakeholderImpact}</p>
-                      <p className="whitespace-pre-wrap"><strong>Urgency:</strong> {finding.urgencyRating}</p>
+                      <p className="whitespace-pre-wrap text-sm"><strong>Business Impact:</strong> {finding.businessImpact}</p>
+                      <p className="whitespace-pre-wrap text-sm"><strong>Current State:</strong> {finding.currentState}</p>
+                      <p className="whitespace-pre-wrap text-sm"><strong>Root Cause:</strong> {finding.rootCauseAnalysis}</p>
+                      <p className="whitespace-pre-wrap text-sm"><strong>Stakeholder Impact:</strong> {finding.stakeholderImpact}</p>
+                      <p className="whitespace-pre-wrap text-sm"><strong>Urgency:</strong> {finding.urgencyRating}</p>
                   </CardContent>
               </Card>
           ))
