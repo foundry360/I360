@@ -47,9 +47,12 @@ const renderContent = (text: string | undefined) => {
         if (listItems.length > 0) {
             elements.push(
                 <ul key={`ul-${elements.length}`} className="list-disc pl-5 space-y-2">
-                    {listItems.map((item, index) => (
-                       <li key={`li-${index}`} dangerouslySetInnerHTML={{ __html: item.replace(/`(.*?)`/g, '<code class="bg-muted px-1 py-0.5 rounded text-sm">$1</code>') }} />
-                    ))}
+                    {listItems.map((item, index) => {
+                       const formattedItem = item
+                        .replace(/`(.*?)`/g, '<code class="bg-muted px-1 py-0.5 rounded text-sm">$1</code>')
+                        .replace(/^(- Focus:|- Key Deliverables:)/, '<strong>$1</strong>');
+                       return <li key={`li-${index}`} dangerouslySetInnerHTML={{ __html: formattedItem }} />
+                    })}
                 </ul>
             );
             listItems = [];
@@ -67,7 +70,7 @@ const renderContent = (text: string | undefined) => {
             flushList();
             elements.push(<h5 key={`h5-${i}`} className="font-semibold text-md text-primary mt-3 mb-1" dangerouslySetInnerHTML={{ __html: line.replace(/####\s?/, '') }}/>);
         } else if (line.trim().startsWith('- ')) {
-            listItems.push(line.trim().substring(2));
+            listItems.push(line.trim());
         } else if (line.trim().length > 0) {
             flushList();
             elements.push(<p key={i} dangerouslySetInnerHTML={{ __html: line.replace(/`(.*?)`/g, '<code class="bg-muted px-1 py-0.5 rounded text-sm">$1</code>') }} />);
@@ -133,7 +136,7 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
         const lines = cleanedText.split(/\r?\n/);
         
         lines.forEach((line) => {
-             const boldRegex = /^(.+?):/g;
+             const boldRegex = /^(Focus:|Key Deliverables:)/g;
              let parts = [];
              let lastIndex = 0;
              let match;
@@ -142,7 +145,7 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
                  if (match.index > lastIndex) {
                      parts.push({text: line.substring(lastIndex, match.index), bold: false});
                  }
-                 parts.push({text: `${match[1]}:`, bold: true});
+                 parts.push({text: `${match[1]}`, bold: true});
                  lastIndex = match.index + match[0].length;
              }
              if (lastIndex < line.length) {
@@ -222,7 +225,7 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
 
                 doc.text(bullet, margin + 5, y, { baseline: 'top' });
                 
-                const contentBoldRegex = /^(.*?):/;
+                const contentBoldRegex = /^(Focus:|Key Deliverables:)/;
                 let contentParts = [];
                 let lastContentIndex = 0;
                 let contentMatch;
@@ -231,8 +234,8 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
                      if (contentMatch.index > lastContentIndex) {
                          contentParts.push({text: content.substring(lastContentIndex, contentMatch.index), bold: false});
                      }
-                     contentParts.push({text: `${contentMatch[1]}:`, bold: true});
-                     lastContentIndex = contentMatch.index + match[0].length;
+                     contentParts.push({text: `${contentMatch[1]}`, bold: true});
+                     lastContentIndex = contentMatch.index + contentMatch[0].length;
                  }
                  if (lastContentIndex < content.length) {
                     contentParts.push({text: content.substring(lastContentIndex), bold: false});
@@ -415,3 +418,5 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
   );
 });
 GtmReadinessReport.displayName = "GtmReadinessReport";
+
+    
