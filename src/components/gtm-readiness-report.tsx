@@ -7,7 +7,6 @@ import { Button } from '@/components/ui/button';
 import { ArrowRight, BarChart, Clock, Target, Lightbulb, TrendingUp, PieChart, ListChecks, GanttChartSquare, Banknote, Flag, Download } from 'lucide-react';
 import { Badge } from './ui/badge';
 import { Separator } from './ui/separator';
-import ReactMarkdown from 'react-markdown';
 
 type GtmReadinessReportProps = {
   title: string;
@@ -79,6 +78,16 @@ const generateMarkdownExport = (title: string, result: GtmReadinessOutput): stri
   return markdown;
 };
 
+const formatText = (text: string | undefined) => {
+  if (!text) return '';
+  return text
+    .replace(/###\s/g, '\n\n### ')  // Add newlines before headings
+    .replace(/- \*\*/g, '\n- **')   // Add newlines before bullet points
+    .replace(/\*\*([^*]+)\*\*/g, '\n**$1**\n') // Add space around bold text
+    .trim();
+};
+
+
 export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessReportProps>(({ title, result, onComplete }, ref) => {
   
   if (!result || !result.executiveSummary || !result.top3CriticalFindings) {
@@ -118,8 +127,8 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
                   <p><strong>GTM Strategy:</strong> {result.executiveSummary.primaryGtmStrategy}</p>
               </div>
               <Separator />
-              <div className="text-foreground">
-                <ReactMarkdown>{result.executiveSummary.briefOverviewOfFindings}</ReactMarkdown>
+              <div className="preserve-linebreaks text-foreground">
+                {formatText(result.executiveSummary.briefOverviewOfFindings)}
               </div>
           </>
       )},
@@ -133,24 +142,24 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
                       </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-3 text-foreground">
-                      <div><strong>Business Impact:</strong> <ReactMarkdown>{finding.businessImpact}</ReactMarkdown></div>
-                      <div><strong>Current State:</strong> <ReactMarkdown>{finding.currentState}</ReactMarkdown></div>
-                      <div><strong>Root Cause:</strong> <ReactMarkdown>{finding.rootCauseAnalysis}</ReactMarkdown></div>
-                      <div><strong>Stakeholder Impact:</strong> <ReactMarkdown>{finding.stakeholderImpact}</ReactMarkdown></div>
-                      <div><strong>Urgency:</strong> <ReactMarkdown>{finding.urgencyRating}</ReactMarkdown></div>
+                      <div><strong>Business Impact:</strong> <div className="preserve-linebreaks">{formatText(finding.businessImpact)}</div></div>
+                      <div><strong>Current State:</strong> <div className="preserve-linebreaks">{formatText(finding.currentState)}</div></div>
+                      <div><strong>Root Cause:</strong> <div className="preserve-linebreaks">{formatText(finding.rootCauseAnalysis)}</div></div>
+                      <div><strong>Stakeholder Impact:</strong> <div className="preserve-linebreaks">{formatText(finding.stakeholderImpact)}</div></div>
+                      <div><strong>Urgency:</strong> <div className="preserve-linebreaks">{formatText(finding.urgencyRating)}</div></div>
                   </CardContent>
               </Card>
           ))
       )},
-      { id: 'recommendation-summary', icon: <Lightbulb className="h-8 w-8 text-primary" />, title: 'Strategic Recommendation Summary', content: <div className="text-foreground"><ReactMarkdown>{result.strategicRecommendationSummary}</ReactMarkdown></div> },
-      { id: 'timeline-overview', icon: <Clock className="h-8 w-8 text-primary" />, title: 'Implementation Timeline Overview', content: <div className="text-foreground"><ReactMarkdown>{result.implementationTimelineOverview}</ReactMarkdown></div> },
-      { id: 'current-state-assessment', icon: <PieChart className="h-8 w-8 text-primary" />, title: 'Current State Assessment', content: <div className="text-foreground"><ReactMarkdown>{result.currentStateAssessment}</ReactMarkdown></div> },
-      { id: 'performance-benchmarking', icon: <TrendingUp className="h-8 w-8 text-primary" />, title: 'Performance Benchmarking', content: <div className="text-foreground"><ReactMarkdown>{result.performanceBenchmarking}</ReactMarkdown></div> },
-      { id: 'key-findings', icon: <Flag className="h-8 w-8 text-primary" />, title: 'Key Findings & Opportunities', content: <div className="text-foreground"><ReactMarkdown>{result.keyFindingsAndOpportunities}</ReactMarkdown></div> },
-      { id: 'prioritized-recommendations', icon: <ListChecks className="h-8 w-8 text-primary" />, title: 'Prioritized Recommendations', content: <div className="text-foreground"><ReactMarkdown>{result.prioritizedRecommendations}</ReactMarkdown></div> },
-      { id: 'implementation-roadmap', icon: <GanttChartSquare className="h-8 w-8 text-primary" />, title: 'Implementation Roadmap', content: <div className="text-foreground"><ReactMarkdown>{result.implementationRoadmap}</ReactMarkdown></div> },
-      { id: 'investment-roi', icon: <Banknote className="h-8 w-8 text-primary" />, title: 'Investment & ROI Analysis', content: <div className="text-foreground"><ReactMarkdown>{result.investmentAndRoiAnalysis}</ReactMarkdown></div> },
-      { id: 'next-steps', icon: <ArrowRight className="h-8 w-8 text-primary" />, title: 'Next Steps & Decision Framework', content: <div className="text-foreground"><ReactMarkdown>{result.nextStepsAndDecisionFramework}</ReactMarkdown></div> },
+      { id: 'recommendation-summary', icon: <Lightbulb className="h-8 w-8 text-primary" />, title: 'Strategic Recommendation Summary', content: <div className="preserve-linebreaks text-foreground">{formatText(result.strategicRecommendationSummary)}</div> },
+      { id: 'timeline-overview', icon: <Clock className="h-8 w-8 text-primary" />, title: 'Implementation Timeline Overview', content: <div className="preserve-linebreaks text-foreground">{formatText(result.implementationTimelineOverview)}</div> },
+      { id: 'current-state-assessment', icon: <PieChart className="h-8 w-8 text-primary" />, title: 'Current State Assessment', content: <div className="preserve-linebreaks text-foreground">{formatText(result.currentStateAssessment)}</div> },
+      { id: 'performance-benchmarking', icon: <TrendingUp className="h-8 w-8 text-primary" />, title: 'Performance Benchmarking', content: <div className="preserve-linebreaks text-foreground">{formatText(result.performanceBenchmarking)}</div> },
+      { id: 'key-findings', icon: <Flag className="h-8 w-8 text-primary" />, title: 'Key Findings & Opportunities', content: <div className="preserve-linebreaks text-foreground">{formatText(result.keyFindingsAndOpportunities)}</div> },
+      { id: 'prioritized-recommendations', icon: <ListChecks className="h-8 w-8 text-primary" />, title: 'Prioritized Recommendations', content: <div className="preserve-linebreaks text-foreground">{formatText(result.prioritizedRecommendations)}</div> },
+      { id: 'implementation-roadmap', icon: <GanttChartSquare className="h-8 w-8 text-primary" />, title: 'Implementation Roadmap', content: <div className="preserve-linebreaks text-foreground">{formatText(result.implementationRoadmap)}</div> },
+      { id: 'investment-roi', icon: <Banknote className="h-8 w-8 text-primary" />, title: 'Investment & ROI Analysis', content: <div className="preserve-linebreaks text-foreground">{formatText(result.investmentAndRoiAnalysis)}</div> },
+      { id: 'next-steps', icon: <ArrowRight className="h-8 w-8 text-primary" />, title: 'Next Steps & Decision Framework', content: <div className="preserve-linebreaks text-foreground">{formatText(result.nextStepsAndDecisionFramework)}</div> },
     ];
 
   return (
@@ -186,5 +195,3 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
   );
 });
 GtmReadinessReport.displayName = "GtmReadinessReport";
-
-    
