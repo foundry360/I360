@@ -8,8 +8,7 @@ import {
   onAuthStateChanged,
   updateProfile,
   GoogleAuthProvider,
-  signInWithRedirect,
-  getRedirectResult,
+  signInWithPopup,
   type User,
 } from 'firebase/auth';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
@@ -36,51 +35,36 @@ export const signIn = async (email: string, password: string) => {
 
 export const signInWithGoogle = async () => {
     const provider = new GoogleAuthProvider();
-    // These scopes are required to get a refresh token and access Google Drive.
     provider.addScope('https://www.googleapis.com/auth/drive.readonly');
-    provider.addScope('https://www.googleapis.com/auth/userinfo.profile');
-    provider.addScope('https://www.googleapis.com/auth/userinfo.email');
-
-    // Force account selection every time.
-    provider.setCustomParameters({
-      prompt: 'consent',
-      access_type: 'offline',
-    });
 
     try {
-        await signInWithRedirect(auth, provider);
-    } catch (error) {
-        console.error("Error during Google sign-in redirect:", error);
-        throw error;
-    }
-};
-
-export const handleRedirectResult = async () => {
-    try {
-        const result = await getRedirectResult(auth);
-        if (result) {
-            const credential = GoogleAuthProvider.credentialFromResult(result);
-            const accessToken = credential?.accessToken;
-            
-            const gapiCredential = credential?.toJSON();
-            const refreshToken = (gapiCredential as any)?.refreshToken;
-            
-            if (accessToken) {
-                await fetch('/api/auth/store-token', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ accessToken, refreshToken }),
-                });
-            }
+        const result = await signInWithPopup(auth, provider);
+        const credential = GoogleAuthProvider.credentialFromResult(result);
+        const accessToken = credential?.accessToken;
+        
+        // This is a simplified way to get the refresh token if available, may require more complex server-side handling for long-term access
+        const gapiCredential = credential?.toJSON();
+        const refreshToken = (gapiCredential as any)?.refreshToken;
+        
+        if (accessToken) {
+            await fetch('/api/auth/store-token', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ accessToken, refreshToken }),
+            });
         }
+        return result;
     } catch (error) {
-        console.error("Error handling redirect result:", error);
+        console.error("Error during Google sign-in:", error);
+        throw error;
     }
 };
 
 
 export const signOut = async () => {
   await firebaseSignOut(auth);
+  // Also clear the server-side session cookie
+  await fetch('/api/auth/logout', { method: 'POST' });
 };
 
 export const onAuthStateChangeObserver = (callback: (user: User | null) => void) => {

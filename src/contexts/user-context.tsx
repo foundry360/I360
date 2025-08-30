@@ -2,7 +2,7 @@
 'use client';
 
 import * as React from 'react';
-import { onAuthStateChangeObserver, handleRedirectResult } from '@/services/auth-service';
+import { onAuthStateChangeObserver } from '@/services/auth-service';
 import type { User } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 
@@ -19,8 +19,6 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = React.useState(true);
 
   React.useEffect(() => {
-    handleRedirectResult();
-
     const unsubscribe = onAuthStateChangeObserver((currentUser) => {
       setUser(currentUser);
       setLoading(false);
