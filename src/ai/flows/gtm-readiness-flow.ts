@@ -222,7 +222,7 @@ const prompt = ai.definePrompt({
           For all long-form text fields (like 'briefOverviewOfFindings', 'currentStateAssessment', etc.), YOU MUST use markdown for structure. 
           - Use '###' for subheadings.
           - Use '- ' for list items.
-          - **Crucially, you absolutely must use literal newline characters (\n) to separate paragraphs, headings, and list items to ensure proper rendering. This is not optional.** For example, to create a heading followed by a list, the output MUST look like this: '### My Heading\n- First item\n- Second item'. Do not skip the \n characters.
+          - **Crucially, you absolutely must use literal newline characters (\\n) to separate paragraphs, headings, and list items to ensure proper rendering. This is not optional.** For example, to create a heading followed by a list, the output MUST look like this: '### My Heading\\n- First item\\n- Second item'. Do not skip the \\n characters. This is a strict requirement.
   `,
 });
 
