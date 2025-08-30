@@ -42,7 +42,9 @@ export const signInWithGoogle = async () => {
         const credential = GoogleAuthProvider.credentialFromResult(result);
         const accessToken = credential?.accessToken;
         
-        // This is a simplified way to get the refresh token if available, may require more complex server-side handling for long-term access
+        // This is a simplified way to get the refresh token if available.
+        // In a real production app, you would handle the OAuth flow on the server
+        // to securely store the refresh token.
         const gapiCredential = credential?.toJSON();
         const refreshToken = (gapiCredential as any)?.refreshToken;
         
@@ -63,8 +65,6 @@ export const signInWithGoogle = async () => {
 
 export const signOut = async () => {
   await firebaseSignOut(auth);
-  // Also clear the server-side session cookie
-  await fetch('/api/auth/logout', { method: 'POST' });
 };
 
 export const onAuthStateChangeObserver = (callback: (user: User | null) => void) => {
