@@ -10,6 +10,7 @@ import {
   type User,
 } from 'firebase/auth';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { seedInitialData } from './seed-service';
 
 export const signIn = async (email: string, password: string) => {
   try {
@@ -19,6 +20,10 @@ export const signIn = async (email: string, password: string) => {
       try {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         await updateProfile(userCredential.user, { displayName: email.split('@')[0] });
+        
+        // Seed initial data only when a user is created for the first time.
+        await seedInitialData();
+
         return userCredential;
       } catch (createError: any) {
         console.error('Error creating user:', createError);
