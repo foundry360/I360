@@ -580,6 +580,4 @@ export default function CompanyDetailsPage() {
   );
 }
 
-export async function generateStaticParams() {
-  return [];
-}
+    
