@@ -85,12 +85,7 @@ export default function CompanyDetailsPage() {
       const contactsPromise = getContactsForCompany(companyId);
       const [company, allAssessments, companyContacts] = await Promise.all([companyPromise, assessmentsPromise, contactsPromise]);
       
-      if (company) {
-        setCompanyData(company);
-      } else {
-        console.error("Company not found");
-        setCompanyData(null);
-      }
+      setCompanyData(company);
       
       const current = allAssessments.filter(a => a.status === 'In Progress');
       const completed = allAssessments.filter(a => a.status === 'Completed').sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime());
@@ -98,18 +93,18 @@ export default function CompanyDetailsPage() {
       setCompletedAssessments(completed);
       setContacts(companyContacts);
 
-      // Generate recent activity feed
-      const assessmentActivity: ActivityItem[] = allAssessments.map(a => ({
-          activity: `Assessment "${a.name}" status: ${a.status}`,
-          time: new Date(a.startDate),
-      }));
-
-      const contactActivity: ActivityItem[] = companyContacts.map(c => ({
-          activity: `Contact "${c.name}" added.`,
-          time: new Date(c.lastActivity),
-      }));
-      
+      // Generate recent activity feed only if company exists
       if (company) {
+          const assessmentActivity: ActivityItem[] = allAssessments.map(a => ({
+              activity: `Assessment "${a.name}" status: ${a.status}`,
+              time: new Date(a.startDate),
+          }));
+
+          const contactActivity: ActivityItem[] = companyContacts.map(c => ({
+              activity: `Contact "${c.name}" added.`,
+              time: new Date(c.lastActivity),
+          }));
+      
           const companyUpdateActivity = {
               activity: "Company profile updated",
               time: new Date(company.lastActivity)
@@ -117,8 +112,10 @@ export default function CompanyDetailsPage() {
            const allActivity = [...assessmentActivity, ...contactActivity, companyUpdateActivity]
             .sort((a, b) => b.time.getTime() - a.time.getTime());
            setAllRecentActivity(allActivity);
+      } else {
+        console.error("Company not found");
+        setAllRecentActivity([]);
       }
-
 
     } catch (error) {
       console.error("Error fetching company data:", error);

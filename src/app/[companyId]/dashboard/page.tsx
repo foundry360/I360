@@ -15,6 +15,7 @@ export default function CompanyDashboardPage() {
   const [greeting, setGreeting] = React.useState('');
 
   React.useEffect(() => {
+    // This effect runs only on the client, after hydration
     const hour = new Date().getHours();
     if (hour < 12) {
       setGreeting('Good morning');
@@ -23,9 +24,7 @@ export default function CompanyDashboardPage() {
     } else {
       setGreeting('Good evening');
     }
-  }, []);
 
-  React.useEffect(() => {
     if (companyId) {
       getCompany(companyId).then(data => {
         setCompany(data);
@@ -44,7 +43,7 @@ export default function CompanyDashboardPage() {
     <div className="space-y-6">
       <div className="flex justify-between items-start">
         <div>
-          <h1 className="text-2xl font-bold">{greeting}, {getFirstName()} 👋</h1>
+          <h1 className="text-2xl font-bold">{greeting ? `${greeting}, ${getFirstName()} 👋` : `Welcome, ${getFirstName()} 👋`}</h1>
         </div>
       </div>
 
