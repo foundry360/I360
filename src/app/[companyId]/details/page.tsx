@@ -304,6 +304,7 @@ export default function CompanyDetailsPage() {
                   <TableHeader>
                     <TableRow>
                       <TableHead>Assessment Name</TableHead>
+                      <TableHead>Type</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead className="w-[150px]">Progress</TableHead>
                       <TableHead>Start Date</TableHead>
@@ -319,6 +320,11 @@ export default function CompanyDetailsPage() {
                         >
                           <TableCell className="font-medium">
                             {assessment.name}
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant={(assessment.type || 'GTM Readiness') === 'GTM Readiness' ? 'default' : 'secondary'}>
+                              {assessment.type || 'GTM Readiness'}
+                            </Badge>
                           </TableCell>
                           <TableCell>
                             <Badge
@@ -339,7 +345,7 @@ export default function CompanyDetailsPage() {
                       ))
                     ) : (
                       <TableRow>
-                        <TableCell colSpan={4} className="h-24 text-center">
+                        <TableCell colSpan={5} className="h-24 text-center">
                           No assessments found.
                         </TableCell>
                       </TableRow>
@@ -384,6 +390,7 @@ export default function CompanyDetailsPage() {
                         />
                       </TableHead>
                       <TableHead>Assessment Name</TableHead>
+                      <TableHead>Type</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead>Date</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
@@ -404,6 +411,11 @@ export default function CompanyDetailsPage() {
                           </TableCell>
                           <TableCell className="font-medium">
                             {assessment.name}
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant={(assessment.type || 'GTM Readiness') === 'GTM Readiness' ? 'default' : 'secondary'}>
+                              {assessment.type || 'GTM Readiness'}
+                            </Badge>
                           </TableCell>
                           <TableCell>
                             <Badge
@@ -428,7 +440,7 @@ export default function CompanyDetailsPage() {
                       ))
                     ) : (
                        <TableRow>
-                        <TableCell colSpan={5} className="h-24 text-center">
+                        <TableCell colSpan={6} className="h-24 text-center">
                           No assessments found.
                         </TableCell>
                       </TableRow>

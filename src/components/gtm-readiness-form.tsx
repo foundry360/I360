@@ -331,9 +331,10 @@ export function GtmReadinessForm({ onComplete, assessmentToResume }: GtmReadines
       const finalAssessmentName = company ? `${assessmentName} - ${company.name}` : assessmentName;
       
       const response = await generateGtmReadiness(assessmentData as GtmReadinessInput);
-      const payload = {
+      const payload: Omit<Assessment, 'id'> = {
         companyId: companyId,
         name: finalAssessmentName,
+        type: 'GTM Readiness',
         status: 'Completed' as const,
         progress: 100,
         startDate: assessmentToResume?.startDate || new Date().toISOString(),
@@ -400,9 +401,10 @@ export function GtmReadinessForm({ onComplete, assessmentToResume }: GtmReadines
     }, 0);
     const progress = Math.round((completedSections / formSections.length) * 100);
 
-    const payload = {
+    const payload: Omit<Assessment, 'id'> = {
         companyId: companyId,
         name: finalAssessmentName,
+        type: 'GTM Readiness',
         status: 'In Progress' as const,
         progress: progress,
         startDate: assessmentToResume?.startDate || new Date().toISOString(),
@@ -601,3 +603,5 @@ export function GtmReadinessForm({ onComplete, assessmentToResume }: GtmReadines
     </div>
   );
 }
+
+    

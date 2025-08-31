@@ -248,6 +248,14 @@ export default function AssessmentsPage() {
                     </Button>
                   </TableHead>
                   <TableHead className="border-t border-r border-b">
+                    <Button variant="ghost" onClick={() => requestSort('type')} className="group w-full p-0 hover:bg-transparent hover:text-muted-foreground">
+                      <div className="flex justify-between items-center w-full">
+                        Type
+                        <ArrowUpDown className={cn("h-4 w-4", sortConfig?.key === 'type' ? 'opacity-100' : 'opacity-25')} />
+                      </div>
+                    </Button>
+                  </TableHead>
+                  <TableHead className="border-t border-r border-b">
                     <Button variant="ghost" onClick={() => requestSort('status')} className="group w-full p-0 hover:bg-transparent hover:text-muted-foreground">
                        <div className="flex justify-between items-center w-full">
                         Status
@@ -288,6 +296,11 @@ export default function AssessmentsPage() {
                         <Link href={`/${assessment.companyId}/details`} className="hover:text-primary">
                             {assessment.companyName}
                         </Link>
+                      </TableCell>
+                      <TableCell className="p-2">
+                        <Badge variant={(assessment.type || 'GTM Readiness') === 'GTM Readiness' ? 'default' : 'secondary'}>
+                          {assessment.type || 'GTM Readiness'}
+                        </Badge>
                       </TableCell>
                       <TableCell className="p-2">
                         <Badge
@@ -342,7 +355,7 @@ export default function AssessmentsPage() {
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={6} className="h-24 text-center">
+                    <TableCell colSpan={7} className="h-24 text-center">
                       No assessments found.
                     </TableCell>
                   </TableRow>

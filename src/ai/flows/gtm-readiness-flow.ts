@@ -137,15 +137,15 @@ const GtmReadinessOutputSchema = z.object({
         stakeholderImpact: z.string().describe('Which departments or roles are most affected by this issue.'),
         urgencyRating: z.string().describe('A rating of how urgently this finding needs to be addressed (e.g., Critical, High, Medium).'),
     })).length(3),
-    strategicRecommendationSummary: z.string().describe('A summary of the strategic recommendations. Use markdown ### for section titles.'),
-    implementationTimelineOverview: z.string().describe("Start with a summary paragraph providing an overview of the implementation approach. Then, detail the timeline using markdown '### ' for each phase title (e.g., ### Phase 1: Foundation & Alignment (0-30 Days)). For each phase, provide a 'Focus:' and 'Key Deliverables:' on separate lines."),
-    currentStateAssessment: z.string().describe('A detailed assessment of the current state. Use markdown ### for section titles.'),
-    performanceBenchmarking: z.string().describe('A benchmarking of performance against industry standards. Use markdown ### for section titles.'),
-    keyFindingsAndOpportunities: z.string().describe('Key findings and opportunities identified. Use markdown ### for section titles.'),
-    prioritizedRecommendations: z.string().describe('A list of prioritized recommendations. Use markdown ### for section titles.'),
-    implementationRoadmap: z.string().describe('A detailed implementation roadmap. Use markdown ### for section titles.'),
-    investmentAndRoiAnalysis: z.string().describe('An analysis of required investment and expected ROI. Use markdown ### for section titles.'),
-    nextStepsAndDecisionFramework: z.string().describe('Next steps and a framework for decision-making. Use markdown ### for section titles.'),
+    strategicRecommendationSummary: z.string().describe("A summary of strategic recommendations."),
+    implementationTimelineOverview: z.string().describe("An overview of the implementation timeline."),
+    currentStateAssessment: z.string().describe("An assessment of the company's current state."),
+    performanceBenchmarking: z.string().describe("Benchmarking of performance against industry standards."),
+    keyFindingsAndOpportunities: z.string().describe("Key findings and opportunities for improvement."),
+    prioritizedRecommendations: z.string().describe("A list of prioritized recommendations."),
+    implementationRoadmap: z.string().describe("A roadmap for implementing the recommendations."),
+    investmentAndRoiAnalysis: z.string().describe("An analysis of the required investment and expected ROI."),
+    nextStepsAndDecisionFramework: z.string().describe("Next steps and a framework for decision-making."),
 });
 
 export type GtmReadinessOutput = z.infer<typeof GtmReadinessOutputSchema>;
@@ -161,7 +161,7 @@ const prompt = ai.definePrompt({
   input: { schema: GtmReadinessInputSchema },
   output: { schema: GtmReadinessOutputSchema },
   prompt: `
-          You are an expert RevOps and Go-To-Market (GTM) strategist. Your task is to analyze the provided company data and generate a comprehensive GTM Readiness Assessment report.
+          You are an expert RevOps and Go-To-Market (GTM) strategist. Your task is to analyze the provided company data and generate a comprehensive GTM Readiness Assessment report. Provide clear, direct, and professional analysis for each section.
 
           **User-Provided Data:**
           - Company Stage: {{{companyStage}}}
@@ -215,8 +215,14 @@ const prompt = ai.definePrompt({
           - AI Adoption Barriers: {{{aiAdoptionBarriers}}}
           - Business Model Testing Frequency: {{{businessModelTesting}}}
           
-          **Your Task:**
-          Based on the data above, generate a detailed GTM Readiness Assessment report. The report should be structured according to the GtmReadinessOutputSchema. Provide deep, actionable insights. Be direct, professional, and use the language of a seasoned RevOps consultant. Use markdown for formatting within the string fields, especially using ### for section headers where appropriate. Calculate an overall readiness score based on a holistic analysis of all inputs.
+          Based on the data above, generate a detailed GTM Readiness Assessment report structured according to the GtmReadinessOutputSchema.
+          Calculate an overall readiness score based on a holistic analysis of all inputs. Be direct, professional, and use the language of a seasoned RevOps consultant.
+          
+          **VERY IMPORTANT FORMATTING INSTRUCTIONS:**
+          For all long-form text fields (like 'briefOverviewOfFindings', 'currentStateAssessment', etc.), YOU MUST use markdown for structure. 
+          - Use '###' for subheadings.
+          - Use '- ' for list items.
+          - **Crucially, you absolutely must use literal newline characters (\\n) to separate paragraphs, headings, and list items to ensure proper rendering. This is not optional.** For example, to create a heading followed by a list, the output MUST look like this: '### My Heading\\n- First item\\n- Second item'. Do not skip the \\n characters. This is a strict requirement.
   `,
 });
 
@@ -231,4 +237,3 @@ const generateGtmReadinessFlow = ai.defineFlow(
     return output!;
   }
 );
-

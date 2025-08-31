@@ -20,42 +20,21 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 
 export default function CompanyProfilePage() {
-  const { user, loading: userLoading } = useUser();
+  const { user, loading: userLoading, reloadUser } = useUser();
   const { toast } = useToast();
 
   const [displayName, setDisplayName] = React.useState('');
   const [email, setEmail] = React.useState('');
   const [phone, setPhone] = React.useState('');
-  const [avatarFile, setAvatarFile] = React.useState<File | null>(null);
-  const [avatarPreview, setAvatarPreview] = React.useState<string | null>(null);
   const [loading, setLoading] = React.useState(false);
   
-  const fileInputRef = React.useRef<HTMLInputElement>(null);
-
   React.useEffect(() => {
     if (user) {
       setDisplayName(user.displayName || '');
       setEmail(user.email || '');
-      setAvatarPreview(user.photoURL || null);
     }
   }, [user]);
 
-  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      setAvatarFile(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setAvatarPreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleAvatarClick = () => {
-    fileInputRef.current?.click();
-  };
-  
   const handleUpdateProfile = async () => {
     if (!user) {
         toast({
@@ -69,8 +48,8 @@ export default function CompanyProfilePage() {
     try {
         await updateUserProfile(user, {
             displayName: displayName,
-            photoFile: avatarFile || undefined,
         });
+        await reloadUser();
         toast({
             title: 'Success!',
             description: 'Your profile has been updated.',
@@ -84,11 +63,6 @@ export default function CompanyProfilePage() {
         });
     } finally {
         setLoading(false);
-        // Reset file input to allow re-uploading the same file if needed
-        if (fileInputRef.current) {
-          fileInputRef.current.value = '';
-        }
-        setAvatarFile(null); 
     }
   };
 
@@ -118,29 +92,15 @@ export default function CompanyProfilePage() {
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="flex items-center space-x-4">
-              <input
-                type="file"
-                ref={fileInputRef}
-                onChange={handleAvatarChange}
-                className="hidden"
-                accept="image/*"
-              />
               <Avatar
-                className="h-24 w-24 cursor-pointer"
-                onClick={handleAvatarClick}
+                className="h-24 w-24"
               >
                 <AvatarImage
-                  src={avatarPreview ?? ''}
+                  src={user?.photoURL ?? ''}
                   data-ai-hint="user avatar"
                 />
                 <AvatarFallback>{getInitials(displayName)}</AvatarFallback>
               </Avatar>
-              <div className="flex flex-col gap-2">
-                 <Button variant="outline" size="sm" onClick={handleAvatarClick}>
-                    Change Avatar
-                 </Button>
-                 <p className="text-xs text-muted-foreground">JPG, GIF or PNG. 1MB max.</p>
-              </div>
             </div>
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">

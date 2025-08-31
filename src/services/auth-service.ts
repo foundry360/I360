@@ -15,11 +15,9 @@ export const signIn = async (email: string, password: string) => {
   try {
     return await signInWithEmailAndPassword(auth, email, password);
   } catch (error: any) {
-    // If user not found, create a new user.
     if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
       try {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        // Set a default display name if none is provided
         await updateProfile(userCredential.user, { displayName: email.split('@')[0] });
         return userCredential;
       } catch (createError: any) {

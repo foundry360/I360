@@ -8,6 +8,7 @@ import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
@@ -16,6 +17,7 @@ import { Label } from '@/components/ui/label';
 import { Logo } from '@/components/logo';
 import { useToast } from '@/hooks/use-toast';
 import { useUser } from '@/contexts/user-context';
+import { Loader2 } from 'lucide-react';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -30,7 +32,6 @@ export default function LoginPage() {
     setLoading(true);
     try {
       await signIn(email, password);
-      // On successful sign-in, AuthProvider will handle the redirect
     } catch (error) {
       console.error('Sign-in failed:', error);
       toast({
@@ -46,12 +47,13 @@ export default function LoginPage() {
     }
   };
 
-  // If user is already logged in, AuthProvider will redirect.
-  // We can show a loading state until that happens.
   if (user) {
     return (
         <div className="flex h-screen items-center justify-center bg-background p-4">
-            <p>Redirecting...</p>
+            <div className="flex flex-col items-center gap-2">
+                <Loader2 className="h-8 w-8 animate-spin" />
+                <p>Redirecting...</p>
+            </div>
         </div>
     );
   }
@@ -63,9 +65,9 @@ export default function LoginPage() {
           <div className="mx-auto mb-4">
             <Logo />
           </div>
-          <CardTitle>Welcome Back</CardTitle>
+          <CardTitle>Welcome</CardTitle>
           <CardDescription>
-            Enter your credentials to access your account
+            Enter your credentials to sign in.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -92,10 +94,12 @@ export default function LoginPage() {
               />
             </div>
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? 'Signing In...' : 'Sign In'}
+              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Sign In
             </Button>
           </form>
         </CardContent>
+        <CardFooter />
       </Card>
     </div>
   );

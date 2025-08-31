@@ -4,12 +4,9 @@ import * as React from 'react';
 import type { GtmReadinessOutput } from '@/ai/flows/gtm-readiness-flow';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Loader2, ArrowRight, BarChart, Clock, Target, Lightbulb, TrendingUp, PieChart, ListChecks, GanttChartSquare, Banknote, Flag } from 'lucide-react';
+import { ArrowRight, BarChart, Clock, Target, Lightbulb, TrendingUp, PieChart, ListChecks, GanttChartSquare, Banknote, Flag, Download } from 'lucide-react';
 import { Badge } from './ui/badge';
 import { Separator } from './ui/separator';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
-
 
 type GtmReadinessReportProps = {
   title: string;
@@ -31,191 +28,105 @@ const Section: React.FC<{ id: string; icon: React.ReactNode; title: string; chil
   </Card>
 );
 
-const renderContent = (text: string | undefined) => {
-    if (!text) return null;
+const generateMarkdownExport = (title: string, result: GtmReadinessOutput): string => {
+  let markdown = `# ${title}\n\n`;
+  markdown += `Generated on ${new Date().toLocaleDateString()}\n\n`;
 
-    const cleanedText = text.replace(/\*/g, '');
-    const lines = cleanedText.split(/\r?\n/).filter(line => line.trim().length > 0);
-
-    return (
-        <div className="prose max-w-none text-foreground space-y-2">
-            {lines.map((line, i) => {
-                if (line.startsWith('### ')) {
-                    return <h4 key={`h4-${i}`} className="font-semibold text-lg text-primary mt-4">{line.replace(/###\s?/, '')}</h4>
-                }
-                if (line.startsWith('Focus:') || line.startsWith('Key Deliverables:')) {
-                    const [label, ...rest] = line.split(':');
-                    return (
-                        <p key={i}>
-                            <span className="font-semibold">{label}:</span>
-                            {rest.join(':')}
-                        </p>
-                    )
-                }
-                return <p key={i}>{line.replace(/^- /, '')}</p>;
-            })}
-        </div>
-    );
-};
-
-export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessReportProps>(({ title, result, onComplete }, ref) => {
-  const [isExporting, setIsExporting] = React.useState(false);
-
-  const handlePrint = () => {
-    setIsExporting(true);
-
-    const doc = new jsPDF('p', 'pt', 'a4');
-    const pageHeight = doc.internal.pageSize.height;
-    const pageWidth = doc.internal.pageSize.width;
-    const margin = 40;
-    let y = margin;
-
-    const addPageIfNeeded = (spaceNeeded: number) => {
-        if (y + spaceNeeded > pageHeight - margin) {
-            doc.addPage();
-            y = margin;
-        }
-    };
-    
-    // Title
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(24);
-    doc.setTextColor(111, 71, 251); // primary color
-    doc.text(title, pageWidth / 2, y, { align: 'center' });
-    y += 20;
-
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(10);
-    doc.setTextColor(100, 116, 139); // muted-foreground
-    doc.text(`Generated on ${new Date().toLocaleDateString()}`, pageWidth / 2, y, { align: 'center' });
-    y += 30;
-
-    const renderSection = (title: string, content: () => void) => {
-        addPageIfNeeded(40);
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(16);
-        doc.setTextColor(111, 71, 251);
-        doc.text(title, margin, y);
-        y += 20;
-        doc.setDrawColor(226, 232, 240); // border color
-        doc.line(margin, y - 10, pageWidth - margin, y - 10);
-        content();
-        y += 20; // Space after section
-    };
-    
-    const renderMarkdown = (text: string | undefined) => {
-        if(!text) return;
-        const cleanedText = text.replace(/###\s/g, '').replace(/\*/g, '');
-        const lines = cleanedText.split(/\r?\n/).filter(line => line.trim().length > 0);
-        
-        lines.forEach((line) => {
-             if (line.startsWith('### ')) {
-                addPageIfNeeded(20);
-                y += 10; // Extra space before subheading
-                doc.setFont('helvetica', 'bold');
-                doc.setFontSize(12);
-                doc.setTextColor(111, 71, 251);
-                const splitTitle = doc.splitTextToSize(line.substring(4), pageWidth - margin * 2);
-                doc.text(splitTitle, margin, y);
-                y += (splitTitle.length * 12) + 5;
-            } else {
-                addPageIfNeeded(15);
-                doc.setFont('helvetica', 'normal');
-                doc.setFontSize(10);
-                doc.setTextColor(51, 65, 85); // foreground
-                
-                const isBulletedList = line.trim().startsWith('Focus:') || line.trim().startsWith('Key Deliverables:');
-                const bullet = '\u2022';
-                let content = line.replace(/^- /, '');
-
-                const indent = isBulletedList ? margin + 15 : margin;
-                const textWidth = pageWidth - indent - margin;
-
-                if (isBulletedList) {
-                    doc.text(bullet, margin, y, { baseline: 'top' });
-                }
-
-                const splitText = doc.splitTextToSize(content, textWidth);
-                doc.text(splitText, indent, y);
-                y += splitText.length * 12 + 5;
-            }
-        });
-    };
-
-    // Executive Summary
-    renderSection('Executive Summary', () => {
-        autoTable(doc, {
-            startY: y,
-            theme: 'plain',
-            body: [
-                [{content: `Overall Readiness: ${result.executiveSummary.overallReadinessScore}%`, styles: {fontStyle: 'bold', fontSize: 12}}],
-                [`Company Profile: ${result.executiveSummary.companyStageAndFte.replace(/\*/g, '')}`],
-                [`Industry: ${result.executiveSummary.industrySector.replace(/\*/g, '')}`],
-                [`GTM Strategy: ${result.executiveSummary.primaryGtmStrategy.replace(/\*/g, '')}`],
-            ],
-            didDrawPage: (data) => { y = data.cursor?.y || y; }
-        });
-         y = (doc as any).lastAutoTable.finalY + 10;
-
-        addPageIfNeeded(20);
-        doc.setFont('helvetica', 'normal');
-        doc.setFontSize(10);
-        const splitText = doc.splitTextToSize(result.executiveSummary.briefOverviewOfFindings.replace(/\*/g, ''), pageWidth - margin * 2);
-        doc.text(splitText, margin, y);
-        y += splitText.length * 12;
-    });
-
-    // Top 3 Critical Findings
-    renderSection('Top 3 Critical Findings', () => {
-        result.top3CriticalFindings.forEach(finding => {
-            const tableBody = [
-                [{ content: `Business Impact`, styles: { fontStyle: 'bold' } }, finding.businessImpact.replace(/\*/g, '')],
-                [{ content: `Current State`, styles: { fontStyle: 'bold' } }, finding.currentState.replace(/\*/g, '')],
-                [{ content: `Root Cause`, styles: { fontStyle: 'bold' } }, finding.rootCauseAnalysis.replace(/\*/g, '')],
-                [{ content: `Stakeholder Impact`, styles: { fontStyle: 'bold' } }, finding.stakeholderImpact.replace(/\*/g, '')],
-                [{ content: `Urgency`, styles: { fontStyle: 'bold' } }, finding.urgencyRating.replace(/\*/g, '')],
-            ];
-            addPageIfNeeded(100);
-            doc.setFont('helvetica', 'bold');
-            doc.setFontSize(12);
-            doc.setTextColor(15, 23, 42); // card-foreground
-            doc.text(finding.findingTitle.replace(/\*/g, ''), margin, y);
-            y += 15;
-            autoTable(doc, {
-                startY: y,
-                head: [[`Impact: ${finding.impactLevel}`]],
-                body: tableBody,
-                theme: 'grid',
-                headStyles: {
-                    fillColor: finding.impactLevel === 'High' ? [239, 68, 68] : [241, 245, 249],
-                    textColor: finding.impactLevel === 'High' ? [255,255,255] : [15, 23, 42],
-                },
-                didDrawPage: (data) => { y = data.cursor?.y || y; }
-            });
-            y = (doc as any).lastAutoTable.finalY + 20;
-        });
-    });
-
-    renderSection('Strategic Recommendation Summary', () => renderMarkdown(result.strategicRecommendationSummary));
-    renderSection('Implementation Timeline Overview', () => renderMarkdown(result.implementationTimelineOverview));
-    renderSection('Current State Assessment', () => renderMarkdown(result.currentStateAssessment));
-    renderSection('Performance Benchmarking', () => renderMarkdown(result.performanceBenchmarking));
-    renderSection('Key Findings & Opportunities', () => renderMarkdown(result.keyFindingsAndOpportunities));
-    renderSection('Prioritized Recommendations', () => renderMarkdown(result.prioritizedRecommendations));
-    renderSection('Implementation Roadmap', () => renderMarkdown(result.implementationRoadmap));
-    renderSection('Investment & ROI Analysis', () => renderMarkdown(result.investmentAndRoiAnalysis));
-    renderSection('Next Steps & Decision Framework', () => renderMarkdown(result.nextStepsAndDecisionFramework));
-
-    doc.save('GTM-Readiness-Report.pdf');
-    setIsExporting(false);
+  const processTextForMarkdown = (text: string | undefined): string => {
+    if (!text) return '';
+    return text.replace(/### (.*?)\n/g, '### $1\n').replace(/- \*\*(.*?)\*\*:(.*?)(\n|$)/g, '- **$1**:$2\n');
   };
 
+  // Executive Summary
+  markdown += `## Executive Summary\n\n`;
+  markdown += `**Overall Readiness:** ${result.executiveSummary.overallReadinessScore}%\n`;
+  markdown += `**Company Profile:** ${result.executiveSummary.companyStageAndFte}\n`;
+  markdown += `**Industry:** ${result.executiveSummary.industrySector}\n`;
+  markdown += `**GTM Strategy:** ${result.executiveSummary.primaryGtmStrategy}\n\n`;
+  markdown += `${processTextForMarkdown(result.executiveSummary.briefOverviewOfFindings)}\n\n`;
 
-  React.useImperativeHandle(ref, () => ({
-      handlePrint
-  }));
+  // Top 3 Critical Findings
+  markdown += `## Top 3 Critical Findings\n\n`;
+  result.top3CriticalFindings.forEach(finding => {
+    markdown += `### ${finding.findingTitle}\n\n`;
+    markdown += `**Impact Level:** ${finding.impactLevel}\n\n`;
+    markdown += `**Business Impact:** ${finding.businessImpact}\n\n`;
+    markdown += `**Current State:** ${finding.currentState}\n\n`;
+    markdown += `**Root Cause:** ${finding.rootCauseAnalysis}\n\n`;
+    markdown += `**Stakeholder Impact:** ${finding.stakeholderImpact}\n\n`;
+    markdown += `**Urgency:** ${finding.urgencyRating}\n\n`;
+  });
 
-  if (!result || !result.executiveSummary) {
+  const reportSectionsMd = [
+    { title: 'Strategic Recommendation Summary', content: result.strategicRecommendationSummary },
+    { title: 'Implementation Timeline Overview', content: result.implementationTimelineOverview },
+    { title: 'Current State Assessment', content: result.currentStateAssessment },
+    { title: 'Performance Benchmarking', content: result.performanceBenchmarking },
+    { title: 'Key Findings & Opportunities', content: result.keyFindingsAndOpportunities },
+    { title: 'Prioritized Recommendations', content: result.prioritizedRecommendations },
+    { title: 'Implementation Roadmap', content: result.implementationRoadmap },
+    { title: 'Investment & ROI Analysis', content: result.investmentAndRoiAnalysis },
+    { title: 'Next Steps & Decision Framework', content: result.nextStepsAndDecisionFramework },
+  ];
+
+  reportSectionsMd.forEach(section => {
+    markdown += `## ${section.title}\n\n`;
+    markdown += `${processTextForMarkdown(section.content)}\n\n`;
+  });
+
+  return markdown;
+};
+
+const FormattedText = ({ text }: { text?: string }) => {
+  if (!text) {
+    return null;
+  }
+
+  const processedText = text
+    .replace(/###\s/g, '\n\n### ')
+    .replace(/- \*\*/g, '\n- **')
+    .replace(/\*\*([^*]+)\*\*:/g, '\n**$1**:');
+
+  const paragraphs = processedText.split('\n').filter(p => p.trim() !== '');
+
+  return (
+    <div className="space-y-2 text-foreground">
+      {paragraphs.map((paragraph, pIndex) => {
+        if (paragraph.startsWith('### ')) {
+          return <h3 key={pIndex} className="text-lg font-bold mt-4 mb-2">{paragraph.substring(4)}</h3>;
+        }
+
+        const subheadingMatch = paragraph.match(/^\*\*(.*?):\*\*(.*)/);
+        if (subheadingMatch) {
+            const title = subheadingMatch[1];
+            const content = subheadingMatch[2].trim();
+            return (
+                <div key={pIndex} className="mt-2">
+                    <h4 className="font-semibold text-base">{title}:</h4>
+                    {content && <p className="ml-1">{content.replace(/^- /gm, '• ')}</p>}
+                </div>
+            );
+        }
+        
+        if (paragraph.startsWith('- ') || paragraph.startsWith('• ')) {
+            return (
+                <div key={pIndex} className="flex flex-row items-start">
+                    <span className="mr-2 mt-1">•</span>
+                    <p className="flex-1">{paragraph.substring(2)}</p>
+                </div>
+            );
+        }
+
+        return <p key={pIndex}>{paragraph}</p>;
+      })}
+    </div>
+  );
+};
+
+
+export function GtmReadinessReport({ title, result, onComplete }: GtmReadinessReportProps) {
+  
+  if (!result || !result.executiveSummary || !result.top3CriticalFindings) {
     return (
         <div className="flex flex-col items-center justify-center h-full gap-4 p-6">
             <h2 className="text-xl font-semibold">Report Not Available</h2>
@@ -227,17 +138,32 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
     );
   }
 
+  const handleExport = () => {
+    const markdownContent = generateMarkdownExport(title, result);
+    const blob = new Blob([markdownContent], { type: 'text/markdown;charset=utf-8;' });
+    const link = document.createElement('a');
+    if (link.href) {
+      URL.revokeObjectURL(link.href);
+    }
+    link.href = URL.createObjectURL(blob);
+    link.download = 'GTM-Readiness-Report.md';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+
     const reportSections = [
       { id: 'executive-summary', icon: <BarChart className="h-8 w-8 text-primary" />, title: 'Executive Summary', content: (
           <>
               <div className="grid grid-cols-2 gap-4">
-                  <p><span className="font-semibold">Overall Readiness:</span> <span className="font-bold text-lg text-primary">{result.executiveSummary.overallReadinessScore}%</span></p>
-                  <p><span className="font-semibold">Company Profile:</span> {result.executiveSummary.companyStageAndFte.replace(/\*/g, '')}</p>
-                  <p><span className="font-semibold">Industry:</span> {result.executiveSummary.industrySector.replace(/\*/g, '')}</p>
-                  <p><span className="font-semibold">GTM Strategy:</span> {result.executiveSummary.primaryGtmStrategy.replace(/\*/g, '')}</p>
+                  <p><strong>Overall Readiness:</strong> <span className="font-bold text-lg text-primary">{result.executiveSummary.overallReadinessScore}%</span></p>
+                  <p><strong>Company Profile:</strong> {result.executiveSummary.companyStageAndFte}</p>
+                  <p><strong>Industry:</strong> {result.executiveSummary.industrySector}</p>
+                  <p><strong>GTM Strategy:</strong> {result.executiveSummary.primaryGtmStrategy}</p>
               </div>
               <Separator />
-              <p className="text-foreground">{result.executiveSummary.briefOverviewOfFindings.replace(/\*/g, '')}</p>
+              <FormattedText text={result.executiveSummary.briefOverviewOfFindings} />
           </>
       )},
       { id: 'critical-findings', icon: <Target className="h-8 w-8 text-destructive" />, title: 'Top 3 Critical Findings', content: (
@@ -245,59 +171,61 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
               <Card key={index} className="break-inside-avoid">
                   <CardHeader>
                       <CardTitle className="flex justify-between items-center">
-                          <span>{finding.findingTitle.replace(/\*/g, '')}</span>
+                          <span>{finding.findingTitle}</span>
                           <Badge variant={finding.impactLevel === 'High' ? 'destructive' : 'secondary'}>Impact: {finding.impactLevel}</Badge>
                       </CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-3 prose max-w-none text-foreground">
-                      <p><span className="font-semibold">Business Impact:</span> {finding.businessImpact.replace(/\*/g, '')}</p>
-                      <p><span className="font-semibold">Current State:</span> {finding.currentState.replace(/\*/g, '')}</p>
-                      <p><span className="font-semibold">Root Cause:</span> {finding.rootCauseAnalysis.replace(/\*/g, '')}</p>
-                      <p><span className="font-semibold">Stakeholder Impact:</span> {finding.stakeholderImpact.replace(/\*/g, '')}</p>
-                      <p><span className="font-semibold">Urgency:</span> {finding.urgencyRating.replace(/\*/g, '')}</p>
+                  <CardContent className="space-y-3 text-foreground">
+                      <div><strong>Business Impact:</strong> <FormattedText text={finding.businessImpact} /></div>
+                      <div><strong>Current State:</strong> <FormattedText text={finding.currentState} /></div>
+                      <div><strong>Root Cause:</strong> <FormattedText text={finding.rootCauseAnalysis} /></div>
+                      <div><strong>Stakeholder Impact:</strong> <FormattedText text={finding.stakeholderImpact} /></div>
+                      <div><strong>Urgency:</strong> <FormattedText text={finding.urgencyRating} /></div>
                   </CardContent>
               </Card>
           ))
       )},
-      { id: 'recommendation-summary', icon: <Lightbulb className="h-8 w-8 text-primary" />, title: 'Strategic Recommendation Summary', content: renderContent(result.strategicRecommendationSummary) },
-      { id: 'timeline-overview', icon: <Clock className="h-8 w-8 text-primary" />, title: 'Implementation Timeline Overview', content: renderContent(result.implementationTimelineOverview) },
-      { id: 'current-state-assessment', icon: <PieChart className="h-8 w-8 text-primary" />, title: 'Current State Assessment', content: renderContent(result.currentStateAssessment) },
-      { id: 'performance-benchmarking', icon: <TrendingUp className="h-8 w-8 text-primary" />, title: 'Performance Benchmarking', content: renderContent(result.performanceBenchmarking) },
-      { id: 'key-findings', icon: <Flag className="h-8 w-8 text-primary" />, title: 'Key Findings & Opportunities', content: renderContent(result.keyFindingsAndOpportunities) },
-      { id: 'prioritized-recommendations', icon: <ListChecks className="h-8 w-8 text-primary" />, title: 'Prioritized Recommendations', content: renderContent(result.prioritizedRecommendations) },
-      { id: 'implementation-roadmap', icon: <GanttChartSquare className="h-8 w-8 text-primary" />, title: 'Implementation Roadmap', content: renderContent(result.implementationRoadmap) },
-      { id: 'investment-roi', icon: <Banknote className="h-8 w-8 text-primary" />, title: 'Investment & ROI Analysis', content: renderContent(result.investmentAndRoiAnalysis) },
-      { id: 'next-steps', icon: <ArrowRight className="h-8 w-8 text-primary" />, title: 'Next Steps & Decision Framework', content: renderContent(result.nextStepsAndDecisionFramework) },
+      { id: 'recommendation-summary', icon: <Lightbulb className="h-8 w-8 text-primary" />, title: 'Strategic Recommendation Summary', content: <FormattedText text={result.strategicRecommendationSummary} /> },
+      { id: 'timeline-overview', icon: <Clock className="h-8 w-8 text-primary" />, title: 'Implementation Timeline Overview', content: <FormattedText text={result.implementationTimelineOverview} /> },
+      { id: 'current-state-assessment', icon: <PieChart className="h-8 w-8 text-primary" />, title: 'Current State Assessment', content: <FormattedText text={result.currentStateAssessment} /> },
+      { id: 'performance-benchmarking', icon: <TrendingUp className="h-8 w-8 text-primary" />, title: 'Performance Benchmarking', content: <FormattedText text={result.performanceBenchmarking} /> },
+      { id: 'key-findings', icon: <Flag className="h-8 w-8 text-primary" />, title: 'Key Findings & Opportunities', content: <FormattedText text={result.keyFindingsAndOpportunities} /> },
+      { id: 'prioritized-recommendations', icon: <ListChecks className="h-8 w-8 text-primary" />, title: 'Prioritized Recommendations', content: <FormattedText text={result.prioritizedRecommendations} /> },
+      { id: 'implementation-roadmap', icon: <GanttChartSquare className="h-8 w-8 text-primary" />, title: 'Implementation Roadmap', content: <FormattedText text={result.implementationRoadmap} /> },
+      { id: 'investment-roi', icon: <Banknote className="h-8 w-8 text-primary" />, title: 'Investment & ROI Analysis', content: <FormattedText text={result.investmentAndRoiAnalysis} /> },
+      { id: 'next-steps', icon: <ArrowRight className="h-8 w-8 text-primary" />, title: 'Next Steps & Decision Framework', content: <FormattedText text={result.nextStepsAndDecisionFramework} /> },
     ];
 
   return (
-    <div className="bg-muted" ref={ref}>
-      <div className="space-y-6 p-6">
-        <div className="bg-background p-8 rounded-lg shadow-sm">
-            <div className="text-center pb-4 border-b mb-6">
-                <h2 className="text-3xl font-bold text-primary">{title}</h2>
-                <p className="text-muted-foreground">Generated on {new Date().toLocaleDateString()}</p>
-            </div>
-            <div className="space-y-6">
-                {reportSections.map(sec => (
-                    <div key={sec.id}>
-                         <Section id={sec.id} icon={sec.icon} title={sec.title}>
-                            {sec.content}
-                        </Section>
-                    </div>
-                ))}
-            </div>
-        </div>
-        <div className="flex justify-between items-center gap-4 p-6 bg-background rounded-lg shadow-sm">
-            <p className="text-xs text-muted-foreground">PROPRIETARY & CONFIDENTIAL</p>
-            <div className="flex gap-4">
-                <Button variant="outline" onClick={onComplete}>Done</Button>
+    <div className="bg-muted">
+        <div className="space-y-6 p-6">
+            <div className="bg-background p-8 rounded-lg shadow-sm">
+                <div className="text-center pb-4 border-b mb-6">
+                    <h2 className="text-3xl font-bold text-primary">{title}</h2>
+                    <p className="text-muted-foreground">Generated on {new Date().toLocaleDateString()}</p>
+                </div>
+                <div className="space-y-6">
+                    {reportSections.map(sec => (
+                        <div key={sec.id}>
+                            <Section id={sec.id} icon={sec.icon} title={sec.title}>
+                                {sec.content}
+                            </Section>
+                        </div>
+                    ))}
+                </div>
             </div>
         </div>
+      <div className="flex justify-between items-center gap-4 p-6 bg-background rounded-lg shadow-sm">
+          <p className="text-xs text-muted-foreground">PROPRIETARY & CONFIDENTIAL</p>
+          <div className="flex gap-4">
+              <Button variant="outline" onClick={onComplete}>Done</Button>
+              <Button onClick={handleExport}>
+                <Download className="mr-2 h-4 w-4" />
+                Export to Markdown
+              </Button>
+          </div>
       </div>
     </div>
   );
-});
+};
 GtmReadinessReport.displayName = "GtmReadinessReport";
-
-    
