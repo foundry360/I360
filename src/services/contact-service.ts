@@ -1,7 +1,7 @@
 
 'use client';
 import { db } from '@/lib/firebase';
-import { collection, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, writeBatch, query, where } from 'firebase/firestore';
+import { collection, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, writeBatch, query, where, addDoc } from 'firebase/firestore';
 import { getCompany, updateCompany, type Company } from './company-service';
 
 export interface Contact {
@@ -17,20 +17,31 @@ export interface Contact {
 }
 
 const contactsCollection = collection(db, 'contacts');
+const companiesCollection = collection(db, 'companies');
 
 export async function getContacts(): Promise<Contact[]> {
-  const snapshot = await getDocs(contactsCollection);
-  const contacts = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Contact));
+  // 1. Fetch all companies and create a map for efficient lookup.
+  const companySnapshot = await getDocs(companiesCollection);
+  const companyMap = new Map<string, string>();
+  companySnapshot.forEach(doc => {
+      const company = doc.data() as Company;
+      companyMap.set(company.id, company.name);
+  });
 
-  // Fetch company names for each contact
-  for (const contact of contacts) {
-    if (contact.companyId) {
-      const companyDoc = await getDoc(doc(db, 'companies', contact.companyId));
-      if (companyDoc.exists()) {
-        contact.companyName = (companyDoc.data() as Company).name;
+  // 2. Fetch all contacts.
+  const contactSnapshot = await getDocs(contactsCollection);
+
+  // 3. Map contacts and add company names from the map.
+  const contacts = contactSnapshot.docs.map(doc => {
+      const contact = { id: doc.id, ...doc.data() } as Contact;
+      if (contact.companyId && companyMap.has(contact.companyId)) {
+          contact.companyName = companyMap.get(contact.companyId);
+      } else {
+          contact.companyName = 'Unknown Company';
       }
-    }
-  }
+      return contact;
+  });
+
   return contacts;
 }
 
@@ -42,7 +53,8 @@ export async function getContactsForCompany(companyId: string): Promise<Contact[
 
 
 export async function createContact(contactData: Omit<Contact, 'id' | 'lastActivity' | 'avatar'>): Promise<void> {
-  const docRef = doc(contactsCollection);
+  const docRef = await addDoc(contactsCollection, {});
+  
   const newContact: Contact = {
       ...contactData,
       id: docRef.id,

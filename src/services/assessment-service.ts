@@ -21,20 +21,37 @@ export interface Assessment {
 }
 
 const assessmentsCollection = collection(db, 'assessments');
+const companiesCollection = collection(db, 'companies');
 
 export async function getAssessments(): Promise<Assessment[]> {
-  const snapshot = await getDocs(assessmentsCollection);
-  const assessments = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Assessment));
+  try {
+    // 1. Fetch all companies and create a map for efficient lookup.
+    const companySnapshot = await getDocs(companiesCollection);
+    const companyMap = new Map<string, string>();
+    companySnapshot.docs.forEach(doc => {
+        const company = doc.data() as Company;
+        companyMap.set(company.id, company.name);
+    });
 
-  for (const assessment of assessments) {
-    if (assessment.companyId) {
-      const companyDoc = await getDoc(doc(db, 'companies', assessment.companyId));
-      if (companyDoc.exists()) {
-        assessment.companyName = (companyDoc.data() as Company).name;
-      }
-    }
+    // 2. Fetch all assessments.
+    const assessmentSnapshot = await getDocs(assessmentsCollection);
+
+    // 3. Map assessments and add company names from the map.
+    const assessments = assessmentSnapshot.docs.map((doc) => {
+        const assessment = { id: doc.id, ...doc.data() } as Assessment;
+        if (assessment.companyId && companyMap.has(assessment.companyId)) {
+            assessment.companyName = companyMap.get(assessment.companyId);
+        } else {
+            assessment.companyName = 'Unknown Company';
+        }
+        return assessment;
+    });
+
+    return assessments;
+  } catch (error) {
+      console.error("Error fetching assessments:", error);
+      return [];
   }
-  return assessments;
 }
 
 export async function getAssessmentsForCompany(companyId: string): Promise<Assessment[]> {
