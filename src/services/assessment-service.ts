@@ -25,7 +25,6 @@ const companiesCollection = collection(db, 'companies');
 
 export async function getAssessments(): Promise<Assessment[]> {
   try {
-    // 1. Fetch all companies and create a map for efficient lookup.
     const companySnapshot = await getDocs(companiesCollection);
     const companyMap = new Map<string, string>();
     companySnapshot.docs.forEach(doc => {
@@ -33,17 +32,11 @@ export async function getAssessments(): Promise<Assessment[]> {
         companyMap.set(company.id, company.name);
     });
 
-    // 2. Fetch all assessments.
     const assessmentSnapshot = await getDocs(assessmentsCollection);
 
-    // 3. Map assessments and add company names from the map.
     const assessments = assessmentSnapshot.docs.map((doc) => {
         const assessment = { id: doc.id, ...doc.data() } as Assessment;
-        if (assessment.companyId && companyMap.has(assessment.companyId)) {
-            assessment.companyName = companyMap.get(assessment.companyId);
-        } else {
-            assessment.companyName = 'Unknown Company';
-        }
+        assessment.companyName = companyMap.get(assessment.companyId) || 'Unknown Company';
         return assessment;
     });
 
@@ -79,5 +72,3 @@ export async function deleteAssessments(ids: string[]): Promise<void> {
     });
     await batch.commit();
 }
-
-    

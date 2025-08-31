@@ -47,8 +47,10 @@ export default function ReportPage() {
                         !Array.isArray(assessmentData.result.top3CriticalFindings)
                     ) {
                         setError('The report for this assessment is incomplete and cannot be displayed. It may be from an older version or the AI analysis failed.');
+                        setAssessment(null); // Explicitly set to null on error
+                    } else {
+                        setAssessment(assessmentData);
                     }
-                    setAssessment(assessmentData);
                 } else {
                     setError('Assessment not found.');
                 }
@@ -126,4 +128,3 @@ export default function ReportPage() {
         </AppLayout>
     );
 }
-
