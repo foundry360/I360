@@ -14,6 +14,10 @@ import { Loader2 } from 'lucide-react';
 
 const unprotectedRoutes = ['/login'];
 
+function isReportRoute(pathname: string): boolean {
+  return /^\/assessment\/[a-zA-Z0-9-]+\/report$/.test(pathname);
+}
+
 function AuthGuard({ children }: { children: React.ReactNode }) {
   const { user, loading } = useUser();
   const router = useRouter();
@@ -29,6 +33,10 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
       return;
     }
 
+    if (isReportRoute(pathname)) {
+        return; // This is a public report route, do not redirect
+    }
+
     const pathIsProtected = !unprotectedRoutes.includes(pathname);
 
     if (!user && pathIsProtected) {
@@ -40,7 +48,7 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
     }
   }, [user, loading, router, pathname, isMounted]);
 
-  if (loading && !unprotectedRoutes.includes(pathname)) {
+  if (loading && !unprotectedRoutes.includes(pathname) && !isReportRoute(pathname)) {
     return (
         <div className="flex h-screen items-center justify-center bg-background p-4">
             <div className="flex flex-col items-center gap-2">

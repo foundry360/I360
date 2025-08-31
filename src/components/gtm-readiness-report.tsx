@@ -4,10 +4,10 @@ import * as React from 'react';
 import type { GtmReadinessOutput } from '@/ai/flows/gtm-readiness-flow';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, BarChart, Clock, Target, Lightbulb, TrendingUp, PieChart, ListChecks, GanttChartSquare, Banknote, Flag, Download, Loader2 } from 'lucide-react';
+import { ArrowRight, BarChart, Clock, Target, Lightbulb, TrendingUp, PieChart, ListChecks, GanttChartSquare, Banknote, Flag, Share2, Copy, Check } from 'lucide-react';
 import { Badge } from './ui/badge';
 import { Separator } from './ui/separator';
-import jsPDF from 'jspdf';
+import { useToast } from '@/hooks/use-toast';
 
 type GtmReadinessReportProps = {
   title: string;
@@ -77,7 +77,9 @@ const FormattedText = ({ text }: { text?: string }) => {
 
 
 export function GtmReadinessReport({ title, result, onComplete }: GtmReadinessReportProps) {
-  const [isExporting, setIsExporting] = React.useState(false);
+  const { toast } = useToast();
+  const [copied, setCopied] = React.useState(false);
+
 
   if (!result || !result.executiveSummary || !result.top3CriticalFindings) {
     return (
@@ -147,128 +149,32 @@ export function GtmReadinessReport({ title, result, onComplete }: GtmReadinessRe
     }
   }
 
-  const handlePdfExport = async () => {
-      setIsExporting(true);
-      const doc = new jsPDF({
-        orientation: 'p',
-        unit: 'mm',
-        format: 'a4',
-      });
-
-      const pageHeight = doc.internal.pageSize.getHeight();
-      const pageWidth = doc.internal.pageSize.getWidth();
-      const margin = 15;
-      const contentWidth = pageWidth - margin * 2;
-      let y = margin;
-      
-      const checkAndAddPage = (spaceNeeded: number) => {
-          if (y + spaceNeeded > pageHeight - margin) {
-              doc.addPage();
-              y = margin;
-          }
-      }
-      
-      const addWrappedText = (text: string, x: number, startY: number, maxWidth: number, options = {}) => {
-        const lines = doc.splitTextToSize(text || '', maxWidth);
-        doc.text(lines, x, startY, options);
-        return startY + (lines.length * (options.fontSize || 10) * 0.35); // Approximate height
-      };
-
-      // --- Title Page ---
-      doc.setFontSize(26);
-      doc.setFont('helvetica', 'bold');
-      doc.text(title, pageWidth / 2, 60, { align: 'center' });
-      doc.setFontSize(18);
-      doc.setFont('helvetica', 'normal');
-      doc.text('GTM Readiness Report', pageWidth / 2, 75, { align: 'center' });
-      doc.setFontSize(12);
-      doc.text(`Generated on ${new Date().toLocaleDateString()}`, pageWidth / 2, 85, { align: 'center' });
-      
-      doc.addPage();
-      y = margin;
-
-      // --- Report Content ---
-      for (const section of reportSections) {
-          checkAndAddPage(30); // Space for section header
-          
-          doc.setFontSize(18);
-          doc.setFont('helvetica', 'bold');
-          doc.text(section.title, margin, y);
-          y += 10;
-          doc.setLineWidth(0.5);
-          doc.line(margin, y, pageWidth - margin, y);
-          y += 10;
-
-          doc.setFontSize(11);
-          doc.setFont('helvetica', 'normal');
-
-          if (section.id === 'executive-summary') {
-              const es = section.data as GtmReadinessOutput['executiveSummary'];
-              const summaryContent = [
-                  `Overall Readiness: ${es.overallReadinessScore}%`,
-                  `Company Profile: ${es.companyStageAndFte}`,
-                  `Industry: ${es.industrySector}`,
-                  `GTM Strategy: ${es.primaryGtmStrategy}`
-              ];
-              summaryContent.forEach(line => {
-                checkAndAddPage(10);
-                y = addWrappedText(line, margin, y, contentWidth);
-                y+= 2;
-              });
-
-              y += 5;
-              checkAndAddPage(10);
-              y = addWrappedText(es.briefOverviewOfFindings, margin, y, contentWidth);
-          } else if (section.id === 'critical-findings') {
-              const findings = section.data as GtmReadinessOutput['top3CriticalFindings'];
-              findings.forEach((finding, index) => {
-                  checkAndAddPage(50); // Estimate space for a finding
-                  
-                  doc.setFontSize(14);
-                  doc.setFont('helvetica', 'bold');
-                  y = addWrappedText(`${index + 1}. ${finding.findingTitle}`, margin, y, contentWidth);
-                  y += 2;
-                  
-                  doc.setFontSize(11);
-                  doc.setFont('helvetica', 'normal');
-
-                  const details = [
-                    { title: 'Business Impact', text: finding.businessImpact },
-                    { title: 'Current State', text: finding.currentState },
-                    { title: 'Root Cause', text: finding.rootCauseAnalysis },
-                    { title: 'Stakeholder Impact', text: finding.stakeholderImpact },
-                    { title: 'Urgency', text: finding.urgencyRating }
-                  ];
-
-                  details.forEach(detail => {
-                      checkAndAddPage(10);
-                      doc.setFont('helvetica', 'bold');
-                      y = addWrappedText(`${detail.title}:`, margin, y, contentWidth);
-                      doc.setFont('helvetica', 'normal');
-                      y = addWrappedText(detail.text, margin + 2, y, contentWidth);
-                      y += 2;
-                  });
-                  y += 8; // Space between findings
-              });
-          } else if (typeof section.data === 'string') {
-              checkAndAddPage(20);
-              y = addWrappedText(section.data, margin, y, contentWidth);
-          }
-          y += 15; // Space between sections
-      }
-      
-      doc.save(`${title.replace(/\s+/g, '-')}-Report.pdf`);
-      setIsExporting(false);
-  };
+  const handleShare = () => {
+    const url = window.location.href;
+    navigator.clipboard.writeText(url).then(() => {
+        setCopied(true);
+        toast({
+            title: "Link Copied!",
+            description: "The report link has been copied to your clipboard.",
+        });
+        setTimeout(() => setCopied(false), 2000);
+    });
+  }
 
 
   return (
     <div className="bg-muted">
         <div id="report-content" className="space-y-6 p-6">
             <div className="bg-background p-8 rounded-lg shadow-sm">
-                <div className="text-center pb-4 border-b mb-6">
-                    <h2 className="text-3xl font-bold text-primary">{title}</h2>
-                    <p className="text-muted-foreground">Generated on {new Date().toLocaleDateString()}</p>
+                <div className="text-center pb-4 border-b mb-6 flex justify-between items-center">
+                    <div>
+                        <h2 className="text-3xl font-bold text-primary">{title}</h2>
+                        <p className="text-muted-foreground">Generated on {new Date().toLocaleDateString()}</p>
+                    </div>
+                    <Button onClick={handleShare}>
+                        {copied ? <Check className="mr-2 h-4 w-4" /> : <Share2 className="mr-2 h-4 w-4" />}
+                        {copied ? 'Copied!' : 'Share'}
+                    </Button>
                 </div>
                 <div className="space-y-6">
                     {reportSections.map(sec => (
@@ -285,15 +191,9 @@ export function GtmReadinessReport({ title, result, onComplete }: GtmReadinessRe
           <p className="text-xs text-muted-foreground">PROPRIETARY & CONFIDENTIAL</p>
           <div className="flex gap-4">
               <Button variant="outline" onClick={onComplete}>Done</Button>
-              <Button onClick={handlePdfExport} disabled={isExporting}>
-                {isExporting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
-                {isExporting ? 'Exporting...' : 'Export to PDF'}
-              </Button>
           </div>
       </div>
     </div>
   );
 };
 GtmReadinessReport.displayName = "GtmReadinessReport";
-
-    
