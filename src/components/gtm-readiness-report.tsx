@@ -8,7 +8,6 @@ import { ArrowRight, BarChart, Clock, Target, Lightbulb, TrendingUp, PieChart, L
 import { Badge } from './ui/badge';
 import { Separator } from './ui/separator';
 import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
 
 type GtmReadinessReportProps = {
   title: string;
@@ -93,20 +92,36 @@ export function GtmReadinessReport({ title, result, onComplete }: GtmReadinessRe
   }
   
   const reportSections = [
-    { id: 'executive-summary', icon: <BarChart className="h-8 w-8 text-primary" />, title: 'Executive Summary', content: (
-        <>
-            <div className="grid grid-cols-2 gap-4">
-                <p><strong>Overall Readiness:</strong> <span className="font-bold text-lg text-primary">{result.executiveSummary.overallReadinessScore}%</span></p>
-                <p><strong>Company Profile:</strong> {result.executiveSummary.companyStageAndFte}</p>
-                <p><strong>Industry:</strong> {result.executiveSummary.industrySector}</p>
-                <p><strong>GTM Strategy:</strong> {result.executiveSummary.primaryGtmStrategy}</p>
-            </div>
-            <Separator />
-            <FormattedText text={result.executiveSummary.briefOverviewOfFindings} />
-        </>
-    )},
-    { id: 'critical-findings', icon: <Target className="h-8 w-8 text-destructive" />, title: 'Top 3 Critical Findings', content: (
-        result.top3CriticalFindings.map((finding, index) => (
+    { id: 'executive-summary', icon: <BarChart className="h-8 w-8 text-primary" />, title: 'Executive Summary', data: result.executiveSummary },
+    { id: 'critical-findings', icon: <Target className="h-8 w-8 text-destructive" />, title: 'Top 3 Critical Findings', data: result.top3CriticalFindings },
+    { id: 'recommendation-summary', icon: <Lightbulb className="h-8 w-8 text-primary" />, title: 'Strategic Recommendation Summary', data: result.strategicRecommendationSummary },
+    { id: 'timeline-overview', icon: <Clock className="h-8 w-8 text-primary" />, title: 'Implementation Timeline Overview', data: result.implementationTimelineOverview },
+    { id: 'current-state-assessment', icon: <PieChart className="h-8 w-8 text-primary" />, title: 'Current State Assessment', data: result.currentStateAssessment },
+    { id: 'performance-benchmarking', icon: <TrendingUp className="h-8 w-8 text-primary" />, title: 'Performance Benchmarking', data: result.performanceBenchmarking },
+    { id: 'key-findings', icon: <Flag className="h-8 w-8 text-primary" />, title: 'Key Findings & Opportunities', data: result.keyFindingsAndOpportunities },
+    { id: 'prioritized-recommendations', icon: <ListChecks className="h-8 w-8 text-primary" />, title: 'Prioritized Recommendations', data: result.prioritizedRecommendations },
+    { id: 'implementation-roadmap', icon: <GanttChartSquare className="h-8 w-8 text-primary" />, title: 'Implementation Roadmap', data: result.implementationRoadmap },
+    { id: 'investment-roi', icon: <Banknote className="h-8 w-8 text-primary" />, title: 'Investment & ROI Analysis', data: result.investmentAndRoiAnalysis },
+    { id: 'next-steps', icon: <ArrowRight className="h-8 w-8 text-primary" />, title: 'Next Steps & Decision Framework', data: result.nextStepsAndDecisionFramework },
+  ];
+  
+  const getRenderableContent = (sectionId: string) => {
+    switch (sectionId) {
+      case 'executive-summary':
+        return (
+          <>
+              <div className="grid grid-cols-2 gap-4">
+                  <p><strong>Overall Readiness:</strong> <span className="font-bold text-lg text-primary">{result.executiveSummary.overallReadinessScore}%</span></p>
+                  <p><strong>Company Profile:</strong> {result.executiveSummary.companyStageAndFte}</p>
+                  <p><strong>Industry:</strong> {result.executiveSummary.industrySector}</p>
+                  <p><strong>GTM Strategy:</strong> {result.executiveSummary.primaryGtmStrategy}</p>
+              </div>
+              <Separator />
+              <FormattedText text={result.executiveSummary.briefOverviewOfFindings} />
+          </>
+        )
+      case 'critical-findings':
+        return result.top3CriticalFindings.map((finding, index) => (
             <Card key={index} className="break-inside-avoid">
                 <CardHeader>
                     <CardTitle className="flex justify-between items-center">
@@ -122,69 +137,128 @@ export function GtmReadinessReport({ title, result, onComplete }: GtmReadinessRe
                     <div><strong>Urgency:</strong> <FormattedText text={finding.urgencyRating} /></div>
                 </CardContent>
             </Card>
-        ))
-    )},
-    { id: 'recommendation-summary', icon: <Lightbulb className="h-8 w-8 text-primary" />, title: 'Strategic Recommendation Summary', content: <FormattedText text={result.strategicRecommendationSummary} /> },
-    { id: 'timeline-overview', icon: <Clock className="h-8 w-8 text-primary" />, title: 'Implementation Timeline Overview', content: <FormattedText text={result.implementationTimelineOverview} /> },
-    { id: 'current-state-assessment', icon: <PieChart className="h-8 w-8 text-primary" />, title: 'Current State Assessment', content: <FormattedText text={result.currentStateAssessment} /> },
-    { id: 'performance-benchmarking', icon: <TrendingUp className="h-8 w-8 text-primary" />, title: 'Performance Benchmarking', content: <FormattedText text={result.performanceBenchmarking} /> },
-    { id: 'key-findings', icon: <Flag className="h-8 w-8 text-primary" />, title: 'Key Findings & Opportunities', content: <FormattedText text={result.keyFindingsAndOpportunities} /> },
-    { id: 'prioritized-recommendations', icon: <ListChecks className="h-8 w-8 text-primary" />, title: 'Prioritized Recommendations', content: <FormattedText text={result.prioritizedRecommendations} /> },
-    { id: 'implementation-roadmap', icon: <GanttChartSquare className="h-8 w-8 text-primary" />, title: 'Implementation Roadmap', content: <FormattedText text={result.implementationRoadmap} /> },
-    { id: 'investment-roi', icon: <Banknote className="h-8 w-8 text-primary" />, title: 'Investment & ROI Analysis', content: <FormattedText text={result.investmentAndRoiAnalysis} /> },
-    { id: 'next-steps', icon: <ArrowRight className="h-8 w-8 text-primary" />, title: 'Next Steps & Decision Framework', content: <FormattedText text={result.nextStepsAndDecisionFramework} /> },
-  ];
+        ));
+      default:
+        const sectionData = reportSections.find(s => s.id === sectionId)?.data;
+        if (typeof sectionData === 'string') {
+          return <FormattedText text={sectionData} />;
+        }
+        return null;
+    }
+  }
 
   const handlePdfExport = async () => {
-    setIsExporting(true);
+      setIsExporting(true);
+      const doc = new jsPDF({
+        orientation: 'p',
+        unit: 'mm',
+        format: 'a4',
+      });
 
-    const pdf = new jsPDF({
-      orientation: 'p',
-      unit: 'mm',
-      format: 'a4',
-    });
+      const pageHeight = doc.internal.pageSize.getHeight();
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const margin = 15;
+      const contentWidth = pageWidth - margin * 2;
+      let y = margin;
+      
+      const checkAndAddPage = (spaceNeeded: number) => {
+          if (y + spaceNeeded > pageHeight - margin) {
+              doc.addPage();
+              y = margin;
+          }
+      }
+      
+      const addWrappedText = (text: string, x: number, startY: number, maxWidth: number, options = {}) => {
+        const lines = doc.splitTextToSize(text || '', maxWidth);
+        doc.text(lines, x, startY, options);
+        return startY + (lines.length * (options.fontSize || 10) * 0.35); // Approximate height
+      };
 
-    const pdfWidth = pdf.internal.pageSize.getWidth();
-    const pdfHeight = pdf.internal.pageSize.getHeight();
-    const margin = 15;
-    const contentWidth = pdfWidth - margin * 2;
+      // --- Title Page ---
+      doc.setFontSize(26);
+      doc.setFont('helvetica', 'bold');
+      doc.text(title, pageWidth / 2, 60, { align: 'center' });
+      doc.setFontSize(18);
+      doc.setFont('helvetica', 'normal');
+      doc.text('GTM Readiness Report', pageWidth / 2, 75, { align: 'center' });
+      doc.setFontSize(12);
+      doc.text(`Generated on ${new Date().toLocaleDateString()}`, pageWidth / 2, 85, { align: 'center' });
+      
+      doc.addPage();
+      y = margin;
 
-    // Add title page
-    pdf.setFontSize(22);
-    pdf.setTextColor(40, 40, 40);
-    pdf.text(title, pdfWidth / 2, 40, { align: 'center' });
-    pdf.setFontSize(12);
-    pdf.setTextColor(100, 100, 100);
-    pdf.text(`Generated on ${new Date().toLocaleDateString()}`, pdfWidth / 2, 50, { align: 'center' });
+      // --- Report Content ---
+      for (const section of reportSections) {
+          checkAndAddPage(30); // Space for section header
+          
+          doc.setFontSize(18);
+          doc.setFont('helvetica', 'bold');
+          doc.text(section.title, margin, y);
+          y += 10;
+          doc.setLineWidth(0.5);
+          doc.line(margin, y, pageWidth - margin, y);
+          y += 10;
 
+          doc.setFontSize(11);
+          doc.setFont('helvetica', 'normal');
 
-    for (let i = 0; i < reportSections.length; i++) {
-        const sectionInfo = reportSections[i];
-        const element = document.getElementById(sectionInfo.id);
+          if (section.id === 'executive-summary') {
+              const es = section.data as GtmReadinessOutput['executiveSummary'];
+              const summaryContent = [
+                  `Overall Readiness: ${es.overallReadinessScore}%`,
+                  `Company Profile: ${es.companyStageAndFte}`,
+                  `Industry: ${es.industrySector}`,
+                  `GTM Strategy: ${es.primaryGtmStrategy}`
+              ];
+              summaryContent.forEach(line => {
+                checkAndAddPage(10);
+                y = addWrappedText(line, margin, y, contentWidth);
+                y+= 2;
+              });
 
-        if (element) {
-            pdf.addPage();
-            
-            const canvas = await html2canvas(element, { scale: 2, useCORS: true, logging: true });
-            const imgData = canvas.toDataURL('image/png');
-            const imgWidth = canvas.width;
-            const imgHeight = canvas.height;
-            const ratio = imgWidth / imgHeight;
-            
-            const scaledImgWidth = contentWidth;
-            const scaledImgHeight = scaledImgWidth / ratio;
-            
-            pdf.addImage(imgData, 'PNG', margin, margin, scaledImgWidth, scaledImgHeight);
-        }
-    }
+              y += 5;
+              checkAndAddPage(10);
+              y = addWrappedText(es.briefOverviewOfFindings, margin, y, contentWidth);
+          } else if (section.id === 'critical-findings') {
+              const findings = section.data as GtmReadinessOutput['top3CriticalFindings'];
+              findings.forEach((finding, index) => {
+                  checkAndAddPage(50); // Estimate space for a finding
+                  
+                  doc.setFontSize(14);
+                  doc.setFont('helvetica', 'bold');
+                  y = addWrappedText(`${index + 1}. ${finding.findingTitle}`, margin, y, contentWidth);
+                  y += 2;
+                  
+                  doc.setFontSize(11);
+                  doc.setFont('helvetica', 'normal');
 
-    // Remove the blank page that gets added at the start of the loop
-    if (reportSections.length > 0) {
-      pdf.deletePage(2);
-    }
-    
-    pdf.save('GTM-Readiness-Report.pdf');
-    setIsExporting(false);
+                  const details = [
+                    { title: 'Business Impact', text: finding.businessImpact },
+                    { title: 'Current State', text: finding.currentState },
+                    { title: 'Root Cause', text: finding.rootCauseAnalysis },
+                    { title: 'Stakeholder Impact', text: finding.stakeholderImpact },
+                    { title: 'Urgency', text: finding.urgencyRating }
+                  ];
+
+                  details.forEach(detail => {
+                      checkAndAddPage(10);
+                      doc.setFont('helvetica', 'bold');
+                      y = addWrappedText(`${detail.title}:`, margin, y, contentWidth);
+                      doc.setFont('helvetica', 'normal');
+                      y = addWrappedText(detail.text, margin + 2, y, contentWidth);
+                      y += 2;
+                  });
+                  y += 8; // Space between findings
+              });
+          } else if (typeof section.data === 'string') {
+              checkAndAddPage(20);
+              y = addWrappedText(section.data, margin, y, contentWidth);
+          }
+          y += 15; // Space between sections
+      }
+      
+      doc.save(`${title.replace(/\s+/g, '-')}-Report.pdf`);
+      setIsExporting(false);
   };
 
 
@@ -200,7 +274,7 @@ export function GtmReadinessReport({ title, result, onComplete }: GtmReadinessRe
                     {reportSections.map(sec => (
                         <div key={sec.id}>
                             <Section id={sec.id} icon={sec.icon} title={sec.title}>
-                                {sec.content}
+                                {getRenderableContent(sec.id)}
                             </Section>
                         </div>
                     ))}
@@ -221,3 +295,5 @@ export function GtmReadinessReport({ title, result, onComplete }: GtmReadinessRe
   );
 };
 GtmReadinessReport.displayName = "GtmReadinessReport";
+
+    
