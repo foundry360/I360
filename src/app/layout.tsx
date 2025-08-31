@@ -10,7 +10,6 @@ import { UserProvider, useUser } from '@/contexts/user-context';
 import { AssessmentModal } from '@/components/assessment-modal';
 import * as React from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-import { Skeleton } from '@/components/ui/skeleton';
 
 const unprotectedRoutes = ['/login'];
 
@@ -41,19 +40,11 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
   }, [user, loading, router, pathname, isMounted]);
 
   if (loading && !unprotectedRoutes.includes(pathname)) {
-    return (
-      <div className="flex h-screen w-screen items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <Skeleton className="h-16 w-16 rounded-full" />
-          <Skeleton className="h-8 w-48" />
-          <Skeleton className="h-6 w-32" />
-        </div>
-      </div>
-    );
+    return null; // Render nothing while loading on a protected route to prevent flicker
   }
 
   if (!user && !unprotectedRoutes.includes(pathname)) {
-    return null; // Don't render anything while redirecting
+    return null; // Render nothing if there is no user and we are on a protected route
   }
 
 
