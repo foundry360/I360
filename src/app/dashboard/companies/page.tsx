@@ -166,12 +166,16 @@ export default function CompaniesPage() {
         let aValue, bValue;
 
         if (sortConfig.key === 'contactName') {
-            aValue = a.contact?.name || '';
-            bValue = b.contact?.name || '';
+            aValue = a.contact?.name;
+            bValue = b.contact?.name;
         } else {
             aValue = a[sortConfig.key as keyof Company];
             bValue = b[sortConfig.key as keyof Company];
         }
+
+        if (aValue == null && bValue == null) return 0;
+        if (aValue == null) return sortConfig.direction === 'ascending' ? -1 : 1;
+        if (bValue == null) return sortConfig.direction === 'ascending' ? 1 : -1;
 
         if (aValue < bValue) {
           return sortConfig.direction === 'ascending' ? -1 : 1;

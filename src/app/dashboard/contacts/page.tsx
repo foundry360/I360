@@ -80,8 +80,10 @@ export default function ContactsPage() {
 
   React.useEffect(() => {
     fetchContacts();
-    setOnContactCreated(() => fetchContacts);
-    return () => setOnContactCreated(null);
+    const unsubscribe = setOnContactCreated(() => fetchContacts);
+    return () => {
+        if (unsubscribe) unsubscribe();
+    }
   }, [fetchContacts, setOnContactCreated]);
 
   const openDeleteDialog = (contact: Contact) => {
@@ -143,8 +145,13 @@ export default function ContactsPage() {
     let sortableItems = [...contacts];
     if (sortConfig !== null) {
       sortableItems.sort((a, b) => {
-        const aValue = a[sortConfig.key] || '';
-        const bValue = b[sortConfig.key] || '';
+        const aValue = a[sortConfig.key];
+        const bValue = b[sortConfig.key];
+        
+        if (aValue == null && bValue == null) return 0;
+        if (aValue == null) return sortConfig.direction === 'ascending' ? -1 : 1;
+        if (bValue == null) return sortConfig.direction === 'ascending' ? 1 : -1;
+
         if (aValue < bValue) {
           return sortConfig.direction === 'ascending' ? -1 : 1;
         }

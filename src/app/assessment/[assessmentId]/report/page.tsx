@@ -12,6 +12,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Button }from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Terminal } from 'lucide-react';
 
 export default function ReportPage() {
     const params = useParams();
@@ -36,6 +38,10 @@ export default function ReportPage() {
                         if (companyDoc.exists()) {
                            assessmentData.companyName = companyDoc.data().name;
                         }
+                    }
+                    // Comprehensive data validation
+                    if (!assessmentData.result || !assessmentData.result.executiveSummary || !assessmentData.result.top3CriticalFindings) {
+                        setError('The report for this assessment is incomplete and cannot be displayed. It may be from an older version.');
                     }
                     setAssessment(assessmentData);
                 } else {
@@ -74,23 +80,18 @@ export default function ReportPage() {
         );
     }
     
-    if (error) {
+    if (error || !assessment) {
         return (
             <AppLayout>
-                <div className="p-6 text-center">
-                    <p className="text-destructive">{error}</p>
+                <div className="p-6">
+                    <Alert variant="destructive">
+                        <Terminal className="h-4 w-4" />
+                        <AlertTitle>Error Loading Report</AlertTitle>
+                        <AlertDescription>
+                          {error || 'An unknown error occurred.'}
+                        </AlertDescription>
+                    </Alert>
                      <Button onClick={() => router.back()} className="mt-4">Go Back</Button>
-                </div>
-            </AppLayout>
-        );
-    }
-
-    if (!assessment || !assessment.result) {
-         return (
-            <AppLayout>
-                <div className="p-6 text-center">
-                    <p className="text-muted-foreground">Report data is not available for this assessment.</p>
-                    <Button onClick={() => router.back()} className="mt-4">Go Back</Button>
                 </div>
             </AppLayout>
         );
