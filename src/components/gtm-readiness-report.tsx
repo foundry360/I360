@@ -207,7 +207,7 @@ export function GtmReadinessReport({ title, result, onComplete }: GtmReadinessRe
                 </div>
             </div>
         </div>
-      <div className="flex justify-between items-center gap-4 p-6 bg-background rounded-lg shadow-sm sticky bottom-0">
+      <div className="flex justify-between items-center gap-4 p-6 bg-background rounded-lg shadow-sm">
           <p className="text-xs text-muted-foreground">PROPRIETARY & CONFIDENTIAL</p>
           <div className="flex gap-4">
               <Button variant="outline" onClick={onComplete}>Done</Button>
