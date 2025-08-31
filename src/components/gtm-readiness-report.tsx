@@ -38,24 +38,30 @@ const generateMarkdownExport = (title: string, result: GtmReadinessOutput): stri
   };
 
   // Executive Summary
-  markdown += `## Executive Summary\n\n`;
-  markdown += `**Overall Readiness:** ${result.executiveSummary.overallReadinessScore}%\n`;
-  markdown += `**Company Profile:** ${result.executiveSummary.companyStageAndFte}\n`;
-  markdown += `**Industry:** ${result.executiveSummary.industrySector}\n`;
-  markdown += `**GTM Strategy:** ${result.executiveSummary.primaryGtmStrategy}\n\n`;
-  markdown += `${processTextForMarkdown(result.executiveSummary.briefOverviewOfFindings)}\n\n`;
+  if (result.executiveSummary) {
+    markdown += `## Executive Summary\n\n`;
+    markdown += `**Overall Readiness:** ${result.executiveSummary.overallReadinessScore}%\n`;
+    markdown += `**Company Profile:** ${result.executiveSummary.companyStageAndFte}\n`;
+    markdown += `**Industry:** ${result.executiveSummary.industrySector}\n`;
+    markdown += `**GTM Strategy:** ${result.executiveSummary.primaryGtmStrategy}\n\n`;
+    markdown += `${processTextForMarkdown(result.executiveSummary.briefOverviewOfFindings)}\n\n`;
+  }
+
 
   // Top 3 Critical Findings
-  markdown += `## Top 3 Critical Findings\n\n`;
-  result.top3CriticalFindings.forEach(finding => {
-    markdown += `### ${finding.findingTitle}\n\n`;
-    markdown += `**Impact Level:** ${finding.impactLevel}\n\n`;
-    markdown += `**Business Impact:** ${finding.businessImpact}\n\n`;
-    markdown += `**Current State:** ${finding.currentState}\n\n`;
-    markdown += `**Root Cause:** ${finding.rootCauseAnalysis}\n\n`;
-    markdown += `**Stakeholder Impact:** ${finding.stakeholderImpact}\n\n`;
-    markdown += `**Urgency:** ${finding.urgencyRating}\n\n`;
-  });
+  if (result.top3CriticalFindings) {
+    markdown += `## Top 3 Critical Findings\n\n`;
+    result.top3CriticalFindings.forEach(finding => {
+      markdown += `### ${finding.findingTitle}\n\n`;
+      markdown += `**Impact Level:** ${finding.impactLevel}\n\n`;
+      markdown += `**Business Impact:** ${finding.businessImpact}\n\n`;
+      markdown += `**Current State:** ${finding.currentState}\n\n`;
+      markdown += `**Root Cause:** ${finding.rootCauseAnalysis}\n\n`;
+      markdown += `**Stakeholder Impact:** ${finding.stakeholderImpact}\n\n`;
+      markdown += `**Urgency:** ${finding.urgencyRating}\n\n`;
+    });
+  }
+
 
   const reportSectionsMd = [
     { title: 'Strategic Recommendation Summary', content: result.strategicRecommendationSummary },
