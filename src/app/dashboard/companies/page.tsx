@@ -446,3 +446,4 @@ export default function CompaniesPage() {
       </AlertDialog>
     </div>
   );
+}
