@@ -27,15 +27,24 @@ export default function CompanyDashboardPage() {
       setGreeting('Good evening');
     }
 
-    if (companyId) {
-      setLoading(true);
-      getCompany(companyId).then(data => {
-        setCompany(data);
+    async function loadCompany() {
+      if (companyId) {
+        setLoading(true);
+        try {
+          const data = await getCompany(companyId);
+          setCompany(data);
+        } catch (error) {
+            console.error("Failed to fetch company", error);
+            setCompany(null);
+        } finally {
+            setLoading(false);
+        }
+      } else {
         setLoading(false);
-      });
-    } else {
-      setLoading(false);
+      }
     }
+
+    loadCompany();
   }, [companyId]);
 
   const getFirstName = () => {
