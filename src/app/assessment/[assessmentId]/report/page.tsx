@@ -127,6 +127,3 @@ export default function ReportPage() {
     );
 }
 
-export async function generateStaticParams() {
-  return [];
-}

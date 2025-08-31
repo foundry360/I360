@@ -127,6 +127,3 @@ export default function CompanyProfilePage() {
   );
 }
 
-export async function generateStaticParams() {
-  return [];
-}
