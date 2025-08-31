@@ -1,6 +1,6 @@
 import { AppLayout } from '@/components/app-layout';
 
-export default function DashboardLayout({
+export default function CompanyDetailsLayout({
   children,
 }: {
   children: React.ReactNode;

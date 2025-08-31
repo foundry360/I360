@@ -303,7 +303,7 @@ export default function ContactsPage() {
                       </TableCell>
                        <TableCell>
                         {contact.companyId && contact.companyName ? (
-                          <Link href={`/${contact.companyId}/details`} className="hover:text-primary">
+                          <Link href={`/dashboard/companies/${contact.companyId}/details`} className="hover:text-primary">
                             {contact.companyName}
                           </Link>
                           ) : (

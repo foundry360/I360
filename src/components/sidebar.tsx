@@ -2,7 +2,7 @@
 'use client';
 
 import * as React from 'react';
-import { useParams, usePathname } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import {
   ChevronsLeft,
@@ -47,16 +47,13 @@ const NavGroup = ({
 
 export function Sidebar() {
   const pathname = usePathname();
-  const params = useParams();
-  const companyId = params.companyId as string;
-
   const [isCollapsed, setIsCollapsed] = React.useState(false);
 
   const navItems = [
     { 
         group: 'HOME', 
         links: [
-            { href: `/${companyId}/dashboard`, label: 'Dashboard', icon: Home }
+            { href: `/dashboard`, label: 'Dashboard', icon: Home }
         ]
     },
     {
@@ -75,7 +72,7 @@ export function Sidebar() {
     {
       group: 'SETTINGS',
       links: [
-        { href: `/${companyId}/profile`, label: 'Profile', icon: User },
+        { href: `/dashboard/profile`, label: 'Profile', icon: User },
       ],
     },
   ];
@@ -146,7 +143,7 @@ export function Sidebar() {
                     <NavGroup key={group.group} title={group.group} isCollapsed={isCollapsed}>
                       {group.links.map((item) => {
                         const Icon = item.icon;
-                        const isActive = pathname === item.href;
+                        const isActive = pathname.startsWith(item.href);
                         return (
                           <Tooltip key={item.href}>
                             <TooltipTrigger asChild>

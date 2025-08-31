@@ -297,7 +297,7 @@ export default function AssessmentsPage() {
                         </span>
                       </TableCell>
                       <TableCell className="p-2">
-                        <Link href={`/${assessment.companyId}/details`} className="hover:text-primary">
+                        <Link href={`/dashboard/companies/${assessment.companyId}/details`} className="hover:text-primary">
                             {assessment.companyName}
                         </Link>
                       </TableCell>

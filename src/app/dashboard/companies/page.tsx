@@ -101,7 +101,7 @@ export default function CompaniesPage() {
   }, [fetchCompanies, setOnCompanyCreated]);
 
   const handleViewDetails = (company: Company) => {
-    router.push(`/${company.id}/details`);
+    router.push(`/dashboard/companies/${company.id}/details`);
   };
 
   const openDeleteDialog = (company: Company) => {
@@ -319,7 +319,7 @@ export default function CompaniesPage() {
                         />
                       </TableCell>
                       <TableCell className="font-medium">
-                        <Link href={`/${company.id}/details`} className="hover:text-primary">
+                        <Link href={`/dashboard/companies/${company.id}/details`} className="hover:text-primary">
                           {company.name}
                         </Link>
                       </TableCell>

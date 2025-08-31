@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Link from 'next/link';
-import { useParams, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { Button } from './ui/button';
 import { Plus, Search, LogOut, Briefcase, UserPlus, FilePlus } from 'lucide-react';
 import { useQuickAction } from '@/contexts/quick-action-context';
@@ -23,10 +23,8 @@ import { useUser } from '@/contexts/user-context';
 
 
 export function Header() {
-  const params = useParams();
   const router = useRouter();
   const { user } = useUser();
-  const companyId = params.companyId as string || 'acme-inc';
   const { openNewCompanyDialog, openNewContactDialog, openAssessmentModal, globalSearchTerm, setGlobalSearchTerm } = useQuickAction();
   const [isSearchVisible, setIsSearchVisible] = React.useState(false);
   const [searchResults, setSearchResults] = React.useState<Company[]>([]);
@@ -67,7 +65,7 @@ export function Header() {
   }, [isSearchVisible, setGlobalSearchTerm]);
 
   const handleResultClick = (companyId: string) => {
-    router.push(`/${companyId}/details`);
+    router.push(`/dashboard/companies/${companyId}/details`);
     setIsSearchVisible(false);
     setGlobalSearchTerm('');
   };
@@ -153,10 +151,10 @@ export function Header() {
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuItem asChild>
-              <Link href={`/${companyId}/dashboard`}>Dashboard</Link>
+              <Link href={`/dashboard`}>Dashboard</Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
-              <Link href={`/${companyId}/profile`}>Profile</Link>
+              <Link href={`/dashboard/profile`}>Profile</Link>
             </DropdownMenuItem>
             <DropdownMenuItem>Settings</DropdownMenuItem>
             <DropdownMenuSeparator />

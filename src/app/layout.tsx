@@ -10,6 +10,7 @@ import { UserProvider, useUser } from '@/contexts/user-context';
 import { AssessmentModal } from '@/components/assessment-modal';
 import * as React from 'react';
 import { usePathname, useRouter } from 'next/navigation';
+import { Loader2 } from 'lucide-react';
 
 const unprotectedRoutes = ['/login'];
 
@@ -28,25 +29,27 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    const pathIsUnprotected = unprotectedRoutes.includes(pathname);
+    const pathIsProtected = !unprotectedRoutes.includes(pathname);
 
-    if (!user && !pathIsUnprotected) {
+    if (!user && pathIsProtected) {
       router.push('/login');
     }
 
-    if (user && pathIsUnprotected) {
+    if (user && !pathIsProtected) {
       router.push('/dashboard');
     }
   }, [user, loading, router, pathname, isMounted]);
 
   if (loading && !unprotectedRoutes.includes(pathname)) {
-    return null; // Render nothing while loading on a protected route to prevent flicker
+    return (
+        <div className="flex h-screen items-center justify-center bg-background p-4">
+            <div className="flex flex-col items-center gap-2">
+                <Loader2 className="h-8 w-8 animate-spin" />
+                <p>Loading...</p>
+            </div>
+        </div>
+    );
   }
-
-  if (!user && !unprotectedRoutes.includes(pathname)) {
-    return null; // Render nothing if there is no user and we are on a protected route
-  }
-
 
   return <>{children}</>;
 }
