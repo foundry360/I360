@@ -11,6 +11,7 @@ export interface Assessment {
   id: string;
   companyId: string;
   name: string;
+  type: string;
   status: 'Not Started' | 'In Progress' | 'Completed';
   progress: number;
   startDate: string;
