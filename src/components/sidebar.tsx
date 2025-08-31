@@ -12,6 +12,7 @@ import {
   Briefcase,
   Users,
   ClipboardList,
+  FolderKanban,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -50,8 +51,8 @@ export function Sidebar() {
   const [isCollapsed, setIsCollapsed] = React.useState(false);
 
   const navItems = [
-    { 
-        group: 'HOME', 
+    {
+        group: 'HOME',
         links: [
             { href: `/dashboard`, label: 'Dashboard', icon: Home }
         ]
@@ -61,6 +62,7 @@ export function Sidebar() {
       links: [
         { href: `/dashboard/companies`, label: 'Companies', icon: Briefcase },
         { href: `/dashboard/contacts`, label: 'Contacts', icon: Users },
+        { href: `/dashboard/projects`, label: 'Projects', icon: FolderKanban },
       ],
     },
     {
