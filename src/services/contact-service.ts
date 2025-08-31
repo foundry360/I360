@@ -17,31 +17,19 @@ export interface Contact {
 }
 
 const contactsCollection = collection(db, 'contacts');
-const companiesCollection = collection(db, 'companies');
 
 export async function getContacts(): Promise<Contact[]> {
-  // 1. Fetch all companies and create a map for efficient lookup.
-  const companySnapshot = await getDocs(companiesCollection);
-  const companyMap = new Map<string, string>();
-  companySnapshot.forEach(doc => {
-      const company = doc.data() as Company;
-      companyMap.set(company.id, company.name);
-  });
-
-  // 2. Fetch all contacts.
-  const contactSnapshot = await getDocs(contactsCollection);
-
-  // 3. Map contacts and add company names from the map.
-  const contacts = contactSnapshot.docs.map(doc => {
-      const contact = { id: doc.id, ...doc.data() } as Contact;
-      if (contact.companyId && companyMap.has(contact.companyId)) {
-          contact.companyName = companyMap.get(contact.companyId);
-      } else {
-          contact.companyName = 'Unknown Company';
+  const snapshot = await getDocs(contactsCollection);
+  const contacts = await Promise.all(snapshot.docs.map(async (doc) => {
+    const contact = doc.data() as Contact;
+    if (contact.companyId) {
+      const companyDoc = await getDoc(collection(db, 'companies', contact.companyId));
+      if (companyDoc.exists()) {
+        contact.companyName = (companyDoc.data() as Company).name;
       }
-      return contact;
-  });
-
+    }
+    return contact;
+  }));
   return contacts;
 }
 

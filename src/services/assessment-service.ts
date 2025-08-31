@@ -25,20 +25,24 @@ const companiesCollection = collection(db, 'companies');
 
 export async function getAssessments(): Promise<Assessment[]> {
   try {
-    const companySnapshot = await getDocs(companiesCollection);
-    const companyMap = new Map<string, string>();
-    companySnapshot.docs.forEach(doc => {
-        const company = doc.data() as Company;
-        companyMap.set(company.id, company.name);
-    });
-
     const assessmentSnapshot = await getDocs(assessmentsCollection);
+    
+    const assessments = await Promise.all(assessmentSnapshot.docs.map(async (docSnapshot) => {
+        const assessment = { id: docSnapshot.id, ...docSnapshot.data() } as Assessment;
+        if (assessment.companyId) {
+            const companyDocRef = doc(db, 'companies', assessment.companyId);
+            const companyDoc = await getDoc(companyDocRef);
 
-    const assessments = assessmentSnapshot.docs.map((doc) => {
-        const assessment = { id: doc.id, ...doc.data() } as Assessment;
-        assessment.companyName = companyMap.get(assessment.companyId) || 'Unknown Company';
+            if (companyDoc.exists()) {
+                assessment.companyName = (companyDoc.data() as Company).name;
+            } else {
+                assessment.companyName = 'Unknown Company';
+            }
+        } else {
+            assessment.companyName = 'Unknown Company';
+        }
         return assessment;
-    });
+    }));
 
     return assessments;
   } catch (error) {
