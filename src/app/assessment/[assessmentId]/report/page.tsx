@@ -10,10 +10,9 @@ import { GtmReadinessReport } from '@/components/gtm-readiness-report';
 import { AppLayout } from '@/components/app-layout';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button }from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Terminal } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Terminal } from 'lucide-react';
 
 export default function ReportPage() {
     const params = useParams();
@@ -40,8 +39,14 @@ export default function ReportPage() {
                         }
                     }
                     // Comprehensive data validation
-                    if (!assessmentData.result || !assessmentData.result.executiveSummary || !assessmentData.result.top3CriticalFindings) {
-                        setError('The report for this assessment is incomplete and cannot be displayed. It may be from an older version.');
+                    if (
+                        !assessmentData.result || 
+                        typeof assessmentData.result !== 'object' ||
+                        !assessmentData.result.executiveSummary || 
+                        !assessmentData.result.top3CriticalFindings ||
+                        !Array.isArray(assessmentData.result.top3CriticalFindings)
+                    ) {
+                        setError('The report for this assessment is incomplete and cannot be displayed. It may be from an older version or the AI analysis failed.');
                     }
                     setAssessment(assessmentData);
                 } else {
@@ -116,7 +121,7 @@ export default function ReportPage() {
                     </div>
                 </div>
                 <Separator />
-                <GtmReadinessReport title={reportTitle} result={assessment.result} onComplete={() => router.back()} />
+                <GtmReadinessReport title={reportTitle} result={assessment.result!} onComplete={() => router.back()} />
             </div>
         </AppLayout>
     );
