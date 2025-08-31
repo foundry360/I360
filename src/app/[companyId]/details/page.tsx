@@ -322,8 +322,8 @@ export default function CompanyDetailsPage() {
                             {assessment.name}
                           </TableCell>
                           <TableCell>
-                            <Badge variant={assessment.type === 'GTM Readiness' ? 'default' : 'secondary'}>
-                              {assessment.type}
+                            <Badge variant={(assessment.type || 'GTM Readiness') === 'GTM Readiness' ? 'default' : 'secondary'}>
+                              {assessment.type || 'GTM Readiness'}
                             </Badge>
                           </TableCell>
                           <TableCell>
@@ -413,8 +413,8 @@ export default function CompanyDetailsPage() {
                             {assessment.name}
                           </TableCell>
                           <TableCell>
-                            <Badge variant={assessment.type === 'GTM Readiness' ? 'default' : 'secondary'}>
-                              {assessment.type}
+                            <Badge variant={(assessment.type || 'GTM Readiness') === 'GTM Readiness' ? 'default' : 'secondary'}>
+                              {assessment.type || 'GTM Readiness'}
                             </Badge>
                           </TableCell>
                           <TableCell>
@@ -582,5 +582,3 @@ export default function CompanyDetailsPage() {
     </AppLayout>
   );
 }
-
-    

@@ -298,8 +298,8 @@ export default function AssessmentsPage() {
                         </Link>
                       </TableCell>
                       <TableCell className="p-2">
-                        <Badge variant={assessment.type === 'GTM Readiness' ? 'default' : 'secondary'}>
-                          {assessment.type || 'N/A'}
+                        <Badge variant={(assessment.type || 'GTM Readiness') === 'GTM Readiness' ? 'default' : 'secondary'}>
+                          {assessment.type || 'GTM Readiness'}
                         </Badge>
                       </TableCell>
                       <TableCell className="p-2">
@@ -397,5 +397,3 @@ export default function AssessmentsPage() {
       </AlertDialog>
     </div>
   );
-
-    
