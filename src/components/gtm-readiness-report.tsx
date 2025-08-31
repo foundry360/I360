@@ -124,7 +124,7 @@ const FormattedText = ({ text }: { text?: string }) => {
 };
 
 
-export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessReportProps>(({ title, result, onComplete }, ref) => {
+export function GtmReadinessReport({ title, result, onComplete }: GtmReadinessReportProps) {
   
   if (!result || !result.executiveSummary || !result.top3CriticalFindings) {
     return (
@@ -197,7 +197,7 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
     ];
 
   return (
-    <div className="bg-muted" ref={ref}>
+    <div className="bg-muted">
         <div className="space-y-6 p-6">
             <div className="bg-background p-8 rounded-lg shadow-sm">
                 <div className="text-center pb-4 border-b mb-6">
@@ -227,6 +227,5 @@ export const GtmReadinessReport = React.forwardRef<HTMLDivElement, GtmReadinessR
       </div>
     </div>
   );
-});
+};
 GtmReadinessReport.displayName = "GtmReadinessReport";
-

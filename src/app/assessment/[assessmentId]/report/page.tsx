@@ -20,7 +20,6 @@ export default function ReportPage() {
     const [assessment, setAssessment] = React.useState<Assessment | null>(null);
     const [loading, setLoading] = React.useState(true);
     const [error, setError] = React.useState<string | null>(null);
-    const reportRef = React.useRef<HTMLDivElement>(null);
 
     React.useEffect(() => {
         if (!assessmentId) return;
@@ -116,10 +115,8 @@ export default function ReportPage() {
                     </div>
                 </div>
                 <Separator />
-                <GtmReadinessReport ref={reportRef} title={reportTitle} result={assessment.result} onComplete={() => router.back()} />
+                <GtmReadinessReport title={reportTitle} result={assessment.result} onComplete={() => router.back()} />
             </div>
         </AppLayout>
     );
 }
-
-    
