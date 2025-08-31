@@ -126,3 +126,7 @@ export default function ReportPage() {
         </AppLayout>
     );
 }
+
+export async function generateStaticParams() {
+  return [];
+}

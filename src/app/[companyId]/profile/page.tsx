@@ -126,3 +126,7 @@ export default function CompanyProfilePage() {
     </AppLayout>
   );
 }
+
+export async function generateStaticParams() {
+  return [];
+}

@@ -1,6 +1,9 @@
 {
+  "functions": {
+    "source": "functions"
+  },
   "hosting": {
-    "public": "out",
+    "public": ".next",
     "ignore": [
       "firebase.json",
       "**/.*",
@@ -9,7 +12,7 @@
     "rewrites": [
       {
         "source": "**",
-        "destination": "/index.html"
+        "destination": "/api/nextjs"
       }
     ]
   }

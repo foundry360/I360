@@ -579,3 +579,7 @@ export default function CompanyDetailsPage() {
     </AppLayout>
   );
 }
+
+export async function generateStaticParams() {
+  return [];
+}
