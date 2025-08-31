@@ -11,6 +11,7 @@ import { AssessmentModal } from '@/components/assessment-modal';
 import * as React from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { Skeleton } from '@/components/ui/skeleton';
+import { seedInitialData } from '@/services/seed-service';
 
 const unprotectedRoutes = ['/login'];
 
@@ -22,6 +23,7 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
 
   React.useEffect(() => {
     setIsMounted(true);
+    seedInitialData().catch(console.error);
   }, []);
 
   React.useEffect(() => {

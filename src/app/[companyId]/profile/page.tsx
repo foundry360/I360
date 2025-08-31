@@ -66,7 +66,7 @@ export default function CompanyProfilePage() {
     }
   };
 
-  const getInitials = (name: string) => {
+  const getInitials = (name: string | null | undefined) => {
     if (!name) return 'U';
     return name
       .split(' ')
@@ -77,6 +77,10 @@ export default function CompanyProfilePage() {
 
   if (userLoading) {
       return null;
+  }
+
+  if (!user) {
+    return null;
   }
 
   return (
@@ -126,4 +130,3 @@ export default function CompanyProfilePage() {
     </AppLayout>
   );
 }
-

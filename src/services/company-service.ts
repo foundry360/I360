@@ -24,8 +24,13 @@ export interface Company {
 const companiesCollection = collection(db, 'companies');
 
 export async function getCompanies(): Promise<Company[]> {
-  const snapshot = await getDocs(companiesCollection);
-  return snapshot.docs.map((doc) => doc.data() as Company);
+  try {
+    const snapshot = await getDocs(companiesCollection);
+    return snapshot.docs.map((doc) => doc.data() as Company);
+  } catch (error) {
+    console.error("Error fetching companies: ", error);
+    return [];
+  }
 }
 
 export async function searchCompanies(searchTerm: string): Promise<Company[]> {
@@ -42,11 +47,16 @@ export async function searchCompanies(searchTerm: string): Promise<Company[]> {
 }
 
 export async function getCompany(id: string): Promise<Company | null> {
-    const docRef = doc(db, 'companies', id);
-    const docSnap = await getDoc(docRef);
-    if (docSnap.exists()) {
-        return docSnap.data() as Company;
-    } else {
+    try {
+        const docRef = doc(db, 'companies', id);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+            return docSnap.data() as Company;
+        } else {
+            return null;
+        }
+    } catch (error) {
+        console.error("Error fetching company: ", error);
         return null;
     }
 }
