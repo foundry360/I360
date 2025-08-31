@@ -104,6 +104,3 @@ export default function LoginPage() {
     </div>
   );
 }
-
-// Add this line at the bottom of the file to prevent static generation
-export const dynamic = 'force-dynamic'
