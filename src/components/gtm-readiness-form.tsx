@@ -44,7 +44,7 @@ import {
 import { cn } from '@/lib/utils';
 import { getCompanies, type Company } from '@/services/company-service';
 import { createAssessment, updateAssessment, type Assessment } from '@/services/assessment-service';
-import { Separator } from './ui/separator';
+import { Separator } from '@/components/ui/separator';
 
 
 const GtmReadinessInputSchema = z.object({
@@ -603,5 +603,7 @@ export function GtmReadinessForm({ onComplete, assessmentToResume }: GtmReadines
     </div>
   );
 }
+
+    
 
     

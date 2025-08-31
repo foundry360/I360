@@ -44,6 +44,7 @@ export default function CompanyDashboardPage() {
       <div className="flex justify-between items-start">
         <div>
           <h1 className="text-2xl font-bold">{greeting ? `${greeting}, ${getFirstName()} 👋` : `Welcome, ${getFirstName()} 👋`}</h1>
+          {company && <p className="text-muted-foreground">Viewing dashboard for {company.name}</p>}
         </div>
       </div>
 
