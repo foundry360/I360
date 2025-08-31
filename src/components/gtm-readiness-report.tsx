@@ -4,10 +4,9 @@ import * as React from 'react';
 import type { GtmReadinessOutput } from '@/ai/flows/gtm-readiness-flow';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, BarChart, Clock, Target, Lightbulb, TrendingUp, PieChart, ListChecks, GanttChartSquare, Banknote, Flag, Share2, Copy, Check } from 'lucide-react';
+import { ArrowRight, BarChart, Clock, Target, Lightbulb, TrendingUp, PieChart, ListChecks, GanttChartSquare, Banknote, Flag, Download } from 'lucide-react';
 import { Badge } from './ui/badge';
 import { Separator } from './ui/separator';
-import { useToast } from '@/hooks/use-toast';
 
 type GtmReadinessReportProps = {
   title: string;
@@ -75,11 +74,18 @@ const FormattedText = ({ text }: { text?: string }) => {
   );
 };
 
+const textify = (text?: string): string => {
+    if (!text) return '';
+    return text.replace(/###\s/g, '\n\n')
+               .replace(/\*\*(.*?)\*\*/g, '$1')
+               .replace(/- /g, '\n- ')
+               .split('\n')
+               .map(line => line.trim())
+               .filter(line => line)
+               .join('\n');
+}
 
 export function GtmReadinessReport({ title, result, onComplete }: GtmReadinessReportProps) {
-  const { toast } = useToast();
-  const [copied, setCopied] = React.useState(false);
-
 
   if (!result || !result.executiveSummary || !result.top3CriticalFindings) {
     return (
@@ -147,34 +153,63 @@ export function GtmReadinessReport({ title, result, onComplete }: GtmReadinessRe
         }
         return null;
     }
-  }
+  };
 
-  const handleShare = () => {
-    const url = window.location.href;
-    navigator.clipboard.writeText(url).then(() => {
-        setCopied(true);
-        toast({
-            title: "Link Copied!",
-            description: "The report link has been copied to your clipboard.",
-        });
-        setTimeout(() => setCopied(false), 2000);
+  const handleExport = () => {
+    let textContent = `GTM Readiness Report: ${title}\n`;
+    textContent += `Generated on ${new Date().toLocaleDateString()}\n`;
+    textContent += '============================================\n\n';
+
+    // Executive Summary
+    textContent += '### Executive Summary\n\n';
+    const es = result.executiveSummary;
+    textContent += `Overall Readiness: ${es.overallReadinessScore}%\n`;
+    textContent += `Company Profile: ${es.companyStageAndFte}\n`;
+    textContent += `Industry: ${es.industrySector}\n`;
+    textContent += `GTM Strategy: ${es.primaryGtmStrategy}\n\n`;
+    textContent += `${textify(es.briefOverviewOfFindings)}\n\n`;
+
+    // Critical Findings
+    textContent += '### Top 3 Critical Findings\n\n';
+    result.top3CriticalFindings.forEach((finding, index) => {
+        textContent += `--- Finding ${index + 1} ---\n`;
+        textContent += `Title: ${finding.findingTitle}\n`;
+        textContent += `Impact Level: ${finding.impactLevel}\n`;
+        textContent += `Business Impact: ${textify(finding.businessImpact)}\n`;
+        textContent += `Current State: ${textify(finding.currentState)}\n`;
+        textContent += `Root Cause: ${textify(finding.rootCauseAnalysis)}\n`;
+        textContent += `Stakeholder Impact: ${textify(finding.stakeholderImpact)}\n`;
+        textContent += `Urgency: ${finding.urgencyRating}\n\n`;
     });
-  }
+
+    // Other Sections
+    reportSections.slice(2).forEach(sec => {
+        if (typeof sec.data === 'string') {
+            textContent += `### ${sec.title}\n\n`;
+            textContent += `${textify(sec.data)}\n\n`;
+        }
+    });
+
+    const blob = new Blob([textContent], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${title.replace(/\s+/g, '_')}_Report.txt`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
 
 
   return (
     <div className="bg-muted">
+      <div className="overflow-y-auto">
         <div id="report-content" className="space-y-6 p-6">
             <div className="bg-background p-8 rounded-lg shadow-sm">
-                <div className="text-center pb-4 border-b mb-6 flex justify-between items-center">
-                    <div>
-                        <h2 className="text-3xl font-bold text-primary">{title}</h2>
-                        <p className="text-muted-foreground">Generated on {new Date().toLocaleDateString()}</p>
-                    </div>
-                    <Button onClick={handleShare}>
-                        {copied ? <Check className="mr-2 h-4 w-4" /> : <Share2 className="mr-2 h-4 w-4" />}
-                        {copied ? 'Copied!' : 'Share'}
-                    </Button>
+                <div className="text-center pb-4 border-b mb-6">
+                    <h2 className="text-3xl font-bold text-primary">{title}</h2>
+                    <p className="text-muted-foreground">Generated on {new Date().toLocaleDateString()}</p>
                 </div>
                 <div className="space-y-6">
                     {reportSections.map(sec => (
@@ -187,10 +222,15 @@ export function GtmReadinessReport({ title, result, onComplete }: GtmReadinessRe
                 </div>
             </div>
         </div>
+      </div>
       <div className="flex justify-between items-center gap-4 p-6 bg-background rounded-lg shadow-sm">
           <p className="text-xs text-muted-foreground">PROPRIETARY & CONFIDENTIAL</p>
           <div className="flex gap-4">
-              <Button variant="outline" onClick={onComplete}>Done</Button>
+              <Button variant="outline" onClick={handleExport}>
+                <Download className="mr-2 h-4 w-4" />
+                Export
+              </Button>
+              <Button onClick={onComplete}>Done</Button>
           </div>
       </div>
     </div>
