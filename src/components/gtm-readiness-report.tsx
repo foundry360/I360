@@ -4,7 +4,7 @@ import * as React from 'react';
 import type { GtmReadinessOutput } from '@/ai/flows/gtm-readiness-flow';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, BarChart, Clock, Target, Lightbulb, TrendingUp, PieChart, ListChecks, GanttChartSquare, Banknote, Flag, Download } from 'lucide-react';
+import { ArrowRight, BarChart, Clock, Target, Lightbulb, TrendingUp, PieChart, ListChecks, GanttChartSquare, Banknote, Flag, Download, Loader2 } from 'lucide-react';
 import { Badge } from './ui/badge';
 import { Separator } from './ui/separator';
 import jsPDF from 'jspdf';
@@ -78,7 +78,8 @@ const FormattedText = ({ text }: { text?: string }) => {
 
 
 export function GtmReadinessReport({ title, result, onComplete }: GtmReadinessReportProps) {
-  
+  const [isExporting, setIsExporting] = React.useState(false);
+
   if (!result || !result.executiveSummary || !result.top3CriticalFindings) {
     return (
         <div className="flex flex-col items-center justify-center h-full gap-4 p-6">
@@ -90,81 +91,102 @@ export function GtmReadinessReport({ title, result, onComplete }: GtmReadinessRe
         </div>
     );
   }
+  
+  const reportSections = [
+    { id: 'executive-summary', icon: <BarChart className="h-8 w-8 text-primary" />, title: 'Executive Summary', content: (
+        <>
+            <div className="grid grid-cols-2 gap-4">
+                <p><strong>Overall Readiness:</strong> <span className="font-bold text-lg text-primary">{result.executiveSummary.overallReadinessScore}%</span></p>
+                <p><strong>Company Profile:</strong> {result.executiveSummary.companyStageAndFte}</p>
+                <p><strong>Industry:</strong> {result.executiveSummary.industrySector}</p>
+                <p><strong>GTM Strategy:</strong> {result.executiveSummary.primaryGtmStrategy}</p>
+            </div>
+            <Separator />
+            <FormattedText text={result.executiveSummary.briefOverviewOfFindings} />
+        </>
+    )},
+    { id: 'critical-findings', icon: <Target className="h-8 w-8 text-destructive" />, title: 'Top 3 Critical Findings', content: (
+        result.top3CriticalFindings.map((finding, index) => (
+            <Card key={index} className="break-inside-avoid">
+                <CardHeader>
+                    <CardTitle className="flex justify-between items-center">
+                        <span>{finding.findingTitle}</span>
+                        <Badge variant={finding.impactLevel === 'High' ? 'destructive' : 'secondary'}>Impact: {finding.impactLevel}</Badge>
+                    </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3 text-foreground">
+                    <div><strong>Business Impact:</strong> <FormattedText text={finding.businessImpact} /></div>
+                    <div><strong>Current State:</strong> <FormattedText text={finding.currentState} /></div>
+                    <div><strong>Root Cause:</strong> <FormattedText text={finding.rootCauseAnalysis} /></div>
+                    <div><strong>Stakeholder Impact:</strong> <FormattedText text={finding.stakeholderImpact} /></div>
+                    <div><strong>Urgency:</strong> <FormattedText text={finding.urgencyRating} /></div>
+                </CardContent>
+            </Card>
+        ))
+    )},
+    { id: 'recommendation-summary', icon: <Lightbulb className="h-8 w-8 text-primary" />, title: 'Strategic Recommendation Summary', content: <FormattedText text={result.strategicRecommendationSummary} /> },
+    { id: 'timeline-overview', icon: <Clock className="h-8 w-8 text-primary" />, title: 'Implementation Timeline Overview', content: <FormattedText text={result.implementationTimelineOverview} /> },
+    { id: 'current-state-assessment', icon: <PieChart className="h-8 w-8 text-primary" />, title: 'Current State Assessment', content: <FormattedText text={result.currentStateAssessment} /> },
+    { id: 'performance-benchmarking', icon: <TrendingUp className="h-8 w-8 text-primary" />, title: 'Performance Benchmarking', content: <FormattedText text={result.performanceBenchmarking} /> },
+    { id: 'key-findings', icon: <Flag className="h-8 w-8 text-primary" />, title: 'Key Findings & Opportunities', content: <FormattedText text={result.keyFindingsAndOpportunities} /> },
+    { id: 'prioritized-recommendations', icon: <ListChecks className="h-8 w-8 text-primary" />, title: 'Prioritized Recommendations', content: <FormattedText text={result.prioritizedRecommendations} /> },
+    { id: 'implementation-roadmap', icon: <GanttChartSquare className="h-8 w-8 text-primary" />, title: 'Implementation Roadmap', content: <FormattedText text={result.implementationRoadmap} /> },
+    { id: 'investment-roi', icon: <Banknote className="h-8 w-8 text-primary" />, title: 'Investment & ROI Analysis', content: <FormattedText text={result.investmentAndRoiAnalysis} /> },
+    { id: 'next-steps', icon: <ArrowRight className="h-8 w-8 text-primary" />, title: 'Next Steps & Decision Framework', content: <FormattedText text={result.nextStepsAndDecisionFramework} /> },
+  ];
 
-  const handlePdfExport = () => {
-    const reportElement = document.getElementById('report-content');
-    if (!reportElement) return;
+  const handlePdfExport = async () => {
+    setIsExporting(true);
 
-    // Temporarily increase width for better capture
-    const originalWidth = reportElement.style.width;
-    reportElement.style.width = '1024px';
-
-
-    html2canvas(reportElement, {
-      scale: 2, // Higher scale for better quality
-      useCORS: true,
-      logging: true,
-      windowWidth: 1024,
-    }).then(canvas => {
-      // Restore original width
-      reportElement.style.width = originalWidth;
-
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF({
-        orientation: 'portrait',
-        unit: 'px',
-        format: [canvas.width, canvas.height],
-      });
-      pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
-      pdf.save('GTM-Readiness-Report.pdf');
-    }).catch(err => {
-        console.error("Failed to generate PDF", err);
+    const pdf = new jsPDF({
+      orientation: 'p',
+      unit: 'mm',
+      format: 'a4',
     });
+
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const pdfHeight = pdf.internal.pageSize.getHeight();
+    const margin = 15;
+    const contentWidth = pdfWidth - margin * 2;
+
+    // Add title page
+    pdf.setFontSize(22);
+    pdf.setTextColor(40, 40, 40);
+    pdf.text(title, pdfWidth / 2, 40, { align: 'center' });
+    pdf.setFontSize(12);
+    pdf.setTextColor(100, 100, 100);
+    pdf.text(`Generated on ${new Date().toLocaleDateString()}`, pdfWidth / 2, 50, { align: 'center' });
+
+
+    for (let i = 0; i < reportSections.length; i++) {
+        const sectionInfo = reportSections[i];
+        const element = document.getElementById(sectionInfo.id);
+
+        if (element) {
+            pdf.addPage();
+            
+            const canvas = await html2canvas(element, { scale: 2, useCORS: true, logging: true });
+            const imgData = canvas.toDataURL('image/png');
+            const imgWidth = canvas.width;
+            const imgHeight = canvas.height;
+            const ratio = imgWidth / imgHeight;
+            
+            const scaledImgWidth = contentWidth;
+            const scaledImgHeight = scaledImgWidth / ratio;
+            
+            pdf.addImage(imgData, 'PNG', margin, margin, scaledImgWidth, scaledImgHeight);
+        }
+    }
+
+    // Remove the blank page that gets added at the start of the loop
+    if (reportSections.length > 0) {
+      pdf.deletePage(2);
+    }
+    
+    pdf.save('GTM-Readiness-Report.pdf');
+    setIsExporting(false);
   };
 
-
-    const reportSections = [
-      { id: 'executive-summary', icon: <BarChart className="h-8 w-8 text-primary" />, title: 'Executive Summary', content: (
-          <>
-              <div className="grid grid-cols-2 gap-4">
-                  <p><strong>Overall Readiness:</strong> <span className="font-bold text-lg text-primary">{result.executiveSummary.overallReadinessScore}%</span></p>
-                  <p><strong>Company Profile:</strong> {result.executiveSummary.companyStageAndFte}</p>
-                  <p><strong>Industry:</strong> {result.executiveSummary.industrySector}</p>
-                  <p><strong>GTM Strategy:</strong> {result.executiveSummary.primaryGtmStrategy}</p>
-              </div>
-              <Separator />
-              <FormattedText text={result.executiveSummary.briefOverviewOfFindings} />
-          </>
-      )},
-      { id: 'critical-findings', icon: <Target className="h-8 w-8 text-destructive" />, title: 'Top 3 Critical Findings', content: (
-          result.top3CriticalFindings.map((finding, index) => (
-              <Card key={index} className="break-inside-avoid">
-                  <CardHeader>
-                      <CardTitle className="flex justify-between items-center">
-                          <span>{finding.findingTitle}</span>
-                          <Badge variant={finding.impactLevel === 'High' ? 'destructive' : 'secondary'}>Impact: {finding.impactLevel}</Badge>
-                      </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-3 text-foreground">
-                      <div><strong>Business Impact:</strong> <FormattedText text={finding.businessImpact} /></div>
-                      <div><strong>Current State:</strong> <FormattedText text={finding.currentState} /></div>
-                      <div><strong>Root Cause:</strong> <FormattedText text={finding.rootCauseAnalysis} /></div>
-                      <div><strong>Stakeholder Impact:</strong> <FormattedText text={finding.stakeholderImpact} /></div>
-                      <div><strong>Urgency:</strong> <FormattedText text={finding.urgencyRating} /></div>
-                  </CardContent>
-              </Card>
-          ))
-      )},
-      { id: 'recommendation-summary', icon: <Lightbulb className="h-8 w-8 text-primary" />, title: 'Strategic Recommendation Summary', content: <FormattedText text={result.strategicRecommendationSummary} /> },
-      { id: 'timeline-overview', icon: <Clock className="h-8 w-8 text-primary" />, title: 'Implementation Timeline Overview', content: <FormattedText text={result.implementationTimelineOverview} /> },
-      { id: 'current-state-assessment', icon: <PieChart className="h-8 w-8 text-primary" />, title: 'Current State Assessment', content: <FormattedText text={result.currentStateAssessment} /> },
-      { id: 'performance-benchmarking', icon: <TrendingUp className="h-8 w-8 text-primary" />, title: 'Performance Benchmarking', content: <FormattedText text={result.performanceBenchmarking} /> },
-      { id: 'key-findings', icon: <Flag className="h-8 w-8 text-primary" />, title: 'Key Findings & Opportunities', content: <FormattedText text={result.keyFindingsAndOpportunities} /> },
-      { id: 'prioritized-recommendations', icon: <ListChecks className="h-8 w-8 text-primary" />, title: 'Prioritized Recommendations', content: <FormattedText text={result.prioritizedRecommendations} /> },
-      { id: 'implementation-roadmap', icon: <GanttChartSquare className="h-8 w-8 text-primary" />, title: 'Implementation Roadmap', content: <FormattedText text={result.implementationRoadmap} /> },
-      { id: 'investment-roi', icon: <Banknote className="h-8 w-8 text-primary" />, title: 'Investment & ROI Analysis', content: <FormattedText text={result.investmentAndRoiAnalysis} /> },
-      { id: 'next-steps', icon: <ArrowRight className="h-8 w-8 text-primary" />, title: 'Next Steps & Decision Framework', content: <FormattedText text={result.nextStepsAndDecisionFramework} /> },
-    ];
 
   return (
     <div className="bg-muted">
@@ -185,13 +207,13 @@ export function GtmReadinessReport({ title, result, onComplete }: GtmReadinessRe
                 </div>
             </div>
         </div>
-      <div className="flex justify-between items-center gap-4 p-6 bg-background rounded-lg shadow-sm">
+      <div className="flex justify-between items-center gap-4 p-6 bg-background rounded-lg shadow-sm sticky bottom-0">
           <p className="text-xs text-muted-foreground">PROPRIETARY & CONFIDENTIAL</p>
           <div className="flex gap-4">
               <Button variant="outline" onClick={onComplete}>Done</Button>
-              <Button onClick={handlePdfExport}>
-                <Download className="mr-2 h-4 w-4" />
-                Export to PDF
+              <Button onClick={handlePdfExport} disabled={isExporting}>
+                {isExporting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
+                {isExporting ? 'Exporting...' : 'Export to PDF'}
               </Button>
           </div>
       </div>
