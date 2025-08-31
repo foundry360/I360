@@ -7,6 +7,8 @@ import { Button } from '@/components/ui/button';
 import { ArrowRight, BarChart, Clock, Target, Lightbulb, TrendingUp, PieChart, ListChecks, GanttChartSquare, Banknote, Flag, Download } from 'lucide-react';
 import { Badge } from './ui/badge';
 import { Separator } from './ui/separator';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 
 type GtmReadinessReportProps = {
   title: string;
@@ -27,61 +29,6 @@ const Section: React.FC<{ id: string; icon: React.ReactNode; title: string; chil
     </CardContent>
   </Card>
 );
-
-const generateMarkdownExport = (title: string, result: GtmReadinessOutput): string => {
-  let markdown = `# ${title}\n\n`;
-  markdown += `Generated on ${new Date().toLocaleDateString()}\n\n`;
-
-  const processTextForMarkdown = (text: string | undefined): string => {
-    if (!text) return '';
-    return text.replace(/### (.*?)\n/g, '### $1\n').replace(/- \*\*(.*?)\*\*:(.*?)(\n|$)/g, '- **$1**:$2\n');
-  };
-
-  // Executive Summary
-  if (result.executiveSummary) {
-    markdown += `## Executive Summary\n\n`;
-    markdown += `**Overall Readiness:** ${result.executiveSummary.overallReadinessScore}%\n`;
-    markdown += `**Company Profile:** ${result.executiveSummary.companyStageAndFte}\n`;
-    markdown += `**Industry:** ${result.executiveSummary.industrySector}\n`;
-    markdown += `**GTM Strategy:** ${result.executiveSummary.primaryGtmStrategy}\n\n`;
-    markdown += `${processTextForMarkdown(result.executiveSummary.briefOverviewOfFindings)}\n\n`;
-  }
-
-
-  // Top 3 Critical Findings
-  if (result.top3CriticalFindings) {
-    markdown += `## Top 3 Critical Findings\n\n`;
-    result.top3CriticalFindings.forEach(finding => {
-      markdown += `### ${finding.findingTitle}\n\n`;
-      markdown += `**Impact Level:** ${finding.impactLevel}\n\n`;
-      markdown += `**Business Impact:** ${finding.businessImpact}\n\n`;
-      markdown += `**Current State:** ${finding.currentState}\n\n`;
-      markdown += `**Root Cause:** ${finding.rootCauseAnalysis}\n\n`;
-      markdown += `**Stakeholder Impact:** ${finding.stakeholderImpact}\n\n`;
-      markdown += `**Urgency:** ${finding.urgencyRating}\n\n`;
-    });
-  }
-
-
-  const reportSectionsMd = [
-    { title: 'Strategic Recommendation Summary', content: result.strategicRecommendationSummary },
-    { title: 'Implementation Timeline Overview', content: result.implementationTimelineOverview },
-    { title: 'Current State Assessment', content: result.currentStateAssessment },
-    { title: 'Performance Benchmarking', content: result.performanceBenchmarking },
-    { title: 'Key Findings & Opportunities', content: result.keyFindingsAndOpportunities },
-    { title: 'Prioritized Recommendations', content: result.prioritizedRecommendations },
-    { title: 'Implementation Roadmap', content: result.implementationRoadmap },
-    { title: 'Investment & ROI Analysis', content: result.investmentAndRoiAnalysis },
-    { title: 'Next Steps & Decision Framework', content: result.nextStepsAndDecisionFramework },
-  ];
-
-  reportSectionsMd.forEach(section => {
-    markdown += `## ${section.title}\n\n`;
-    markdown += `${processTextForMarkdown(section.content)}\n\n`;
-  });
-
-  return markdown;
-};
 
 const FormattedText = ({ text }: { text?: string }) => {
   if (!text) {
@@ -144,18 +91,35 @@ export function GtmReadinessReport({ title, result, onComplete }: GtmReadinessRe
     );
   }
 
-  const handleExport = () => {
-    const markdownContent = generateMarkdownExport(title, result);
-    const blob = new Blob([markdownContent], { type: 'text/markdown;charset=utf-8;' });
-    const link = document.createElement('a');
-    if (link.href) {
-      URL.revokeObjectURL(link.href);
-    }
-    link.href = URL.createObjectURL(blob);
-    link.download = 'GTM-Readiness-Report.md';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  const handlePdfExport = () => {
+    const reportElement = document.getElementById('report-content');
+    if (!reportElement) return;
+
+    // Temporarily increase width for better capture
+    const originalWidth = reportElement.style.width;
+    reportElement.style.width = '1024px';
+
+
+    html2canvas(reportElement, {
+      scale: 2, // Higher scale for better quality
+      useCORS: true,
+      logging: true,
+      windowWidth: 1024,
+    }).then(canvas => {
+      // Restore original width
+      reportElement.style.width = originalWidth;
+
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'px',
+        format: [canvas.width, canvas.height],
+      });
+      pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+      pdf.save('GTM-Readiness-Report.pdf');
+    }).catch(err => {
+        console.error("Failed to generate PDF", err);
+    });
   };
 
 
@@ -204,7 +168,7 @@ export function GtmReadinessReport({ title, result, onComplete }: GtmReadinessRe
 
   return (
     <div className="bg-muted">
-        <div className="space-y-6 p-6">
+        <div id="report-content" className="space-y-6 p-6">
             <div className="bg-background p-8 rounded-lg shadow-sm">
                 <div className="text-center pb-4 border-b mb-6">
                     <h2 className="text-3xl font-bold text-primary">{title}</h2>
@@ -225,9 +189,9 @@ export function GtmReadinessReport({ title, result, onComplete }: GtmReadinessRe
           <p className="text-xs text-muted-foreground">PROPRIETARY & CONFIDENTIAL</p>
           <div className="flex gap-4">
               <Button variant="outline" onClick={onComplete}>Done</Button>
-              <Button onClick={handleExport}>
+              <Button onClick={handlePdfExport}>
                 <Download className="mr-2 h-4 w-4" />
-                Export to Markdown
+                Export to PDF
               </Button>
           </div>
       </div>
