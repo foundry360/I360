@@ -21,28 +21,19 @@ export interface Assessment {
 }
 
 const assessmentsCollection = collection(db, 'assessments');
-const companiesCollection = collection(db, 'companies');
 
 export async function getAssessments(): Promise<Assessment[]> {
   try {
+    const companySnapshot = await getDocs(collection(db, 'companies'));
+    const companyMap = new Map(companySnapshot.docs.map(doc => [doc.id, (doc.data() as Company).name]));
+
     const assessmentSnapshot = await getDocs(assessmentsCollection);
     
-    const assessments = await Promise.all(assessmentSnapshot.docs.map(async (docSnapshot) => {
+    const assessments = assessmentSnapshot.docs.map(docSnapshot => {
         const assessment = { id: docSnapshot.id, ...docSnapshot.data() } as Assessment;
-        if (assessment.companyId) {
-            const companyDocRef = doc(db, 'companies', assessment.companyId);
-            const companyDoc = await getDoc(companyDocRef);
-
-            if (companyDoc.exists()) {
-                assessment.companyName = (companyDoc.data() as Company).name;
-            } else {
-                assessment.companyName = 'Unknown Company';
-            }
-        } else {
-            assessment.companyName = 'Unknown Company';
-        }
+        assessment.companyName = companyMap.get(assessment.companyId) || 'Unknown Company';
         return assessment;
-    }));
+    });
 
     return assessments;
   } catch (error) {
@@ -52,9 +43,18 @@ export async function getAssessments(): Promise<Assessment[]> {
 }
 
 export async function getAssessmentsForCompany(companyId: string): Promise<Assessment[]> {
+    const companyDocRef = doc(db, 'companies', companyId);
+    const companyDoc = await getDoc(companyDocRef);
+    const companyName = companyDoc.exists() ? (companyDoc.data() as Company).name : 'Unknown Company';
+    
     const q = query(assessmentsCollection, where("companyId", "==", companyId));
     const snapshot = await getDocs(q);
-    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Assessment));
+    
+    return snapshot.docs.map(doc => ({ 
+        id: doc.id, 
+        ...doc.data(),
+        companyName, 
+    } as Assessment));
 }
 
 export async function createAssessment(assessmentData: Omit<Assessment, 'id'>): Promise<string> {
