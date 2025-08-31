@@ -402,3 +402,5 @@ export default function AssessmentsPage() {
     </div>
   );
 }
+
+export const dynamic = "force-dynamic"

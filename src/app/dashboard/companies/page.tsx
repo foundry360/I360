@@ -451,3 +451,5 @@ export default function CompaniesPage() {
     </div>
   );
 }
+
+export const dynamic = "force-dynamic"

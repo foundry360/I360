@@ -407,3 +407,5 @@ export default function ContactsPage() {
     </div>
   );
 }
+
+export const dynamic = "force-dynamic"
