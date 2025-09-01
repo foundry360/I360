@@ -86,7 +86,7 @@ export default function CompaniesPage() {
       });
 
       setCompanies(companiesWithContacts);
-    } catch (error) => {
+    } catch (error) {
       console.error('Failed to fetch companies:', error);
       // Here you might want to show a toast to the user
     } finally {
