@@ -44,7 +44,7 @@ import {
 import { createAssessment, type Assessment } from '@/services/assessment-service';
 import { useRouter }from 'next/navigation';
 
-const GtmReadinessInputSchema = z.object({
+const PublicGtmReadinessInputSchema = z.object({
   assessmentName: z.string().min(1, 'Please enter an assessment name.'),
   companyStage: z.string().optional(),
   employeeCount: z.string().optional(),
@@ -98,7 +98,7 @@ const GtmReadinessInputSchema = z.object({
   businessModelTesting: z.string().optional(),
 });
 
-type FieldName = keyof z.infer<typeof GtmReadinessInputSchema>;
+type FieldName = keyof z.infer<typeof PublicGtmReadinessInputSchema>;
 
 const fieldConfig: Record<
   FieldName,
@@ -171,8 +171,8 @@ export function PublicGtmForm({ companyId, companyName }: PublicGtmFormProps) {
   const [loading, setLoading] = React.useState(false);
   const router = useRouter();
 
-  const form = useForm<z.infer<typeof GtmReadinessInputSchema>>({
-    resolver: zodResolver(GtmReadinessInputSchema),
+  const form = useForm<z.infer<typeof PublicGtmReadinessInputSchema>>({
+    resolver: zodResolver(PublicGtmReadinessInputSchema),
     defaultValues: {
       ...Object.entries(fieldConfig).reduce((acc, [key, value]) => {
         acc[key as FieldName] = value.type === 'slider' ? '3' : '';
@@ -182,7 +182,7 @@ export function PublicGtmForm({ companyId, companyName }: PublicGtmFormProps) {
     mode: 'onChange'
   });
 
-  async function onSubmit(values: z.infer<typeof GtmReadinessInputSchema>) {
+  async function onSubmit(values: z.infer<typeof PublicGtmReadinessInputSchema>) {
     setLoading(true);
     try {
       const { assessmentName, ...assessmentData } = values;
@@ -190,7 +190,7 @@ export function PublicGtmForm({ companyId, companyName }: PublicGtmFormProps) {
       const finalAssessmentName = `${assessmentName} - ${companyName}`;
       
       // We only create the assessment shell. The analysis will be run later.
-      const payload: Omit<Assessment, 'id'> = {
+      const payload: Omit<Assessment, 'id' | 'result'> = {
         companyId: companyId,
         name: finalAssessmentName,
         type: 'GTM Readiness',
@@ -281,5 +281,3 @@ export function PublicGtmForm({ companyId, companyName }: PublicGtmFormProps) {
     </Card>
   );
 }
-
-    
