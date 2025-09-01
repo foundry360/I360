@@ -109,8 +109,8 @@ export default function ReportPage() {
 
     return (
         <AppLayout>
-            <div className="space-y-4">
-                 <div className="flex justify-between items-center">
+            <div className="flex flex-col h-full">
+                 <div className="flex justify-between items-center p-6">
                     <div className="flex items-center gap-4">
                         <Button onClick={() => router.back()} variant="outline" size="icon">
                             <ArrowLeft className="h-4 w-4" />
@@ -123,7 +123,9 @@ export default function ReportPage() {
                     </div>
                 </div>
                 <Separator />
-                <GtmReadinessReport title={reportTitle} result={assessment.result!} onComplete={() => router.back()} />
+                <div className="flex-1 overflow-y-auto">
+                    <GtmReadinessReport title={reportTitle} result={assessment.result!} onComplete={() => router.back()} />
+                </div>
             </div>
         </AppLayout>
     );

@@ -21,7 +21,7 @@ import { AppLayout } from '@/components/app-layout';
 import { useParams, useRouter } from 'next/navigation';
 import React from 'react';
 import { Progress } from '@/components/ui/progress';
-import { Phone, Globe, MapPin, ArrowLeft, Plus, Pencil, FileText, Trash2 } from 'lucide-react';
+import { Phone, Globe, MapPin, ArrowLeft, Plus, Pencil, FileText, Trash2, Paperclip, Upload } from 'lucide-react';
 import type { Company } from '@/services/company-service';
 import { getCompany, updateCompany } from '@/services/company-service';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -44,13 +44,14 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { EditCompanyModal } from '@/components/edit-company-modal';
-import { getAssessmentsForCompany, type Assessment, deleteAssessments } from '@/services/assessment-service';
+import { getAssessmentsForCompany, type Assessment, deleteAssessments, uploadAssessmentDocument } from '@/services/assessment-service';
 import { getContactsForCompany, type Contact } from '@/services/contact-service';
 import { cn } from '@/lib/utils';
 import { useQuickAction } from '@/contexts/quick-action-context';
 import { Checkbox } from '@/components/ui/checkbox';
 import { TablePagination } from '@/components/table-pagination';
 import { Separator } from '@/components/ui/separator';
+import { useToast } from '@/hooks/use-toast';
 
 type ActivityItem = {
     activity: string;
@@ -60,6 +61,7 @@ type ActivityItem = {
 export default function CompanyDetailsPage() {
   const params = useParams();
   const router = useRouter();
+  const { toast } = useToast();
   const companyId = params.companyId as string;
   const { openAssessmentModal, setOnAssessmentCompleted, openNewContactDialog, setOnContactCreated } = useQuickAction();
   const [companyData, setCompanyData] = React.useState<Company | null>(null);
@@ -75,6 +77,8 @@ export default function CompanyDetailsPage() {
   const [isBulkDeleteDialogOpen, setIsBulkDeleteDialogOpen] = React.useState(false);
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(10);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const [assessmentToUpload, setAssessmentToUpload] = React.useState<string | null>(null);
 
   const fetchCompanyData = React.useCallback(async () => {
     if (!companyId) return;
@@ -93,7 +97,6 @@ export default function CompanyDetailsPage() {
       setCompletedAssessments(completed);
       setContacts(companyContacts);
 
-      // Generate recent activity feed only if company exists
       if (company) {
           const assessmentActivity: ActivityItem[] = allAssessments.map(a => ({
               activity: `Assessment "${a.name}" status: ${a.status}`,
@@ -149,6 +152,41 @@ export default function CompanyDetailsPage() {
     await fetchCompanyData(); // Refetch to show updated data
     setIsEditModalOpen(false);
   };
+  
+  const handleUploadClick = (assessmentId: string) => {
+    setAssessmentToUpload(assessmentId);
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file && assessmentToUpload) {
+      try {
+        setLoading(true);
+        await uploadAssessmentDocument(assessmentToUpload, file);
+        toast({
+            title: "Upload Successful",
+            description: `${file.name} has been attached to the assessment.`,
+        });
+        await fetchCompanyData(); // Refresh data to show new document link
+      } catch (error) {
+        console.error("Failed to upload document:", error);
+        toast({
+            variant: "destructive",
+            title: "Upload Failed",
+            description: "There was a problem uploading your document.",
+        });
+      } finally {
+        setLoading(false);
+        setAssessmentToUpload(null);
+        // Reset file input
+        if(fileInputRef.current) {
+            fileInputRef.current.value = "";
+        }
+      }
+    }
+  };
+
 
   const getInitials = (name: string) => {
     if (!name) return '';
@@ -197,7 +235,7 @@ export default function CompanyDetailsPage() {
 
   const recentActivity = isActivityExpanded ? allRecentActivity : allRecentActivity.slice(0, 5);
 
-  if (loading) {
+  if (loading && !companyData) {
       return (
             <div className="space-y-6">
                 <Skeleton className="h-10 w-1/2" />
@@ -228,6 +266,13 @@ export default function CompanyDetailsPage() {
 
   return (
     <>
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handleFileChange}
+        className="hidden"
+        accept=".pdf,.doc,.docx,.txt"
+      />
       <div className="space-y-6">
         <div>
           <div className="flex items-center gap-4">
@@ -424,9 +469,21 @@ export default function CompanyDetailsPage() {
                           </TableCell>
                           <TableCell>{new Date(assessment.startDate).toLocaleDateString()}</TableCell>
                           <TableCell className="text-right">
-                              <Button variant="ghost" size="icon" onClick={() => handleOpenAssessment(assessment)}>
+                              {assessment.documentUrl && (
+                                <Button asChild variant="ghost" size="icon" title="View Document">
+                                    <a href={assessment.documentUrl} target="_blank" rel="noopener noreferrer">
+                                        <Paperclip className="h-4 w-4" />
+                                        <span className="sr-only">View Document</span>
+                                    </a>
+                                </Button>
+                              )}
+                              <Button variant="ghost" size="icon" onClick={() => handleOpenAssessment(assessment)} title="View Report">
                                   <FileText className="h-4 w-4" />
                                   <span className="sr-only">View Report</span>
+                              </Button>
+                              <Button variant="ghost" size="icon" onClick={() => handleUploadClick(assessment.id)} title="Upload Document">
+                                  <Upload className="h-4 w-4" />
+                                  <span className="sr-only">Upload Document</span>
                               </Button>
                           </TableCell>
                         </TableRow>
