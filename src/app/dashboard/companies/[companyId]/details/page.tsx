@@ -447,12 +447,7 @@ export default function CompanyDetailsPage() {
                               aria-label={`Select ${assessment.name}`}
                             />
                           </TableCell>
-                          <TableCell className="font-medium flex items-center gap-2">
-                             {assessment.documentUrl && (
-                                <a href={assessment.documentUrl} target="_blank" rel="noopener noreferrer">
-                                    <Paperclip className="h-4 w-4 text-primary hover:underline" />
-                                </a>
-                             )}
+                          <TableCell className="font-medium">
                             {assessment.name}
                           </TableCell>
                           <TableCell>
@@ -474,6 +469,14 @@ export default function CompanyDetailsPage() {
                           </TableCell>
                           <TableCell>{new Date(assessment.startDate).toLocaleDateString()}</TableCell>
                           <TableCell className="text-right">
+                              {assessment.documentUrl && (
+                                <Button asChild variant="ghost" size="icon" title="View Document">
+                                    <a href={assessment.documentUrl} target="_blank" rel="noopener noreferrer">
+                                        <Paperclip className="h-4 w-4" />
+                                        <span className="sr-only">View Document</span>
+                                    </a>
+                                </Button>
+                             )}
                               <Button variant="ghost" size="icon" onClick={() => handleUploadClick(assessment.id)} title="Upload Document">
                                   <Upload className="h-4 w-4" />
                                   <span className="sr-only">Upload Document</span>
@@ -629,3 +632,5 @@ export default function CompanyDetailsPage() {
     </>
   );
 }
+
+    
