@@ -14,7 +14,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Button } from './ui/button';
-import { Plus, Search, LogOut, Briefcase, UserPlus, FilePlus, Bell, CheckCheck } from 'lucide-react';
+import { Plus, Search, LogOut, Briefcase, UserPlus, FilePlus, Bell, CheckCheck, Maximize, Minimize } from 'lucide-react';
 import { useQuickAction } from '@/contexts/quick-action-context';
 import * as React from 'react';
 import { Input } from './ui/input';
@@ -35,6 +35,7 @@ export function Header() {
   const searchInputRef = React.useRef<HTMLInputElement>(null);
   const [notifications, setNotifications] = React.useState<Notification[]>([]);
   const [isNotificationsOpen, setIsNotificationsOpen] = React.useState(false);
+  const [isFullscreen, setIsFullscreen] = React.useState(false);
 
   const fetchNotifications = React.useCallback(async () => {
     if (user) {
@@ -50,6 +51,13 @@ export function Header() {
     return () => clearInterval(interval);
   }, [fetchNotifications]);
 
+  React.useEffect(() => {
+    function onFullscreenChange() {
+      setIsFullscreen(!!document.fullscreenElement);
+    }
+    document.addEventListener('fullscreenchange', onFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', onFullscreenChange);
+  }, []);
 
   React.useEffect(() => {
     const performSearch = async () => {
@@ -106,6 +114,16 @@ export function Header() {
     router.push(notification.link);
   }
 
+  const toggleFullScreen = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen();
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      }
+    }
+  };
+
   const getInitials = (email: string) => {
     if (!email) return 'U';
     return email[0].toUpperCase();
@@ -150,6 +168,10 @@ export function Header() {
                 </div>
             )}
         </div>
+        <Button variant="ghost" size="icon" onClick={toggleFullScreen}>
+          {isFullscreen ? <Minimize className="h-5 w-5" /> : <Maximize className="h-5 w-5" />}
+          <span className="sr-only">Toggle Fullscreen</span>
+        </Button>
         <Popover open={isNotificationsOpen} onOpenChange={setIsNotificationsOpen}>
           <PopoverTrigger asChild>
              <Button variant="ghost" size="icon" className="relative">
