@@ -64,8 +64,9 @@ export async function getAssessmentsForCompany(companyId: string): Promise<Asses
 }
 
 export async function createAssessment(assessmentData: Omit<Assessment, 'id'>): Promise<string> {
-    const docRef = await addDoc(assessmentsCollection, assessmentData);
-    await updateDoc(docRef, { id: docRef.id });
+    const docRef = await addDoc(assessmentsCollection, {});
+    const finalData = { ...assessmentData, id: docRef.id };
+    await setDoc(docRef, finalData);
     return docRef.id;
 }
 
@@ -100,3 +101,5 @@ export async function uploadAssessmentDocument(assessmentId: string, file: File)
 
     return downloadURL;
 }
+
+    

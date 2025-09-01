@@ -33,7 +33,7 @@ import {
 import { Slider } from '@/components/ui/slider';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { Loader2 } from 'lucide-react';
+import { Loader2, CheckCircle } from 'lucide-react';
 import { z } from 'zod';
 import {
   Tooltip,
@@ -42,7 +42,9 @@ import {
   TooltipTrigger,
 } from './ui/tooltip';
 import { createAssessment, type Assessment } from '@/services/assessment-service';
-import { useRouter }from 'next/navigation';
+import { useRouter } from 'next/navigation';
+import { cn } from '@/lib/utils';
+import { Separator } from './ui/separator';
 
 const PublicGtmReadinessInputSchema = z.object({
   assessmentName: z.string().min(1, 'Please enter an assessment name.'),
@@ -98,6 +100,111 @@ const PublicGtmReadinessInputSchema = z.object({
   businessModelTesting: z.string().optional(),
 });
 
+const formSections = [
+  {
+    title: 'Your Information & Company Overview',
+    fields: [
+      'assessmentName',
+      'companyStage',
+      'employeeCount',
+      'industrySector',
+      'goToMarketStrategy',
+      'growthChallenges',
+    ],
+  },
+  {
+    title: 'Strategic Alignment & Collaboration',
+    fields: [
+      'departmentalAlignment',
+      'communicationFrequency',
+      'responsibilityClarity',
+    ],
+  },
+  {
+    title: 'Data Management & Technology Stack',
+    fields: [
+      'crmPlatform',
+      'dataHygienePractices',
+      'techStackAssessment',
+      'integrationEffectiveness',
+      'toolAdoptionRates',
+    ],
+  },
+  {
+    title: 'Process Optimization & Automation',
+    fields: [
+      'workflowAutomation',
+      'leadManagementProcess',
+      'salesCycleEfficiency',
+      'forecastingProcess',
+    ],
+  },
+  {
+    title: 'Customer Experience (CX) & Personalization',
+    fields: [
+      'customerJourneyMapping',
+      'customerFirstCulture',
+      'personalizationEfforts',
+      'customerFeedbackMechanisms',
+    ],
+  },
+  {
+    title: 'Key Performance Indicators (KPIs) & Metrics',
+    fields: [
+      'revenueMetricsDescription',
+      'annualRecurringRevenue',
+      'netRevenueRetention',
+      'revenueGrowthRate',
+      'acquisitionMetricsDescription',
+      'customerAcquisitionCost',
+      'winRate',
+      'pipelineCoverage',
+      'pipelineVelocity',
+      'retentionMetricsDescription',
+      'churnRate',
+      'customerLifetimeValue',
+      'netPromoterScore',
+      'customerSatisfaction',
+      'kpiReportingFrequency',
+    ],
+  },
+  {
+    title: 'Specific Pain Points (Qualitative Feedback)',
+    fields: ['specificPainPoints'],
+  },
+  {
+    title: 'Change Management Readiness',
+    fields: [
+      'executiveSponsorship',
+      'organizationalChangeDescription',
+      'crossFunctionalInputMechanisms',
+    ],
+  },
+  {
+    title: 'Strategic Clarity & Value Proposition Validation',
+    fields: [
+      'challengesDescription',
+      'icpLastUpdated',
+      'valueMessagingAlignment',
+      'tangibleDifferentiators',
+    ],
+  },
+  {
+    title: 'Forecasting & Measurement Effectiveness',
+    fields: [
+      'forecastAccuracy',
+      'pipelineReportingTools',
+      'manualReportingTime',
+      'budgetAllocation',
+    ],
+  },
+  {
+    title: 'Innovation & Digital Transformation Potential',
+    fields: ['aiAdoptionBarriers', 'businessModelTesting'],
+  },
+];
+
+
 type FieldName = keyof z.infer<typeof PublicGtmReadinessInputSchema>;
 
 const fieldConfig: Record<
@@ -106,7 +213,7 @@ const fieldConfig: Record<
     label: string;
     description: string;
     type: 'text' | 'select' | 'slider' | 'textarea' | 'number';
-    options?: string[] | { label: string, value: string }[];
+    options?: string[] | { label: string; value: string }[];
   }
 > = {
   assessmentName: { label: 'Your Name / Assessment Title', description: 'Please provide your name or a title for this assessment.', type: 'text' },
@@ -169,6 +276,7 @@ type PublicGtmFormProps = {
 
 export function PublicGtmForm({ companyId, companyName }: PublicGtmFormProps) {
   const [loading, setLoading] = React.useState(false);
+  const [currentSection, setCurrentSection] = React.useState(0);
   const router = useRouter();
 
   const form = useForm<z.infer<typeof PublicGtmReadinessInputSchema>>({
@@ -177,107 +285,238 @@ export function PublicGtmForm({ companyId, companyName }: PublicGtmFormProps) {
       ...Object.entries(fieldConfig).reduce((acc, [key, value]) => {
         acc[key as FieldName] = value.type === 'slider' ? '3' : '';
         return acc;
-      }, {} as any)
+      }, {} as any),
     },
-    mode: 'onChange'
+    mode: 'onChange',
   });
 
   async function onSubmit(values: z.infer<typeof PublicGtmReadinessInputSchema>) {
     setLoading(true);
     try {
       const { assessmentName, ...assessmentData } = values;
-      
       const finalAssessmentName = `${assessmentName} - ${companyName}`;
+
+      const response = await generateGtmReadiness(assessmentData as GtmReadinessInput);
       
-      // We only create the assessment shell. The analysis will be run later.
-      const payload: Omit<Assessment, 'id' | 'result'> = {
+      const payload: Omit<Assessment, 'id'> = {
         companyId: companyId,
         name: finalAssessmentName,
         type: 'GTM Readiness',
-        status: 'Not Started',
-        progress: 0,
+        status: 'Completed',
+        progress: 100,
         startDate: new Date().toISOString(),
         formData: values,
+        result: response,
       };
 
       await createAssessment(payload);
 
       router.push('/public/assessment/thanks');
-
     } catch (error) {
       console.error('Error submitting assessment:', error);
       setLoading(false);
       // Optionally, show an error toast to the user
     }
   }
+
+  const handleNext = async () => {
+    const fields = formSections[currentSection].fields as FieldName[];
+    const isValid = await form.trigger(fields);
+    if (isValid) {
+      if (currentSection < formSections.length - 1) {
+        setCurrentSection((prev) => prev + 1);
+      }
+    }
+  };
+
+  const handleFinish = async () => {
+    const fields = formSections[currentSection].fields as FieldName[];
+    const isValid = await form.trigger(fields);
+    if (isValid) {
+      setCurrentSection((prev) => prev + 1); // Move to the final "Generate" screen
+    }
+  };
+
+
+  const handlePrevious = () => {
+    setCurrentSection((prev) => prev - 1);
+  };
   
+  const isSectionCompleted = (sectionIndex: number) => {
+    if (sectionIndex < 0) return true; // Allows first section to be enabled
+    if (sectionIndex >= formSections.length) return false;
+    const fields = formSections[sectionIndex].fields as FieldName[];
+    return fields.every(field => {
+      const value = form.watch(field);
+      return value !== '' && value !== undefined && value !== null && !form.formState.errors[field];
+    });
+  }
+
+  const isFinalStep = currentSection === formSections.length;
+
+
   return (
-    <Card>
+    <Card className="h-full flex flex-col">
       <CardHeader>
         <CardTitle>GTM Readiness Assessment for {companyName}</CardTitle>
         <CardDescription>
-            Please complete the form below to the best of your ability. Your responses will be used to generate a detailed Go-To-Market readiness report. This should take approximately 10-15 minutes.
+          Please complete the form below to the best of your ability. Your responses will be used to generate a detailed Go-To-Market readiness report. This should take approximately 10-15 minutes.
         </CardDescription>
       </CardHeader>
-      <CardContent>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-            <div className="space-y-6">
-                {Object.entries(fieldConfig).map(([key, config]) => (
-                    <FormField
-                        key={key}
-                        control={form.control}
-                        name={key as FieldName}
-                        render={({ field }) => (
-                        <FormItem>
-                            <TooltipProvider>
-                            <Tooltip>
-                                <TooltipTrigger asChild>
-                                <FormLabel className="cursor-help">{config.label}</FormLabel>
-                                </TooltipTrigger>
-                                <TooltipContent><p>{config.description}</p></TooltipContent>
-                            </Tooltip>
-                            </TooltipProvider>
-                            <FormControl>
-                            {config.type === 'select' ? (
-                                <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
-                                <SelectTrigger><SelectValue placeholder="Select..." /></SelectTrigger>
-                                <SelectContent>
-                                    {config.options?.map((option) => {
-                                        const value = typeof option === 'string' ? option : option.value;
-                                        const label = typeof option === 'string' ? option : option.label;
-                                        return <SelectItem key={value} value={value}>{label}</SelectItem>
-                                    })}
-                                </SelectContent>
-                                </Select>
-                            ) : config.type === 'slider' ? (
-                                <div className="flex items-center gap-4 pt-2">
-                                <Slider min={1} max={5} step={1} defaultValue={[Number(field.value) || 3]} onValueChange={(value) => field.onChange(String(value[0]))} />
-                                <span className="text-sm font-medium w-4">{field.value}</span>
-                                </div>
-                            ) : config.type === 'textarea' ? (
-                                <Textarea placeholder={config.description} {...field} />
-                            ) : (
-                                <Input placeholder={config.description} {...field} type={config.type} />
-                            )}
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
+      <CardContent className="flex-1 overflow-hidden">
+        <div className="grid grid-cols-12 h-full border rounded-lg">
+          <div className="col-span-3 border-r p-6 bg-muted">
+            <h3 className="font-semibold mb-4">Assessment Sections</h3>
+             <nav className="space-y-2">
+                {formSections.map((section, index) => (
+                    <button
+                        key={section.title}
+                        onClick={() => setCurrentSection(index)}
+                        className={cn(
+                            "w-full text-left p-2 rounded-md text-sm flex items-center gap-2",
+                            currentSection === index ? "bg-background font-semibold" : "hover:bg-background/50",
                         )}
-                    />
+                        disabled={!isSectionCompleted(index-1)}
+                    >
+                        {isSectionCompleted(index) ? 
+                            <CheckCircle className="h-4 w-4 text-green-500" /> : 
+                            <div className={cn("h-4 w-4 rounded-full border flex items-center justify-center", currentSection === index ? "border-primary" : "border-muted-foreground")}>
+                                {currentSection === index && <div className="h-2 w-2 rounded-full bg-primary" />}
+                            </div>
+                        }
+                        <span>{section.title}</span>
+                    </button>
                 ))}
-            </div>
+                 <button
+                    key="generate-report"
+                    onClick={() => setCurrentSection(formSections.length)}
+                    className={cn(
+                        "w-full text-left p-2 rounded-md text-sm flex items-center gap-2",
+                        isFinalStep ? "bg-background font-semibold" : "hover:bg-background/50",
+                    )}
+                    disabled={!isSectionCompleted(formSections.length - 1)}
+                >
+                    {isSectionCompleted(formSections.length - 1) ? 
+                        <CheckCircle className="h-4 w-4 text-green-500" /> : 
+                        <div className={cn("h-4 w-4 rounded-full border flex items-center justify-center", isFinalStep ? "border-primary" : "border-muted-foreground")}>
+                            {isFinalStep && <div className="h-2 w-2 rounded-full bg-primary" />}
+                        </div>
+                    }
+                    <span>Submit</span>
+                </button>
+            </nav>
+            <Separator className="my-4" />
+            <p className="text-sm text-muted-foreground mt-4 text-center">
+              Step {isFinalStep ? formSections.length + 1 : currentSection + 1} of {formSections.length + 1}
+            </p>
+          </div>
+          <div className="col-span-9 flex flex-col h-full">
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col flex-1 overflow-hidden">
+                {isFinalStep ? (
+                  <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
+                    <Card className="max-w-lg shadow-none border-none">
+                      <CardHeader>
+                        <CardTitle>Ready to Submit Your Assessment?</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-muted-foreground mb-6">You have completed all the sections. Click the button below to submit your answers and our team will be in touch with your personalized analysis and recommendations.</p>
+                        <Button type="submit" size="lg" disabled={loading} className="w-full">
+                          {loading ? (
+                            <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Submitting...</>
+                          ) : (
+                            'Submit Assessment'
+                          )}
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  </div>
+                ) : (
+                  <div className="flex-1 overflow-y-auto p-6">
+                    <div className="space-y-2 mb-6">
+                        <h2 className="text-2xl font-bold tracking-tight">{formSections[currentSection].title}</h2>
+                        <p className="text-muted-foreground">Section {currentSection + 1} of {formSections.length}</p>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                      {formSections[currentSection].fields.map((fieldName) => {
+                        const key = fieldName as FieldName;
+                        const config = fieldConfig[key];
+                        if (!config) return null;
 
-            <Button type="submit" size="lg" disabled={loading} className="w-full">
-              {loading ? (
-                <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Submitting...</>
-              ) : (
-                'Submit Assessment'
-              )}
-            </Button>
-          </form>
-        </Form>
+                        return (
+                          <FormField
+                            key={key}
+                            control={form.control}
+                            name={key}
+                            render={({ field }) => (
+                              <FormItem>
+                                <TooltipProvider>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <FormLabel className="cursor-help">{config.label}</FormLabel>
+                                    </TooltipTrigger>
+                                    <TooltipContent><p>{config.description}</p></TooltipContent>
+                                  </Tooltip>
+                                </TooltipProvider>
+                                <FormControl>
+                                  {config.type === 'select' ? (
+                                    <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
+                                      <SelectTrigger><SelectValue placeholder="Select..." /></SelectTrigger>
+                                      <SelectContent>
+                                        {config.options?.map((option) => {
+                                          const value = typeof option === 'string' ? option : option.value;
+                                          const label = typeof option === 'string' ? option : option.label;
+                                          return <SelectItem key={value} value={value}>{label}</SelectItem>;
+                                        })}
+                                      </SelectContent>
+                                    </Select>
+                                  ) : config.type === 'slider' ? (
+                                    <div className="flex items-center gap-4 pt-2">
+                                      <Slider min={1} max={5} step={1} defaultValue={[Number(field.value) || 3]} onValueChange={(value) => field.onChange(String(value[0]))} />
+                                      <span className="text-sm font-medium w-4">{field.value}</span>
+                                    </div>
+                                  ) : config.type === 'textarea' ? (
+                                    <Textarea placeholder={config.description} {...field} />
+                                  ) : (
+                                    <Input placeholder={config.description} {...field} type={config.type} />
+                                  )}
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+                <div className="flex justify-end items-center p-6 border-t bg-background">
+                  <div className="flex gap-2">
+                    <Button type="button" variant="outline" onClick={handlePrevious} disabled={currentSection === 0}>
+                      Previous
+                    </Button>
+                    {!isFinalStep && (
+                      <>
+                        {currentSection < formSections.length - 1 ? (
+                          <Button type="button" onClick={handleNext}>
+                            Next
+                          </Button>
+                        ) : (
+                          <Button type="button" onClick={handleFinish}>
+                            Finish
+                          </Button>
+                        )}
+                      </>
+                    )}
+                  </div>
+                </div>
+              </form>
+            </Form>
+          </div>
+        </div>
       </CardContent>
     </Card>
   );
 }
+
+    
