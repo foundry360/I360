@@ -57,7 +57,7 @@ const GtmReadinessInputSchema = z.object({
   crmPlatform: z.string().optional(),
   dataHygienePractices: z.string().optional(),
   techStackAssessment: z.string().optional(),
-  integrationEffectiveness: zstring().optional(),
+  integrationEffectiveness: z.string().optional(),
   toolAdoptionRates: z.string().optional(),
   workflowAutomation: z.string().optional(),
   leadManagementProcess: z.string().optional(),
@@ -281,3 +281,5 @@ export function PublicGtmForm({ companyId, companyName }: PublicGtmFormProps) {
     </Card>
   );
 }
+
+    
