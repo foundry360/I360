@@ -62,7 +62,7 @@ const PublicGtmReadinessInputSchema = z.object({
   integrationEffectiveness: z.string().optional(),
   toolAdoptionRates: z.string().optional(),
   workflowAutomation: z.string().optional(),
-  leadManagementProcess: z_string(),
+  leadManagementProcess: z.string().optional(),
   salesCycleEfficiency: z.string().optional(),
   forecastingProcess: z.string().optional(),
   customerJourneyMapping: z.string().optional(),
