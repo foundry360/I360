@@ -476,14 +476,14 @@ export default function CompanyDetailsPage() {
                                         <span className="sr-only">View Document</span>
                                     </a>
                                 </Button>
-                             )}
-                              <Button variant="ghost" size="icon" onClick={() => handleUploadClick(assessment.id)} title="Upload Document">
-                                  <Upload className="h-4 w-4" />
-                                  <span className="sr-only">Upload Document</span>
-                              </Button>
+                              )}
                               <Button variant="ghost" size="icon" onClick={() => handleOpenAssessment(assessment)} title="View Report">
                                   <FileText className="h-4 w-4" />
                                   <span className="sr-only">View Report</span>
+                              </Button>
+                              <Button variant="ghost" size="icon" onClick={() => handleUploadClick(assessment.id)} title="Upload Document">
+                                  <Upload className="h-4 w-4" />
+                                  <span className="sr-only">Upload Document</span>
                               </Button>
                           </TableCell>
                         </TableRow>
@@ -632,5 +632,3 @@ export default function CompanyDetailsPage() {
     </>
   );
 }
-
-    
