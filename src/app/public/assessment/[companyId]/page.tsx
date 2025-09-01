@@ -5,9 +5,9 @@ import * as React from 'react';
 import { useParams } from 'next/navigation';
 import { getCompany } from '@/services/company-service';
 import type { Company } from '@/services/company-service';
+import { Skeleton } from '@/components/ui/skeleton';
 import { PublicLayout } from '@/components/public-layout';
 import { PublicGtmForm } from '@/components/public-assessment-form';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Terminal } from 'lucide-react';
 
@@ -20,10 +20,10 @@ export default function PublicAssessmentPage() {
 
     React.useEffect(() => {
         if (!companyId) {
-            setError("No company ID provided in the link.");
+            setError('No company ID provided.');
             setLoading(false);
             return;
-        };
+        }
 
         const fetchCompany = async () => {
             try {
@@ -32,11 +32,11 @@ export default function PublicAssessmentPage() {
                 if (companyData) {
                     setCompany(companyData);
                 } else {
-                    setError('The company specified in the link could not be found.');
+                    setError('Company not found. Please check the link.');
                 }
             } catch (err) {
                 console.error("Error fetching company:", err);
-                setError('An error occurred while loading the company information.');
+                setError('Failed to load company information. The link may be invalid or expired.');
             } finally {
                 setLoading(false);
             }
@@ -48,41 +48,25 @@ export default function PublicAssessmentPage() {
     if (loading) {
         return (
             <PublicLayout>
-                 <div className="p-6 space-y-4 max-w-4xl mx-auto">
-                    <Skeleton className="h-10 w-3/4" />
-                    <Skeleton className="h-6 w-1/2" />
-                    <div className="space-y-6 pt-8">
-                        <Skeleton className="h-12 w-full" />
-                        <Skeleton className="h-24 w-full" />
-                        <Skeleton className="h-12 w-full" />
-                    </div>
+                <div className="space-y-4">
+                    <Skeleton className="h-10 w-1/2" />
+                    <Skeleton className="h-6 w-3/4" />
+                    <Skeleton className="h-[600px] w-full" />
                 </div>
             </PublicLayout>
         );
     }
 
-    if (error) {
+    if (error || !company) {
         return (
             <PublicLayout>
-                <div className="p-6 max-w-4xl mx-auto">
-                    <Alert variant="destructive">
+                <div className="flex items-center justify-center h-full">
+                    <Alert variant="destructive" className="max-w-lg">
                         <Terminal className="h-4 w-4" />
                         <AlertTitle>Error</AlertTitle>
-                        <AlertDescription>{error}</AlertDescription>
-                    </Alert>
-                </div>
-            </PublicLayout>
-        );
-    }
-    
-    if (!company) {
-         return (
-            <PublicLayout>
-                <div className="p-6 max-w-4xl mx-auto">
-                    <Alert variant="destructive">
-                        <Terminal className="h-4 w-4" />
-                        <AlertTitle>Error</AlertTitle>
-                        <AlertDescription>Company data is unavailable.</AlertDescription>
+                        <AlertDescription>
+                          {error || 'An unknown error occurred while trying to load the assessment.'}
+                        </AlertDescription>
                     </Alert>
                 </div>
             </PublicLayout>
@@ -91,9 +75,7 @@ export default function PublicAssessmentPage() {
 
     return (
         <PublicLayout>
-            <div className="max-w-4xl mx-auto">
-                <PublicGtmForm companyId={company.id} companyName={company.name} />
-            </div>
+           <PublicGtmForm companyId={company.id} companyName={company.name} />
         </PublicLayout>
     );
 }

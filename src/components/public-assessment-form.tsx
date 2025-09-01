@@ -356,167 +356,167 @@ export function PublicGtmForm({ companyId, companyName }: PublicGtmFormProps) {
 
 
   return (
-    <Card className="h-full flex flex-col">
-      <CardHeader>
-        <CardTitle>GTM Readiness Assessment for {companyName}</CardTitle>
-        <CardDescription>
-          Please complete the form below to the best of your ability. Your responses will be used to generate a detailed Go-To-Market readiness report. This should take approximately 10-15 minutes.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="flex-1 overflow-hidden">
-        <div className="grid grid-cols-12 h-full border rounded-lg">
-          <div className="col-span-3 border-r p-6 bg-muted">
-            <h3 className="font-semibold mb-4">Assessment Sections</h3>
-             <nav className="space-y-2">
-                {formSections.map((section, index) => (
-                    <button
-                        key={section.title}
-                        onClick={() => setCurrentSection(index)}
-                        className={cn(
-                            "w-full text-left p-2 rounded-md text-sm flex items-center gap-2",
-                            currentSection === index ? "bg-background font-semibold" : "hover:bg-background/50",
-                        )}
-                        disabled={!isSectionCompleted(index-1)}
-                    >
-                        {isSectionCompleted(index) ? 
-                            <CheckCircle className="h-4 w-4 text-green-500" /> : 
-                            <div className={cn("h-4 w-4 rounded-full border flex items-center justify-center", currentSection === index ? "border-primary" : "border-muted-foreground")}>
-                                {currentSection === index && <div className="h-2 w-2 rounded-full bg-primary" />}
-                            </div>
-                        }
-                        <span>{section.title}</span>
-                    </button>
-                ))}
-                 <button
-                    key="generate-report"
-                    onClick={() => setCurrentSection(formSections.length)}
-                    className={cn(
-                        "w-full text-left p-2 rounded-md text-sm flex items-center gap-2",
-                        isFinalStep ? "bg-background font-semibold" : "hover:bg-background/50",
-                    )}
-                    disabled={!isSectionCompleted(formSections.length - 1)}
-                >
-                    {isSectionCompleted(formSections.length - 1) ? 
-                        <CheckCircle className="h-4 w-4 text-green-500" /> : 
-                        <div className={cn("h-4 w-4 rounded-full border flex items-center justify-center", isFinalStep ? "border-primary" : "border-muted-foreground")}>
-                            {isFinalStep && <div className="h-2 w-2 rounded-full bg-primary" />}
-                        </div>
-                    }
-                    <span>Submit</span>
-                </button>
-            </nav>
-            <Separator className="my-4" />
-            <p className="text-sm text-muted-foreground mt-4 text-center">
-              Step {isFinalStep ? formSections.length + 1 : currentSection + 1} of {formSections.length + 1}
+    <div className="grid grid-cols-12 gap-8 h-full">
+      <div className="col-span-3">
+        <div className="p-6 bg-muted rounded-lg border h-full">
+          <h3 className="font-semibold mb-4 text-foreground">Assessment Sections</h3>
+            <nav className="space-y-2">
+              {formSections.map((section, index) => (
+                  <button
+                      key={section.title}
+                      onClick={() => setCurrentSection(index)}
+                      className={cn(
+                          "w-full text-left p-2 rounded-md text-sm flex items-center gap-2",
+                          currentSection === index ? "bg-background font-semibold" : "hover:bg-background/50",
+                      )}
+                      disabled={!isSectionCompleted(index-1)}
+                  >
+                      {isSectionCompleted(index) ? 
+                          <CheckCircle className="h-4 w-4 text-green-500" /> : 
+                          <div className={cn("h-4 w-4 rounded-full border flex items-center justify-center", currentSection === index ? "border-primary" : "border-muted-foreground")}>
+                              {currentSection === index && <div className="h-2 w-2 rounded-full bg-primary" />}
+                          </div>
+                      }
+                      <span className="flex-1">{section.title}</span>
+                  </button>
+              ))}
+                <button
+                  key="generate-report"
+                  onClick={() => setCurrentSection(formSections.length)}
+                  className={cn(
+                      "w-full text-left p-2 rounded-md text-sm flex items-center gap-2",
+                      isFinalStep ? "bg-background font-semibold" : "hover:bg-background/50",
+                  )}
+                  disabled={!isSectionCompleted(formSections.length - 1)}
+              >
+                  {isSectionCompleted(formSections.length - 1) ? 
+                      <CheckCircle className="h-4 w-4 text-green-500" /> : 
+                      <div className={cn("h-4 w-4 rounded-full border flex items-center justify-center", isFinalStep ? "border-primary" : "border-muted-foreground")}>
+                          {isFinalStep && <div className="h-2 w-2 rounded-full bg-primary" />}
+                      </div>
+                  }
+                  <span>Submit</span>
+              </button>
+          </nav>
+          <Separator className="my-4" />
+          <p className="text-sm text-muted-foreground mt-4 text-center">
+            Step {isFinalStep ? formSections.length + 1 : currentSection + 1} of {formSections.length + 1}
+          </p>
+        </div>
+      </div>
+
+      <div className="col-span-9 flex flex-col h-full">
+         <div className="mb-6">
+            <h1 className="text-3xl font-bold">GTM Readiness Assessment for {companyName}</h1>
+            <p className="text-muted-foreground mt-1">
+              Please complete the form below to the best of your ability. Your responses will be used to generate a detailed Go-To-Market readiness report. This should take approximately 10-15 minutes.
             </p>
           </div>
-          <div className="col-span-9 flex flex-col h-full">
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col flex-1 overflow-hidden">
-                {isFinalStep ? (
-                  <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
-                    <Card className="max-w-lg shadow-none border-none">
-                      <CardHeader>
-                        <CardTitle>Ready to Submit Your Assessment?</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <p className="text-muted-foreground mb-6">You have completed all the sections. Click the button below to submit your answers and our team will be in touch with your personalized analysis and recommendations.</p>
-                        <Button type="submit" size="lg" disabled={loading} className="w-full">
-                          {loading ? (
-                            <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Submitting...</>
-                          ) : (
-                            'Submit Assessment'
-                          )}
-                        </Button>
-                      </CardContent>
-                    </Card>
-                  </div>
-                ) : (
-                  <div className="flex-1 overflow-y-auto p-6">
-                    <div className="space-y-2 mb-6">
-                        <h2 className="text-2xl font-bold tracking-tight">{formSections[currentSection].title}</h2>
-                        <p className="text-muted-foreground">Section {currentSection + 1} of {formSections.length}</p>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                      {formSections[currentSection].fields.map((fieldName) => {
-                        const key = fieldName as FieldName;
-                        const config = fieldConfig[key];
-                        if (!config) return null;
-
-                        return (
-                          <FormField
-                            key={key}
-                            control={form.control}
-                            name={key}
-                            render={({ field }) => (
-                              <FormItem>
-                                <TooltipProvider>
-                                  <Tooltip>
-                                    <TooltipTrigger asChild>
-                                      <FormLabel className="cursor-help">{config.label}</FormLabel>
-                                    </TooltipTrigger>
-                                    <TooltipContent><p>{config.description}</p></TooltipContent>
-                                  </Tooltip>
-                                </TooltipProvider>
-                                <FormControl>
-                                  {config.type === 'select' ? (
-                                    <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
-                                      <SelectTrigger><SelectValue placeholder="Select..." /></SelectTrigger>
-                                      <SelectContent>
-                                        {config.options?.map((option) => {
-                                          const value = typeof option === 'string' ? option : option.value;
-                                          const label = typeof option === 'string' ? option : option.label;
-                                          return <SelectItem key={value} value={value}>{label}</SelectItem>;
-                                        })}
-                                      </SelectContent>
-                                    </Select>
-                                  ) : config.type === 'slider' ? (
-                                    <div className="flex items-center gap-4 pt-2">
-                                      <Slider min={1} max={5} step={1} defaultValue={[Number(field.value) || 3]} onValueChange={(value) => field.onChange(String(value[0]))} />
-                                      <span className="text-sm font-medium w-4">{field.value}</span>
-                                    </div>
-                                  ) : config.type === 'textarea' ? (
-                                    <Textarea placeholder={config.description} {...field} />
-                                  ) : (
-                                    <Input placeholder={config.description} {...field} type={config.type} />
-                                  )}
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
+          
+          <div className="flex-1 flex flex-col overflow-hidden bg-background border rounded-lg">
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col flex-1 overflow-hidden">
+                  {isFinalStep ? (
+                    <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
+                      <Card className="max-w-lg shadow-none border-none">
+                        <CardHeader>
+                          <CardTitle>Ready to Submit Your Assessment?</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <p className="text-muted-foreground mb-6">You have completed all the sections. Click the button below to submit your answers and our team will be in touch with your personalized analysis and recommendations.</p>
+                          <Button type="submit" size="lg" disabled={loading} className="w-full">
+                            {loading ? (
+                              <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Submitting...</>
+                            ) : (
+                              'Submit Assessment'
                             )}
-                          />
-                        );
-                      })}
+                          </Button>
+                        </CardContent>
+                      </Card>
+                    </div>
+                  ) : (
+                    <div className="flex-1 overflow-y-auto p-6">
+                      <div className="space-y-2 mb-6">
+                          <h2 className="text-2xl font-bold tracking-tight">{formSections[currentSection].title}</h2>
+                          <p className="text-muted-foreground">Section {currentSection + 1} of {formSections.length}</p>
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        {formSections[currentSection].fields.map((fieldName) => {
+                          const key = fieldName as FieldName;
+                          const config = fieldConfig[key];
+                          if (!config) return null;
+
+                          return (
+                            <FormField
+                              key={key}
+                              control={form.control}
+                              name={key}
+                              render={({ field }) => (
+                                <FormItem>
+                                  <TooltipProvider>
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <FormLabel className="cursor-help">{config.label}</FormLabel>
+                                      </TooltipTrigger>
+                                      <TooltipContent><p>{config.description}</p></TooltipContent>
+                                    </Tooltip>
+                                  </TooltipProvider>
+                                  <FormControl>
+                                    {config.type === 'select' ? (
+                                      <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
+                                        <SelectTrigger><SelectValue placeholder="Select..." /></SelectTrigger>
+                                        <SelectContent>
+                                          {config.options?.map((option) => {
+                                            const value = typeof option === 'string' ? option : option.value;
+                                            const label = typeof option === 'string' ? option : option.label;
+                                            return <SelectItem key={value} value={value}>{label}</SelectItem>;
+                                          })}
+                                        </SelectContent>
+                                      </Select>
+                                    ) : config.type === 'slider' ? (
+                                      <div className="flex items-center gap-4 pt-2">
+                                        <Slider min={1} max={5} step={1} defaultValue={[Number(field.value) || 3]} onValueChange={(value) => field.onChange(String(value[0]))} />
+                                        <span className="text-sm font-medium w-4">{field.value}</span>
+                                      </div>
+                                    ) : config.type === 'textarea' ? (
+                                      <Textarea placeholder={config.description} {...field} />
+                                    ) : (
+                                      <Input placeholder={config.description} {...field} type={config.type} />
+                                    )}
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                  <div className="flex justify-end items-center p-6 border-t bg-background rounded-b-lg">
+                    <div className="flex gap-2">
+                      <Button type="button" variant="outline" onClick={handlePrevious} disabled={currentSection === 0}>
+                        Previous
+                      </Button>
+                      {!isFinalStep && (
+                        <>
+                          {currentSection < formSections.length - 1 ? (
+                            <Button type="button" onClick={handleNext}>
+                              Next
+                            </Button>
+                          ) : (
+                            <Button type="button" onClick={handleFinish}>
+                              Finish
+                            </Button>
+                          )}
+                        </>
+                      )}
                     </div>
                   </div>
-                )}
-                <div className="flex justify-end items-center p-6 border-t bg-background">
-                  <div className="flex gap-2">
-                    <Button type="button" variant="outline" onClick={handlePrevious} disabled={currentSection === 0}>
-                      Previous
-                    </Button>
-                    {!isFinalStep && (
-                      <>
-                        {currentSection < formSections.length - 1 ? (
-                          <Button type="button" onClick={handleNext}>
-                            Next
-                          </Button>
-                        ) : (
-                          <Button type="button" onClick={handleFinish}>
-                            Finish
-                          </Button>
-                        )}
-                      </>
-                    )}
-                  </div>
-                </div>
-              </form>
-            </Form>
+                </form>
+              </Form>
           </div>
-        </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }
-
-    
