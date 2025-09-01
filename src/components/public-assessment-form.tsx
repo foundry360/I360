@@ -47,7 +47,7 @@ import { cn } from '@/lib/utils';
 import { Separator } from './ui/separator';
 
 const PublicGtmReadinessInputSchema = z.object({
-  assessmentName: z.string().min(1, 'Please enter an assessment name.'),
+  assessmentName: z.string().optional(),
   companyStage: z.string().optional(),
   employeeCount: z.string().optional(),
   industrySector: z.string().optional(),
@@ -104,7 +104,6 @@ const formSections = [
   {
     title: 'Your Information & Company Overview',
     fields: [
-      'assessmentName',
       'companyStage',
       'employeeCount',
       'industrySector',
@@ -294,7 +293,7 @@ export function PublicGtmForm({ companyId, companyName }: PublicGtmFormProps) {
     setLoading(true);
     try {
       const { assessmentName, ...assessmentData } = values;
-      const finalAssessmentName = `${assessmentName} - ${companyName}`;
+      const finalAssessmentName = `GTM Readiness Report - ${companyName}`;
 
       const response = await generateGtmReadiness(assessmentData as GtmReadinessInput);
       
@@ -347,8 +346,8 @@ export function PublicGtmForm({ companyId, companyName }: PublicGtmFormProps) {
     if (sectionIndex >= formSections.length) return false;
     const fields = formSections[sectionIndex].fields as FieldName[];
     return fields.every(field => {
-      const value = form.watch(field);
-      return value !== '' && value !== undefined && value !== null && !form.formState.errors[field];
+      const value = form.watch(field as FieldName);
+      return value !== '' && value !== undefined && value !== null && !form.formState.errors[field as FieldName];
     });
   }
 
@@ -520,3 +519,5 @@ export function PublicGtmForm({ companyId, companyName }: PublicGtmFormProps) {
     </div>
   );
 }
+
+    
