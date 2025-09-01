@@ -45,6 +45,7 @@ import { cn } from '@/lib/utils';
 import { getCompanies, type Company } from '@/services/company-service';
 import { createAssessment, updateAssessment, type Assessment } from '@/services/assessment-service';
 import { Separator } from '@/components/ui/separator';
+import { createNotification } from '@/services/notification-service';
 
 
 const GtmReadinessInputSchema = z.object({
@@ -314,7 +315,12 @@ export function GtmReadinessForm({ onComplete, assessmentToResume }: GtmReadines
     if (assessmentToResume) {
         setCurrentAssessmentId(assessmentToResume.id);
         if (assessmentToResume.formData) {
-            form.reset(assessmentToResume.formData);
+             const defaultData = { ...defaultValues, ...assessmentToResume.formData };
+            // Ensure companyId from the assessment record is honored
+            if (assessmentToResume.companyId) {
+                defaultData.companyId = assessmentToResume.companyId;
+            }
+            form.reset(defaultData);
         }
         const lastCompletedSection = formSections.findLastIndex(section =>
             section.fields.every(field => !!assessmentToResume.formData?.[field as keyof GtmReadinessInput])
@@ -350,6 +356,11 @@ export function GtmReadinessForm({ onComplete, assessmentToResume }: GtmReadines
           setCurrentAssessmentId(newId);
           finalAssessmentId = newId;
       }
+      
+      await createNotification({
+        message: `Assessment "${finalAssessmentName}" has been completed.`,
+        link: `/assessment/${finalAssessmentId}/report`,
+      });
 
       onComplete(finalAssessmentId!);
     } catch (error) {
@@ -603,6 +614,8 @@ export function GtmReadinessForm({ onComplete, assessmentToResume }: GtmReadines
     </div>
   );
 }
+
+    
 
     
 

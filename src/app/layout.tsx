@@ -12,7 +12,7 @@ import * as React from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
 
-const unprotectedRoutes = ['/login'];
+const unprotectedRoutes = ['/login', '/public/assessment/[companyId]', '/public/assessment/thanks'];
 
 function AuthGuard({ children }: { children: React.ReactNode }) {
   const { user, loading } = useUser();
@@ -29,18 +29,23 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    const pathIsProtected = !unprotectedRoutes.includes(pathname);
+    const isPublicRoute = unprotectedRoutes.some(route => {
+        if (route.includes('[companyId]')) {
+            return new RegExp(`^${route.replace('[companyId]', '[^/]+')}$`).test(pathname);
+        }
+        return route === pathname;
+    });
 
-    if (!user && pathIsProtected) {
+    if (!user && !isPublicRoute) {
       router.push('/login');
     }
 
-    if (user && !pathIsProtected) {
+    if (user && unprotectedRoutes.includes(pathname) && !pathname.startsWith('/public')) {
       router.push('/dashboard');
     }
   }, [user, loading, router, pathname, isMounted]);
 
-  if (loading && !unprotectedRoutes.includes(pathname)) {
+  if (loading && !unprotectedRoutes.some(route => new RegExp(`^${route.replace('[companyId]', '[^/]+')}$`).test(pathname))) {
     return (
         <div className="flex h-screen items-center justify-center bg-background p-4">
             <div className="flex flex-col items-center gap-2">

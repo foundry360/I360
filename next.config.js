@@ -9,7 +9,20 @@ const nextConfig = {
   // Disable static generation to avoid Firebase init during build
   experimental: {
     staticWorkerRequestDeduping: false,
-  }
+  },
+  async headers() {
+    return [
+      {
+        source: '/(.*)',
+        headers: [
+          {
+            key: 'Permissions-Policy',
+            value: 'clipboard-write=(self)',
+          },
+        ],
+      },
+    ];
+  },
 }
 
 module.exports = nextConfig

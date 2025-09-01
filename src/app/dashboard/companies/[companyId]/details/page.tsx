@@ -21,7 +21,7 @@ import { AppLayout } from '@/components/app-layout';
 import { useParams, useRouter } from 'next/navigation';
 import React from 'react';
 import { Progress } from '@/components/ui/progress';
-import { Phone, Globe, MapPin, ArrowLeft, Plus, Pencil, FileText, Trash2, Paperclip, Upload } from 'lucide-react';
+import { Phone, Globe, MapPin, ArrowLeft, Plus, Pencil, FileText, Trash2, Paperclip, Upload, Link2 } from 'lucide-react';
 import type { Company } from '@/services/company-service';
 import { getCompany, updateCompany } from '@/services/company-service';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -187,6 +187,16 @@ export default function CompanyDetailsPage() {
     }
   };
 
+  const handleCopyLink = () => {
+    if (!companyId) return;
+    const url = `${window.location.origin}/public/assessment/${companyId}`;
+    navigator.clipboard.writeText(url);
+    toast({
+      title: "Link Copied!",
+      description: "Assessment link has been copied to your clipboard.",
+    });
+  };
+
 
   const getInitials = (name: string) => {
     if (!name) return '';
@@ -275,14 +285,26 @@ export default function CompanyDetailsPage() {
       />
       <div className="space-y-6">
         <div>
-          <div className="flex items-center gap-4">
-             <Button asChild variant="outline" size="icon">
-                <Link href="/dashboard/companies">
-                    <ArrowLeft className="h-4 w-4" />
-                    <span className="sr-only">Back to Companies</span>
-                </Link>
-             </Button>
-            <h1 className="text-3xl font-bold">{companyData.name}</h1>
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-4">
+               <Button asChild variant="outline" size="icon">
+                  <Link href="/dashboard/companies">
+                      <ArrowLeft className="h-4 w-4" />
+                      <span className="sr-only">Back to Companies</span>
+                  </Link>
+               </Button>
+              <h1 className="text-3xl font-bold">{companyData.name}</h1>
+            </div>
+            <div className="flex items-center gap-2">
+                <Button variant="outline" size="sm" onClick={handleCopyLink}>
+                  <Link2 className="h-4 w-4 mr-2" />
+                  Copy Assessment Link
+                </Button>
+                <Button variant="outline" size="icon" onClick={() => setIsEditModalOpen(true)}>
+                    <Pencil className="h-4 w-4" />
+                    <span className="sr-only">Edit Company</span>
+                </Button>
+            </div>
           </div>
         </div>
         <Separator className="my-4" />
@@ -632,3 +654,5 @@ export default function CompanyDetailsPage() {
     </>
   );
 }
+
+    
