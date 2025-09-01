@@ -45,6 +45,7 @@ import { cn } from '@/lib/utils';
 import { getCompanies, type Company } from '@/services/company-service';
 import { createAssessment, updateAssessment, type Assessment } from '@/services/assessment-service';
 import { Separator } from '@/components/ui/separator';
+import { createNotification } from '@/services/notification-service';
 
 
 const GtmReadinessInputSchema = z.object({
@@ -355,6 +356,11 @@ export function GtmReadinessForm({ onComplete, assessmentToResume }: GtmReadines
           setCurrentAssessmentId(newId);
           finalAssessmentId = newId;
       }
+      
+      await createNotification({
+        message: `Assessment "${finalAssessmentName}" has been completed.`,
+        link: `/assessment/${finalAssessmentId}/report`,
+      });
 
       onComplete(finalAssessmentId!);
     } catch (error) {
@@ -608,6 +614,8 @@ export function GtmReadinessForm({ onComplete, assessmentToResume }: GtmReadines
     </div>
   );
 }
+
+    
 
     
 
