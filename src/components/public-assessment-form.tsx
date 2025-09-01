@@ -285,6 +285,7 @@ export function PublicGtmForm({ companyId, companyName }: PublicGtmFormProps) {
         acc[key as FieldName] = value.type === 'slider' ? '3' : '';
         return acc;
       }, {} as any),
+      assessmentName: 'GTM Readiness Report',
     },
     mode: 'onChange',
   });
@@ -293,7 +294,7 @@ export function PublicGtmForm({ companyId, companyName }: PublicGtmFormProps) {
     setLoading(true);
     try {
       const { assessmentName, ...assessmentData } = values;
-      const finalAssessmentName = `GTM Readiness Report - ${companyName}`;
+      const finalAssessmentName = `${assessmentName} - ${companyName}`;
 
       const response = await generateGtmReadiness(assessmentData as GtmReadinessInput);
       
@@ -308,7 +309,7 @@ export function PublicGtmForm({ companyId, companyName }: PublicGtmFormProps) {
         result: response,
       };
 
-      await createAssessment(payload);
+      await createAssessment(payload, true);
 
       router.push('/public/assessment/thanks');
     } catch (error) {
@@ -519,5 +520,3 @@ export function PublicGtmForm({ companyId, companyName }: PublicGtmFormProps) {
     </div>
   );
 }
-
-    

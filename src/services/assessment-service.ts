@@ -6,6 +6,7 @@ import { db, auth } from '@/lib/firebase';
 import { collection, doc, getDocs, setDoc, updateDoc, query, where, writeBatch, getDoc, addDoc } from 'firebase/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import type { Company } from "./company-service";
+import { createNotification } from "./notification-service";
 
 
 export interface Assessment {
@@ -63,10 +64,20 @@ export async function getAssessmentsForCompany(companyId: string): Promise<Asses
     } as Assessment));
 }
 
-export async function createAssessment(assessmentData: Omit<Assessment, 'id'>): Promise<string> {
+export async function createAssessment(assessmentData: Omit<Assessment, 'id'>, isPublicSubmission: boolean = false): Promise<string> {
     const docRef = await addDoc(assessmentsCollection, {});
     const finalData = { ...assessmentData, id: docRef.id };
     await setDoc(docRef, finalData);
+
+    if (isPublicSubmission) {
+      const companyDoc = await getDoc(doc(db, 'companies', assessmentData.companyId));
+      const companyName = companyDoc.exists() ? (companyDoc.data() as Company).name : 'the company';
+      await createNotification({
+        message: `A new assessment for ${companyName} has been submitted.`,
+        link: `/assessment/${docRef.id}/report`,
+      });
+    }
+
     return docRef.id;
 }
 
@@ -101,5 +112,3 @@ export async function uploadAssessmentDocument(assessmentId: string, file: File)
 
     return downloadURL;
 }
-
-    

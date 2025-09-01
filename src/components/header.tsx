@@ -9,17 +9,21 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Button } from './ui/button';
-import { Plus, Search, LogOut, Briefcase, UserPlus, FilePlus } from 'lucide-react';
+import { Plus, Search, LogOut, Briefcase, UserPlus, FilePlus, Bell, CheckCheck } from 'lucide-react';
 import { useQuickAction } from '@/contexts/quick-action-context';
 import * as React from 'react';
 import { Input } from './ui/input';
 import { Company, searchCompanies } from '@/services/company-service';
 import { signOut } from '@/services/auth-service';
 import { useUser } from '@/contexts/user-context';
+import { getNotifications, markAllNotificationsAsRead, type Notification } from '@/services/notification-service';
+import { Badge } from './ui/badge';
+import { cn } from '@/lib/utils';
 
 
 export function Header() {
@@ -29,6 +33,23 @@ export function Header() {
   const [isSearchVisible, setIsSearchVisible] = React.useState(false);
   const [searchResults, setSearchResults] = React.useState<Company[]>([]);
   const searchInputRef = React.useRef<HTMLInputElement>(null);
+  const [notifications, setNotifications] = React.useState<Notification[]>([]);
+  const [isNotificationsOpen, setIsNotificationsOpen] = React.useState(false);
+
+  const fetchNotifications = React.useCallback(async () => {
+    if (user) {
+      const notes = await getNotifications();
+      setNotifications(notes);
+    }
+  }, [user]);
+
+  React.useEffect(() => {
+    fetchNotifications();
+    // Optional: Poll for new notifications every minute
+    const interval = setInterval(fetchNotifications, 60000);
+    return () => clearInterval(interval);
+  }, [fetchNotifications]);
+
 
   React.useEffect(() => {
     const performSearch = async () => {
@@ -75,10 +96,22 @@ export function Header() {
     router.push('/login');
   };
 
+  const handleMarkAllRead = async () => {
+    await markAllNotificationsAsRead();
+    fetchNotifications();
+  }
+  
+  const handleNotificationClick = (notification: Notification) => {
+    setIsNotificationsOpen(false);
+    router.push(notification.link);
+  }
+
   const getInitials = (email: string) => {
     if (!email) return 'U';
     return email[0].toUpperCase();
   }
+  
+  const unreadCount = notifications.filter(n => !n.isRead).length;
 
   return (
     <header className="flex h-16 items-center justify-between gap-4 bg-sidebar px-6 text-sidebar-foreground">
@@ -117,6 +150,41 @@ export function Header() {
                 </div>
             )}
         </div>
+        <Popover open={isNotificationsOpen} onOpenChange={setIsNotificationsOpen}>
+          <PopoverTrigger asChild>
+             <Button variant="ghost" size="icon" className="relative">
+                <Bell className="h-5 w-5" />
+                {unreadCount > 0 && (
+                  <Badge variant="destructive" className="absolute -top-1 -right-1 h-4 w-4 justify-center rounded-full p-0 text-xs">{unreadCount}</Badge>
+                )}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-80" align="end">
+            <div className="flex justify-between items-center mb-2">
+                <h4 className="font-medium text-sm">Notifications</h4>
+                {unreadCount > 0 && (
+                    <Button variant="ghost" size="sm" onClick={handleMarkAllRead}>
+                        <CheckCheck className="mr-2 h-4 w-4" />
+                        Mark all as read
+                    </Button>
+                )}
+            </div>
+            <div className="space-y-2">
+                {notifications.length > 0 ? notifications.slice(0, 5).map(note => (
+                  <div key={note.id} onClick={() => handleNotificationClick(note)} className="p-2 rounded-md hover:bg-muted cursor-pointer">
+                      <p className={cn("text-sm mb-1", !note.isRead && "font-bold")}>{note.message}</p>
+                      <p className="text-xs text-muted-foreground">{new Date(note.createdAt).toLocaleString()}</p>
+                  </div>
+                )) : (
+                  <p className="text-sm text-muted-foreground text-center py-4">No new notifications.</p>
+                )}
+            </div>
+            <DropdownMenuSeparator className="my-2" />
+            <Button variant="outline" className="w-full" size="sm" asChild>
+                <Link href="/dashboard/notifications">View all notifications</Link>
+            </Button>
+          </PopoverContent>
+        </Popover>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon">
