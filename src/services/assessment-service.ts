@@ -2,8 +2,9 @@
 'use client';
 
 import { GtmReadinessOutput, GtmReadinessInput } from "@/ai/flows/gtm-readiness-flow";
-import { db } from '@/lib/firebase';
+import { db, auth } from '@/lib/firebase';
 import { collection, doc, getDocs, setDoc, updateDoc, query, where, writeBatch, getDoc, addDoc } from 'firebase/firestore';
+import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import type { Company } from "./company-service";
 
 
@@ -18,6 +19,7 @@ export interface Assessment {
   result?: GtmReadinessOutput;
   formData?: Partial<GtmReadinessInput>;
   companyName?: string;
+  documentUrl?: string;
 }
 
 const assessmentsCollection = collection(db, 'assessments');
@@ -31,7 +33,11 @@ export async function getAssessments(): Promise<Assessment[]> {
     
     const assessments = assessmentSnapshot.docs.map(docSnapshot => {
         const assessment = { id: docSnapshot.id, ...docSnapshot.data() } as Assessment;
-        assessment.companyName = companyMap.get(assessment.companyId) || 'Unknown Company';
+        if (assessment.companyId) {
+            assessment.companyName = companyMap.get(assessment.companyId) || 'Unknown Company';
+        } else {
+            assessment.companyName = 'Unknown Company';
+        }
         return assessment;
     });
 
@@ -75,4 +81,22 @@ export async function deleteAssessments(ids: string[]): Promise<void> {
       batch.delete(docRef);
     });
     await batch.commit();
+}
+
+export async function uploadAssessmentDocument(assessmentId: string, file: File): Promise<string> {
+    if (!auth.currentUser) {
+        throw new Error("User must be logged in to upload documents.");
+    }
+    const storage = getStorage();
+    const storageRef = ref(storage, `assessments/${assessmentId}/${file.name}`);
+    
+    const snapshot = await uploadBytes(storageRef, file);
+    const downloadURL = await getDownloadURL(snapshot.ref);
+
+    const assessmentDocRef = doc(db, 'assessments', assessmentId);
+    await updateDoc(assessmentDocRef, {
+        documentUrl: downloadURL
+    });
+
+    return downloadURL;
 }
