@@ -40,12 +40,13 @@ import {
 import { getContacts, Contact } from '@/services/contact-service';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Checkbox } from '@/components/ui/checkbox';
-import { MoreHorizontal, Plus, Trash2, ArrowUpDown } from 'lucide-react';
+import { MoreHorizontal, Plus, Trash2, ArrowUpDown, Link2 } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { TablePagination } from '@/components/table-pagination';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { useQuickAction } from '@/contexts/quick-action-context';
+import { useToast } from '@/hooks/use-toast';
 
 type SortKey = keyof Company | 'contactName';
 
@@ -69,6 +70,7 @@ export default function CompaniesPage() {
   const [sortConfig, setSortConfig] = React.useState<{ key: SortKey; direction: 'ascending' | 'descending' } | null>({ key: 'name', direction: 'ascending' });
 
   const { openNewCompanyDialog, setOnCompanyCreated, globalSearchTerm } = useQuickAction();
+  const { toast } = useToast();
 
   const fetchCompanies = React.useCallback(async () => {
     try {
@@ -84,7 +86,7 @@ export default function CompaniesPage() {
       });
 
       setCompanies(companiesWithContacts);
-    } catch (error) {
+    } catch (error) => {
       console.error('Failed to fetch companies:', error);
       // Here you might want to show a toast to the user
     } finally {
@@ -192,6 +194,15 @@ export default function CompaniesPage() {
         company.website.toLowerCase().includes(globalSearchTerm.toLowerCase())
     );
   }, [companies, sortConfig, globalSearchTerm]);
+
+  const handleCopyLink = (companyId: string) => {
+    const url = `${window.location.origin}/public/assessment/${companyId}`;
+    navigator.clipboard.writeText(url);
+    toast({
+      title: "Link Copied!",
+      description: "Assessment link has been copied to your clipboard.",
+    });
+  };
 
 
   const currentVisibleCompanies = sortedCompanies.slice(
@@ -370,6 +381,12 @@ export default function CompaniesPage() {
                               onClick={() => handleViewDetails(company)}
                             >
                               View Details
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                                onClick={() => handleCopyLink(company.id)}
+                            >
+                                <Link2 className="mr-2 h-4 w-4" />
+                                Copy Assessment Link
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
