@@ -314,7 +314,12 @@ export function GtmReadinessForm({ onComplete, assessmentToResume }: GtmReadines
     if (assessmentToResume) {
         setCurrentAssessmentId(assessmentToResume.id);
         if (assessmentToResume.formData) {
-            form.reset(assessmentToResume.formData);
+             const defaultData = { ...defaultValues, ...assessmentToResume.formData };
+            // Ensure companyId from the assessment record is honored
+            if (assessmentToResume.companyId) {
+                defaultData.companyId = assessmentToResume.companyId;
+            }
+            form.reset(defaultData);
         }
         const lastCompletedSection = formSections.findLastIndex(section =>
             section.fields.every(field => !!assessmentToResume.formData?.[field as keyof GtmReadinessInput])
