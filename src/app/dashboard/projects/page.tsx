@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -213,7 +212,7 @@ export default function ProjectsPage() {
             <div className="flex justify-between items-center">
                 <TabsList>
                     <TabsTrigger value="active">Active</TabsTrigger>
-                    <TabsTrigger value="inactive">Inactive & Completed</TabsTrigger>
+                    <TabsTrigger value="inactive">Inactive</TabsTrigger>
                 </TabsList>
                 <div className="flex items-center gap-2">
                     {numSelected > 0 && (
