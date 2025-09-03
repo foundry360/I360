@@ -50,7 +50,7 @@ import { getProjectsForCompany, type Project } from '@/services/project-service'
 import { cn } from '@/lib/utils';
 import { useQuickAction } from '@/contexts/quick-action-context';
 import { Checkbox } from '@/components/ui/checkbox';
-import { TablePagination } from '@/components/ui/table-pagination';
+import { TablePagination } from '@/components/table-pagination';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 
