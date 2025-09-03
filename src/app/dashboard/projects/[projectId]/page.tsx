@@ -13,6 +13,9 @@ import {
   SearchCheck,
   Wrench,
   Zap,
+  ArrowUp,
+  ArrowRight,
+  ArrowDown
 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
@@ -57,13 +60,26 @@ const taskTypeIcons: Record<TaskType, React.ElementType> = {
 
 const TaskTypeIcon = ({ type }: { type: TaskType }) => {
     const Icon = taskTypeIcons[type];
-    return <Icon className="h-4 w-4 text-muted-foreground" />;
+    return <Icon className="h-3 w-3 text-muted-foreground" />;
 };
 
-const priorityColors: Record<TaskPriority, string> = {
-    High: 'bg-red-500',
-    Medium: 'bg-yellow-500',
-    Low: 'bg-green-500',
+
+const priorityIcons: Record<TaskPriority, React.ElementType> = {
+    High: ArrowUp,
+    Medium: ArrowRight,
+    Low: ArrowDown,
+};
+
+const priorityIconColors: Record<TaskPriority, string> = {
+    High: 'text-red-500',
+    Medium: 'text-yellow-500',
+    Low: 'text-green-500',
+}
+
+const PriorityIcon = ({ priority }: { priority: TaskPriority }) => {
+    const Icon = priorityIcons[priority];
+    const colorClass = priorityIconColors[priority];
+    return <Icon className={cn("h-3 w-3", colorClass)} />;
 };
 
 const TaskCard = ({ task, taskNumber }: { task: Task; taskNumber: string }) => {
@@ -72,17 +88,17 @@ const TaskCard = ({ task, taskNumber }: { task: Task; taskNumber: string }) => {
         return name.split(' ').map((n) => n[0]).join('').toUpperCase();
     }
     return (
-        <Card className="mb-4 bg-card shadow-sm hover:shadow-md transition-shadow overflow-hidden flex">
-            <div className={cn("w-1.5 h-auto", priorityColors[task.priority])} />
+        <Card className="mb-4 bg-card shadow-sm hover:shadow-md transition-shadow overflow-hidden">
             <div className="flex flex-col w-full">
                 <CardContent className="p-3">
-                    <div className="flex items-center gap-2 mb-2">
-                        <TaskTypeIcon type={task.type} />
-                        <p className="text-sm font-medium flex-1">{task.title}</p>
-                    </div>
+                    <p className="text-sm font-medium flex-1">{task.title}</p>
                 </CardContent>
                 <CardFooter className="p-3 flex justify-between items-center bg-muted/50 mt-auto">
-                    <span className="text-xs text-muted-foreground font-mono">{taskNumber}</span>
+                    <div className="flex items-center gap-2">
+                        <span className="text-xs text-muted-foreground font-mono">{taskNumber}</span>
+                        <TaskTypeIcon type={task.type} />
+                        <PriorityIcon priority={task.priority} />
+                    </div>
                     <Avatar className="h-6 w-6">
                         <AvatarImage src={task.ownerAvatarUrl} />
                         <AvatarFallback className="text-xs">{getInitials(task.owner)}</AvatarFallback>
