@@ -72,21 +72,23 @@ const TaskCard = ({ task, taskNumber }: { task: Task; taskNumber: string }) => {
         return name.split(' ').map((n) => n[0]).join('').toUpperCase();
     }
     return (
-        <Card className="mb-4 bg-card shadow-sm hover:shadow-md transition-shadow overflow-hidden">
-            <div className={cn("h-1.5 w-full", priorityColors[task.priority])} />
-            <CardContent className="p-3">
-                <div className="flex items-center gap-2 mb-2">
-                    <TaskTypeIcon type={task.type} />
-                    <p className="text-sm font-medium flex-1">{task.title}</p>
-                </div>
-            </CardContent>
-            <CardFooter className="p-3 flex justify-between items-center bg-muted/50">
-                <span className="text-xs text-muted-foreground font-mono">{taskNumber}</span>
-                 <Avatar className="h-6 w-6">
-                    <AvatarImage src={task.ownerAvatarUrl} />
-                    <AvatarFallback className="text-xs">{getInitials(task.owner)}</AvatarFallback>
-                </Avatar>
-            </CardFooter>
+        <Card className="mb-4 bg-card shadow-sm hover:shadow-md transition-shadow overflow-hidden flex">
+            <div className={cn("w-1.5 h-auto", priorityColors[task.priority])} />
+            <div className="flex flex-col w-full">
+                <CardContent className="p-3">
+                    <div className="flex items-center gap-2 mb-2">
+                        <TaskTypeIcon type={task.type} />
+                        <p className="text-sm font-medium flex-1">{task.title}</p>
+                    </div>
+                </CardContent>
+                <CardFooter className="p-3 flex justify-between items-center bg-muted/50 mt-auto">
+                    <span className="text-xs text-muted-foreground font-mono">{taskNumber}</span>
+                    <Avatar className="h-6 w-6">
+                        <AvatarImage src={task.ownerAvatarUrl} />
+                        <AvatarFallback className="text-xs">{getInitials(task.owner)}</AvatarFallback>
+                    </Avatar>
+                </CardFooter>
+            </div>
         </Card>
     );
 };
