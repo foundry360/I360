@@ -313,7 +313,11 @@ export default function ProjectsPage() {
                                                     aria-label={`Select ${project.name}`}
                                                 />
                                             </TableCell>
-                                            <TableCell className="font-medium">{project.name}</TableCell>
+                                            <TableCell className="font-medium">
+                                               <Link href={`/dashboard/projects/${project.id}`} className="hover:text-primary">
+                                                    {project.name}
+                                                </Link>
+                                            </TableCell>
                                             <TableCell>
                                                 <Link href={`/dashboard/companies/${project.companyId}/details`} className="hover:text-primary">
                                                     {project.companyName}
@@ -337,7 +341,9 @@ export default function ProjectsPage() {
                                                         </Button>
                                                     </DropdownMenuTrigger>
                                                     <DropdownMenuContent align="end">
-                                                        <DropdownMenuItem>View Details</DropdownMenuItem>
+                                                        <DropdownMenuItem asChild>
+                                                            <Link href={`/dashboard/projects/${project.id}`}>View Details</Link>
+                                                        </DropdownMenuItem>
                                                         <DropdownMenuItem>Edit Project</DropdownMenuItem>
                                                         <DropdownMenuSeparator />
                                                         <DropdownMenuItem
