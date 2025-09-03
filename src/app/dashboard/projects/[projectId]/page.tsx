@@ -11,20 +11,23 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
 
 // This is a placeholder for a real task type
+type TaskStatus = 'To Do' | 'In Progress' | 'In Review' | 'Needs Revisions' | 'Complete';
+
 type Task = {
   id: string;
   title: string;
-  status: 'Todo' | 'In Progress' | 'Done';
+  status: TaskStatus;
 };
 
 const initialTasks: Task[] = [
-    { id: 'task-1', title: 'Setup project repository', status: 'Done' },
-    { id: 'task-2', title: 'Design database schema', status: 'Done' },
-    { id: 'task-3', title: 'Develop authentication flow', status: 'In Progress' },
+    { id: 'task-1', title: 'Setup project repository', status: 'Complete' },
+    { id: 'task-2', title: 'Design database schema', status: 'Complete' },
+    { id: 'task-3', title: 'Develop authentication flow', status: 'In Review' },
     { id: 'task-4', title: 'Build main dashboard UI', status: 'In Progress' },
-    { id: 'task-5', title: 'Implement assessment generation logic', status: 'Todo' },
-    { id: 'task-6', title: 'Write unit tests for services', status: 'Todo' },
-    { id: 'task-7', title: 'Configure deployment pipeline', status: 'Todo' },
+    { id: 'task-8', title: 'Fix login button style', status: 'Needs Revisions' },
+    { id: 'task-5', title: 'Implement assessment generation logic', status: 'To Do' },
+    { id: 'task-6', title: 'Write unit tests for services', status: 'To Do' },
+    { id: 'task-7', title: 'Configure deployment pipeline', status: 'To Do' },
 ];
 
 
@@ -60,7 +63,7 @@ export default function ProjectDetailsPage() {
     // In a real app, you would fetch project details here
     const project = { name: 'New Initiative' }; 
     
-    const columns: ('Todo' | 'In Progress' | 'Done')[] = ['Todo', 'In Progress', 'Done'];
+    const columns: TaskStatus[] = ['To Do', 'In Progress', 'In Review', 'Needs Revisions', 'Complete'];
 
     return (
         <div className="flex flex-col h-full">
