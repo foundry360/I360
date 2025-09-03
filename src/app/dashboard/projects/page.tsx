@@ -39,8 +39,11 @@ import { useUser } from '@/contexts/user-context';
 import { cn } from '@/lib/utils';
 import { Checkbox } from '@/components/ui/checkbox';
 import { TablePagination } from '@/components/table-pagination';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 type SortKey = keyof Project;
+type ProjectStatus = 'Active' | 'Inactive' | 'Completed' | 'On Hold';
+type TabValue = 'active' | 'inactive';
 
 export default function ProjectsPage() {
   const [projects, setProjects] = React.useState<Project[]>([]);
@@ -51,6 +54,7 @@ export default function ProjectsPage() {
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(25);
   const [sortConfig, setSortConfig] = React.useState<{ key: SortKey; direction: 'ascending' | 'descending' } | null>({ key: 'startDate', direction: 'descending' });
+  const [activeTab, setActiveTab] = React.useState<TabValue>('active');
 
   const { openNewProjectDialog, setOnProjectCreated, globalSearchTerm } = useQuickAction();
   const { user } = useUser();
@@ -101,7 +105,7 @@ export default function ProjectsPage() {
   };
 
   const handleSelectAll = (isSelected: boolean) => {
-    const currentVisibleIds = sortedProjects
+    const currentVisibleIds = filteredProjects
       .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
       .map((p) => p.id);
     if (isSelected) {
@@ -115,7 +119,7 @@ export default function ProjectsPage() {
     try {
       await deleteProjects(selectedProjects);
       setSelectedProjects([]);
-      setIsDeleteDialogOpen(false); // Close dialog after bulk delete
+      setIsDeleteDialogOpen(true); 
       await fetchProjects();
     } catch (error) {
       console.error('Failed to delete projects:', error);
@@ -130,8 +134,13 @@ export default function ProjectsPage() {
     setSortConfig({ key, direction });
   };
 
-  const sortedProjects = React.useMemo(() => {
-    let sortableItems = [...projects];
+  const filteredProjects = React.useMemo(() => {
+    const activeProjects = projects.filter(p => p.status === 'Active');
+    const inactiveProjects = projects.filter(p => p.status !== 'Active');
+    
+    let itemsToFilter = activeTab === 'active' ? activeProjects : inactiveProjects;
+
+    let sortableItems = [...itemsToFilter];
     if (sortConfig !== null) {
       sortableItems.sort((a, b) => {
         const aValue = a[sortConfig.key];
@@ -150,14 +159,20 @@ export default function ProjectsPage() {
         return 0;
       });
     }
+
     return sortableItems.filter(project => 
         project.name.toLowerCase().includes(globalSearchTerm.toLowerCase()) ||
         (project.companyName || '').toLowerCase().includes(globalSearchTerm.toLowerCase()) ||
         project.owner.toLowerCase().includes(globalSearchTerm.toLowerCase())
     );
-  }, [projects, sortConfig, globalSearchTerm]);
+  }, [projects, sortConfig, globalSearchTerm, activeTab]);
+
+  React.useEffect(() => {
+    setPage(0);
+    setSelectedProjects([]);
+  }, [activeTab]);
   
-  const currentVisibleProjects = sortedProjects.slice(
+  const currentVisibleProjects = filteredProjects.slice(
     page * rowsPerPage,
     page * rowsPerPage + rowsPerPage
   );
@@ -172,19 +187,27 @@ export default function ProjectsPage() {
     const name = email.split('@')[0];
     return name.charAt(0).toUpperCase() + name.slice(1);
   }
+  
+  const statusBadgeVariant = (status: ProjectStatus) => {
+    switch(status) {
+        case 'Active': return 'default';
+        case 'Completed': return 'secondary';
+        case 'On Hold': return 'outline';
+        case 'Inactive': return 'destructive';
+        default: return 'secondary';
+    }
+  }
 
   return (
     <>
       <div className="space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold">Projects</h1>
-          <p className="text-muted-foreground">
-            Manage and track all projects across your companies.
-          </p>
-        </div>
-        <Separator />
         <div className="flex justify-between items-center">
-            <div className="text-sm text-muted-foreground">Total Records: {sortedProjects.length}</div>
+            <div>
+                <h1 className="text-2xl font-bold">Projects</h1>
+                <p className="text-muted-foreground">
+                    Manage and track all projects across your companies.
+                </p>
+            </div>
             <div className="flex items-center gap-2">
                 {numSelected > 0 && (
                 <Button
@@ -202,145 +225,159 @@ export default function ProjectsPage() {
                 </Button>
             </div>
         </div>
-        <div className="border rounded-lg">
-            {loading ? (
-                <div className="space-y-4 p-6">
-                <Skeleton className="h-12 w-full" />
-                <Skeleton className="h-12 w-full" />
-                <Skeleton className="h-12 w-full" />
-              </div>
-            ) : (
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead className="w-[50px] border-t border-b">
-                                <Checkbox
-                                    checked={allOnPageSelected}
-                                    onCheckedChange={(checked) =>
-                                    handleSelectAll(checked as boolean)
-                                    }
-                                    aria-label="Select all on page"
-                                    data-state={isPageIndeterminate ? 'indeterminate' : (allOnPageSelected ? 'checked' : 'unchecked')}
-                                />
-                            </TableHead>
-                            <TableHead className="border-t border-r border-b">
-                                <Button variant="ghost" onClick={() => requestSort('name')} className="group w-full p-0 hover:bg-transparent hover:text-muted-foreground">
-                                    <div className="flex justify-between items-center w-full">
-                                        Project Name
-                                        <ArrowUpDown className={cn("h-4 w-4", sortConfig?.key === 'name' ? 'opacity-100' : 'opacity-25')} />
-                                    </div>
-                                </Button>
-                            </TableHead>
-                             <TableHead className="border-t border-r border-b">
-                                <Button variant="ghost" onClick={() => requestSort('companyName')} className="group w-full p-0 hover:bg-transparent hover:text-muted-foreground">
-                                    <div className="flex justify-between items-center w-full">
-                                        Company
-                                        <ArrowUpDown className={cn("h-4 w-4", sortConfig?.key === 'companyName' ? 'opacity-100' : 'opacity-25')} />
-                                    </div>
-                                </Button>
-                            </TableHead>
-                            <TableHead className="border-t border-r border-b">
-                                <Button variant="ghost" onClick={() => requestSort('status')} className="group w-full p-0 hover:bg-transparent hover:text-muted-foreground">
-                                    <div className="flex justify-between items-center w-full">
-                                        Status
-                                        <ArrowUpDown className={cn("h-4 w-4", sortConfig?.key === 'status' ? 'opacity-100' : 'opacity-25')} />
-                                    </div>
-                                </Button>
-                            </TableHead>
-                            <TableHead className="border-t border-r border-b">
-                                <Button variant="ghost" onClick={() => requestSort('owner')} className="group w-full p-0 hover:bg-transparent hover:text-muted-foreground">
-                                    <div className="flex justify-between items-center w-full">
-                                        Owner
-                                        <ArrowUpDown className={cn("h-4 w-4", sortConfig?.key === 'owner' ? 'opacity-100' : 'opacity-25')} />
-                                    </div>
-                                </Button>
-                            </TableHead>
-                             <TableHead className="border-t border-r border-b">
-                                <Button variant="ghost" onClick={() => requestSort('startDate')} className="group w-full p-0 hover:bg-transparent hover:text-muted-foreground">
-                                    <div className="flex justify-between items-center w-full">
-                                        Start Date
-                                        <ArrowUpDown className={cn("h-4 w-4", sortConfig?.key === 'startDate' ? 'opacity-100' : 'opacity-25')} />
-                                    </div>
-                                </Button>
-                            </TableHead>
-                            <TableHead className="text-right border-t border-b"></TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {currentVisibleProjects.length > 0 ? (
-                            currentVisibleProjects.map((project) => (
-                                <TableRow key={project.id}>
-                                    <TableCell>
+        <Separator />
+        
+        <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as TabValue)}>
+            <TabsList>
+                <TabsTrigger value="active">Active</TabsTrigger>
+                <TabsTrigger value="inactive">Inactive & Completed</TabsTrigger>
+            </TabsList>
+            <TabsContent value={activeTab} className="mt-4">
+                <div className="flex justify-between items-center mb-4">
+                    <div className="text-sm text-muted-foreground">Total Records: {filteredProjects.length}</div>
+                </div>
+                <div className="border rounded-lg">
+                    {loading ? (
+                        <div className="space-y-4 p-6">
+                            <Skeleton className="h-12 w-full" />
+                            <Skeleton className="h-12 w-full" />
+                            <Skeleton className="h-12 w-full" />
+                        </div>
+                    ) : (
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead className="w-[50px] border-t border-b">
                                         <Checkbox
-                                            checked={selectedProjects.includes(project.id)}
+                                            checked={allOnPageSelected}
                                             onCheckedChange={(checked) =>
-                                                handleSelectProject(project.id, checked as boolean)
+                                            handleSelectAll(checked as boolean)
                                             }
-                                            aria-label={`Select ${project.name}`}
+                                            aria-label="Select all on page"
+                                            data-state={isPageIndeterminate ? 'indeterminate' : (allOnPageSelected ? 'checked' : 'unchecked')}
                                         />
-                                    </TableCell>
-                                    <TableCell className="font-medium">{project.name}</TableCell>
-                                    <TableCell>
-                                        <Link href={`/dashboard/companies/${project.companyId}/details`} className="hover:text-primary">
-                                            {project.companyName}
-                                        </Link>
-                                    </TableCell>
-                                    <TableCell>
-                                        <Badge variant={project.status === 'Active' ? 'default' : 'secondary'}>
-                                            {project.status}
-                                        </Badge>
-                                    </TableCell>
-                                    <TableCell>{project.owner || getDisplayName(user?.email)}</TableCell>
-                                    <TableCell>
-                                        {new Date(project.startDate).toLocaleDateString()}
-                                    </TableCell>
-                                    <TableCell className="text-right">
-                                        <DropdownMenu>
-                                            <DropdownMenuTrigger asChild>
-                                                <Button variant="ghost" className="h-8 w-8 p-0">
-                                                    <span className="sr-only">Open menu</span>
-                                                    <MoreHorizontal className="h-4 w-4" />
-                                                </Button>
-                                            </DropdownMenuTrigger>
-                                            <DropdownMenuContent align="end">
-                                                <DropdownMenuItem>View Details</DropdownMenuItem>
-                                                <DropdownMenuItem>Edit Project</DropdownMenuItem>
-                                                <DropdownMenuSeparator />
-                                                <DropdownMenuItem
-                                                  onClick={() => openDeleteDialog(project)}
-                                                  className="text-destructive"
-                                                >
-                                                  <Trash2 className="mr-2 h-4 w-4" />
-                                                  Delete
-                                                </DropdownMenuItem>
-                                            </DropdownMenuContent>
-                                        </DropdownMenu>
-                                    </TableCell>
+                                    </TableHead>
+                                    <TableHead className="border-t border-r border-b">
+                                        <Button variant="ghost" onClick={() => requestSort('name')} className="group w-full p-0 hover:bg-transparent hover:text-muted-foreground">
+                                            <div className="flex justify-between items-center w-full">
+                                                Project Name
+                                                <ArrowUpDown className={cn("h-4 w-4", sortConfig?.key === 'name' ? 'opacity-100' : 'opacity-25')} />
+                                            </div>
+                                        </Button>
+                                    </TableHead>
+                                    <TableHead className="border-t border-r border-b">
+                                        <Button variant="ghost" onClick={() => requestSort('companyName')} className="group w-full p-0 hover:bg-transparent hover:text-muted-foreground">
+                                            <div className="flex justify-between items-center w-full">
+                                                Company
+                                                <ArrowUpDown className={cn("h-4 w-4", sortConfig?.key === 'companyName' ? 'opacity-100' : 'opacity-25')} />
+                                            </div>
+                                        </Button>
+                                    </TableHead>
+                                    <TableHead className="border-t border-r border-b">
+                                        <Button variant="ghost" onClick={() => requestSort('status')} className="group w-full p-0 hover:bg-transparent hover:text-muted-foreground">
+                                            <div className="flex justify-between items-center w-full">
+                                                Status
+                                                <ArrowUpDown className={cn("h-4 w-4", sortConfig?.key === 'status' ? 'opacity-100' : 'opacity-25')} />
+                                            </div>
+                                        </Button>
+                                    </TableHead>
+                                    <TableHead className="border-t border-r border-b">
+                                        <Button variant="ghost" onClick={() => requestSort('owner')} className="group w-full p-0 hover:bg-transparent hover:text-muted-foreground">
+                                            <div className="flex justify-between items-center w-full">
+                                                Owner
+                                                <ArrowUpDown className={cn("h-4 w-4", sortConfig?.key === 'owner' ? 'opacity-100' : 'opacity-25')} />
+                                            </div>
+                                        </Button>
+                                    </TableHead>
+                                    <TableHead className="border-t border-r border-b">
+                                        <Button variant="ghost" onClick={() => requestSort('startDate')} className="group w-full p-0 hover:bg-transparent hover:text-muted-foreground">
+                                            <div className="flex justify-between items-center w-full">
+                                                Start Date
+                                                <ArrowUpDown className={cn("h-4 w-4", sortConfig?.key === 'startDate' ? 'opacity-100' : 'opacity-25')} />
+                                            </div>
+                                        </Button>
+                                    </TableHead>
+                                    <TableHead className="text-right border-t border-b"></TableHead>
                                 </TableRow>
-                            ))
-                        ) : (
-                            <TableRow>
-                                <TableCell colSpan={7} className="h-24 text-center">
-                                    No projects found.
-                                </TableCell>
-                            </TableRow>
-                        )}
-                    </TableBody>
-                </Table>
-            )}
-        </div>
-         <div className="flex justify-end mt-4">
-          <TablePagination
-              count={sortedProjects.length}
-              page={page}
-              rowsPerPage={rowsPerPage}
-              onPageChange={(newPage) => setPage(newPage)}
-              onRowsPerPageChange={(newRowsPerPage) => {
-                  setRowsPerPage(newRowsPerPage);
-                  setPage(0);
-              }}
-          />
-        </div>
+                            </TableHeader>
+                            <TableBody>
+                                {currentVisibleProjects.length > 0 ? (
+                                    currentVisibleProjects.map((project) => (
+                                        <TableRow key={project.id}>
+                                            <TableCell>
+                                                <Checkbox
+                                                    checked={selectedProjects.includes(project.id)}
+                                                    onCheckedChange={(checked) =>
+                                                        handleSelectProject(project.id, checked as boolean)
+                                                    }
+                                                    aria-label={`Select ${project.name}`}
+                                                />
+                                            </TableCell>
+                                            <TableCell className="font-medium">{project.name}</TableCell>
+                                            <TableCell>
+                                                <Link href={`/dashboard/companies/${project.companyId}/details`} className="hover:text-primary">
+                                                    {project.companyName}
+                                                </Link>
+                                            </TableCell>
+                                            <TableCell>
+                                                <Badge variant={statusBadgeVariant(project.status)} className={project.status === 'Active' ? 'bg-green-500' : ''}>
+                                                    {project.status}
+                                                </Badge>
+                                            </TableCell>
+                                            <TableCell>{project.owner || getDisplayName(user?.email)}</TableCell>
+                                            <TableCell>
+                                                {new Date(project.startDate).toLocaleDateString()}
+                                            </TableCell>
+                                            <TableCell className="text-right">
+                                                <DropdownMenu>
+                                                    <DropdownMenuTrigger asChild>
+                                                        <Button variant="ghost" className="h-8 w-8 p-0">
+                                                            <span className="sr-only">Open menu</span>
+                                                            <MoreHorizontal className="h-4 w-4" />
+                                                        </Button>
+                                                    </DropdownMenuTrigger>
+                                                    <DropdownMenuContent align="end">
+                                                        <DropdownMenuItem>View Details</DropdownMenuItem>
+                                                        <DropdownMenuItem>Edit Project</DropdownMenuItem>
+                                                        <DropdownMenuSeparator />
+                                                        <DropdownMenuItem
+                                                        onClick={() => openDeleteDialog(project)}
+                                                        className="text-destructive"
+                                                        >
+                                                        <Trash2 className="mr-2 h-4 w-4" />
+                                                        Delete
+                                                        </DropdownMenuItem>
+                                                    </DropdownMenuContent>
+                                                </DropdownMenu>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))
+                                ) : (
+                                    <TableRow>
+                                        <TableCell colSpan={7} className="h-24 text-center">
+                                            No projects found.
+                                        </TableCell>
+                                    </TableRow>
+                                )}
+                            </TableBody>
+                        </Table>
+                    )}
+                </div>
+                <div className="flex justify-end mt-4">
+                    <TablePagination
+                        count={filteredProjects.length}
+                        page={page}
+                        rowsPerPage={rowsPerPage}
+                        onPageChange={(newPage) => setPage(newPage)}
+                        onRowsPerPageChange={(newRowsPerPage) => {
+                            setRowsPerPage(newRowsPerPage);
+                            setPage(0);
+                        }}
+                    />
+                </div>
+            </TabsContent>
+        </Tabs>
+        
         <AlertDialog
           open={isDeleteDialogOpen}
           onOpenChange={setIsDeleteDialogOpen}
