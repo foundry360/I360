@@ -1,7 +1,7 @@
 
 'use client';
 import { db } from '@/lib/firebase';
-import { collection, doc, getDocs, setDoc, addDoc, writeBatch, deleteDoc } from 'firebase/firestore';
+import { collection, doc, getDocs, setDoc, addDoc, writeBatch, deleteDoc, query, where } from 'firebase/firestore';
 import type { Company } from './company-service';
 
 export interface Project {
@@ -35,6 +35,17 @@ export async function getProjects(): Promise<Project[]> {
         return projects;
     } catch (error) {
         console.error("Error fetching projects:", error);
+        return [];
+    }
+}
+
+export async function getProjectsForCompany(companyId: string): Promise<Project[]> {
+    try {
+        const q = query(projectsCollection, where("companyId", "==", companyId));
+        const snapshot = await getDocs(q);
+        return snapshot.docs.map(doc => doc.data() as Project);
+    } catch (error) {
+        console.error("Error fetching projects for company:", error);
         return [];
     }
 }

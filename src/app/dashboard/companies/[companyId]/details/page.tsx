@@ -21,7 +21,7 @@ import { AppLayout } from '@/components/app-layout';
 import { useParams, useRouter } from 'next/navigation';
 import React from 'react';
 import { Progress } from '@/components/ui/progress';
-import { Phone, Globe, MapPin, ArrowLeft, Plus, Pencil, FileText, Trash2, Paperclip, Upload, Link2 } from 'lucide-react';
+import { Phone, Globe, MapPin, ArrowLeft, Plus, Pencil, FileText, Trash2, Paperclip, Upload, Link2, FolderKanban } from 'lucide-react';
 import type { Company } from '@/services/company-service';
 import { getCompany, updateCompany } from '@/services/company-service';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -46,10 +46,11 @@ import {
 import { EditCompanyModal } from '@/components/edit-company-modal';
 import { getAssessmentsForCompany, type Assessment, deleteAssessments, uploadAssessmentDocument } from '@/services/assessment-service';
 import { getContactsForCompany, type Contact } from '@/services/contact-service';
+import { getProjectsForCompany, type Project } from '@/services/project-service';
 import { cn } from '@/lib/utils';
 import { useQuickAction } from '@/contexts/quick-action-context';
 import { Checkbox } from '@/components/ui/checkbox';
-import { TablePagination } from '@/components/table-pagination';
+import { TablePagination } from '@/components/ui/table-pagination';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 
@@ -63,11 +64,12 @@ export default function CompanyDetailsPage() {
   const router = useRouter();
   const { toast } = useToast();
   const companyId = params.companyId as string;
-  const { openAssessmentModal, setOnAssessmentCompleted, openNewContactDialog, setOnContactCreated } = useQuickAction();
+  const { openAssessmentModal, setOnAssessmentCompleted, openNewContactDialog, setOnContactCreated, openNewProjectDialog, setOnProjectCreated } = useQuickAction();
   const [companyData, setCompanyData] = React.useState<Company | null>(null);
   const [currentAssessments, setCurrentAssessments] = React.useState<Assessment[]>([]);
   const [completedAssessments, setCompletedAssessments] = React.useState<Assessment[]>([]);
   const [contacts, setContacts] = React.useState<Contact[]>([]);
+  const [projects, setProjects] = React.useState<Project[]>([]);
   const [allRecentActivity, setAllRecentActivity] = React.useState<ActivityItem[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [isEditModalOpen, setIsEditModalOpen] = React.useState(false);
@@ -87,9 +89,17 @@ export default function CompanyDetailsPage() {
       const companyPromise = getCompany(companyId);
       const assessmentsPromise = getAssessmentsForCompany(companyId);
       const contactsPromise = getContactsForCompany(companyId);
-      const [company, allAssessments, companyContacts] = await Promise.all([companyPromise, assessmentsPromise, contactsPromise]);
+      const projectsPromise = getProjectsForCompany(companyId);
+
+      const [company, allAssessments, companyContacts, companyProjects] = await Promise.all([
+          companyPromise, 
+          assessmentsPromise, 
+          contactsPromise,
+          projectsPromise
+      ]);
       
       setCompanyData(company);
+      setProjects(companyProjects);
       
       const current = allAssessments.filter(a => a.status === 'In Progress');
       const completed = allAssessments.filter(a => a.status === 'Completed').sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime());
@@ -131,12 +141,14 @@ export default function CompanyDetailsPage() {
     fetchCompanyData();
     const unsubscribeAssessment = setOnAssessmentCompleted(() => fetchCompanyData);
     const unsubscribeContact = setOnContactCreated(() => fetchCompanyData);
-    
+    const unsubscribeProject = setOnProjectCreated(() => fetchCompanyData);
+
     return () => {
       if (typeof unsubscribeAssessment === 'function') unsubscribeAssessment();
       if (typeof unsubscribeContact === 'function') unsubscribeContact();
+      if (typeof unsubscribeProject === 'function') unsubscribeProject();
     }
-  }, [fetchCompanyData, setOnAssessmentCompleted, setOnContactCreated]);
+  }, [fetchCompanyData, setOnAssessmentCompleted, setOnContactCreated, setOnProjectCreated]);
   
   const handleOpenAssessment = (assessment: Assessment) => {
     if (assessment.status === 'Completed') {
@@ -590,6 +602,32 @@ export default function CompanyDetailsPage() {
               </CardContent>
             </Card>
             <Card>
+              <CardHeader className="flex flex-row items-center justify-between">
+                  <CardTitle className="text-xl">Company Projects</CardTitle>
+                  <Button variant="outline" size="sm" onClick={openNewProjectDialog}>
+                      <FolderKanban className="mr-2 h-4 w-4" />
+                      New Project
+                  </Button>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                  {projects.length > 0 ? (
+                      projects.map(project => (
+                          <div key={project.id} className="flex justify-between items-center p-2 rounded-md hover:bg-muted">
+                              <div>
+                                  <p className="font-medium text-sm">{project.name}</p>
+                                  <p className="text-xs text-muted-foreground">{project.owner}</p>
+                              </div>
+                              <Badge variant={project.status === 'Active' ? 'default' : 'secondary'} className={project.status === 'Active' ? 'bg-green-500' : ''}>
+                                  {project.status}
+                              </Badge>
+                          </div>
+                      ))
+                  ) : (
+                      <p className="text-sm text-muted-foreground text-center py-4">No projects found for this company.</p>
+                  )}
+              </CardContent>
+            </Card>
+            <Card>
               <CardHeader>
                 <CardTitle className="text-xl">Recent Activity</CardTitle>
               </CardHeader>
@@ -654,5 +692,3 @@ export default function CompanyDetailsPage() {
     </>
   );
 }
-
-    
