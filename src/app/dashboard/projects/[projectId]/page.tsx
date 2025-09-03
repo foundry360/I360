@@ -13,9 +13,7 @@ import {
   SearchCheck,
   Wrench,
   Zap,
-  SignalLow,
-  SignalMedium,
-  SignalHigh
+  ChevronUp,
 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
@@ -79,24 +77,23 @@ const TaskTypeIcon = ({ type }: { type: TaskType }) => {
 };
 
 
-const priorityIcons: Record<TaskPriority, React.ElementType> = {
-    High: SignalHigh,
-    Medium: SignalMedium,
-    Low: SignalLow,
-};
-
-const priorityIconColors: Record<TaskPriority, string> = {
-    High: 'text-red-500',
-    Medium: 'text-yellow-500',
-    Low: 'text-green-500',
+const priorityContainerColors: Record<TaskPriority, string> = {
+    High: 'bg-red-500',
+    Medium: 'bg-yellow-500',
+    Low: 'bg-green-500',
 }
 
 const PriorityIcon = ({ priority }: { priority: TaskPriority }) => {
-    const Icon = priorityIcons[priority];
-    const colorClass = priorityIconColors[priority];
+    const colorClass = priorityContainerColors[priority];
+    const chevronCount = priority === 'High' ? 3 : priority === 'Medium' ? 2 : 1;
+
     return (
-        <div className="flex items-center justify-center">
-            <Icon className={cn("h-4 w-4", colorClass)} />
+        <div className={cn("flex items-center justify-center h-6 w-6 rounded-full", colorClass)}>
+            <div className="flex flex-col items-center justify-center -space-y-2">
+                {Array.from({ length: chevronCount }).map((_, i) => (
+                    <ChevronUp key={i} className="h-3 w-3 text-white" />
+                ))}
+            </div>
         </div>
     );
 };
@@ -229,5 +226,3 @@ export default function ProjectDetailsPage() {
         </div>
     );
 }
-
-    
