@@ -60,7 +60,11 @@ const taskTypeIcons: Record<TaskType, React.ElementType> = {
 
 const TaskTypeIcon = ({ type }: { type: TaskType }) => {
     const Icon = taskTypeIcons[type];
-    return <Icon className="h-3 w-3 text-muted-foreground" />;
+    return (
+        <div className="h-5 w-5 rounded-full bg-background flex items-center justify-center">
+            <Icon className="h-3 w-3 text-muted-foreground" />
+        </div>
+    );
 };
 
 
@@ -79,7 +83,11 @@ const priorityIconColors: Record<TaskPriority, string> = {
 const PriorityIcon = ({ priority }: { priority: TaskPriority }) => {
     const Icon = priorityIcons[priority];
     const colorClass = priorityIconColors[priority];
-    return <Icon className={cn("h-3 w-3", colorClass)} />;
+    return (
+        <div className="h-5 w-5 rounded-full bg-background flex items-center justify-center">
+            <Icon className={cn("h-3 w-3", colorClass)} />
+        </div>
+    );
 };
 
 const TaskCard = ({ task, taskNumber }: { task: Task; taskNumber: string }) => {
@@ -210,3 +218,4 @@ export default function ProjectDetailsPage() {
         </div>
     );
 }
+
