@@ -201,37 +201,37 @@ export default function ProjectsPage() {
   return (
     <>
       <div className="space-y-6">
-        <div className="flex justify-between items-center">
-            <div>
-                <h1 className="text-2xl font-bold">Projects</h1>
-                <p className="text-muted-foreground">
-                    Manage and track all projects across your companies.
-                </p>
-            </div>
-            <div className="flex items-center gap-2">
-                {numSelected > 0 && (
-                <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setIsDeleteDialogOpen(true)}
-                >
-                    <Trash2 className="h-4 w-4 mr-2" />
-                    Delete ({numSelected})
-                </Button>
-                )}
-                <Button size="icon" onClick={openNewProjectDialog}>
-                    <Plus className="h-4 w-4" />
-                    <span className="sr-only">New Project</span>
-                </Button>
-            </div>
+        <div>
+            <h1 className="text-2xl font-bold">Projects</h1>
+            <p className="text-muted-foreground">
+                Manage and track all projects across your companies.
+            </p>
         </div>
         <Separator />
         
         <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as TabValue)}>
-            <TabsList>
-                <TabsTrigger value="active">Active</TabsTrigger>
-                <TabsTrigger value="inactive">Inactive & Completed</TabsTrigger>
-            </TabsList>
+            <div className="flex justify-between items-center">
+                <TabsList>
+                    <TabsTrigger value="active">Active</TabsTrigger>
+                    <TabsTrigger value="inactive">Inactive & Completed</TabsTrigger>
+                </TabsList>
+                <div className="flex items-center gap-2">
+                    {numSelected > 0 && (
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setIsDeleteDialogOpen(true)}
+                    >
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Delete ({numSelected})
+                    </Button>
+                    )}
+                    <Button size="icon" onClick={openNewProjectDialog}>
+                        <Plus className="h-4 w-4" />
+                        <span className="sr-only">New Project</span>
+                    </Button>
+                </div>
+            </div>
             <TabsContent value={activeTab} className="mt-4">
                 <div className="flex justify-between items-center mb-4">
                     <div className="text-sm text-muted-foreground">Total Records: {filteredProjects.length}</div>
