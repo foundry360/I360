@@ -5,15 +5,23 @@ import * as React from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
-import { ArrowLeft, GripVertical } from 'lucide-react';
+import {
+  ArrowLeft,
+  ClipboardList,
+  GanttChartSquare,
+  Presentation,
+  SearchCheck,
+  Wrench,
+  Zap,
+} from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 
 
-// This is a placeholder for a real task type
 type TaskStatus = 'To Do' | 'In Progress' | 'In Review' | 'Needs Revisions' | 'Complete';
+type TaskPriority = 'Low' | 'Medium' | 'High';
+type TaskType = 'Assessment' | 'Workshop' | 'Enablement' | 'Planning' | 'Execution' | 'Review';
 
 type Task = {
   id: string;
@@ -21,19 +29,42 @@ type Task = {
   status: TaskStatus;
   owner: string;
   ownerAvatarUrl: string;
+  priority: TaskPriority;
+  type: TaskType;
 };
 
 const initialTasks: Task[] = [
-    { id: 'task-1', title: 'Setup project repository', status: 'Complete', owner: 'John Doe', ownerAvatarUrl: 'https://i.pravatar.cc/150?u=a042581f4e29026024d' },
-    { id: 'task-2', title: 'Design database schema', status: 'Complete', owner: 'Jane Smith', ownerAvatarUrl: 'https://i.pravatar.cc/150?u=a042581f4e29026704d' },
-    { id: 'task-3', title: 'Develop authentication flow', status: 'In Review', owner: 'John Doe', ownerAvatarUrl: 'https://i.pravatar.cc/150?u=a042581f4e29026024d' },
-    { id: 'task-4', title: 'Build main dashboard UI', status: 'In Progress', owner: 'Mike Johnson', ownerAvatarUrl: 'https://i.pravatar.cc/150?u=a04258114e29026702d' },
-    { id: 'task-8', title: 'Fix login button style', status: 'Needs Revisions', owner: 'Jane Smith', ownerAvatarUrl: 'https://i.pravatar.cc/150?u=a042581f4e29026704d' },
-    { id: 'task-5', title: 'Implement assessment generation logic', status: 'To Do', owner: 'Mike Johnson', ownerAvatarUrl: 'https://i.pravatar.cc/150?u=a04258114e29026702d' },
-    { id: 'task-6', title: 'Write unit tests for services', status: 'To Do', owner: 'John Doe', ownerAvatarUrl: 'https://i.pravatar.cc/150?u=a042581f4e29026024d' },
-    { id: 'task-7', title: 'Configure deployment pipeline', status: 'To Do', owner: 'Emily White', ownerAvatarUrl: 'https://i.pravatar.cc/150?u=a042581f4e29026704e' },
+    { id: 'task-1', title: 'Setup project repository', status: 'Complete', owner: 'John Doe', ownerAvatarUrl: 'https://i.pravatar.cc/150?u=a042581f4e29026024d', priority: 'High', type: 'Planning' },
+    { id: 'task-2', title: 'Design database schema', status: 'Complete', owner: 'Jane Smith', ownerAvatarUrl: 'https://i.pravatar.cc/150?u=a042581f4e29026704d', priority: 'High', type: 'Planning' },
+    { id: 'task-3', title: 'Develop authentication flow', status: 'In Review', owner: 'John Doe', ownerAvatarUrl: 'https://i.pravatar.cc/150?u=a042581f4e29026024d', priority: 'Medium', type: 'Execution' },
+    { id: 'task-4', title: 'Build main dashboard UI', status: 'In Progress', owner: 'Mike Johnson', ownerAvatarUrl: 'https://i.pravatar.cc/150?u=a04258114e29026702d', priority: 'High', type: 'Execution' },
+    { id: 'task-8', title: 'Fix login button style', status: 'Needs Revisions', owner: 'Jane Smith', ownerAvatarUrl: 'https://i.pravatar.cc/150?u=a042581f4e29026704d', priority: 'Low', type: 'Review' },
+    { id: 'task-5', title: 'Implement assessment generation logic', status: 'To Do', owner: 'Mike Johnson', ownerAvatarUrl: 'https://i.pravatar.cc/150?u=a04258114e29026702d', priority: 'High', type: 'Assessment' },
+    { id: 'task-6', title: 'Write unit tests for services', status: 'To Do', owner: 'John Doe', ownerAvatarUrl: 'https://i.pravatar.cc/150?u=a042581f4e29026024d', priority: 'Medium', type: 'Execution' },
+    { id: 'task-7', title: 'Configure deployment pipeline', status: 'To Do', owner: 'Emily White', ownerAvatarUrl: 'https://i.pravatar.cc/150?u=a042581f4e29026704e', priority: 'Low', type: 'Enablement' },
+    { id: 'task-9', title: 'Client Workshop Prep', status: 'In Progress', owner: 'Emily White', ownerAvatarUrl: 'https://i.pravatar.cc/150?u=a042581f4e29026704e', priority: 'Medium', type: 'Workshop' },
+    { id: 'task-10', title: 'Q3 Planning Session', status: 'To Do', owner: 'Jane Smith', ownerAvatarUrl: 'https://i.pravatar.cc/150?u=a042581f4e29026704d', priority: 'High', type: 'Planning' },
 ];
 
+const taskTypeIcons: Record<TaskType, React.ElementType> = {
+    Assessment: ClipboardList,
+    Workshop: Presentation,
+    Enablement: Zap,
+    Planning: GanttChartSquare,
+    Execution: Wrench,
+    Review: SearchCheck,
+};
+
+const TaskTypeIcon = ({ type }: { type: TaskType }) => {
+    const Icon = taskTypeIcons[type];
+    return <Icon className="h-4 w-4 text-muted-foreground" />;
+};
+
+const priorityColors: Record<TaskPriority, string> = {
+    High: 'bg-red-500',
+    Medium: 'bg-yellow-500',
+    Low: 'bg-green-500',
+};
 
 const TaskCard = ({ task, taskNumber }: { task: Task; taskNumber: string }) => {
     const getInitials = (name: string) => {
@@ -41,11 +72,15 @@ const TaskCard = ({ task, taskNumber }: { task: Task; taskNumber: string }) => {
         return name.split(' ').map((n) => n[0]).join('').toUpperCase();
     }
     return (
-        <Card className="mb-4 bg-card shadow-sm hover:shadow-md transition-shadow">
+        <Card className="mb-4 bg-card shadow-sm hover:shadow-md transition-shadow overflow-hidden">
+            <div className={cn("h-1.5 w-full", priorityColors[task.priority])} />
             <CardContent className="p-3">
-                <p className="text-sm font-medium flex-1">{task.title}</p>
+                <div className="flex items-center gap-2 mb-2">
+                    <TaskTypeIcon type={task.type} />
+                    <p className="text-sm font-medium flex-1">{task.title}</p>
+                </div>
             </CardContent>
-            <CardFooter className="p-3 flex justify-between items-center">
+            <CardFooter className="p-3 flex justify-between items-center bg-muted/50">
                 <span className="text-xs text-muted-foreground font-mono">{taskNumber}</span>
                  <Avatar className="h-6 w-6">
                     <AvatarImage src={task.ownerAvatarUrl} />
