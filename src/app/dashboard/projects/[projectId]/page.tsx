@@ -13,9 +13,9 @@ import {
   SearchCheck,
   Wrench,
   Zap,
-  ArrowUp,
-  ArrowRight,
-  ArrowDown
+  SignalLow,
+  SignalMedium,
+  SignalHigh
 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
@@ -61,17 +61,17 @@ const taskTypeIcons: Record<TaskType, React.ElementType> = {
 const TaskTypeIcon = ({ type }: { type: TaskType }) => {
     const Icon = taskTypeIcons[type];
     return (
-        <div className="h-5 w-5 rounded-full bg-background flex items-center justify-center">
-            <Icon className="h-3 w-3 text-muted-foreground" />
+        <div className="flex items-center justify-center">
+            <Icon className="h-4 w-4 text-muted-foreground" />
         </div>
     );
 };
 
 
 const priorityIcons: Record<TaskPriority, React.ElementType> = {
-    High: ArrowUp,
-    Medium: ArrowRight,
-    Low: ArrowDown,
+    High: SignalHigh,
+    Medium: SignalMedium,
+    Low: SignalLow,
 };
 
 const priorityIconColors: Record<TaskPriority, string> = {
@@ -84,8 +84,8 @@ const PriorityIcon = ({ priority }: { priority: TaskPriority }) => {
     const Icon = priorityIcons[priority];
     const colorClass = priorityIconColors[priority];
     return (
-        <div className="h-5 w-5 rounded-full bg-background flex items-center justify-center">
-            <Icon className={cn("h-3 w-3", colorClass)} />
+        <div className="flex items-center justify-center">
+            <Icon className={cn("h-4 w-4", colorClass)} />
         </div>
     );
 };
@@ -219,3 +219,4 @@ export default function ProjectDetailsPage() {
     );
 }
 
+    
