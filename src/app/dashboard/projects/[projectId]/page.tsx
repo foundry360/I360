@@ -4,11 +4,13 @@
 import * as React from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { ArrowLeft, GripVertical } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+
 
 // This is a placeholder for a real task type
 type TaskStatus = 'To Do' | 'In Progress' | 'In Review' | 'Needs Revisions' | 'Complete';
@@ -17,37 +19,54 @@ type Task = {
   id: string;
   title: string;
   status: TaskStatus;
+  owner: string;
+  ownerAvatarUrl: string;
 };
 
 const initialTasks: Task[] = [
-    { id: 'task-1', title: 'Setup project repository', status: 'Complete' },
-    { id: 'task-2', title: 'Design database schema', status: 'Complete' },
-    { id: 'task-3', title: 'Develop authentication flow', status: 'In Review' },
-    { id: 'task-4', title: 'Build main dashboard UI', status: 'In Progress' },
-    { id: 'task-8', title: 'Fix login button style', status: 'Needs Revisions' },
-    { id: 'task-5', title: 'Implement assessment generation logic', status: 'To Do' },
-    { id: 'task-6', title: 'Write unit tests for services', status: 'To Do' },
-    { id: 'task-7', title: 'Configure deployment pipeline', status: 'To Do' },
+    { id: 'task-1', title: 'Setup project repository', status: 'Complete', owner: 'John Doe', ownerAvatarUrl: 'https://i.pravatar.cc/150?u=a042581f4e29026024d' },
+    { id: 'task-2', title: 'Design database schema', status: 'Complete', owner: 'Jane Smith', ownerAvatarUrl: 'https://i.pravatar.cc/150?u=a042581f4e29026704d' },
+    { id: 'task-3', title: 'Develop authentication flow', status: 'In Review', owner: 'John Doe', ownerAvatarUrl: 'https://i.pravatar.cc/150?u=a042581f4e29026024d' },
+    { id: 'task-4', title: 'Build main dashboard UI', status: 'In Progress', owner: 'Mike Johnson', ownerAvatarUrl: 'https://i.pravatar.cc/150?u=a04258114e29026702d' },
+    { id: 'task-8', title: 'Fix login button style', status: 'Needs Revisions', owner: 'Jane Smith', ownerAvatarUrl: 'https://i.pravatar.cc/150?u=a042581f4e29026704d' },
+    { id: 'task-5', title: 'Implement assessment generation logic', status: 'To Do', owner: 'Mike Johnson', ownerAvatarUrl: 'https://i.pravatar.cc/150?u=a04258114e29026702d' },
+    { id: 'task-6', title: 'Write unit tests for services', status: 'To Do', owner: 'John Doe', ownerAvatarUrl: 'https://i.pravatar.cc/150?u=a042581f4e29026024d' },
+    { id: 'task-7', title: 'Configure deployment pipeline', status: 'To Do', owner: 'Emily White', ownerAvatarUrl: 'https://i.pravatar.cc/150?u=a042581f4e29026704e' },
 ];
 
 
-const TaskCard = ({ task }: { task: Task }) => (
-    <Card className="mb-4 bg-card shadow-sm hover:shadow-md transition-shadow">
-        <CardContent className="p-3 flex items-start gap-2">
-             <GripVertical className="h-5 w-5 text-muted-foreground mt-1 cursor-grab" />
-            <p className="text-sm font-medium flex-1">{task.title}</p>
-        </CardContent>
-    </Card>
-);
+const TaskCard = ({ task, taskNumber }: { task: Task; taskNumber: string }) => {
+    const getInitials = (name: string) => {
+        if (!name) return '';
+        return name.split(' ').map((n) => n[0]).join('').toUpperCase();
+    }
+    return (
+        <Card className="mb-4 bg-card shadow-sm hover:shadow-md transition-shadow">
+            <CardContent className="p-3">
+                <p className="text-sm font-medium flex-1">{task.title}</p>
+            </CardContent>
+            <CardFooter className="p-3 flex justify-between items-center">
+                <span className="text-xs text-muted-foreground font-mono">{taskNumber}</span>
+                 <Avatar className="h-6 w-6">
+                    <AvatarImage src={task.ownerAvatarUrl} />
+                    <AvatarFallback className="text-xs">{getInitials(task.owner)}</AvatarFallback>
+                </Avatar>
+            </CardFooter>
+        </Card>
+    );
+};
 
-const BoardColumn = ({ title, tasks }: { title: string; tasks: Task[] }) => (
+const BoardColumn = ({ title, tasks, projectPrefix }: { title: string; tasks: Task[]; projectPrefix: string; }) => (
     <div className="flex-1">
         <Card className="bg-muted border-none shadow-none">
             <CardHeader className="p-4">
                 <CardTitle className="text-base font-semibold">{title}</CardTitle>
             </CardHeader>
             <CardContent className="p-4">
-                {tasks.map(task => <TaskCard key={task.id} task={task} />)}
+                {tasks.map((task, index) => {
+                    const originalIndex = initialTasks.findIndex(t => t.id === task.id);
+                    return <TaskCard key={task.id} task={task} taskNumber={`${projectPrefix}-${100 + originalIndex}`} />;
+                })}
             </CardContent>
         </Card>
     </div>
@@ -62,6 +81,7 @@ export default function ProjectDetailsPage() {
 
     // In a real app, you would fetch project details here
     const project = { name: 'New Initiative' }; 
+    const projectPrefix = project.name.substring(0, 2).toUpperCase();
     
     const columns: TaskStatus[] = ['To Do', 'In Progress', 'In Review', 'Needs Revisions', 'Complete'];
 
@@ -121,6 +141,7 @@ export default function ProjectDetailsPage() {
                                     key={status}
                                     title={status}
                                     tasks={tasks.filter(t => t.status === status)}
+                                    projectPrefix={projectPrefix}
                                 />
                            ))}
                         </div>
@@ -136,4 +157,3 @@ export default function ProjectDetailsPage() {
         </div>
     );
 }
-
