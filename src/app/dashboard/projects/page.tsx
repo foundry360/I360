@@ -17,26 +17,42 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Skeleton } from '@/components/ui/skeleton';
-import { MoreHorizontal, Plus } from 'lucide-react';
+import { MoreHorizontal, Plus, Trash2, ArrowUpDown } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import Link from 'next/link';
 import { useQuickAction } from '@/contexts/quick-action-context';
-import { getProjects, Project } from '@/services/project-service';
+import { getProjects, deleteProject, deleteProjects, Project } from '@/services/project-service';
 import { useUser } from '@/contexts/user-context';
+import { cn } from '@/lib/utils';
+import { Checkbox } from '@/components/ui/checkbox';
+import { TablePagination } from '@/components/table-pagination';
+
+type SortKey = keyof Project;
 
 export default function ProjectsPage() {
   const [projects, setProjects] = React.useState<Project[]>([]);
   const [loading, setLoading] = React.useState(true);
-  const { openNewProjectDialog, setOnProjectCreated } = useQuickAction();
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
+  const [projectToDelete, setProjectToDelete] = React.useState<Project | null>(null);
+  const [selectedProjects, setSelectedProjects] = React.useState<string[]>([]);
+  const [page, setPage] = React.useState(0);
+  const [rowsPerPage, setRowsPerPage] = React.useState(25);
+  const [sortConfig, setSortConfig] = React.useState<{ key: SortKey; direction: 'ascending' | 'descending' } | null>({ key: 'startDate', direction: 'descending' });
+
+  const { openNewProjectDialog, setOnProjectCreated, globalSearchTerm } = useQuickAction();
   const { user } = useUser();
 
   const fetchProjects = React.useCallback(async () => {
@@ -59,50 +75,210 @@ export default function ProjectsPage() {
     };
   }, [fetchProjects, setOnProjectCreated]);
   
+  const openDeleteDialog = (project: Project) => {
+    setProjectToDelete(project);
+    setIsDeleteDialogOpen(true);
+  };
+  
+  const handleDeleteProject = async () => {
+    if (!projectToDelete) return;
+    try {
+      await deleteProject(projectToDelete.id);
+      setIsDeleteDialogOpen(false);
+      setProjectToDelete(null);
+      await fetchProjects();
+    } catch (error) {
+      console.error('Failed to delete project:', error);
+    }
+  };
+
+  const handleSelectProject = (projectId: string, isSelected: boolean) => {
+    if (isSelected) {
+      setSelectedProjects((prev) => [...prev, projectId]);
+    } else {
+      setSelectedProjects((prev) => prev.filter((id) => id !== projectId));
+    }
+  };
+
+  const handleSelectAll = (isSelected: boolean) => {
+    const currentVisibleIds = sortedProjects
+      .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+      .map((p) => p.id);
+    if (isSelected) {
+      setSelectedProjects((prev) => [...new Set([...prev, ...currentVisibleIds])]);
+    } else {
+      setSelectedProjects((prev) => prev.filter((id) => !currentVisibleIds.includes(id)));
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    try {
+      await deleteProjects(selectedProjects);
+      setSelectedProjects([]);
+      setIsDeleteDialogOpen(false); // Close dialog after bulk delete
+      await fetchProjects();
+    } catch (error) {
+      console.error('Failed to delete projects:', error);
+    }
+  };
+
+  const requestSort = (key: SortKey) => {
+    let direction: 'ascending' | 'descending' = 'ascending';
+    if (sortConfig && sortConfig.key === key && sortConfig.direction === 'ascending') {
+      direction = 'descending';
+    }
+    setSortConfig({ key, direction });
+  };
+
+  const sortedProjects = React.useMemo(() => {
+    let sortableItems = [...projects];
+    if (sortConfig !== null) {
+      sortableItems.sort((a, b) => {
+        const aValue = a[sortConfig.key];
+        const bValue = b[sortConfig.key];
+        
+        if (aValue == null && bValue == null) return 0;
+        if (aValue == null) return sortConfig.direction === 'ascending' ? -1 : 1;
+        if (bValue == null) return sortConfig.direction === 'ascending' ? 1 : -1;
+
+        if (aValue < bValue) {
+          return sortConfig.direction === 'ascending' ? -1 : 1;
+        }
+        if (aValue > bValue) {
+          return sortConfig.direction === 'ascending' ? 1 : -1;
+        }
+        return 0;
+      });
+    }
+    return sortableItems.filter(project => 
+        project.name.toLowerCase().includes(globalSearchTerm.toLowerCase()) ||
+        (project.companyName || '').toLowerCase().includes(globalSearchTerm.toLowerCase()) ||
+        project.owner.toLowerCase().includes(globalSearchTerm.toLowerCase())
+    );
+  }, [projects, sortConfig, globalSearchTerm]);
+  
+  const currentVisibleProjects = sortedProjects.slice(
+    page * rowsPerPage,
+    page * rowsPerPage + rowsPerPage
+  );
+  
+  const numSelected = selectedProjects.length;
+  const numSelectedOnPage = currentVisibleProjects.filter(c => selectedProjects.includes(c.id)).length;
+  const allOnPageSelected = numSelectedOnPage > 0 && numSelectedOnPage === currentVisibleProjects.length;
+  const isPageIndeterminate = numSelectedOnPage > 0 && numSelectedOnPage < currentVisibleProjects.length;
+
   const getDisplayName = (email: string | null | undefined) => {
     if(!email) return 'N/A';
     const name = email.split('@')[0];
     return name.charAt(0).toUpperCase() + name.slice(1);
   }
 
-  const activeProjects = projects.filter(p => p.status === 'Active' || p.status === 'On Hold');
-  const inactiveProjects = projects.filter(p => p.status === 'Completed' || p.status === 'Inactive');
-
-  const renderProjectTable = (projectList: Project[], title: string, description: string, showAddButton: boolean) => (
-     <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-            <div>
-                <CardTitle className="text-xl">{title}</CardTitle>
-                <CardDescription>{description}</CardDescription>
-            </div>
-            {showAddButton && (
-                <Button size="sm" onClick={openNewProjectDialog}>
-                    <Plus className="h-4 w-4 mr-2" />
-                    New Project
+  return (
+    <>
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-2xl font-bold">Projects</h1>
+          <p className="text-muted-foreground">
+            Manage and track all projects across your companies.
+          </p>
+        </div>
+        <Separator />
+        <div className="flex justify-between items-center">
+            <div className="text-sm text-muted-foreground">Total Records: {sortedProjects.length}</div>
+            <div className="flex items-center gap-2">
+                {numSelected > 0 && (
+                <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setIsDeleteDialogOpen(true)}
+                >
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Delete ({numSelected})
                 </Button>
-            )}
-        </CardHeader>
-        <CardContent>
+                )}
+                <Button size="icon" onClick={openNewProjectDialog}>
+                    <Plus className="h-4 w-4" />
+                    <span className="sr-only">New Project</span>
+                </Button>
+            </div>
+        </div>
+        <div className="border rounded-lg">
             {loading ? (
-                <div className="space-y-2">
-                    <Skeleton className="h-10 w-full" />
-                    <Skeleton className="h-10 w-full" />
-                </div>
+                <div className="space-y-4 p-6">
+                <Skeleton className="h-12 w-full" />
+                <Skeleton className="h-12 w-full" />
+                <Skeleton className="h-12 w-full" />
+              </div>
             ) : (
                 <Table>
                     <TableHeader>
                         <TableRow>
-                            <TableHead>Project Name</TableHead>
-                            <TableHead>Company</TableHead>
-                            <TableHead>Status</TableHead>
-                            <TableHead>Owner</TableHead>
-                            <TableHead className="text-right"></TableHead>
+                            <TableHead className="w-[50px] border-t border-b">
+                                <Checkbox
+                                    checked={allOnPageSelected}
+                                    onCheckedChange={(checked) =>
+                                    handleSelectAll(checked as boolean)
+                                    }
+                                    aria-label="Select all on page"
+                                    data-state={isPageIndeterminate ? 'indeterminate' : (allOnPageSelected ? 'checked' : 'unchecked')}
+                                />
+                            </TableHead>
+                            <TableHead className="border-t border-r border-b">
+                                <Button variant="ghost" onClick={() => requestSort('name')} className="group w-full p-0 hover:bg-transparent hover:text-muted-foreground">
+                                    <div className="flex justify-between items-center w-full">
+                                        Project Name
+                                        <ArrowUpDown className={cn("h-4 w-4", sortConfig?.key === 'name' ? 'opacity-100' : 'opacity-25')} />
+                                    </div>
+                                </Button>
+                            </TableHead>
+                             <TableHead className="border-t border-r border-b">
+                                <Button variant="ghost" onClick={() => requestSort('companyName')} className="group w-full p-0 hover:bg-transparent hover:text-muted-foreground">
+                                    <div className="flex justify-between items-center w-full">
+                                        Company
+                                        <ArrowUpDown className={cn("h-4 w-4", sortConfig?.key === 'companyName' ? 'opacity-100' : 'opacity-25')} />
+                                    </div>
+                                </Button>
+                            </TableHead>
+                            <TableHead className="border-t border-r border-b">
+                                <Button variant="ghost" onClick={() => requestSort('status')} className="group w-full p-0 hover:bg-transparent hover:text-muted-foreground">
+                                    <div className="flex justify-between items-center w-full">
+                                        Status
+                                        <ArrowUpDown className={cn("h-4 w-4", sortConfig?.key === 'status' ? 'opacity-100' : 'opacity-25')} />
+                                    </div>
+                                </Button>
+                            </TableHead>
+                            <TableHead className="border-t border-r border-b">
+                                <Button variant="ghost" onClick={() => requestSort('owner')} className="group w-full p-0 hover:bg-transparent hover:text-muted-foreground">
+                                    <div className="flex justify-between items-center w-full">
+                                        Owner
+                                        <ArrowUpDown className={cn("h-4 w-4", sortConfig?.key === 'owner' ? 'opacity-100' : 'opacity-25')} />
+                                    </div>
+                                </Button>
+                            </TableHead>
+                             <TableHead className="border-t border-r border-b">
+                                <Button variant="ghost" onClick={() => requestSort('startDate')} className="group w-full p-0 hover:bg-transparent hover:text-muted-foreground">
+                                    <div className="flex justify-between items-center w-full">
+                                        Start Date
+                                        <ArrowUpDown className={cn("h-4 w-4", sortConfig?.key === 'startDate' ? 'opacity-100' : 'opacity-25')} />
+                                    </div>
+                                </Button>
+                            </TableHead>
+                            <TableHead className="text-right border-t border-b"></TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {projectList.length > 0 ? (
-                            projectList.map((project) => (
+                        {currentVisibleProjects.length > 0 ? (
+                            currentVisibleProjects.map((project) => (
                                 <TableRow key={project.id}>
+                                    <TableCell>
+                                        <Checkbox
+                                            checked={selectedProjects.includes(project.id)}
+                                            onCheckedChange={(checked) =>
+                                                handleSelectProject(project.id, checked as boolean)
+                                            }
+                                            aria-label={`Select ${project.name}`}
+                                        />
+                                    </TableCell>
                                     <TableCell className="font-medium">{project.name}</TableCell>
                                     <TableCell>
                                         <Link href={`/dashboard/companies/${project.companyId}/details`} className="hover:text-primary">
@@ -115,6 +291,9 @@ export default function ProjectsPage() {
                                         </Badge>
                                     </TableCell>
                                     <TableCell>{project.owner || getDisplayName(user?.email)}</TableCell>
+                                    <TableCell>
+                                        {new Date(project.startDate).toLocaleDateString()}
+                                    </TableCell>
                                     <TableCell className="text-right">
                                         <DropdownMenu>
                                             <DropdownMenuTrigger asChild>
@@ -126,7 +305,14 @@ export default function ProjectsPage() {
                                             <DropdownMenuContent align="end">
                                                 <DropdownMenuItem>View Details</DropdownMenuItem>
                                                 <DropdownMenuItem>Edit Project</DropdownMenuItem>
-                                                <DropdownMenuItem className="text-destructive">Delete Project</DropdownMenuItem>
+                                                <DropdownMenuSeparator />
+                                                <DropdownMenuItem
+                                                  onClick={() => openDeleteDialog(project)}
+                                                  className="text-destructive"
+                                                >
+                                                  <Trash2 className="mr-2 h-4 w-4" />
+                                                  Delete
+                                                </DropdownMenuItem>
                                             </DropdownMenuContent>
                                         </DropdownMenu>
                                     </TableCell>
@@ -134,7 +320,7 @@ export default function ProjectsPage() {
                             ))
                         ) : (
                             <TableRow>
-                                <TableCell colSpan={5} className="h-24 text-center">
+                                <TableCell colSpan={7} className="h-24 text-center">
                                     No projects found.
                                 </TableCell>
                             </TableRow>
@@ -142,24 +328,39 @@ export default function ProjectsPage() {
                     </TableBody>
                 </Table>
             )}
-        </CardContent>
-    </Card>
-  );
-
-  return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">Projects</h1>
-        <p className="text-muted-foreground">
-          Manage and track all projects across your companies.
-        </p>
+        </div>
+         <div className="flex justify-end mt-4">
+          <TablePagination
+              count={sortedProjects.length}
+              page={page}
+              rowsPerPage={rowsPerPage}
+              onPageChange={(newPage) => setPage(newPage)}
+              onRowsPerPageChange={(newRowsPerPage) => {
+                  setRowsPerPage(newRowsPerPage);
+                  setPage(0);
+              }}
+          />
+        </div>
+        <AlertDialog
+          open={isDeleteDialogOpen}
+          onOpenChange={setIsDeleteDialogOpen}
+        >
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This action cannot be undone. This will permanently delete the selected projects.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={numSelected > 0 ? handleBulkDelete : handleDeleteProject}>
+                Delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
-      <Separator />
-
-      <div className="space-y-8">
-        {renderProjectTable(activeProjects, 'Active Projects', 'Projects that are currently in progress or on hold.', true)}
-        {renderProjectTable(inactiveProjects, 'Inactive / Completed Projects', 'Projects that have been completed or are no longer active.', false)}
-      </div>
-    </div>
+    </>
   );
 }

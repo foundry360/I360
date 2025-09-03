@@ -1,7 +1,7 @@
 
 'use client';
 import { db } from '@/lib/firebase';
-import { collection, doc, getDocs, setDoc, addDoc, writeBatch } from 'firebase/firestore';
+import { collection, doc, getDocs, setDoc, addDoc, writeBatch, deleteDoc } from 'firebase/firestore';
 import type { Company } from './company-service';
 
 export interface Project {
@@ -44,6 +44,11 @@ export async function createProject(projectData: Omit<Project, 'id' | 'companyNa
   const newProject = { ...projectData, id: docRef.id };
   await setDoc(docRef, newProject);
   return docRef.id;
+}
+
+export async function deleteProject(id: string): Promise<void> {
+    const docRef = doc(db, 'projects', id);
+    await deleteDoc(docRef);
 }
 
 export async function deleteProjects(ids: string[]): Promise<void> {
