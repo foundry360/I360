@@ -6,6 +6,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { QuickActionProvider } from '@/contexts/quick-action-context';
 import { NewCompanyDialog } from '@/components/new-company-dialog';
 import { NewContactDialog } from '@/components/new-contact-dialog';
+import { NewProjectDialog } from '@/components/new-project-dialog';
 import { UserProvider, useUser } from '@/contexts/user-context';
 import { AssessmentModal } from '@/components/assessment-modal';
 import * as React from 'react';
@@ -84,6 +85,7 @@ export default function RootLayout({
                 {children}
                 <NewCompanyDialog />
                 <NewContactDialog />
+                <NewProjectDialog />
                 <AssessmentModal 
                   // These props are managed by the QuickActionProvider now
                 />

@@ -14,7 +14,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Button } from './ui/button';
-import { Plus, Search, LogOut, Briefcase, UserPlus, FilePlus, Bell, CheckCheck, Maximize, Minimize } from 'lucide-react';
+import { Plus, Search, LogOut, Briefcase, UserPlus, FilePlus, Bell, CheckCheck, Maximize, Minimize, FolderKanban } from 'lucide-react';
 import { useQuickAction } from '@/contexts/quick-action-context';
 import * as React from 'react';
 import { Input } from './ui/input';
@@ -29,7 +29,7 @@ import { cn } from '@/lib/utils';
 export function Header() {
   const router = useRouter();
   const { user } = useUser();
-  const { openNewCompanyDialog, openNewContactDialog, openAssessmentModal, globalSearchTerm, setGlobalSearchTerm } = useQuickAction();
+  const { openNewCompanyDialog, openNewContactDialog, openAssessmentModal, openNewProjectDialog, globalSearchTerm, setGlobalSearchTerm } = useQuickAction();
   const [isSearchVisible, setIsSearchVisible] = React.useState(false);
   const [searchResults, setSearchResults] = React.useState<Company[]>([]);
   const searchInputRef = React.useRef<HTMLInputElement>(null);
@@ -225,6 +225,10 @@ export function Header() {
             <DropdownMenuItem onSelect={() => openAssessmentModal()}>
               <FilePlus className="mr-2 h-4 w-4" />
               New Assessment
+            </DropdownMenuItem>
+            <DropdownMenuItem onSelect={openNewProjectDialog}>
+              <FolderKanban className="mr-2 h-4 w-4" />
+              New Project
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

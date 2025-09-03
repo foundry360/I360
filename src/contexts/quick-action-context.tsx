@@ -24,6 +24,12 @@ type QuickActionContextType = {
   onAssessmentCompleted: (() => void) | null;
   setOnAssessmentCompleted: (callback: (() => void) | null) => (() => void) | void;
 
+  isNewProjectDialogOpen: boolean;
+  openNewProjectDialog: () => void;
+  closeNewProjectDialog: () => void;
+  onProjectCreated: (() => void) | null;
+  setOnProjectCreated: (callback: (() => void) | null) => (() => void) | void;
+
   globalSearchTerm: string;
   setGlobalSearchTerm: (term: string) => void;
 };
@@ -51,6 +57,10 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
   const [isAssessmentModalOpen, setIsAssessmentModalOpen] = React.useState(false);
   const [assessmentToResume, setAssessmentToResume] = React.useState<Assessment | null>(null);
   const [onAssessmentCompleted, setOnAssessmentCompleted] = React.useState<(() => void) | null>(null);
+  
+  // New Project Dialog State
+  const [isNewProjectDialogOpen, setIsNewProjectDialogOpen] = React.useState(false);
+  const [onProjectCreated, setOnProjectCreated] = React.useState<(() => void) | null>(null);
 
   // Global Search State
   const [globalSearchTerm, setGlobalSearchTerm] = React.useState('');
@@ -104,6 +114,22 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
     },
     []
   );
+  
+  const openNewProjectDialog = React.useCallback(() => {
+    setIsNewProjectDialogOpen(true);
+  }, []);
+
+  const closeNewProjectDialog = React.useCallback(() => {
+    setIsNewProjectDialogOpen(false);
+  }, []);
+
+  const handleSetOnProjectCreated = React.useCallback(
+    (callback: (() => void) | null) => {
+        setOnProjectCreated(() => callback);
+        return () => setOnProjectCreated(null);
+    },
+    []
+  );
 
 
   return (
@@ -127,6 +153,12 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
         assessmentToResume,
         onAssessmentCompleted,
         setOnAssessmentCompleted: handleSetOnAssessmentCompleted,
+        
+        isNewProjectDialogOpen,
+        openNewProjectDialog,
+        closeNewProjectDialog,
+        onProjectCreated,
+        setOnProjectCreated: handleSetOnProjectCreated,
 
         globalSearchTerm,
         setGlobalSearchTerm,
@@ -146,5 +178,3 @@ export const useQuickAction = () => {
   }
   return context;
 };
-
-    
