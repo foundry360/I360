@@ -207,7 +207,7 @@ export default function ProjectDetailsPage() {
     const [backlogItems, setBacklogItems] = React.useState<BacklogItem[]>([]);
     const [sprints, setSprints] = React.useState<Sprint[]>([]);
     const [loading, setLoading] = React.useState(true);
-    const [activeTab, setActiveTab] = React.useState('board');
+    const [activeTab, setActiveTab] = React.useState('summary');
     const { 
         openNewBacklogItemDialog, setOnBacklogItemCreated,
         openNewEpicDialog, setOnEpicCreated,
