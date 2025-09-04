@@ -35,7 +35,7 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { DragDropContext, Droppable, Draggable, type DropResult } from '@hello-pangea/dnd';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { getProject, Project } from '@/services/project-service';
-import { getTasksForProject, updateTaskOrderAndStatus, Task, TaskStatus, updateTask } from '@/services/task-service';
+import { getTasksForProject, updateTaskOrderAndStatus, Task, TaskStatus, updateTask, createTask } from '@/services/task-service';
 import { getEpicsForProject, Epic, deleteEpic } from '@/services/epic-service';
 import { getBacklogItemsForProject, BacklogItem, deleteBacklogItem, updateBacklogItem } from '@/services/backlog-item-service';
 import { getSprintsForProject, Sprint, SprintStatus, startSprint } from '@/services/sprint-service';
@@ -349,7 +349,28 @@ export default function ProjectDetailsPage() {
     const handleMoveToSprint = async (backlogItemId: string, sprintId: string | null) => {
         try {
             await updateBacklogItem(backlogItemId, { sprintId });
-            fetchData(); // or just optimistically update the UI
+    
+            const sprint = sprints.find(s => s.id === sprintId);
+            if (sprint && sprint.status === 'Active') {
+                const item = backlogItems.find(bi => bi.id === backlogItemId);
+                if (item) {
+                    const toDoColumn = columns['To Do'] || [];
+                    const newTask: Omit<Task, 'id'> = {
+                        projectId: projectId,
+                        title: item.title,
+                        status: 'To Do',
+                        order: toDoColumn.length,
+                        owner: item.owner || 'Unassigned',
+                        ownerAvatarUrl: item.ownerAvatarUrl || '',
+                        priority: item.priority,
+                        type: 'Execution',
+                        backlogId: item.backlogId,
+                    };
+                    await createTask(newTask);
+                }
+            }
+    
+            fetchData();
         } catch (error) {
             console.error("Failed to move item to sprint:", error);
         }
@@ -744,6 +765,7 @@ export default function ProjectDetailsPage() {
     
 
     
+
 
 
 
