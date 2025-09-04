@@ -2,7 +2,7 @@
 'use client';
 
 import { db } from '@/lib/firebase';
-import { collection, query, where, getDocs, doc, setDoc, addDoc, updateDoc, deleteDoc, writeBatch } from 'firebase/firestore';
+import { collection, query, where, getDocs, doc, setDoc, addDoc, updateDoc, deleteDoc, writeBatch, getDoc } from 'firebase/firestore';
 import { deleteTask, type Task } from './task-service';
 import type { BacklogItem } from './backlog-item-service';
 import { updateProjectLastActivity } from './project-service';
@@ -78,11 +78,7 @@ export async function startSprint(sprintId: string, projectId: string, sprintIte
 export async function completeSprint(sprintId: string, projectId: string): Promise<void> {
     const batch = writeBatch(db);
 
-    // 1. Update sprint status
-    const sprintRef = doc(db, 'sprints', sprintId);
-    batch.update(sprintRef, { status: 'Completed' });
-
-    // 2. Find all backlog items and tasks for the project
+    // 1. Get all tasks in the sprint
     const backlogQuery = query(collection(db, 'backlogItems'), where("sprintId", "==", sprintId));
     const tasksQuery = query(collection(db, 'tasks'), where("projectId", "==", projectId));
     
@@ -94,20 +90,20 @@ export async function completeSprint(sprintId: string, projectId: string): Promi
     const sprintItemBacklogIds = sprintItems.map(item => item.backlogId);
     const tasksInSprint = allTasks.filter(task => task.backlogId && sprintItemBacklogIds.includes(task.backlogId));
 
-    // 3. Handle incomplete tasks
+    // 2. Check if all tasks are complete
+    const allTasksAreComplete = tasksInSprint.every(task => task.status === 'Complete');
+
+    if (!allTasksAreComplete) {
+        throw new Error("Cannot complete the sprint. There are still open tasks.");
+    }
+    
+    // 3. If all complete, update sprint status and delete completed tasks
+    const sprintRef = doc(db, 'sprints', sprintId);
+    batch.update(sprintRef, { status: 'Completed' });
+
     tasksInSprint.forEach(task => {
-        if (task.status !== 'Complete') {
-            // Find the corresponding backlog item
-            const backlogItem = sprintItems.find(item => item.backlogId === task.backlogId);
-            if (backlogItem) {
-                // Move item back to backlog
-                const backlogItemRef = doc(db, 'backlogItems', backlogItem.id);
-                batch.update(backlogItemRef, { sprintId: null });
-            }
-            // Delete the incomplete task from the board
-            const taskRef = doc(db, 'tasks', task.id);
-            batch.delete(taskRef);
-        }
+        const taskRef = doc(db, 'tasks', task.id);
+        batch.delete(taskRef);
     });
 
     await batch.commit();

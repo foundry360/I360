@@ -461,7 +461,7 @@ export default function ProjectDetailsPage() {
                 setLoading(false);
                 return;
             }
-            await startSprint(sprintId, projectId, sprintItems, tasks);
+            await startSprint(sprintId, projectId, itemsInSprint, tasks);
             toast({
                 title: 'Sprint Started!',
                 description: 'Tasks have been created on the board.',
@@ -485,15 +485,16 @@ export default function ProjectDetailsPage() {
             await completeSprint(sprintId, projectId);
             toast({
                 title: 'Sprint Completed!',
-                description: 'Unfinished items have been moved back to the backlog.',
+                description: 'Completed tasks have been archived.',
             });
             await fetchData();
         } catch (error) {
             console.error('Failed to complete sprint:', error);
+            const errorMessage = (error instanceof Error) ? error.message : 'There was a problem completing the sprint.';
             toast({
                 variant: 'destructive',
                 title: 'Error Completing Sprint',
-                description: 'There was a problem completing the sprint.',
+                description: errorMessage,
             });
         } finally {
             setLoading(false);
