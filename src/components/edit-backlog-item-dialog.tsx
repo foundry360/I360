@@ -24,7 +24,7 @@ import { updateBacklogItem, type BacklogItem } from '@/services/backlog-item-ser
 import { useQuickAction } from '@/contexts/quick-action-context';
 import type { Epic } from '@/services/epic-service';
 import type { Sprint } from '@/services/sprint-service';
-import { TaskPriority } from '@/services/task-service';
+import { TaskPriority, TaskStatus } from '@/services/task-service';
 import { Contact } from '@/services/contact-service';
 import { useUser } from '@/contexts/user-context';
 
@@ -156,10 +156,9 @@ export function EditBacklogItemDialog() {
                         <SelectValue placeholder="Select a status" />
                     </SelectTrigger>
                     <SelectContent>
-                        <SelectItem value="To Do">To Do</SelectItem>
-                        <SelectItem value="In Progress">In Progress</SelectItem>
-                        <SelectItem value="Done">Done</SelectItem>
-                        <SelectItem value="Blocked">Blocked</SelectItem>
+                        {Object.values(TaskStatus).map(s => (
+                            <SelectItem key={s} value={s}>{s}</SelectItem>
+                        ))}
                     </SelectContent>
                 </Select>
             </div>

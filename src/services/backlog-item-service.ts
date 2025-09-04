@@ -3,7 +3,7 @@
 
 import { db } from '@/lib/firebase';
 import { collection, query, where, getDocs, doc, setDoc, addDoc, getDoc, updateDoc, deleteDoc } from 'firebase/firestore';
-import type { TaskPriority } from './task-service';
+import type { TaskPriority, TaskStatus } from './task-service';
 
 export interface BacklogItem {
   id: string;
@@ -13,7 +13,7 @@ export interface BacklogItem {
   backlogId: number;
   title: string;
   description: string;
-  status: 'To Do' | 'In Progress' | 'Done' | 'Blocked';
+  status: TaskStatus;
   points: number;
   priority: TaskPriority;
   owner: string;

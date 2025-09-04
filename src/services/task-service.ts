@@ -5,7 +5,16 @@ import { db } from '@/lib/firebase';
 import { collection, doc, getDocs, setDoc, updateDoc, query, where, writeBatch, runTransaction, DocumentReference, WriteBatch, addDoc, deleteDoc, getDoc } from 'firebase/firestore';
 import type { BacklogItem } from './backlog-item-service';
 
-export type TaskStatus = 'To Do' | 'In Progress' | 'In Review' | 'Needs Revisions' | 'Final Approval' | 'Complete';
+export const TaskStatus = {
+  ToDo: 'To Do',
+  InProgress: 'In Progress',
+  InReview: 'In Review',
+  NeedsRevisions: 'Needs Revisions',
+  FinalApproval: 'Final Approval',
+  Complete: 'Complete'
+} as const;
+
+export type TaskStatus = typeof TaskStatus[keyof typeof TaskStatus];
 
 export enum TaskPriority {
   Low = 'Low',
@@ -66,22 +75,13 @@ export async function updateTaskStatus(id: string, status: TaskStatus): Promise<
 }
 
 export async function updateTaskOrderAndStatus(taskId: string, newStatus: TaskStatus, newIndex: number, projectId: string): Promise<void> {
-    // First, fetch all tasks for the project and the specific backlog items outside the transaction.
+    // First, fetch all tasks for the project outside the transaction.
     const tasksQuery = query(tasksCollection, where("projectId", "==", projectId));
     const tasksSnapshot = await getDocs(tasksQuery);
     const tasks = tasksSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Task));
     const taskToMove = tasks.find(t => t.id === taskId);
     if (!taskToMove) throw new Error("Task not found!");
-
-    let backlogItemRef: DocumentReference | null = null;
-    if (taskToMove.backlogId) {
-        const backlogQuery = query(collection(db, 'backlogItems'), where("projectId", "==", projectId), where("backlogId", "==", taskToMove.backlogId));
-        const backlogSnapshot = await getDocs(backlogQuery);
-        if (!backlogSnapshot.empty) {
-            backlogItemRef = backlogSnapshot.docs[0].ref;
-        }
-    }
-
+    
     await runTransaction(db, async (transaction) => {
         const oldStatus = taskToMove.status;
         const oldIndex = taskToMove.order;
@@ -107,14 +107,13 @@ export async function updateTaskOrderAndStatus(taskId: string, newStatus: TaskSt
         transaction.update(movedTaskRef, { status: newStatus, order: newIndex });
         
         // Update the corresponding backlog item's status if it exists
-        if (backlogItemRef) {
-            let backlogStatus: BacklogItem['status'] = 'In Progress';
-            if (newStatus === 'To Do') {
-                backlogStatus = 'To Do';
-            } else if (newStatus === 'Complete') {
-                backlogStatus = 'Done';
+        if (taskToMove.backlogId) {
+            const backlogQuery = query(collection(db, 'backlogItems'), where("projectId", "==", projectId), where("backlogId", "==", taskToMove.backlogId));
+            const backlogSnapshot = await getDocs(backlogQuery); // getDocs is fine here as we are just reading before writing
+            if (!backlogSnapshot.empty) {
+                const backlogItemRef = backlogSnapshot.docs[0].ref;
+                transaction.update(backlogItemRef, { status: newStatus });
             }
-            transaction.update(backlogItemRef, { status: backlogStatus });
         }
     });
 }
