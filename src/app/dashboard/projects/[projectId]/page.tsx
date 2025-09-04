@@ -451,8 +451,8 @@ export default function ProjectDetailsPage() {
     const handleStartSprint = async (sprintId: string) => {
         try {
             setLoading(true);
-            const sprintItems = backlogItems.filter(item => item.sprintId === sprintId);
-            if (sprintItems.length === 0) {
+            const itemsInSprint = backlogItems.filter(item => item.sprintId === sprintId);
+            if (itemsInSprint.length === 0) {
                 toast({
                     variant: 'destructive',
                     title: 'Cannot Start Empty Sprint',
@@ -861,6 +861,8 @@ export default function ProjectDetailsPage() {
                                         </ChartContainer>
                                     </CardContent>
                                 </Card>
+                            </div>
+                            <div className="col-span-4 space-y-6">
                                 {activeSprintHealthData && (
                                     <Card>
                                         <CardHeader>
@@ -901,8 +903,6 @@ export default function ProjectDetailsPage() {
                                         </CardFooter>
                                     </Card>
                                 )}
-                            </div>
-                            <div className="col-span-4">
                                 <Card>
                                     <CardHeader>
                                         <CardTitle>Epic Progress</CardTitle>
