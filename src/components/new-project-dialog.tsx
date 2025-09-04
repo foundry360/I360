@@ -71,10 +71,22 @@ export function NewProjectDialog() {
 
   const handleSelectChange = (field: 'companyId' | 'status' | 'category' | 'priority' | 'owner') => (value: string) => {
     if (field === 'companyId') {
-        setNewProject((prev) => ({ ...prev, [field]: value, owner: '', ownerAvatarUrl: '' })); // Reset owner when company changes
+        const defaultOwnerName = user?.displayName || '';
+        const defaultOwnerAvatar = user?.photoURL || '';
+        setNewProject((prev) => ({ 
+            ...prev, 
+            [field]: value, 
+            owner: defaultOwnerName, 
+            ownerAvatarUrl: defaultOwnerAvatar 
+        }));
     } else if (field === 'owner') {
         const selectedContact = contacts.find(c => c.name === value);
-        setNewProject(prev => ({ ...prev, owner: value, ownerAvatarUrl: selectedContact?.avatar || '' }));
+        const isCurrentUser = user && user.displayName === value;
+        setNewProject(prev => ({ 
+            ...prev, 
+            owner: value, 
+            ownerAvatarUrl: isCurrentUser ? user.photoURL || '' : selectedContact?.avatar || '' 
+        }));
     } else {
         setNewProject((prev) => ({ ...prev, [field]: value }));
     }
@@ -161,6 +173,9 @@ export function NewProjectDialog() {
                     {contacts.map((contact) => (
                         <SelectItem key={contact.id} value={contact.name}>{contact.name}</SelectItem>
                     ))}
+                    {user && !contacts.some(c => c.name === user.displayName) && (
+                        <SelectItem value={user.displayName!}>{user.displayName}</SelectItem>
+                    )}
                   </SelectContent>
               </Select>
             </div>

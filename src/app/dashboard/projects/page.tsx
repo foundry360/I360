@@ -214,7 +214,7 @@ export default function ProjectsPage() {
   const formatDate = (isoDate: string) => {
     if (!isoDate) return 'N/A';
     return formatInTimeZone(isoDate, 'UTC', 'MMM dd, yyyy');
-  }
+  };
 
   return (
     <>

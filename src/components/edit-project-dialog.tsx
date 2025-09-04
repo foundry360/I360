@@ -23,6 +23,7 @@ import { Textarea } from './ui/textarea';
 import { updateProject, type Project } from '@/services/project-service';
 import { useQuickAction } from '@/contexts/quick-action-context';
 import { getContactsForCompany, type Contact } from '@/services/contact-service';
+import { useUser } from '@/contexts/user-context';
 
 export function EditProjectDialog() {
   const {
@@ -34,6 +35,7 @@ export function EditProjectDialog() {
   
   const [formData, setFormData] = React.useState<Project | null>(null);
   const [contacts, setContacts] = React.useState<Contact[]>([]);
+  const { user } = useUser();
 
   React.useEffect(() => {
     if (editProjectData) {
@@ -65,7 +67,13 @@ export function EditProjectDialog() {
     if (!formData) return;
     if (field === 'owner') {
         const selectedContact = contacts.find(c => c.name === value);
-        setFormData(prev => ({ ...prev!, owner: value, ownerAvatarUrl: selectedContact?.avatar || '' }));
+        const isCurrentUser = user && user.displayName === value;
+        
+        setFormData(prev => ({ 
+            ...prev!, 
+            owner: value, 
+            ownerAvatarUrl: isCurrentUser ? user.photoURL || '' : selectedContact?.avatar || '' 
+        }));
     } else {
         setFormData((prev) => ({ ...prev!, [field]: value }));
     }
@@ -130,6 +138,9 @@ export function EditProjectDialog() {
                   {contacts.map((contact) => (
                     <SelectItem key={contact.id} value={contact.name}>{contact.name}</SelectItem>
                   ))}
+                   {user && !contacts.some(c => c.name === user.displayName) && (
+                    <SelectItem value={user.displayName!}>{user.displayName}</SelectItem>
+                  )}
                 </SelectContent>
               </Select>
             </div>
