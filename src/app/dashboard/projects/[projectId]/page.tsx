@@ -38,7 +38,7 @@ import { getProject, Project } from '@/services/project-service';
 import { getTasksForProject, updateTaskOrderAndStatus, Task, TaskStatus } from '@/services/task-service';
 import { getEpicsForProject, Epic, deleteEpic } from '@/services/epic-service';
 import { getBacklogItemsForProject, BacklogItem, deleteBacklogItem, updateBacklogItem } from '@/services/backlog-item-service';
-import { getSprintsForProject, Sprint, SprintStatus } from '@/services/sprint-service';
+import { getSprintsForProject, Sprint, SprintStatus, startSprint } from '@/services/sprint-service';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
@@ -47,6 +47,7 @@ import { useQuickAction } from '@/contexts/quick-action-context';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuPortal } from '@/components/ui/dropdown-menu';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { format, parseISO } from 'date-fns';
+import { useToast } from '@/hooks/use-toast';
 
 type TaskType = Task['type'];
 
@@ -215,6 +216,7 @@ export default function ProjectDetailsPage() {
         openEditBacklogItemDialog, setOnBacklogItemUpdated,
         openNewSprintDialog, setOnSprintCreated,
     } = useQuickAction();
+    const { toast } = useToast();
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
     const [itemToDelete, setItemToDelete] = React.useState<{type: 'epic' | 'backlogItem', id: string, name: string} | null>(null);
 
@@ -334,6 +336,36 @@ export default function ProjectDetailsPage() {
             console.error("Failed to move item to sprint:", error);
         }
     };
+
+    const handleStartSprint = async (sprintId: string) => {
+        try {
+            setLoading(true);
+            const sprintItems = backlogItems.filter(item => item.sprintId === sprintId);
+            if (sprintItems.length === 0) {
+                toast({
+                    variant: 'destructive',
+                    title: 'Cannot Start Empty Sprint',
+                    description: 'Add items to the sprint before starting it.',
+                });
+                return;
+            }
+            await startSprint(sprintId, projectId, sprintItems);
+            toast({
+                title: 'Sprint Started!',
+                description: 'Tasks have been created on the board.',
+            });
+            await fetchData();
+        } catch (error) {
+            console.error('Failed to start sprint:', error);
+            toast({
+                variant: 'destructive',
+                title: 'Error Starting Sprint',
+                description: 'There was a problem starting the sprint.',
+            });
+        } finally {
+            setLoading(false);
+        }
+    }
     
     const upcomingSprints = sprints.filter(s => s.status === 'Not Started' || s.status === 'Active');
 
@@ -588,6 +620,16 @@ export default function ProjectDetailsPage() {
                                                             </p>
                                                             <Badge variant={sprint.status === 'Active' ? 'default' : 'secondary'} className={sprint.status === 'Active' ? 'bg-green-500' : ''}>{sprint.status}</Badge>
                                                         </div>
+                                                        {sprint.status === 'Not Started' && (
+                                                            <Button 
+                                                                onClick={(e) => { e.stopPropagation(); handleStartSprint(sprint.id); }} 
+                                                                className="mr-2"
+                                                                disabled={loading}
+                                                            >
+                                                                <Rocket className="mr-2 h-4 w-4" />
+                                                                Start Sprint
+                                                            </Button>
+                                                        )}
                                                     </AccordionTrigger>
                                                     <AccordionContent className="p-4 border-t">
                                                         <p className="italic text-muted-foreground mb-4">{sprint.goal}</p>

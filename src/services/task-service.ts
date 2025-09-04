@@ -2,7 +2,7 @@
 'use client';
 
 import { db } from '@/lib/firebase';
-import { collection, doc, getDocs, setDoc, updateDoc, query, where, writeBatch, runTransaction } from 'firebase/firestore';
+import { collection, doc, getDocs, setDoc, updateDoc, query, where, writeBatch, runTransaction, DocumentReference, WriteBatch } from 'firebase/firestore';
 
 export type TaskStatus = 'To Do' | 'In Progress' | 'In Review' | 'Needs Revisions' | 'Final Approval' | 'Complete';
 
@@ -39,10 +39,14 @@ export async function getTasksForProject(projectId: string): Promise<Task[]> {
     }
 }
 
-export async function createTask(taskData: Omit<Task, 'id'>): Promise<string> {
+export async function createTask(taskData: Omit<Task, 'id'>, batch?: WriteBatch): Promise<string> {
   const docRef = doc(tasksCollection);
   const newTask: Task = { ...taskData, id: docRef.id };
-  await setDoc(docRef, newTask);
+  if (batch) {
+      batch.set(docRef, newTask);
+  } else {
+      await setDoc(docRef, newTask);
+  }
   return docRef.id;
 }
 

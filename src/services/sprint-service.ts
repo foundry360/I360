@@ -2,7 +2,9 @@
 'use client';
 
 import { db } from '@/lib/firebase';
-import { collection, query, where, getDocs, doc, setDoc, addDoc, updateDoc, deleteDoc, orderBy } from 'firebase/firestore';
+import { collection, query, where, getDocs, doc, setDoc, addDoc, updateDoc, deleteDoc, writeBatch } from 'firebase/firestore';
+import { createTask, type Task } from './task-service';
+import type { BacklogItem } from './backlog-item-service';
 
 export type SprintStatus = 'Not Started' | 'Active' | 'Completed';
 
@@ -37,6 +39,34 @@ export async function createSprint(sprintData: Omit<Sprint, 'id'>): Promise<stri
     await setDoc(docRef, newSprint);
     return docRef.id;
 }
+
+export async function startSprint(sprintId: string, projectId: string, sprintItems: BacklogItem[]): Promise<void> {
+    const batch = writeBatch(db);
+
+    // 1. Update the sprint status
+    const sprintRef = doc(db, 'sprints', sprintId);
+    batch.update(sprintRef, { status: 'Active' });
+
+    // 2. Create a task for each backlog item
+    sprintItems.forEach((item, index) => {
+        const taskRef = doc(collection(db, 'tasks'));
+        const newTask: Task = {
+            id: taskRef.id,
+            projectId: projectId,
+            title: item.title,
+            status: 'To Do',
+            order: index, // Initial order in the "To Do" column
+            owner: 'Unassigned', // Or derive from backlog item if available
+            ownerAvatarUrl: '',
+            priority: item.priority,
+            type: 'Execution', // Default type, can be adjusted
+        };
+        batch.set(taskRef, newTask);
+    });
+
+    await batch.commit();
+}
+
 
 export async function updateSprint(id: string, data: Partial<Sprint>): Promise<void> {
     const docRef = doc(db, 'sprints', id);
