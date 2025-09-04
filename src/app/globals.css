@@ -77,14 +77,14 @@ body {
     --primary-foreground: 210 40% 98%;
     --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
+    --muted: 240 2% 12%; /* #1f1f21 */
     --muted-foreground: 215 20.2% 65.1%;
     --accent: 232 78% 71%;
     --accent-foreground: 210 40% 98%;
     --destructive: 0 62.8% 30.6%;
     --destructive-hover: 0 52.8% 20.6%;
     --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
+    --border: 240 2% 18%;
     --input: 217.2 32.6% 17.5%;
     --ring: 259 82% 56%;
     --chart-1: 256 96% 63%;
