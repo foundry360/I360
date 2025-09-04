@@ -34,6 +34,7 @@ import {
   Loader,
   CheckCircle2,
   HelpCircle,
+  TrendingDown,
 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
@@ -57,8 +58,8 @@ import { format, parseISO, isPast } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
-import { Line, LineChart, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, CartesianGrid, Area, Dot } from 'recharts';
-import { ChartContainer, ChartTooltipContent, type ChartConfig } from '@/components/ui/chart';
+import { Line, LineChart, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, CartesianGrid, Area, Dot, Legend } from 'recharts';
+import { ChartContainer, ChartTooltipContent, type ChartConfig, ChartLegend, ChartLegendContent } from '@/components/ui/chart';
 
 type TaskType = Task['type'];
 type BoardColumns = Record<TaskStatus, Task[]>;
@@ -232,6 +233,14 @@ const chartConfig = {
   velocity: {
     label: "Velocity",
     color: "hsl(var(--chart-1))",
+  },
+  actual: {
+    label: "Actual",
+    color: "hsl(var(--chart-1))",
+  },
+  ideal: {
+    label: "Ideal",
+    color: "hsl(var(--chart-2))",
   },
 } satisfies ChartConfig
 
@@ -522,13 +531,14 @@ export default function ProjectDetailsPage() {
             .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
     
         return completedSprints.slice(-5).map(sprint => {
-            const itemsInSprint = backlogItems.filter(item => item.sprintId === sprint.id);
-            const completedItemsInSprint = itemsInSprint.filter(item => {
-                const task = tasks.find(t => t.backlogId === item.backlogId);
-                return task?.status === 'Complete';
+            const itemsInSprint = backlogItems.filter(item => {
+                const task = tasks.find(t => t.backlogId === item.backlogId && t.status === 'Complete');
+                if (!task) return false;
+                const completedDate = new Date(task.dueDate || 0); // This part is tricky without task completion dates
+                return new Date(sprint.startDate) <= completedDate && completedDate <= new Date(sprint.endDate);
             });
     
-            const velocity = completedItemsInSprint.reduce((totalPoints, item) => {
+            const velocity = itemsInSprint.reduce((totalPoints, item) => {
                 return totalPoints + (item.points || 0);
             }, 0);
     
@@ -537,6 +547,44 @@ export default function ProjectDetailsPage() {
                 velocity: velocity,
             };
         });
+    }, [sprints, backlogItems, tasks]);
+    
+    const burndownData = React.useMemo(() => {
+        const totalPoints = backlogItems.reduce((acc, item) => acc + (item.points || 0), 0);
+        const completedSprints = sprints
+            .filter(s => s.status === 'Completed')
+            .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
+
+        if (completedSprints.length === 0 || totalPoints === 0) {
+            return [];
+        }
+        
+        const idealPointsPerSprint = totalPoints / sprints.length; // Using all sprints for ideal pace
+        let cumulativePointsCompleted = 0;
+        let runningIdeal = totalPoints;
+
+        const data = [{ name: 'Start', actual: totalPoints, ideal: totalPoints }];
+
+        completedSprints.forEach((sprint, index) => {
+            const itemsInSprint = backlogItems.filter(item => item.sprintId === sprint.id);
+            const completedTasksInSprint = tasks.filter(task => task.status === 'Complete' && itemsInSprint.some(item => item.backlogId === task.backlogId));
+            const pointsThisSprint = completedTasksInSprint.reduce((acc, task) => {
+                const item = backlogItems.find(i => i.backlogId === task.backlogId);
+                return acc + (item?.points || 0);
+            }, 0);
+            
+            cumulativePointsCompleted += pointsThisSprint;
+            runningIdeal -= idealPointsPerSprint;
+
+            data.push({
+                name: sprint.name.split(' ').slice(0,2).join(' '),
+                actual: totalPoints - cumulativePointsCompleted,
+                ideal: Math.max(0, Math.round(runningIdeal)),
+            });
+        });
+        
+        return data;
+
     }, [sprints, backlogItems, tasks]);
 
 
@@ -687,7 +735,7 @@ export default function ProjectDetailsPage() {
                                                     tickLine={false}
                                                     axisLine={false}
                                                     tickMargin={8}
-                                                    tickFormatter={() => ""}
+                                                    tickFormatter={(value) => value.split(" ").slice(0,2).join(" ")}
                                                 />
                                                 <YAxis
                                                     tickLine={false}
@@ -723,6 +771,52 @@ export default function ProjectDetailsPage() {
                                                             strokeWidth={2}
                                                         />
                                                     }
+                                                />
+                                            </LineChart>
+                                        </ChartContainer>
+                                    </CardContent>
+                                </Card>
+                                 <Card>
+                                    <CardHeader>
+                                        <CardTitle>Project Burndown</CardTitle>
+                                        <CardDescription>Ideal vs. actual work remaining.</CardDescription>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <ChartContainer config={chartConfig} className="h-[150px] w-full">
+                                            <LineChart
+                                                data={burndownData}
+                                                margin={{ top: 5, right: 10, left: 0, bottom: 5 }}
+                                            >
+                                                <CartesianGrid vertical={false} />
+                                                <XAxis
+                                                    dataKey="name"
+                                                    tickLine={false}
+                                                    axisLine={false}
+                                                    tickMargin={8}
+                                                    tickFormatter={() => ""}
+                                                />
+                                                <YAxis
+                                                    tickLine={false}
+                                                    axisLine={false}
+                                                    tickMargin={8}
+                                                    width={30}
+                                                />
+                                                 <ChartLegend content={<ChartLegendContent />} />
+                                                <RechartsTooltip cursor={false} content={<ChartTooltipContent hideIndicator />} />
+                                                <Line
+                                                    dataKey="actual"
+                                                    type="natural"
+                                                    stroke="var(--color-actual)"
+                                                    strokeWidth={2}
+                                                    dot
+                                                />
+                                                 <Line
+                                                    dataKey="ideal"
+                                                    type="natural"
+                                                    stroke="var(--color-ideal)"
+                                                    strokeWidth={2}
+                                                    strokeDasharray="3 3"
+                                                    dot={false}
                                                 />
                                             </LineChart>
                                         </ChartContainer>
@@ -800,14 +894,14 @@ export default function ProjectDetailsPage() {
                                     </Card>
                                     <Card>
                                         <CardHeader className="flex flex-row items-center justify-between pb-2">
-                                            <CardTitle className="text-sm font-medium text-muted-foreground">Placeholder 2</CardTitle>
-                                            <HelpCircle className="h-4 w-4 text-muted-foreground" />
+                                            <CardTitle className="text-sm font-medium text-muted-foreground">Project Health</CardTitle>
+                                            <TrendingDown className="h-4 w-4 text-muted-foreground" />
                                         </CardHeader>
                                         <CardContent>
                                             <p className="text-2xl font-bold">-</p>
                                         </CardContent>
                                         <CardFooter className="flex-col items-start gap-1 p-4 pt-0">
-                                            <p className="text-xs text-muted-foreground">0% of total</p>
+                                            <p className="text-xs text-muted-foreground">No data yet</p>
                                             <Progress value={0} />
                                         </CardFooter>
                                     </Card>
@@ -1157,6 +1251,7 @@ export default function ProjectDetailsPage() {
 
 
     
+
 
 
 
