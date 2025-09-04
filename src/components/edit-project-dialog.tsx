@@ -61,7 +61,13 @@ export function EditProjectDialog() {
     if (!formData) return;
     try {
       const { id, ...updateData } = formData;
-      await updateProject(id, updateData);
+      const dataToSave = {
+          ...updateData,
+          startDate: new Date(updateData.startDate).toISOString(),
+          endDate: updateData.endDate ? new Date(updateData.endDate).toISOString() : undefined,
+      };
+
+      await updateProject(id, dataToSave);
       handleOpenChange(false);
       if (onProjectUpdated) {
         onProjectUpdated();
