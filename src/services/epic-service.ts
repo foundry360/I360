@@ -2,7 +2,8 @@
 'use client';
 
 import { db } from '@/lib/firebase';
-import { collection, query, where, getDocs, doc, setDoc, addDoc, updateDoc, deleteDoc, writeBatch } from 'firebase/firestore';
+import { collection, query, where, getDocs, doc, setDoc, addDoc, updateDoc, deleteDoc, writeBatch, getDoc } from 'firebase/firestore';
+import { updateProjectLastActivity } from './project-service';
 
 export interface Epic {
   id: string;
@@ -42,19 +43,29 @@ export async function createEpic(epicData: Omit<Epic, 'id' | 'epicId'>): Promise
     const nextId = await getNextEpicId(epicData.projectId);
     const newEpic = { ...epicData, id: docRef.id, epicId: nextId };
     await setDoc(docRef, newEpic);
+    await updateProjectLastActivity(epicData.projectId);
     return docRef.id;
 }
 
 export async function updateEpic(id: string, data: Partial<Epic>): Promise<void> {
     const docRef = doc(db, 'epics', id);
     await updateDoc(docRef, data);
+    const epicDoc = await getDoc(docRef);
+    if (epicDoc.exists()) {
+        await updateProjectLastActivity(epicDoc.data().projectId);
+    }
 }
 
 export async function deleteEpic(id: string): Promise<void> {
     const batch = writeBatch(db);
+    
+    const epicRef = doc(db, 'epics', id);
+    const epicDoc = await getDoc(epicRef);
+    if (!epicDoc.exists()) return;
+
+    const projectId = epicDoc.data().projectId;
 
     // Delete the epic
-    const epicRef = doc(db, 'epics', id);
     batch.delete(epicRef);
 
     // Find and delete all associated backlog items
@@ -65,4 +76,5 @@ export async function deleteEpic(id: string): Promise<void> {
     });
     
     await batch.commit();
+    await updateProjectLastActivity(projectId);
 }

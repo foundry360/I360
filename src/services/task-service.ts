@@ -4,6 +4,7 @@
 import { db } from '@/lib/firebase';
 import { collection, doc, getDocs, setDoc, updateDoc, query, where, writeBatch, runTransaction, DocumentReference, WriteBatch, addDoc, deleteDoc, getDoc } from 'firebase/firestore';
 import type { BacklogItem } from './backlog-item-service';
+import { updateProjectLastActivity } from './project-service';
 
 export const TaskStatus = {
   ToDo: 'To Do',
@@ -54,6 +55,7 @@ export async function createTask(taskData: Omit<Task, 'id'>): Promise<string> {
   const docRef = await addDoc(tasksCollection, {});
   const newTask: Task = { ...taskData, id: docRef.id };
   await setDoc(docRef, newTask);
+  await updateProjectLastActivity(taskData.projectId);
   return docRef.id;
 }
 
@@ -61,11 +63,24 @@ export async function createTask(taskData: Omit<Task, 'id'>): Promise<string> {
 export async function updateTask(id: string, taskData: Partial<Omit<Task, 'id'>>): Promise<void> {
     const docRef = doc(db, 'tasks', id);
     await updateDoc(docRef, taskData);
+    if (taskData.projectId) {
+        await updateProjectLastActivity(taskData.projectId);
+    } else {
+        const taskDoc = await getDoc(docRef);
+        if (taskDoc.exists()) {
+            await updateProjectLastActivity(taskDoc.data().projectId);
+        }
+    }
 }
 
 export async function deleteTask(id: string): Promise<void> {
     const docRef = doc(db, 'tasks', id);
-    await deleteDoc(docRef);
+    const docSnap = await getDoc(docRef);
+    if(docSnap.exists()){
+        const projectId = docSnap.data().projectId;
+        await deleteDoc(docRef);
+        await updateProjectLastActivity(projectId);
+    }
 }
 
 export async function deleteTaskByBacklogId(projectId: string, backlogId: number): Promise<void> {
@@ -74,13 +89,18 @@ export async function deleteTaskByBacklogId(projectId: string, backlogId: number
     if (!snapshot.empty) {
         const taskDoc = snapshot.docs[0];
         await deleteDoc(taskDoc.ref);
+        await updateProjectLastActivity(projectId);
     }
 }
 
 
 export async function updateTaskStatus(id: string, status: TaskStatus): Promise<void> {
     const docRef = doc(db, 'tasks', id);
+    const taskDoc = await getDoc(docRef);
     await updateDoc(docRef, { status });
+    if(taskDoc.exists()){
+        await updateProjectLastActivity(taskDoc.data().projectId);
+    }
 }
 
 export async function updateTaskOrderAndStatus(taskId: string, newStatus: TaskStatus, newIndex: number, projectId: string): Promise<void> {
@@ -120,4 +140,6 @@ export async function updateTaskOrderAndStatus(taskId: string, newStatus: TaskSt
             }
         }
     });
+    
+    await updateProjectLastActivity(projectId);
 }

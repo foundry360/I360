@@ -5,6 +5,7 @@ import { db } from '@/lib/firebase';
 import { collection, query, where, getDocs, doc, setDoc, addDoc, updateDoc, deleteDoc, writeBatch } from 'firebase/firestore';
 import { deleteTask, type Task } from './task-service';
 import type { BacklogItem } from './backlog-item-service';
+import { updateProjectLastActivity } from './project-service';
 
 export type SprintStatus = 'Not Started' | 'Active' | 'Completed';
 
@@ -37,6 +38,7 @@ export async function createSprint(sprintData: Omit<Sprint, 'id'>): Promise<stri
     const docRef = await addDoc(sprintsCollection, {});
     const newSprint = { ...sprintData, id: docRef.id };
     await setDoc(docRef, newSprint);
+    await updateProjectLastActivity(sprintData.projectId);
     return docRef.id;
 }
 
@@ -69,6 +71,7 @@ export async function startSprint(sprintId: string, projectId: string, sprintIte
     });
 
     await batch.commit();
+    await updateProjectLastActivity(projectId);
 }
 
 export async function completeSprint(sprintId: string, projectId: string): Promise<void> {
@@ -107,16 +110,26 @@ export async function completeSprint(sprintId: string, projectId: string): Promi
     });
 
     await batch.commit();
+    await updateProjectLastActivity(projectId);
 }
 
 
 export async function updateSprint(id: string, data: Partial<Omit<Sprint, 'id'>>): Promise<void> {
     const docRef = doc(db, 'sprints', id);
     await updateDoc(docRef, data);
+    if (data.projectId) {
+        await updateProjectLastActivity(data.projectId);
+    }
 }
 
 export async function deleteSprint(id: string): Promise<void> {
     const batch = writeBatch(db);
+
+    const sprintRef = doc(db, 'sprints', id);
+    const sprintDoc = await getDoc(sprintRef);
+    if (!sprintDoc.exists()) return;
+
+    const projectId = sprintDoc.data().projectId;
 
     // 1. Find all backlog items in the sprint and move them back to the backlog
     const backlogQuery = query(collection(db, 'backlogItems'), where("sprintId", "==", id));
@@ -126,8 +139,8 @@ export async function deleteSprint(id: string): Promise<void> {
     });
 
     // 2. Delete the sprint document itself
-    const sprintRef = doc(db, 'sprints', id);
     batch.delete(sprintRef);
 
     await batch.commit();
+    await updateProjectLastActivity(projectId);
 }

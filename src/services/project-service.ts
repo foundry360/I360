@@ -24,6 +24,18 @@ export interface Project {
 
 const projectsCollection = collection(db, 'projects');
 
+export async function updateProjectLastActivity(projectId: string): Promise<void> {
+    const projectRef = doc(db, 'projects', projectId);
+    try {
+        await updateDoc(projectRef, {
+            lastActivity: new Date().toISOString()
+        });
+    } catch (error) {
+        // This can happen if the project is deleted before the update goes through
+        console.warn(`Could not update last activity for project ${projectId}:`, error);
+    }
+}
+
 export async function getProjects(): Promise<Project[]> {
     try {
         const companySnapshot = await getDocs(collection(db, 'companies'));

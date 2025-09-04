@@ -4,6 +4,7 @@
 import { db } from '@/lib/firebase';
 import { collection, query, where, getDocs, doc, setDoc, addDoc, getDoc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { deleteTaskByBacklogId, type TaskPriority, type TaskStatus } from './task-service';
+import { updateProjectLastActivity } from './project-service';
 
 export interface BacklogItem {
   id: string;
@@ -62,28 +63,35 @@ export async function createBacklogItem(itemData: Omit<BacklogItem, 'id' | 'back
     const nextId = await getNextBacklogId(itemData.projectId, itemData.epicId);
     const newItem = { ...itemData, id: docRef.id, backlogId: nextId };
     await setDoc(docRef, newItem);
+    await updateProjectLastActivity(itemData.projectId);
     return docRef.id;
 }
 
 export async function updateBacklogItem(id: string, data: Partial<BacklogItem>): Promise<void> {
     const docRef = doc(db, 'backlogItems', id);
+    const docSnap = await getDoc(docRef);
+    if (!docSnap.exists()) return;
+    
+    const originalData = docSnap.data() as BacklogItem;
     
     // Check if item is being moved back to backlog
     if (data.sprintId === null) {
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) {
-            const originalData = docSnap.data() as BacklogItem;
-            if (originalData.sprintId && originalData.backlogId) {
-                // Item had a sprintId and is now being moved to backlog, so delete the task
-                await deleteTaskByBacklogId(originalData.projectId, originalData.backlogId);
-            }
+        if (originalData.sprintId && originalData.backlogId) {
+            // Item had a sprintId and is now being moved to backlog, so delete the task
+            await deleteTaskByBacklogId(originalData.projectId, originalData.backlogId);
         }
     }
     
     await updateDoc(docRef, data);
+    await updateProjectLastActivity(originalData.projectId);
 }
 
 export async function deleteBacklogItem(id: string): Promise<void> {
     const docRef = doc(db, 'backlogItems', id);
-    await deleteDoc(docRef);
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+        const projectId = docSnap.data().projectId;
+        await deleteDoc(docRef);
+        await updateProjectLastActivity(projectId);
+    }
 }
