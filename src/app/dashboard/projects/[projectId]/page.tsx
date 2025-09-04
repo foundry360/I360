@@ -240,7 +240,7 @@ const chartConfig = {
   },
   ideal: {
     label: "Ideal",
-    color: "hsl(var(--chart-2))",
+    color: "hsl(120, 80%, 40%)",
   },
 } satisfies ChartConfig
 
@@ -532,19 +532,15 @@ export default function ProjectDetailsPage() {
         
         return completedSprints.map(sprint => {
             const itemsInSprint = backlogItems.filter(item => item.sprintId === sprint.id);
-            const backlogIdsInSprint = itemsInSprint.map(item => item.backlogId);
-
             const completedTasksInSprint = tasks.filter(task => 
                 task.status === 'Complete' && 
-                task.backlogId && 
-                backlogIdsInSprint.includes(task.backlogId)
+                sprintItems.some(item => item.backlogId === task.backlogId)
             );
             
-            const completedBacklogIds = completedTasksInSprint.map(task => task.backlogId);
-
-            const pointsThisSprint = itemsInSprint
-                .filter(item => completedBacklogIds.includes(item.backlogId))
-                .reduce((acc, item) => acc + (item.points || 0), 0);
+            const pointsThisSprint = completedTasksInSprint.reduce((acc, task) => {
+                const item = itemsInSprint.find(i => i.backlogId === task.backlogId);
+                return acc + (item?.points || 0);
+            }, 0);
 
             return {
                 name: sprint.name,
@@ -559,11 +555,11 @@ export default function ProjectDetailsPage() {
             .filter(s => s.status === 'Completed')
             .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
 
-        if (completedSprints.length === 0 || totalPoints === 0) {
+        if (totalPoints === 0) {
             return [];
         }
         
-        const idealPointsPerSprint = totalPoints / sprints.length; // Using all sprints for ideal pace
+        const idealPointsPerSprint = totalPoints / (sprints.filter(s => s.status !== 'Not Started').length || 1);
         let cumulativePointsCompleted = 0;
         let runningIdeal = totalPoints;
 
@@ -797,7 +793,7 @@ export default function ProjectDetailsPage() {
                                                     tickLine={false}
                                                     axisLine={false}
                                                     tickMargin={8}
-                                                    tickFormatter={() => ""}
+                                                    tickFormatter={(value) => value.slice(0, 3)}
                                                 />
                                                 <YAxis
                                                     tickLine={false}
