@@ -16,6 +16,7 @@ export interface Project {
   startDate: string;
   endDate?: string;
   owner: string;
+  ownerAvatarUrl?: string;
   team: string; // Comma-separated list of team members
   category: 'Assessment' | 'Workshop' | 'Planning' | 'Execution' | 'Review' | 'Enablement';
 }

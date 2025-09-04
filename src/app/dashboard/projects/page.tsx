@@ -41,7 +41,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { TablePagination } from '@/components/table-pagination';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { formatInTimeZone } from 'date-fns-tz';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 type SortKey = keyof Project;
 type ProjectStatus = 'Active' | 'Inactive' | 'Completed' | 'On Hold';
@@ -349,6 +349,7 @@ export default function ProjectsPage() {
                                             <TableCell>
                                                 <div className="flex items-center gap-2">
                                                     <Avatar className="h-6 w-6">
+                                                        <AvatarImage src={project.ownerAvatarUrl} />
                                                         <AvatarFallback className="text-xs bg-primary text-primary-foreground">
                                                             {getInitials(project.owner)}
                                                         </AvatarFallback>

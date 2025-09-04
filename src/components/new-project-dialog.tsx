@@ -31,10 +31,11 @@ const initialNewProjectState = {
   description: '',
   companyId: '',
   owner: '',
+  ownerAvatarUrl: '',
   team: '',
-  category: 'Planning',
+  category: 'Planning' as const,
   status: 'Active' as const,
-  priority: 'Medium',
+  priority: 'Medium' as const,
   startDate: new Date().toISOString().split('T')[0],
   endDate: '',
 };
@@ -49,7 +50,9 @@ export function NewProjectDialog() {
   React.useEffect(() => {
     if (isNewProjectDialogOpen) {
       getCompanies().then(setCompanies);
-      setNewProject(prev => ({ ...prev, owner: user?.displayName || user?.email || '' }));
+      const defaultOwnerName = user?.displayName || user?.email || '';
+      const defaultOwnerAvatar = user?.photoURL || '';
+      setNewProject(prev => ({ ...prev, owner: defaultOwnerName, ownerAvatarUrl: defaultOwnerAvatar }));
     }
   }, [isNewProjectDialogOpen, user]);
   
@@ -68,7 +71,10 @@ export function NewProjectDialog() {
 
   const handleSelectChange = (field: 'companyId' | 'status' | 'category' | 'priority' | 'owner') => (value: string) => {
     if (field === 'companyId') {
-        setNewProject((prev) => ({ ...prev, [field]: value, owner: '' })); // Reset owner when company changes
+        setNewProject((prev) => ({ ...prev, [field]: value, owner: '', ownerAvatarUrl: '' })); // Reset owner when company changes
+    } else if (field === 'owner') {
+        const selectedContact = contacts.find(c => c.name === value);
+        setNewProject(prev => ({ ...prev, owner: value, ownerAvatarUrl: selectedContact?.avatar || '' }));
     } else {
         setNewProject((prev) => ({ ...prev, [field]: value }));
     }

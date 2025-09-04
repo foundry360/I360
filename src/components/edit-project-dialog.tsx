@@ -63,7 +63,12 @@ export function EditProjectDialog() {
 
   const handleSelectChange = (field: 'status' | 'category' | 'priority' | 'owner') => (value: string) => {
     if (!formData) return;
-    setFormData((prev) => ({ ...prev!, [field]: value }));
+    if (field === 'owner') {
+        const selectedContact = contacts.find(c => c.name === value);
+        setFormData(prev => ({ ...prev!, owner: value, ownerAvatarUrl: selectedContact?.avatar || '' }));
+    } else {
+        setFormData((prev) => ({ ...prev!, [field]: value }));
+    }
   };
 
   const handleUpdateProject = async (e: React.FormEvent) => {
