@@ -30,7 +30,10 @@ import {
   Rocket,
   CheckCircle,
   Search,
-  Clock
+  Clock,
+  Loader,
+  CheckCircle2,
+  HelpCircle,
 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
@@ -641,8 +644,9 @@ export default function ProjectDetailsPage() {
                             <div className="col-span-3 space-y-6">
                                 <div className="grid grid-cols-2 gap-6">
                                     <Card>
-                                        <CardHeader className="pb-2">
+                                        <CardHeader className="flex flex-row items-center justify-between pb-2">
                                             <CardTitle className="text-sm font-medium text-muted-foreground">In Progress</CardTitle>
+                                            <Loader className="h-4 w-4 text-muted-foreground" />
                                         </CardHeader>
                                         <CardContent>
                                             <p className="text-2xl font-bold">{inProgressTasks}</p>
@@ -653,8 +657,9 @@ export default function ProjectDetailsPage() {
                                         </CardFooter>
                                     </Card>
                                     <Card>
-                                        <CardHeader className="pb-2">
+                                        <CardHeader className="flex flex-row items-center justify-between pb-2">
                                             <CardTitle className="text-sm font-medium text-muted-foreground">Completed</CardTitle>
+                                            <CheckCircle2 className="h-4 w-4 text-muted-foreground" />
                                         </CardHeader>
                                         <CardContent>
                                             <p className="text-2xl font-bold">{completedTasks}</p>
@@ -667,8 +672,9 @@ export default function ProjectDetailsPage() {
                                 </div>
                                 <div className="grid grid-cols-2 gap-6">
                                     <Card>
-                                        <CardHeader className="pb-2">
-                                            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-1"><Clock className="h-4 w-4 text-destructive" /> Overdue Tasks</CardTitle>
+                                        <CardHeader className="flex flex-row items-center justify-between pb-2">
+                                            <CardTitle className="text-sm font-medium text-muted-foreground">Overdue Tasks</CardTitle>
+                                            <Clock className="h-4 w-4 text-destructive" />
                                         </CardHeader>
                                         <CardContent>
                                             <p className="text-2xl font-bold text-destructive">{overdueTasks}</p>
@@ -679,8 +685,9 @@ export default function ProjectDetailsPage() {
                                         </CardFooter>
                                     </Card>
                                     <Card>
-                                        <CardHeader className="pb-2">
+                                        <CardHeader className="flex flex-row items-center justify-between pb-2">
                                             <CardTitle className="text-sm font-medium text-muted-foreground">Placeholder 2</CardTitle>
+                                            <HelpCircle className="h-4 w-4 text-muted-foreground" />
                                         </CardHeader>
                                         <CardContent>
                                             <p className="text-2xl font-bold">-</p>
@@ -1022,6 +1029,7 @@ export default function ProjectDetailsPage() {
     
 
     
+
 
 
 
