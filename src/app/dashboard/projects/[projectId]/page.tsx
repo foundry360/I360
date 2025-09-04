@@ -307,7 +307,7 @@ export default function ProjectDetailsPage() {
 
     const projectPrefix = project ? project.name.substring(0, project.name.indexOf('-')) : '';
     
-    const onDragEnd = (result: DropResult) => {
+    const onDragEnd = async (result: DropResult) => {
         const { source, destination, draggableId } = result;
 
         if (!destination) return;
@@ -334,7 +334,8 @@ export default function ProjectDetailsPage() {
 
         // Persist changes to Firestore
         try {
-            updateTaskOrderAndStatus(taskId, destColId, destination.index, projectId);
+            await updateTaskOrderAndStatus(taskId, destColId, destination.index, projectId);
+            await fetchData(); // Refresh all data to ensure sync
         } catch (error) {
             console.error("Failed to update task:", error);
             // Revert optimistic update on failure by re-fetching
