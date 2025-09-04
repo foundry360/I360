@@ -246,23 +246,23 @@ export default function ProjectDetailsPage() {
             const sortedTasks = tasksData.sort((a, b) => a.order - b.order);
             setAllTasks(sortedTasks);
             
-            const groupedTasks = sortedTasks.reduce((acc, task) => {
+            const newColumns = sortedTasks.reduce((acc, task) => {
                 const status = task.status;
                 if (!acc[status]) {
                     acc[status] = [];
                 }
                 acc[status].push(task);
                 return acc;
-            }, { ...initialColumns } as BoardColumns);
+            }, JSON.parse(JSON.stringify(initialColumns)) as BoardColumns);
 
             // Ensure all columns are present, even if empty
             for (const status in initialColumns) {
-                if (!groupedTasks[status as TaskStatus]) {
-                    groupedTasks[status as TaskStatus] = [];
+                if (!newColumns[status as TaskStatus]) {
+                    newColumns[status as TaskStatus] = [];
                 }
             }
 
-            setColumns(groupedTasks);
+            setColumns(newColumns);
 
             setEpics(epicsData);
             setBacklogItems(backlogItemsData);
@@ -301,29 +301,20 @@ export default function ProjectDetailsPage() {
         const sourceColId = source.droppableId as TaskStatus;
         const destColId = destination.droppableId as TaskStatus;
         
-        if (sourceColId === destColId && source.index === destination.index) {
-            return; // No change
-        }
-
-        const startCol = columns[sourceColId];
-        const finishCol = columns[destColId];
-        const task = startCol.find(t => t.id === taskId);
-
-        if (!task) return;
-
         // Optimistic UI Update
         const newColumnsState = { ...columns };
+        const sourceCol = newColumnsState[sourceColId];
+        const destCol = newColumnsState[destColId];
+        const [movedTask] = sourceCol.splice(source.index, 1);
+
+        if (sourceColId === destColId) {
+            // Moving within the same column
+            sourceCol.splice(destination.index, 0, movedTask);
+        } else {
+            // Moving to a different column
+            destCol.splice(destination.index, 0, movedTask);
+        }
         
-        // Remove from source column
-        const newStartCol = Array.from(startCol);
-        newStartCol.splice(source.index, 1);
-        newColumnsState[sourceColId] = newStartCol;
-
-        // Add to destination column
-        const newFinishCol = sourceColId === destColId ? newStartCol : Array.from(finishCol);
-        newFinishCol.splice(destination.index, 0, task);
-        newColumnsState[destColId] = newFinishCol;
-
         setColumns(newColumnsState);
 
         // Persist changes to Firestore
@@ -641,7 +632,7 @@ export default function ProjectDetailsPage() {
                                             return (
                                                 <AccordionItem key={sprint.id} value={sprint.id} className="border rounded-lg bg-card">
                                                     <div className="flex items-center p-4">
-                                                        <AccordionTrigger className="p-0 hover:no-underline flex-1 text-left [&[data-state=open]>div>svg]:rotate-180">
+                                                        <AccordionTrigger className="p-0 hover:no-underline flex-1 text-left">
                                                           <div className='flex items-center flex-1'>
                                                             <div className="flex flex-col gap-1">
                                                                 <h3 className="font-semibold text-base">{sprint.name}</h3>
@@ -652,12 +643,9 @@ export default function ProjectDetailsPage() {
                                                                     <Badge variant={sprint.status === 'Active' ? 'default' : 'secondary'} className={sprint.status === 'Active' ? 'bg-green-500' : ''}>{sprint.status}</Badge>
                                                                 </div>
                                                             </div>
-                                                            <div className="flex items-center gap-2 ml-auto">
-                                                              <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200" />
-                                                            </div>
                                                           </div>
                                                         </AccordionTrigger>
-                                                        <div className="flex items-center gap-2 ml-4">
+                                                        <div className="flex items-center gap-2 ml-auto">
                                                             <DropdownMenu>
                                                                 <DropdownMenuTrigger asChild>
                                                                     <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0"><MoreVertical className="h-4 w-4" /></Button>
@@ -758,3 +746,4 @@ export default function ProjectDetailsPage() {
     
 
     
+
