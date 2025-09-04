@@ -359,25 +359,25 @@ export default function ProjectDetailsPage() {
                     <TabsList className="bg-transparent p-0 rounded-none justify-start h-auto">
                         <TabsTrigger 
                             value="summary"
-                            className="pb-3 rounded-none data-[state=active]:shadow-none data-[state=active]:border-primary data-[state=active]:border-b-4 data-[state=active]:text-primary"
+                            className="pb-3 rounded-none data-[state=active]:shadow-none data-[state=active]:border-primary data-[state=active]:border-b-4 data-[state=active]:text-foreground data-[state=active]:font-bold"
                         >
                             Summary
                         </TabsTrigger>
                         <TabsTrigger 
                             value="board"
-                            className="pb-3 rounded-none data-[state=active]:shadow-none data-[state=active]:border-primary data-[state=active]:border-b-4 data-[state=active]:text-primary"
+                            className="pb-3 rounded-none data-[state=active]:shadow-none data-[state=active]:border-primary data-[state=active]:border-b-4 data-[state=active]:text-foreground data-[state=active]:font-bold"
                         >
                             Board
                         </TabsTrigger>
                          <TabsTrigger 
                             value="backlog"
-                            className="pb-3 rounded-none data-[state=active]:shadow-none data-[state=active]:border-primary data-[state=active]:border-b-4 data-[state=active]:text-primary"
+                            className="pb-3 rounded-none data-[state=active]:shadow-none data-[state=active]:border-primary data-[state=active]:border-b-4 data-[state=active]:text-foreground data-[state=active]:font-bold"
                         >
                             Backlog
                         </TabsTrigger>
                          <TabsTrigger 
                             value="sprints"
-                            className="pb-3 rounded-none data-[state=active]:shadow-none data-[state=active]:border-primary data-[state=active]:border-b-4 data-[state=active]:text-primary"
+                            className="pb-3 rounded-none data-[state=active]:shadow-none data-[state=active]:border-primary data-[state=active]:border-b-4 data-[state=active]:text-foreground data-[state=active]:font-bold"
                         >
                             Sprints
                         </TabsTrigger>
