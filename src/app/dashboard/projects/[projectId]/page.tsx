@@ -52,6 +52,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { format, parseISO } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
+import { Progress } from '@/components/ui/progress';
 
 type TaskType = Task['type'];
 type BoardColumns = Record<TaskStatus, Task[]>;
@@ -506,6 +507,12 @@ export default function ProjectDetailsPage() {
     }
 
     const activeSprint = sprints.find(s => s.status === 'Active');
+    
+    const totalTasks = tasks.length;
+    const inProgressTasks = columns['In Progress'].length;
+    const completedTasks = columns['Complete'].length;
+    const inProgressPercentage = totalTasks > 0 ? (inProgressTasks / totalTasks) * 100 : 0;
+    const completedPercentage = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
 
     return (
         <div className="flex flex-col h-full">
@@ -626,38 +633,54 @@ export default function ProjectDetailsPage() {
                             <div className="col-span-3 space-y-6">
                                 <div className="grid grid-cols-2 gap-6">
                                     <Card>
-                                        <CardHeader>
+                                        <CardHeader className="pb-2">
                                             <CardTitle className="text-sm font-medium text-muted-foreground">In Progress</CardTitle>
                                         </CardHeader>
                                         <CardContent>
-                                            <p className="text-2xl font-bold">{columns['In Progress'].length}</p>
+                                            <p className="text-2xl font-bold">{inProgressTasks}</p>
                                         </CardContent>
+                                        <CardFooter className="flex-col items-start gap-1 p-4 pt-0">
+                                            <p className="text-xs text-muted-foreground">{Math.round(inProgressPercentage)}% of total</p>
+                                            <Progress value={inProgressPercentage} />
+                                        </CardFooter>
                                     </Card>
                                     <Card>
-                                        <CardHeader>
+                                        <CardHeader className="pb-2">
                                             <CardTitle className="text-sm font-medium text-muted-foreground">Completed</CardTitle>
                                         </CardHeader>
                                         <CardContent>
-                                            <p className="text-2xl font-bold">{columns['Complete'].length}</p>
+                                            <p className="text-2xl font-bold">{completedTasks}</p>
                                         </CardContent>
+                                         <CardFooter className="flex-col items-start gap-1 p-4 pt-0">
+                                            <p className="text-xs text-muted-foreground">{Math.round(completedPercentage)}% of total</p>
+                                            <Progress value={completedPercentage} />
+                                        </CardFooter>
                                     </Card>
                                 </div>
                                 <div className="grid grid-cols-2 gap-6">
                                     <Card>
-                                        <CardHeader>
+                                        <CardHeader className="pb-2">
                                             <CardTitle className="text-sm font-medium text-muted-foreground">Placeholder 1</CardTitle>
                                         </CardHeader>
                                         <CardContent>
                                             <p className="text-2xl font-bold">-</p>
                                         </CardContent>
+                                        <CardFooter className="flex-col items-start gap-1 p-4 pt-0">
+                                            <p className="text-xs text-muted-foreground">0% of total</p>
+                                            <Progress value={0} />
+                                        </CardFooter>
                                     </Card>
                                     <Card>
-                                        <CardHeader>
+                                        <CardHeader className="pb-2">
                                             <CardTitle className="text-sm font-medium text-muted-foreground">Placeholder 2</CardTitle>
                                         </CardHeader>
                                         <CardContent>
                                             <p className="text-2xl font-bold">-</p>
                                         </CardContent>
+                                        <CardFooter className="flex-col items-start gap-1 p-4 pt-0">
+                                            <p className="text-xs text-muted-foreground">0% of total</p>
+                                            <Progress value={0} />
+                                        </CardFooter>
                                     </Card>
                                 </div>
                             </div>
@@ -991,4 +1014,5 @@ export default function ProjectDetailsPage() {
     
 
     
+
 
