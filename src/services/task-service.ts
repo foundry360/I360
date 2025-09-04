@@ -66,15 +66,23 @@ export async function updateTaskStatus(id: string, status: TaskStatus): Promise<
 }
 
 export async function updateTaskOrderAndStatus(taskId: string, newStatus: TaskStatus, newIndex: number, projectId: string): Promise<void> {
-    // First, fetch all tasks for the project outside the transaction.
+    // First, fetch all tasks for the project and the specific backlog items outside the transaction.
     const tasksQuery = query(tasksCollection, where("projectId", "==", projectId));
     const tasksSnapshot = await getDocs(tasksQuery);
     const tasks = tasksSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Task));
+    const taskToMove = tasks.find(t => t.id === taskId);
+    if (!taskToMove) throw new Error("Task not found!");
+
+    let backlogItemRef: DocumentReference | null = null;
+    if (taskToMove.backlogId) {
+        const backlogQuery = query(collection(db, 'backlogItems'), where("projectId", "==", projectId), where("backlogId", "==", taskToMove.backlogId));
+        const backlogSnapshot = await getDocs(backlogQuery);
+        if (!backlogSnapshot.empty) {
+            backlogItemRef = backlogSnapshot.docs[0].ref;
+        }
+    }
 
     await runTransaction(db, async (transaction) => {
-        const taskToMove = tasks.find(t => t.id === taskId);
-        if (!taskToMove) throw new Error("Task not found!");
-
         const oldStatus = taskToMove.status;
         const oldIndex = taskToMove.order;
 
@@ -98,21 +106,15 @@ export async function updateTaskOrderAndStatus(taskId: string, newStatus: TaskSt
         const movedTaskRef = doc(db, "tasks", taskId);
         transaction.update(movedTaskRef, { status: newStatus, order: newIndex });
         
-        // Update the corresponding backlog item's status
-        if (taskToMove.backlogId) {
-            const backlogQuery = query(collection(db, 'backlogItems'), where("projectId", "==", projectId), where("backlogId", "==", taskToMove.backlogId));
-            const backlogSnapshot = await getDocs(backlogQuery); // Fetch inside transaction is ok if we re-read, but getDocs might not be. Let's fetch outside.
-            
-            if (!backlogSnapshot.empty) {
-                const backlogDoc = backlogSnapshot.docs[0];
-                let backlogStatus: BacklogItem['status'] = 'In Progress';
-                if (newStatus === 'To Do') {
-                    backlogStatus = 'To Do';
-                } else if (newStatus === 'Complete') {
-                    backlogStatus = 'Done';
-                }
-                transaction.update(backlogDoc.ref, { status: backlogStatus });
+        // Update the corresponding backlog item's status if it exists
+        if (backlogItemRef) {
+            let backlogStatus: BacklogItem['status'] = 'In Progress';
+            if (newStatus === 'To Do') {
+                backlogStatus = 'To Do';
+            } else if (newStatus === 'Complete') {
+                backlogStatus = 'Done';
             }
+            transaction.update(backlogItemRef, { status: backlogStatus });
         }
     });
 }
