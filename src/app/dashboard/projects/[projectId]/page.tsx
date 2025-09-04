@@ -332,7 +332,6 @@ export default function ProjectDetailsPage() {
                     </Button>
                     <div>
                         <h1 className="text-2xl font-bold">{project.name}</h1>
-                        <p className="text-muted-foreground">Project Details</p>
                     </div>
                 </div>
             </div>
