@@ -31,6 +31,7 @@ import { getBacklogItemsForProject, BacklogItem } from '@/services/backlog-item-
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { Separator } from '@/components/ui/separator';
 
 type TaskType = Task['type'];
 
@@ -280,7 +281,7 @@ export default function ProjectDetailsPage() {
     return (
         <div className="flex flex-col h-full">
             {/* Header */}
-            <div className="flex justify-between items-center mb-4">
+            <div className="flex justify-between items-center">
                 <div className="flex items-center gap-4">
                     <Button onClick={() => router.back()} variant="outline" size="icon">
                         <ArrowLeft className="h-4 w-4" />
@@ -292,10 +293,11 @@ export default function ProjectDetailsPage() {
                     </div>
                 </div>
             </div>
+            <Separator className="my-4" />
 
             {/* Navigation Tabs */}
             <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
-                <div className="flex justify-between items-center border-b-2 border-border">
+                <div className="flex justify-between items-center">
                     <TabsList className="bg-transparent p-0 rounded-none justify-start h-auto">
                         <TabsTrigger 
                             value="summary"
