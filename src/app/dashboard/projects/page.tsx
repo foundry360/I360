@@ -41,6 +41,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { TablePagination } from '@/components/table-pagination';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { formatInTimeZone } from 'date-fns-tz';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 
 type SortKey = keyof Project;
 type ProjectStatus = 'Active' | 'Inactive' | 'Completed' | 'On Hold';
@@ -191,6 +192,15 @@ export default function ProjectsPage() {
     return name.charAt(0).toUpperCase() + name.slice(1);
   }
   
+  const getInitials = (name: string) => {
+    if (!name) return '';
+    return name
+      .split(' ')
+      .map((n) => n[0])
+      .join('')
+      .toUpperCase();
+  };
+
   const statusBadgeVariant = (status: ProjectStatus) => {
     switch(status) {
         case 'Active': return 'default';
@@ -336,7 +346,16 @@ export default function ProjectsPage() {
                                                     {project.status}
                                                 </Badge>
                                             </TableCell>
-                                            <TableCell>{project.owner || getDisplayName(user?.email)}</TableCell>
+                                            <TableCell>
+                                                <div className="flex items-center gap-2">
+                                                    <Avatar className="h-6 w-6">
+                                                        <AvatarFallback className="text-xs bg-primary text-primary-foreground">
+                                                            {getInitials(project.owner)}
+                                                        </AvatarFallback>
+                                                    </Avatar>
+                                                    <span>{project.owner || getDisplayName(user?.email)}</span>
+                                                </div>
+                                            </TableCell>
                                             <TableCell>
                                                 {formatDate(project.startDate)}
                                             </TableCell>
@@ -415,3 +434,4 @@ export default function ProjectsPage() {
     </>
   );
 }
+
