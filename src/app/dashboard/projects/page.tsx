@@ -301,6 +301,14 @@ export default function ProjectsPage() {
                                         </Button>
                                     </TableHead>
                                     <TableHead className="border-t border-r border-b">
+                                        <Button variant="ghost" onClick={() => requestSort('category')} className="group w-full p-0 hover:bg-transparent hover:text-muted-foreground">
+                                            <div className="flex justify-between items-center w-full">
+                                                Category
+                                                <ArrowUpDown className={cn("h-4 w-4", sortConfig?.key === 'category' ? 'opacity-100' : 'opacity-25')} />
+                                            </div>
+                                        </Button>
+                                    </TableHead>
+                                    <TableHead className="border-t border-r border-b">
                                         <Button variant="ghost" onClick={() => requestSort('owner')} className="group w-full p-0 hover:bg-transparent hover:text-muted-foreground">
                                             <div className="flex justify-between items-center w-full">
                                                 Owner
@@ -355,6 +363,7 @@ export default function ProjectsPage() {
                                                     {project.status}
                                                 </Badge>
                                             </TableCell>
+                                            <TableCell>{project.category}</TableCell>
                                             <TableCell>
                                                 <div className="flex items-center gap-2">
                                                     <Avatar className="h-6 w-6">
@@ -400,7 +409,7 @@ export default function ProjectsPage() {
                                     ))
                                 ) : (
                                     <TableRow>
-                                        <TableCell colSpan={8} className="h-24 text-center">
+                                        <TableCell colSpan={9} className="h-24 text-center">
                                             No projects found.
                                         </TableCell>
                                     </TableRow>
