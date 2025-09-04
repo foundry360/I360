@@ -25,6 +25,8 @@ import { useQuickAction } from '@/contexts/quick-action-context';
 import type { Epic } from '@/services/epic-service';
 import type { Sprint } from '@/services/sprint-service';
 import { TaskPriority } from '@/services/task-service';
+import { Contact } from '@/services/contact-service';
+import { useUser } from '@/contexts/user-context';
 
 export function EditBacklogItemDialog() {
   const {
@@ -35,10 +37,13 @@ export function EditBacklogItemDialog() {
   } = useQuickAction();
   
   const [item, setItem] = React.useState<BacklogItem | null>(null);
+  const [projectTeam, setProjectTeam] = React.useState<Contact[]>([]);
+  const { user } = useUser();
 
   React.useEffect(() => {
     if (editBacklogItemData) {
       setItem(editBacklogItemData.item);
+      setProjectTeam(editBacklogItemData.contacts || []);
     }
   }, [editBacklogItemData]);
   
@@ -49,9 +54,14 @@ export function EditBacklogItemDialog() {
     setItem((prev) => ({ ...prev!, [id]: id === 'points' ? Number(value) : value }));
   };
 
-  const handleSelectChange = (field: 'epicId' | 'priority' | 'status' | 'sprintId') => (value: string) => {
+  const handleSelectChange = (field: 'epicId' | 'priority' | 'status' | 'sprintId' | 'owner') => (value: string) => {
      if (!item) return;
-    setItem((prev) => ({ ...prev!, [field]: value === 'null' ? null : value }));
+     if (field === 'owner') {
+         const selectedUser = projectTeam.find(u => u.name === value) || { name: value, avatar: '' };
+         setItem((prev) => ({ ...prev!, owner: selectedUser.name, ownerAvatarUrl: selectedUser.avatar || '' }));
+     } else {
+        setItem((prev) => ({ ...prev!, [field]: value === 'null' ? null : value }));
+     }
   };
 
   const handleUpdateItem = async (e: React.FormEvent) => {
@@ -106,6 +116,22 @@ export function EditBacklogItemDialog() {
                   {editBacklogItemData?.epics.map((epic) => (
                     <SelectItem key={epic.id} value={epic.id}>{epic.title}</SelectItem>
                   ))}
+                </SelectContent>
+              </Select>
+            </div>
+             <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="owner" className="text-right">Owner</Label>
+              <Select onValueChange={handleSelectChange('owner')} value={item.owner} required>
+                <SelectTrigger className="col-span-3">
+                  <SelectValue placeholder="Select an owner" />
+                </SelectTrigger>
+                <SelectContent>
+                  {projectTeam.map(contact => (
+                    <SelectItem key={contact.id} value={contact.name}>{contact.name}</SelectItem>
+                  ))}
+                   {user && !projectTeam.some(c => c.name === user.displayName) && (
+                    <SelectItem value={user.displayName!}>{user.displayName}</SelectItem>
+                  )}
                 </SelectContent>
               </Select>
             </div>

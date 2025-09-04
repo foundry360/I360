@@ -57,11 +57,11 @@ type QuickActionContextType = {
   editEpicData: Epic | null;
 
   isEditBacklogItemDialogOpen: boolean;
-  openEditBacklogItemDialog: (item: BacklogItem, epics: Epic[], sprints: Sprint[]) => void;
+  openEditBacklogItemDialog: (item: BacklogItem, epics: Epic[], sprints: Sprint[], contacts: Contact[]) => void;
   closeEditBacklogItemDialog: () => void;
   onBacklogItemUpdated: (() => void) | null;
   setOnBacklogItemUpdated: (callback: (() => void) | null) => (() => void) | void;
-  editBacklogItemData: { item: BacklogItem, epics: Epic[], sprints: Sprint[] } | null;
+  editBacklogItemData: { item: BacklogItem, epics: Epic[], sprints: Sprint[], contacts: Contact[] } | null;
 
   isNewSprintDialogOpen: boolean;
   openNewSprintDialog: (projectId: string) => void;
@@ -134,7 +134,7 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
   // Edit Backlog Item Dialog State
   const [isEditBacklogItemDialogOpen, setIsEditBacklogItemDialogOpen] = React.useState(false);
   const [onBacklogItemUpdated, setOnBacklogItemUpdated] = React.useState<(() => void) | null>(null);
-  const [editBacklogItemData, setEditBacklogItemData] = React.useState<{ item: BacklogItem, epics: Epic[], sprints: Sprint[] } | null>(null);
+  const [editBacklogItemData, setEditBacklogItemData] = React.useState<{ item: BacklogItem, epics: Epic[], sprints: Sprint[], contacts: Contact[] } | null>(null);
 
   // New Sprint Dialog State
   const [isNewSprintDialogOpen, setIsNewSprintDialogOpen] = React.useState(false);
@@ -274,8 +274,8 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
     []
   );
 
-  const openEditBacklogItemDialog = React.useCallback((item: BacklogItem, epics: Epic[], sprints: Sprint[]) => {
-    setEditBacklogItemData({ item, epics, sprints });
+  const openEditBacklogItemDialog = React.useCallback((item: BacklogItem, epics: Epic[], sprints: Sprint[], contacts: Contact[]) => {
+    setEditBacklogItemData({ item, epics, sprints, contacts });
     setIsEditBacklogItemDialogOpen(true);
   }, []);
 

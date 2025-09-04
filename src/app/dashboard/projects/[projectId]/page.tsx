@@ -583,7 +583,7 @@ export default function ProjectDetailsPage() {
                                                             <div 
                                                                 key={item.id} 
                                                                 className="flex justify-between items-center p-3 border-b last:border-b-0 hover:bg-muted/50 cursor-pointer"
-                                                                onClick={() => openEditBacklogItemDialog(item, epics, sprints)}
+                                                                onClick={() => openEditBacklogItemDialog(item, epics, sprints, contacts)}
                                                             >
                                                                 <div className="flex items-center gap-3">
                                                                     <TooltipProvider>
@@ -617,7 +617,7 @@ export default function ProjectDetailsPage() {
                                                                             <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => e.stopPropagation()}><MoreVertical className="h-4 w-4" /></Button>
                                                                         </DropdownMenuTrigger>
                                                                         <DropdownMenuContent align="end">
-                                                                            <DropdownMenuItem onSelect={() => openEditBacklogItemDialog(item, epics, sprints)}><Pencil className="mr-2 h-4 w-4" />Edit</DropdownMenuItem>
+                                                                            <DropdownMenuItem onSelect={() => openEditBacklogItemDialog(item, epics, sprints, contacts)}><Pencil className="mr-2 h-4 w-4" />Edit</DropdownMenuItem>
                                                                             <DropdownMenuSub>
                                                                                 <DropdownMenuSubTrigger>
                                                                                     <Rocket className="mr-2 h-4 w-4" />
@@ -707,7 +707,7 @@ export default function ProjectDetailsPage() {
                                                                  const IconComponent = epicConfig.icon;
                                                                 return (
                                                                     <div key={item.id} className="flex justify-between items-center p-3 border-b last:border-b-0 hover:bg-muted/50"
-                                                                        onClick={() => openEditBacklogItemDialog(item, epics, sprints)}
+                                                                        onClick={() => openEditBacklogItemDialog(item, epics, sprints, contacts)}
                                                                     >
                                                                          <div className="flex items-center gap-3">
                                                                             <TooltipProvider>
