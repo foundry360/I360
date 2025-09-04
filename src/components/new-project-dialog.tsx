@@ -24,6 +24,7 @@ import { createProject } from '@/services/project-service';
 import { getCompanies, type Company } from '@/services/company-service';
 import { useQuickAction } from '@/contexts/quick-action-context';
 import { useUser } from '@/contexts/user-context';
+import { format } from 'date-fns';
 
 const initialNewProjectState = {
   name: '',
@@ -67,7 +68,22 @@ export function NewProjectDialog() {
       return;
     }
     try {
-      await createProject(newProject);
+      const company = companies.find(c => c.id === newProject.companyId);
+      if (!company) {
+          alert('Could not find selected company');
+          return;
+      }
+      
+      const companyPrefix = company.name.substring(0, 4).toUpperCase();
+      const formattedDate = format(new Date(newProject.startDate), 'MMddyyyy');
+      const formattedName = `${companyPrefix}-${formattedDate}-${newProject.name}`;
+
+      const projectToCreate = {
+        ...newProject,
+        name: formattedName,
+      };
+
+      await createProject(projectToCreate);
       setNewProject(initialNewProjectState);
       closeNewProjectDialog();
       if (onProjectCreated) {
