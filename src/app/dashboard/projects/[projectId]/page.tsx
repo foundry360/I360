@@ -693,7 +693,7 @@ export default function ProjectDetailsPage() {
                                                     tickLine={false}
                                                     axisLine={false}
                                                     tickMargin={8}
-                                                    width={20}
+                                                    width={30}
                                                 />
                                                 <RechartsTooltip cursor={false} content={<ChartTooltipContent indicator="line" />} />
                                                 <defs>
@@ -1157,6 +1157,7 @@ export default function ProjectDetailsPage() {
 
 
     
+
 
 
 
