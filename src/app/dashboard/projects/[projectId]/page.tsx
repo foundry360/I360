@@ -459,10 +459,12 @@ export default function ProjectDetailsPage() {
                             </>
                         )}
                          {activeTab === 'sprints' && (
-                             <TooltipProvider>
+                            <TooltipProvider>
                                 <Tooltip>
                                     <TooltipTrigger asChild>
-                                        <Button size="icon" onClick={() => openNewSprintDialog(projectId)}><Rocket className="h-4 w-4" /></Button>
+                                        <Button size="icon" onClick={() => openNewSprintDialog(projectId)}>
+                                            <Rocket className="h-4 w-4" />
+                                        </Button>
                                     </TooltipTrigger>
                                     <TooltipContent>
                                         <p>New Sprint</p>
@@ -614,7 +616,7 @@ export default function ProjectDetailsPage() {
                                                 <AccordionItem key={sprint.id} value={sprint.id} className="border rounded-lg bg-card">
                                                     <div className="flex items-center p-4">
                                                         <AccordionTrigger className="flex-1 p-0 hover:no-underline">
-                                                            <div className="flex items-center gap-4">
+                                                            <div className="flex-1 flex items-center gap-4">
                                                                 <h3 className="font-semibold text-base">{sprint.name}</h3>
                                                                 <p className="text-sm text-muted-foreground">
                                                                     {format(parseISO(sprint.startDate), 'MMM d')} - {format(parseISO(sprint.endDate), 'MMM d, yyyy')}
@@ -624,7 +626,7 @@ export default function ProjectDetailsPage() {
                                                         </AccordionTrigger>
                                                         <DropdownMenu>
                                                             <DropdownMenuTrigger asChild>
-                                                                <Button variant="ghost" size="icon" className="h-8 w-8"><MoreVertical className="h-4 w-4" /></Button>
+                                                                <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0"><MoreVertical className="h-4 w-4" /></Button>
                                                             </DropdownMenuTrigger>
                                                             <DropdownMenuContent align="end">
                                                                 {sprint.status === 'Not Started' && (
