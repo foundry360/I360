@@ -2,7 +2,7 @@
 'use client';
 
 import { db } from '@/lib/firebase';
-import { collection, doc, getDocs, setDoc, updateDoc, query, where, writeBatch, runTransaction, DocumentReference, WriteBatch, addDoc } from 'firebase/firestore';
+import { collection, doc, getDocs, setDoc, updateDoc, query, where, writeBatch, runTransaction, DocumentReference, WriteBatch, addDoc, deleteDoc } from 'firebase/firestore';
 
 export type TaskStatus = 'To Do' | 'In Progress' | 'In Review' | 'Needs Revisions' | 'Final Approval' | 'Complete';
 
@@ -52,6 +52,12 @@ export async function updateTask(id: string, taskData: Partial<Omit<Task, 'id'>>
     const docRef = doc(db, 'tasks', id);
     await updateDoc(docRef, taskData);
 }
+
+export async function deleteTask(id: string): Promise<void> {
+    const docRef = doc(db, 'tasks', id);
+    await deleteDoc(docRef);
+}
+
 
 export async function updateTaskStatus(id: string, status: TaskStatus): Promise<void> {
     const docRef = doc(db, 'tasks', id);

@@ -19,10 +19,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { updateTask, type Task, TaskPriority } from '@/services/task-service';
+import { updateTask, type Task, TaskPriority, deleteTask } from '@/services/task-service';
 import { useQuickAction } from '@/contexts/quick-action-context';
 import { useUser } from '@/contexts/user-context';
 import { getContacts, Contact } from '@/services/contact-service';
+import { getBacklogItemsForProject, updateBacklogItem } from '@/services/backlog-item-service';
 
 export function EditTaskDialog() {
   const {
@@ -79,6 +80,31 @@ export function EditTaskDialog() {
       }
     } catch (error) {
       console.error('Failed to update task:', error);
+    }
+  };
+  
+  const handleMoveToBacklog = async () => {
+    if (!task || !task.backlogId) return;
+    try {
+        // Find the corresponding backlog item
+        const backlogItems = await getBacklogItemsForProject(task.projectId);
+        const correspondingItem = backlogItems.find(item => item.backlogId === task.backlogId);
+
+        if (correspondingItem) {
+            // Update the backlog item to remove it from the sprint
+            await updateBacklogItem(correspondingItem.id, { sprintId: null });
+        }
+
+        // Delete the task from the board
+        await deleteTask(task.id);
+        
+        // Close dialog and refresh
+        handleOpenChange(false);
+        if (onTaskUpdated) {
+            onTaskUpdated();
+        }
+    } catch (error) {
+        console.error("Failed to move task to backlog:", error);
     }
   };
 
@@ -142,11 +168,16 @@ export function EditTaskDialog() {
               </Select>
             </div>
           </div>
-          <DialogFooter className="pt-4">
-            <Button type="button" variant="outline" onClick={() => handleOpenChange(false)}>
-              Cancel
+          <DialogFooter className="pt-4 justify-between">
+            <Button type="button" variant="destructive" onClick={handleMoveToBacklog}>
+                Move to Backlog
             </Button>
-            <Button type="submit">Save Changes</Button>
+            <div className="flex gap-2">
+                <Button type="button" variant="outline" onClick={() => handleOpenChange(false)}>
+                Cancel
+                </Button>
+                <Button type="submit">Save Changes</Button>
+            </div>
           </DialogFooter>
         </form>
       </DialogContent>
