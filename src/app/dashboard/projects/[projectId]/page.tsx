@@ -214,6 +214,7 @@ export default function ProjectDetailsPage() {
     const router = useRouter();
     const projectId = params.projectId as string;
     const [project, setProject] = React.useState<Project | null>(null);
+    const [tasks, setTasks] = React.useState<Task[]>([]);
     const [columns, setColumns] = React.useState<BoardColumns>(initialColumns);
     const [epics, setEpics] = React.useState<Epic[]>([]);
     const [backlogItems, setBacklogItems] = React.useState<BacklogItem[]>([]);
@@ -246,6 +247,7 @@ export default function ProjectDetailsPage() {
                 getSprintsForProject(projectId),
             ]);
             setProject(projectData);
+            setTasks(tasksData);
             
             if (projectData?.companyId) {
                 const companyContacts = await getContactsForCompany(projectData.companyId);
@@ -363,7 +365,8 @@ export default function ProjectDetailsPage() {
             await updateBacklogItem(backlogItemId, { sprintId });
     
             const sprint = sprints.find(s => s.id === sprintId);
-            if (sprint && sprint.status === 'Active') {
+            // Create a task as soon as an item is moved to any non-completed sprint.
+            if (sprint && sprint.status !== 'Completed') {
                 const item = backlogItems.find(bi => bi.id === backlogItemId);
                 if (item) {
                     const toDoColumn = columns['To Do'] || [];
@@ -401,7 +404,7 @@ export default function ProjectDetailsPage() {
                 setLoading(false);
                 return;
             }
-            await startSprint(sprintId, projectId, sprintItems);
+            await startSprint(sprintId, projectId, sprintItems, tasks);
             toast({
                 title: 'Sprint Started!',
                 description: 'Tasks have been created on the board.',

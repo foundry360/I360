@@ -40,29 +40,32 @@ export async function createSprint(sprintData: Omit<Sprint, 'id'>): Promise<stri
     return docRef.id;
 }
 
-export async function startSprint(sprintId: string, projectId: string, sprintItems: BacklogItem[]): Promise<void> {
+export async function startSprint(sprintId: string, projectId: string, sprintItems: BacklogItem[], existingTasks: Task[]): Promise<void> {
     const batch = writeBatch(db);
 
     // 1. Update the sprint status
     const sprintRef = doc(db, 'sprints', sprintId);
     batch.update(sprintRef, { status: 'Active' });
 
-    // 2. Create a task for each backlog item
+    // 2. Create a task for each backlog item that doesn't already have one
     sprintItems.forEach((item, index) => {
-        const taskRef = doc(collection(db, 'tasks'));
-        const newTask: Task = {
-            id: taskRef.id,
-            projectId: projectId,
-            title: item.title,
-            status: 'To Do',
-            order: index, // Initial order in the "To Do" column
-            owner: item.owner || 'Unassigned',
-            ownerAvatarUrl: item.ownerAvatarUrl || '',
-            priority: item.priority,
-            type: 'Execution', // Default type, can be adjusted
-            backlogId: item.backlogId,
-        };
-        batch.set(taskRef, newTask);
+        const taskExists = existingTasks.some(task => task.backlogId === item.backlogId);
+        if (!taskExists) {
+            const taskRef = doc(collection(db, 'tasks'));
+            const newTask: Task = {
+                id: taskRef.id,
+                projectId: projectId,
+                title: item.title,
+                status: 'To Do',
+                order: index, // This might need refinement to place at the end of the To Do list
+                owner: item.owner || 'Unassigned',
+                ownerAvatarUrl: item.ownerAvatarUrl || '',
+                priority: item.priority,
+                type: 'Execution', // Default type, can be adjusted
+                backlogId: item.backlogId,
+            };
+            batch.set(taskRef, newTask);
+        }
     });
 
     await batch.commit();
