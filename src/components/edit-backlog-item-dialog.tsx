@@ -75,7 +75,7 @@ export function EditBacklogItemDialog() {
     try {
       const dataToSave = {
         ...item,
-        dueDate: item.dueDate ? parseISO(item.dueDate).toISOString() : undefined,
+        dueDate: item.dueDate || null, // Send null if empty, service will handle deletion
       };
       await updateBacklogItem(item.id, dataToSave);
       handleOpenChange(false);

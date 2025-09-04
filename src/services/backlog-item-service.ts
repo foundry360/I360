@@ -2,9 +2,10 @@
 'use client';
 
 import { db } from '@/lib/firebase';
-import { collection, query, where, getDocs, doc, setDoc, addDoc, getDoc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { collection, query, where, getDocs, doc, setDoc, addDoc, getDoc, updateDoc, deleteDoc, deleteField } from 'firebase/firestore';
 import { deleteTaskByBacklogId, type TaskPriority, type TaskStatus } from './task-service';
 import { updateProjectLastActivity } from './project-service';
+import { parseISO } from 'date-fns';
 
 export interface BacklogItem {
   id: string;
@@ -19,7 +20,7 @@ export interface BacklogItem {
   priority: TaskPriority;
   owner: string;
   ownerAvatarUrl?: string;
-  dueDate?: string;
+  dueDate?: string | null;
 }
 
 const backlogItemsCollection = collection(db, 'backlogItems');
@@ -83,7 +84,16 @@ export async function updateBacklogItem(id: string, data: Partial<BacklogItem>):
         }
     }
     
-    await updateDoc(docRef, data);
+    const { dueDate, ...restOfData } = data;
+    const finalData: any = { ...restOfData };
+    
+    if (dueDate) {
+        finalData.dueDate = parseISO(dueDate).toISOString();
+    } else if (dueDate === null) {
+        finalData.dueDate = deleteField();
+    }
+
+    await updateDoc(docRef, finalData);
     await updateProjectLastActivity(originalData.projectId);
 }
 
