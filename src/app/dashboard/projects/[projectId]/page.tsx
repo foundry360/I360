@@ -14,6 +14,10 @@ import {
   Wrench,
   Zap,
   ChevronUp,
+  Plus,
+  Layers,
+  FilePlus,
+  ChevronDown,
 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
@@ -22,7 +26,11 @@ import { DragDropContext, Droppable, Draggable, type DropResult } from '@hello-p
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { getProject, Project } from '@/services/project-service';
 import { getTasksForProject, updateTaskOrderAndStatus, Task, TaskStatus } from '@/services/task-service';
+import { getEpicsForProject, Epic } from '@/services/epic-service';
+import { getBacklogItemsForProject, BacklogItem } from '@/services/backlog-item-service';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Badge } from '@/components/ui/badge';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
 type TaskType = Task['type'];
 
@@ -169,6 +177,8 @@ export default function ProjectDetailsPage() {
     const projectId = params.projectId as string;
     const [project, setProject] = React.useState<Project | null>(null);
     const [tasks, setTasks] = React.useState<Task[]>([]);
+    const [epics, setEpics] = React.useState<Epic[]>([]);
+    const [backlogItems, setBacklogItems] = React.useState<BacklogItem[]>([]);
     const [loading, setLoading] = React.useState(true);
     
     React.useEffect(() => {
@@ -176,12 +186,16 @@ export default function ProjectDetailsPage() {
             if (!projectId) return;
             setLoading(true);
             try {
-                const [projectData, tasksData] = await Promise.all([
+                const [projectData, tasksData, epicsData, backlogItemsData] = await Promise.all([
                     getProject(projectId),
-                    getTasksForProject(projectId)
+                    getTasksForProject(projectId),
+                    getEpicsForProject(projectId),
+                    getBacklogItemsForProject(projectId),
                 ]);
                 setProject(projectData);
                 setTasks(tasksData.sort((a, b) => a.order - b.order));
+                setEpics(epicsData);
+                setBacklogItems(backlogItemsData);
             } catch (error) {
                 console.error("Failed to fetch project data:", error);
             } finally {
@@ -327,7 +341,54 @@ export default function ProjectDetailsPage() {
                         </DragDropContext>
                     </TabsContent>
                     <TabsContent value="backlog">
-                        <p>Backlog View - Under Construction</p>
+                       <div className="space-y-6">
+                            <div className="flex justify-end gap-2">
+                                <Button variant="outline"><Layers className="mr-2 h-4 w-4" /> Add Epic</Button>
+                                <Button><FilePlus className="mr-2 h-4 w-4" /> Add Backlog Item</Button>
+                            </div>
+                            <Accordion type="multiple" defaultValue={epics.map(e => e.id)} className="w-full">
+                                {epics.map(epic => (
+                                    <AccordionItem key={epic.id} value={epic.id}>
+                                        <AccordionTrigger>
+                                            <div className="flex items-center gap-3">
+                                                <Badge variant={epic.status === 'Done' ? 'default' : 'secondary'} className={epic.status === 'Done' ? 'bg-green-500' : ''}>{epic.status}</Badge>
+                                                <span className="font-semibold">{epic.title}</span>
+                                                <span className="text-muted-foreground text-sm">{projectPrefix}-{epic.epicId}</span>
+                                            </div>
+                                        </AccordionTrigger>
+                                        <AccordionContent>
+                                            <div className="pl-8 pr-4 space-y-4">
+                                                <p className="text-muted-foreground">{epic.description}</p>
+                                                <div className="border rounded-lg">
+                                                    {backlogItems.filter(item => item.epicId === epic.id).map(item => (
+                                                        <div key={item.id} className="flex justify-between items-center p-3 border-b last:border-b-0">
+                                                            <div className="flex items-center gap-3">
+                                                                <span className="text-muted-foreground text-sm font-mono">{projectPrefix}-{item.backlogId}</span>
+                                                                <p>{item.title}</p>
+                                                            </div>
+                                                            <div className="flex items-center gap-4">
+                                                                <Badge variant="outline">{item.status}</Badge>
+                                                                <Badge variant="secondary">{item.points} Points</Badge>
+                                                                <TooltipProvider>
+                                                                    <Tooltip>
+                                                                        <TooltipTrigger>
+                                                                            <PriorityIcon priority={item.priority} />
+                                                                        </TooltipTrigger>
+                                                                        <TooltipContent>
+                                                                            <p>Priority: {item.priority}</p>
+                                                                        </TooltipContent>
+                                                                    </Tooltip>
+                                                                </TooltipProvider>
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        </AccordionContent>
+                                    </AccordionItem>
+                                ))}
+                            </Accordion>
+                       </div>
                     </TabsContent>
                     <TabsContent value="sprints">
                         <p>Sprints View - Under Construction</p>
