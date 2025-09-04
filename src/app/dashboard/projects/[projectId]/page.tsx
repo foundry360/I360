@@ -526,25 +526,20 @@ export default function ProjectDetailsPage() {
     }, [epics, backlogItems, tasks]);
 
     const velocityData = React.useMemo(() => {
-        const completedSprints = sprints
-            .filter(s => s.status === 'Completed')
-            .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
-    
-        return completedSprints.slice(-5).map(sprint => {
-            const itemsInSprint = backlogItems.filter(item => {
-                const task = tasks.find(t => t.backlogId === item.backlogId && t.status === 'Complete');
-                if (!task) return false;
-                const completedDate = new Date(task.dueDate || 0); // This part is tricky without task completion dates
-                return new Date(sprint.startDate) <= completedDate && completedDate <= new Date(sprint.endDate);
-            });
-    
-            const velocity = itemsInSprint.reduce((totalPoints, item) => {
-                return totalPoints + (item.points || 0);
+        const completedSprints = sprints.filter(s => s.status === 'Completed').sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
+        return completedSprints.map(sprint => {
+            const itemsInSprint = backlogItems.filter(item => item.sprintId === sprint.id);
+            const completedTasksInSprint = tasks.filter(task =>
+                task.status === 'Complete' && itemsInSprint.some(item => item.backlogId === task.backlogId)
+            );
+            const pointsThisSprint = completedTasksInSprint.reduce((acc, task) => {
+                const item = itemsInSprint.find(i => i.backlogId === task.backlogId);
+                return acc + (item?.points || 0);
             }, 0);
-    
+
             return {
                 name: sprint.name,
-                velocity: velocity,
+                velocity: pointsThisSprint,
             };
         });
     }, [sprints, backlogItems, tasks]);
@@ -1251,6 +1246,7 @@ export default function ProjectDetailsPage() {
 
 
     
+
 
 
 
