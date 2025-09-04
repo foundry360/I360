@@ -125,7 +125,7 @@ const TaskCard = ({ task, taskNumber }: { task: Task; taskNumber: string }) => {
                 </CardContent>
                 <CardFooter className="p-3 flex justify-between items-center bg-muted/50 mt-auto">
                     <div className="flex items-center gap-2">
-                        <span className="text-xs text-muted-foreground font-mono">{taskNumber}</span>
+                        <span className="text-xs text-foreground font-mono">{taskNumber}</span>
                         <TooltipProvider>
                             <Tooltip>
                                 <TooltipTrigger>
@@ -614,14 +614,16 @@ export default function ProjectDetailsPage() {
                                             const itemsInSprint = backlogItems.filter(item => item.sprintId === sprint.id);
                                             return (
                                                 <AccordionItem key={sprint.id} value={sprint.id} className="border rounded-lg bg-card">
-                                                    <AccordionTrigger className="flex p-4 hover:no-underline">
-                                                        <div className="flex-1 flex items-center gap-4">
-                                                            <h3 className="font-semibold text-base">{sprint.name}</h3>
-                                                            <p className="text-sm text-muted-foreground">
-                                                                {format(parseISO(sprint.startDate), 'MMM d')} - {format(parseISO(sprint.endDate), 'MMM d, yyyy')}
-                                                            </p>
-                                                            <Badge variant={sprint.status === 'Active' ? 'default' : 'secondary'} className={sprint.status === 'Active' ? 'bg-green-500' : ''}>{sprint.status}</Badge>
-                                                        </div>
+                                                    <div className="flex items-center p-4">
+                                                        <AccordionTrigger className="flex-1 p-0 hover:no-underline justify-start [&>svg]:hidden">
+                                                            <div className="flex items-center gap-4">
+                                                                <h3 className="font-semibold text-base">{sprint.name}</h3>
+                                                                <p className="text-sm text-muted-foreground">
+                                                                    {format(parseISO(sprint.startDate), 'MMM d')} - {format(parseISO(sprint.endDate), 'MMM d, yyyy')}
+                                                                </p>
+                                                                <Badge variant={sprint.status === 'Active' ? 'default' : 'secondary'} className={sprint.status === 'Active' ? 'bg-green-500' : ''}>{sprint.status}</Badge>
+                                                            </div>
+                                                        </AccordionTrigger>
                                                         <div className="flex items-center gap-2 ml-auto">
                                                             <DropdownMenu>
                                                                 <DropdownMenuTrigger asChild>
@@ -643,7 +645,7 @@ export default function ProjectDetailsPage() {
                                                                 </DropdownMenuContent>
                                                             </DropdownMenu>
                                                         </div>
-                                                    </AccordionTrigger>
+                                                    </div>
                                                     <AccordionContent className="p-4 pt-0">
                                                         <p className="italic text-muted-foreground mb-4">{sprint.goal}</p>
                                                         <div className="border rounded-lg">
