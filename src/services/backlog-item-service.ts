@@ -9,13 +9,15 @@ export interface BacklogItem {
   id: string;
   projectId: string;
   epicId: string;
-  sprintId?: string | null; // Add sprintId
+  sprintId?: string | null;
   backlogId: number;
   title: string;
   description: string;
   status: 'To Do' | 'In Progress' | 'Done' | 'Blocked';
   points: number;
   priority: TaskPriority;
+  owner: string;
+  ownerAvatarUrl?: string;
 }
 
 const backlogItemsCollection = collection(db, 'backlogItems');

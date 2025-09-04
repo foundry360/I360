@@ -24,6 +24,7 @@ import { createBacklogItem, type BacklogItem } from '@/services/backlog-item-ser
 import { useQuickAction } from '@/contexts/quick-action-context';
 import type { Epic } from '@/services/epic-service';
 import { TaskPriority } from '@/services/task-service';
+import { useUser } from '@/contexts/user-context';
 
 type NewBacklogItemState = Omit<BacklogItem, 'id' | 'backlogId'>;
 
@@ -35,6 +36,8 @@ const initialNewItemState: NewBacklogItemState = {
   status: 'To Do',
   points: 0,
   priority: 'Medium',
+  owner: '',
+  ownerAvatarUrl: '',
 };
 
 export function NewBacklogItemDialog() {
@@ -46,12 +49,18 @@ export function NewBacklogItemDialog() {
   } = useQuickAction();
   
   const [newItem, setNewItem] = React.useState<NewBacklogItemState>(initialNewItemState);
+  const { user } = useUser();
 
   React.useEffect(() => {
     if (newBacklogItemData) {
-      setNewItem(prev => ({ ...prev, projectId: newBacklogItemData.projectId }));
+      setNewItem(prev => ({ 
+        ...prev, 
+        projectId: newBacklogItemData.projectId,
+        owner: user?.displayName || '',
+        ownerAvatarUrl: user?.photoURL || ''
+      }));
     }
-  }, [newBacklogItemData]);
+  }, [newBacklogItemData, user]);
   
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -118,6 +127,10 @@ export function NewBacklogItemDialog() {
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="owner" className="text-right">Owner</Label>
+              <Input id="owner" value={newItem.owner} onChange={handleInputChange} className="col-span-3" required />
             </div>
              <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="points" className="text-right">Story Points</Label>

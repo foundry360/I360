@@ -56,8 +56,8 @@ export async function startSprint(sprintId: string, projectId: string, sprintIte
             title: item.title,
             status: 'To Do',
             order: index, // Initial order in the "To Do" column
-            owner: 'Unassigned', // Or derive from backlog item if available
-            ownerAvatarUrl: '',
+            owner: item.owner || 'Unassigned',
+            ownerAvatarUrl: item.ownerAvatarUrl || '',
             priority: item.priority,
             type: 'Execution', // Default type, can be adjusted
             backlogId: item.backlogId,
