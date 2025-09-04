@@ -28,7 +28,8 @@ import {
   BarChart3,
   Scaling,
   Rocket,
-  CheckCircle
+  CheckCircle,
+  Search
 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
@@ -50,6 +51,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { format, parseISO } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
+import { Input } from '@/components/ui/input';
 
 type TaskType = Task['type'];
 type BoardColumns = Record<TaskStatus, Task[]>;
@@ -244,6 +246,7 @@ export default function ProjectDetailsPage() {
     const { toast } = useToast();
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
     const [itemToDelete, setItemToDelete] = React.useState<{type: 'epic' | 'backlogItem' | 'sprint', id: string, name: string} | null>(null);
+    const [allWorkSearchTerm, setAllWorkSearchTerm] = React.useState('');
 
     const fetchData = React.useCallback(async () => {
         if (!projectId) return;
@@ -466,6 +469,23 @@ export default function ProjectDetailsPage() {
 
     const upcomingSprints = sprints.filter(s => s.status === 'Not Started' || s.status === 'Active');
 
+    const allSprintItems = React.useMemo(() => 
+        backlogItems
+            .filter(item => item.sprintId)
+            .filter(item => {
+                if (!allWorkSearchTerm) return true;
+                const searchTermLower = allWorkSearchTerm.toLowerCase();
+                const epic = epics.find(e => e.id === item.epicId);
+                return (
+                    item.title.toLowerCase().includes(searchTermLower) ||
+                    item.owner.toLowerCase().includes(searchTermLower) ||
+                    (epic && epic.title.toLowerCase().includes(searchTermLower)) ||
+                    (`${projectPrefix}-${item.backlogId}`).toLowerCase().includes(searchTermLower)
+                );
+            })
+            .sort((a,b) => (sprints.find(s => s.id === b.sprintId)?.endDate || '').localeCompare(sprints.find(s => s.id === a.sprintId)?.endDate || ''))
+    , [backlogItems, sprints, allWorkSearchTerm, epics, projectPrefix]);
+
     if (loading) {
         return (
              <div className="space-y-4">
@@ -530,6 +550,12 @@ export default function ProjectDetailsPage() {
                             className="pb-3 rounded-none data-[state=active]:shadow-none data-[state=active]:border-primary data-[state=active]:border-b-4 data-[state=active]:text-foreground data-[state=active]:font-bold"
                         >
                             Sprints
+                        </TabsTrigger>
+                        <TabsTrigger 
+                            value="all-work"
+                            className="pb-3 rounded-none data-[state=active]:shadow-none data-[state=active]:border-primary data-[state=active]:border-b-4 data-[state=active]:text-foreground data-[state=active]:font-bold"
+                        >
+                            All Work
                         </TabsTrigger>
                     </TabsList>
                      <div className="flex items-center gap-2">
@@ -817,6 +843,70 @@ export default function ProjectDetailsPage() {
                             })}
                         </div>
                     </TabsContent>
+                     <TabsContent value="all-work">
+                        <div className="space-y-4">
+                            <div className="relative">
+                                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                                <Input
+                                    placeholder="Search all work items..."
+                                    value={allWorkSearchTerm}
+                                    onChange={(e) => setAllWorkSearchTerm(e.target.value)}
+                                    className="pl-8"
+                                />
+                            </div>
+                             <div className="border rounded-lg">
+                                {allSprintItems.length > 0 ? allSprintItems.map(item => {
+                                    const epic = epics.find(e => e.id === item.epicId);
+                                    const sprint = sprints.find(s => s.id === item.sprintId);
+                                    const epicConfig = epic ? (epicIcons[epic.title] || { icon: Layers, color: 'text-foreground' }) : { icon: Layers, color: 'text-foreground' };
+                                    const IconComponent = epicConfig.icon;
+                                    return (
+                                        <div key={item.id} className="flex justify-between items-center p-3 border-b last:border-b-0 hover:bg-muted/50 cursor-pointer"
+                                            onClick={() => openEditBacklogItemDialog(item, epics, sprints, contacts)}
+                                        >
+                                            <div className="flex items-center gap-3">
+                                                <TooltipProvider>
+                                                    <Tooltip>
+                                                        <TooltipTrigger>
+                                                            <IconComponent className={cn("h-4 w-4", epicConfig.color)} />
+                                                        </TooltipTrigger>
+                                                        <TooltipContent>
+                                                            <p>Epic: {epic?.title || 'Unknown'}</p>
+                                                        </TooltipContent>
+                                                    </Tooltip>
+                                                </TooltipProvider>
+                                                <span className="text-foreground text-sm">{projectPrefix}-{item.backlogId}</span>
+                                                <p>{item.title}</p>
+                                            </div>
+                                            <div className="flex items-center gap-4">
+                                                {sprint && <Badge variant={sprint.status === 'Active' ? 'default' : sprint.status === 'Completed' ? 'secondary' : 'outline'} className={cn(sprint.status === 'Active' && 'bg-green-500')}>{sprint.name}</Badge>}
+                                                <Badge variant="outline" className={cn(statusColors[item.status])}>{item.status}</Badge>
+                                                <Badge variant="secondary">{item.points} Points</Badge>
+                                                 <TooltipProvider>
+                                                    <Tooltip>
+                                                        <TooltipTrigger>
+                                                            <PriorityIcon priority={item.priority} />
+                                                        </TooltipTrigger>
+                                                        <TooltipContent>
+                                                            <p>Priority: {item.priority}</p>
+                                                        </TooltipContent>
+                                                    </Tooltip>
+                                                </TooltipProvider>
+                                                <Avatar className="h-6 w-6">
+                                                    <AvatarImage src={item.ownerAvatarUrl} />
+                                                    <AvatarFallback className="text-xs">{item.owner.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                                                </Avatar>
+                                            </div>
+                                        </div>
+                                    )
+                                }) : (
+                                    <p className="text-sm text-muted-foreground text-center p-6">
+                                        {allWorkSearchTerm ? 'No matching items found.' : 'No items assigned to any sprints.'}
+                                    </p>
+                                )}
+                            </div>
+                        </div>
+                    </TabsContent>
                 </div>
             </Tabs>
             <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
@@ -838,5 +928,7 @@ export default function ProjectDetailsPage() {
 }
 
 
+
+    
 
     
