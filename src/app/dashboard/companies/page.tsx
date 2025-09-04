@@ -47,6 +47,7 @@ import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { useQuickAction } from '@/contexts/quick-action-context';
 import { useToast } from '@/hooks/use-toast';
+import { formatInTimeZone } from 'date-fns-tz';
 
 type SortKey = keyof Company | 'contactName';
 
@@ -204,6 +205,11 @@ export default function CompaniesPage() {
     });
   };
 
+  const formatDate = (isoDate: string) => {
+    if (!isoDate) return 'N/A';
+    // The date is stored as an ISO string. We need to display it as if it were in UTC.
+    return formatInTimeZone(isoDate, 'UTC', 'MMM dd, yyyy, hh:mm a');
+  };
 
   const currentVisibleCompanies = sortedCompanies.slice(
     page * rowsPerPage,
@@ -366,7 +372,7 @@ export default function CompaniesPage() {
                           </a>
                       </TableCell>
                       <TableCell>
-                          {new Date(company.lastActivity).toLocaleString([], { year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric', hour12: true, timeZoneName: 'short' })}
+                          {formatDate(company.lastActivity)}
                       </TableCell>
                       <TableCell className="text-right">
                          <DropdownMenu>

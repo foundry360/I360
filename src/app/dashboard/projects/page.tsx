@@ -40,7 +40,7 @@ import { cn } from '@/lib/utils';
 import { Checkbox } from '@/components/ui/checkbox';
 import { TablePagination } from '@/components/table-pagination';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { format, parseISO } from 'date-fns';
+import { formatInTimeZone } from 'date-fns-tz';
 
 type SortKey = keyof Project;
 type ProjectStatus = 'Active' | 'Inactive' | 'Completed' | 'On Hold';
@@ -202,7 +202,8 @@ export default function ProjectsPage() {
   }
 
   const formatDate = (isoDate: string) => {
-    return format(parseISO(isoDate), 'MMM dd, yyyy');
+    if (!isoDate) return 'N/A';
+    return formatInTimeZone(isoDate, 'UTC', 'MMM dd, yyyy');
   }
 
   return (
@@ -414,7 +415,3 @@ export default function ProjectsPage() {
     </>
   );
 }
-
-    
-
-    

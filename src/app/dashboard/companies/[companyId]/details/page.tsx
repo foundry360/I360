@@ -53,7 +53,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { TablePagination } from '@/components/table-pagination';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
-import { parseISO } from 'date-fns';
+import { formatInTimeZone } from 'date-fns-tz';
 
 type ActivityItem = {
     activity: string;
@@ -111,17 +111,17 @@ export default function CompanyDetailsPage() {
       if (company) {
           const assessmentActivity: ActivityItem[] = allAssessments.map(a => ({
               activity: `Assessment "${a.name}" status: ${a.status}`,
-              time: parseISO(a.startDate),
+              time: new Date(a.startDate),
           }));
 
           const contactActivity: ActivityItem[] = companyContacts.map(c => ({
               activity: `Contact "${c.name}" added.`,
-              time: parseISO(c.lastActivity),
+              time: new Date(c.lastActivity),
           }));
       
           const companyUpdateActivity = {
               activity: "Company profile updated",
-              time: parseISO(company.lastActivity)
+              time: new Date(company.lastActivity)
           };
            const allActivity = [...assessmentActivity, ...contactActivity, companyUpdateActivity]
             .sort((a, b) => b.time.getTime() - a.time.getTime());
@@ -257,6 +257,15 @@ export default function CompanyDetailsPage() {
   const isAssessmentIndeterminate = paginatedAssessments.some(a => selectedAssessments.includes(a.id)) && !allOnPageSelected;
 
   const recentActivity = isActivityExpanded ? allRecentActivity : allRecentActivity.slice(0, 5);
+
+  const formatDate = (isoDate: string) => {
+    if (!isoDate) return 'N/A';
+    return formatInTimeZone(isoDate, 'UTC', 'MMM dd, yyyy');
+  };
+
+  const formatDateTime = (date: Date) => {
+    return formatInTimeZone(date, 'UTC', 'MMM dd, yyyy, hh:mm a');
+  }
 
   if (loading && !companyData) {
       return (
@@ -413,7 +422,7 @@ export default function CompanyDetailsPage() {
                           <TableCell>
                               <Progress value={assessment.progress} className="h-2" />
                           </TableCell>
-                          <TableCell>{new Date(assessment.startDate).toLocaleDateString()}</TableCell>
+                          <TableCell>{formatDate(assessment.startDate)}</TableCell>
                         </TableRow>
                       ))
                     ) : (
@@ -502,7 +511,7 @@ export default function CompanyDetailsPage() {
                               {assessment.status}
                             </Badge>
                           </TableCell>
-                          <TableCell>{new Date(assessment.startDate).toLocaleDateString()}</TableCell>
+                          <TableCell>{formatDate(assessment.startDate)}</TableCell>
                           <TableCell className="text-right">
                               {assessment.documentUrl && (
                                 <Button asChild variant="ghost" size="icon" title="View Document">
@@ -639,7 +648,7 @@ export default function CompanyDetailsPage() {
                             <div className="mt-1 h-2 w-2 rounded-full bg-primary" />
                             <div>
                             <p className="font-medium text-sm">{item.activity}</p>
-                            <p className="text-xs text-muted-foreground">{item.time.toLocaleString([], { year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric', hour12: true, timeZoneName: 'short' })}</p>
+                            <p className="text-xs text-muted-foreground">{formatDateTime(item.time)}</p>
                             </div>
                         </div>
                     ))
@@ -693,7 +702,3 @@ export default function CompanyDetailsPage() {
     </>
   );
 }
-
-    
-
-    
