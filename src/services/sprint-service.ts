@@ -69,7 +69,7 @@ export async function startSprint(sprintId: string, projectId: string, sprintIte
 }
 
 
-export async function updateSprint(id: string, data: Partial<Sprint>): Promise<void> {
+export async function updateSprint(id: string, data: Partial<Omit<Sprint, 'id'>>): Promise<void> {
     const docRef = doc(db, 'sprints', id);
     await updateDoc(docRef, data);
 }

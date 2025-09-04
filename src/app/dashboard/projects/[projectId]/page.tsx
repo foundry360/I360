@@ -227,6 +227,7 @@ export default function ProjectDetailsPage() {
         openEditEpicDialog, setOnEpicUpdated,
         openEditBacklogItemDialog, setOnBacklogItemUpdated,
         openNewSprintDialog, setOnSprintCreated,
+        openEditSprintDialog, setOnSprintUpdated,
         openEditTaskDialog, setOnTaskUpdated,
     } = useQuickAction();
     const { toast } = useToast();
@@ -288,6 +289,7 @@ export default function ProjectDetailsPage() {
         const unsubscribeEpicUpdate = setOnEpicUpdated(fetchData);
         const unsubscribeBacklogUpdate = setOnBacklogItemUpdated(fetchData);
         const unsubscribeSprint = setOnSprintCreated(fetchData);
+        const unsubscribeSprintUpdate = setOnSprintUpdated(fetchData);
         const unsubscribeTask = setOnTaskUpdated(fetchData);
         return () => {
             if (unsubscribeBacklog) unsubscribeBacklog();
@@ -295,9 +297,10 @@ export default function ProjectDetailsPage() {
             if (unsubscribeEpicUpdate) unsubscribeEpicUpdate();
             if (unsubscribeBacklogUpdate) unsubscribeBacklogUpdate();
             if (unsubscribeSprint) unsubscribeSprint();
+            if (unsubscribeSprintUpdate) unsubscribeSprintUpdate();
             if (unsubscribeTask) unsubscribeTask();
         };
-    }, [fetchData, setOnBacklogItemCreated, setOnEpicCreated, setOnEpicUpdated, setOnBacklogItemUpdated, setOnSprintCreated, setOnTaskUpdated]);
+    }, [fetchData, setOnBacklogItemCreated, setOnEpicCreated, setOnEpicUpdated, setOnBacklogItemUpdated, setOnSprintCreated, setOnSprintUpdated, setOnTaskUpdated]);
 
     const projectPrefix = project ? project.name.substring(0, project.name.indexOf('-')) : '';
     
@@ -684,7 +687,7 @@ export default function ProjectDetailsPage() {
                                                                             <Rocket className="mr-2 h-4 w-4" /> Start Sprint
                                                                         </DropdownMenuItem>
                                                                     )}
-                                                                    <DropdownMenuItem>
+                                                                    <DropdownMenuItem onSelect={() => openEditSprintDialog(sprint)}>
                                                                         <Pencil className="mr-2 h-4 w-4" /> Edit
                                                                     </DropdownMenuItem>
                                                                     <DropdownMenuSeparator />
@@ -769,17 +772,3 @@ export default function ProjectDetailsPage() {
         </div>
     );
 }
-
-
-    
-
-    
-
-
-
-
-
-
-
-
-

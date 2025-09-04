@@ -70,6 +70,13 @@ type QuickActionContextType = {
   setOnSprintCreated: (callback: (() => void) | null) => (() => void) | void;
   newSprintData: { projectId: string } | null;
 
+  isEditSprintDialogOpen: boolean;
+  openEditSprintDialog: (sprint: Sprint) => void;
+  closeEditSprintDialog: () => void;
+  onSprintUpdated: (() => void) | null;
+  setOnSprintUpdated: (callback: (() => void) | null) => (() => void) | void;
+  editSprintData: Sprint | null;
+
   isEditTaskDialogOpen: boolean;
   openEditTaskDialog: (task: Task, contacts: Contact[]) => void;
   closeEditTaskDialog: () => void;
@@ -133,6 +140,11 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
   const [isNewSprintDialogOpen, setIsNewSprintDialogOpen] = React.useState(false);
   const [onSprintCreated, setOnSprintCreated] = React.useState<(() => void) | null>(null);
   const [newSprintData, setNewSprintData] = React.useState<{ projectId: string } | null>(null);
+  
+  // Edit Sprint Dialog State
+  const [isEditSprintDialogOpen, setIsEditSprintDialogOpen] = React.useState(false);
+  const [onSprintUpdated, setOnSprintUpdated] = React.useState<(() => void) | null>(null);
+  const [editSprintData, setEditSprintData] = React.useState<Sprint | null>(null);
 
   // Edit Task Dialog State
   const [isEditTaskDialogOpen, setIsEditTaskDialogOpen] = React.useState(false);
@@ -298,6 +310,24 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
     []
   );
 
+  const openEditSprintDialog = React.useCallback((sprint: Sprint) => {
+    setEditSprintData(sprint);
+    setIsEditSprintDialogOpen(true);
+  }, []);
+
+  const closeEditSprintDialog = React.useCallback(() => {
+    setIsEditSprintDialogOpen(false);
+    setEditSprintData(null);
+  }, []);
+
+  const handleSetOnSprintUpdated = React.useCallback(
+    (callback: (() => void) | null) => {
+      setOnSprintUpdated(() => callback);
+      return () => setOnSprintUpdated(null);
+    },
+    []
+  );
+
   const openEditTaskDialog = React.useCallback((task: Task, contacts: Contact[]) => {
     setEditTaskData({ task, contacts });
     setIsEditTaskDialogOpen(true);
@@ -379,6 +409,13 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
         onSprintCreated,
         setOnSprintCreated: handleSetOnSprintCreated,
         newSprintData,
+
+        isEditSprintDialogOpen,
+        openEditSprintDialog,
+        closeEditSprintDialog,
+        onSprintUpdated,
+        setOnSprintUpdated: handleSetOnSprintUpdated,
+        editSprintData,
 
         isEditTaskDialogOpen,
         openEditTaskDialog,
