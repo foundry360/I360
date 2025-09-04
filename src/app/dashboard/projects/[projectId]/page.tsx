@@ -616,13 +616,13 @@ export default function ProjectDetailsPage() {
                                                 <AccordionItem key={sprint.id} value={sprint.id} className="border rounded-lg bg-card">
                                                     <div className="flex items-center p-4">
                                                         <AccordionTrigger className="flex-1 p-0 hover:no-underline justify-start [&>svg]:hidden">
-                                                            <div className="flex items-center gap-4">
-                                                                <h3 className="font-semibold text-base">{sprint.name}</h3>
-                                                                <p className="text-sm text-muted-foreground">
-                                                                    {format(parseISO(sprint.startDate), 'MMM d')} - {format(parseISO(sprint.endDate), 'MMM d, yyyy')}
-                                                                </p>
-                                                                <Badge variant={sprint.status === 'Active' ? 'default' : 'secondary'} className={sprint.status === 'Active' ? 'bg-green-500' : ''}>{sprint.status}</Badge>
-                                                            </div>
+                                                          <div className="flex items-center gap-4">
+                                                              <h3 className="font-semibold text-base">{sprint.name}</h3>
+                                                              <p className="text-sm text-muted-foreground">
+                                                                  {format(parseISO(sprint.startDate), 'MMM d')} - {format(parseISO(sprint.endDate), 'MMM d, yyyy')}
+                                                              </p>
+                                                              <Badge variant={sprint.status === 'Active' ? 'default' : 'secondary'} className={sprint.status === 'Active' ? 'bg-green-500' : ''}>{sprint.status}</Badge>
+                                                          </div>
                                                         </AccordionTrigger>
                                                         <div className="flex items-center gap-2 ml-auto">
                                                             <DropdownMenu>
