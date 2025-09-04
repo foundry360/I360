@@ -57,7 +57,7 @@ import { format, parseISO, isPast } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
-import { Bar, BarChart, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, LabelList } from 'recharts';
+import { Bar, BarChart, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, LabelList, CartesianGrid } from 'recharts';
 import { ChartContainer, ChartTooltipContent, type ChartConfig } from '@/components/ui/chart';
 
 type TaskType = Task['type'];
@@ -502,6 +502,7 @@ export default function ProjectDetailsPage() {
             return {
                 name: epic.title,
                 progress: Math.round(progress),
+                total: 100,
                 fill: 'hsl(var(--primary))'
             }
         });
@@ -510,6 +511,9 @@ export default function ProjectDetailsPage() {
     const chartConfig = {
         progress: {
             label: 'Progress',
+        },
+        total: {
+            label: 'Total',
         },
     } satisfies ChartConfig;
 
@@ -665,12 +669,11 @@ export default function ProjectDetailsPage() {
                                                 accessibilityLayer
                                                 data={epicProgressData}
                                                 layout="vertical"
-                                                margin={{
-                                                    left: 0,
-                                                    top: 20
-                                                }}
+                                                margin={{ left: 0, top: 20, right: 20 }}
+                                                barGap={4}
                                             >
-                                                <XAxis type="number" dataKey="progress" hide />
+                                                <CartesianGrid horizontal={false} />
+                                                <XAxis type="number" dataKey="progress" hide domain={[0, 100]}/>
                                                 <YAxis
                                                     dataKey="name"
                                                     type="category"
@@ -684,7 +687,8 @@ export default function ProjectDetailsPage() {
                                                         hideLabel
                                                     />}
                                                 />
-                                                <Bar dataKey="progress" radius={5} >
+                                                <Bar dataKey="total" radius={5} stackId="a" fill="hsl(var(--muted))" />
+                                                <Bar dataKey="progress" radius={5} stackId="a">
                                                     <LabelList
                                                         dataKey="name"
                                                         position="top"
@@ -1086,6 +1090,7 @@ export default function ProjectDetailsPage() {
     
 
     
+
 
 
 
