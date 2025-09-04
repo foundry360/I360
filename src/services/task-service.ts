@@ -24,6 +24,7 @@ export interface Task {
   ownerAvatarUrl: string;
   priority: TaskPriority;
   type: TaskType;
+  backlogId?: number;
 };
 
 const tasksCollection = collection(db, 'tasks');

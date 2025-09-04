@@ -60,6 +60,7 @@ export async function startSprint(sprintId: string, projectId: string, sprintIte
             ownerAvatarUrl: '',
             priority: item.priority,
             type: 'Execution', // Default type, can be adjusted
+            backlogId: item.backlogId,
         };
         batch.set(taskRef, newTask);
     });

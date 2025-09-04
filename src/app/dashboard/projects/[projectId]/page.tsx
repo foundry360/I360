@@ -158,7 +158,7 @@ const TaskCard = ({ task, taskNumber }: { task: Task; taskNumber: string }) => {
     );
 };
 
-const BoardColumn = ({ title, tasks, projectPrefix, allTasks }: { title: string; tasks: Task[]; projectPrefix: string; allTasks: Task[]}) => (
+const BoardColumn = ({ title, tasks, projectPrefix }: { title: string; tasks: Task[]; projectPrefix: string;}) => (
     <div className="flex-1">
         <Card className="bg-muted border-none shadow-none">
             <CardHeader className="p-4">
@@ -175,7 +175,6 @@ const BoardColumn = ({ title, tasks, projectPrefix, allTasks }: { title: string;
                         )}
                     >
                         {tasks.map((task, index) => {
-                            const originalIndex = allTasks.findIndex(t => t.id === task.id);
                             return (
                                 <Draggable key={task.id} draggableId={task.id} index={index}>
                                     {(provided) => (
@@ -184,7 +183,7 @@ const BoardColumn = ({ title, tasks, projectPrefix, allTasks }: { title: string;
                                             {...provided.draggableProps}
                                             {...provided.dragHandleProps}
                                         >
-                                            <TaskCard task={task} taskNumber={`${projectPrefix}-${101 + originalIndex}`} />
+                                            <TaskCard task={task} taskNumber={`${projectPrefix}-${task.backlogId}`} />
                                         </div>
                                     )}
                                 </Draggable>
@@ -505,7 +504,6 @@ export default function ProjectDetailsPage() {
                                         title={status}
                                         tasks={tasks}
                                         projectPrefix={projectPrefix}
-                                        allTasks={allTasks}
                                     />
                             ))}
                             </div>
@@ -742,5 +740,6 @@ export default function ProjectDetailsPage() {
     
 
     
+
 
 
