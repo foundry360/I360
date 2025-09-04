@@ -39,6 +39,7 @@ const initialNewItemState: NewBacklogItemState = {
   priority: 'Medium',
   owner: '',
   ownerAvatarUrl: '',
+  dueDate: '',
 };
 
 export function NewBacklogItemDialog() {
@@ -172,6 +173,10 @@ export function NewBacklogItemDialog() {
                   {Object.values(TaskPriority).map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
                 </SelectContent>
               </Select>
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="dueDate" className="text-right">Due Date</Label>
+              <Input id="dueDate" type="date" value={newItem.dueDate} onChange={handleInputChange} className="col-span-3" />
             </div>
           </div>
           <DialogFooter className="pt-4">

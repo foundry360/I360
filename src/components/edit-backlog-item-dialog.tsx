@@ -27,6 +27,7 @@ import type { Sprint } from '@/services/sprint-service';
 import { TaskPriority, TaskStatus } from '@/services/task-service';
 import { Contact } from '@/services/contact-service';
 import { useUser } from '@/contexts/user-context';
+import { format, parseISO } from 'date-fns';
 
 export function EditBacklogItemDialog() {
   const {
@@ -42,7 +43,11 @@ export function EditBacklogItemDialog() {
 
   React.useEffect(() => {
     if (editBacklogItemData) {
-      setItem(editBacklogItemData.item);
+      const { dueDate, ...restOfItem } = editBacklogItemData.item;
+      setItem({
+        ...restOfItem,
+        dueDate: dueDate ? format(parseISO(dueDate), 'yyyy-MM-dd') : '',
+      });
       setProjectTeam(editBacklogItemData.contacts || []);
     }
   }, [editBacklogItemData]);
@@ -68,7 +73,11 @@ export function EditBacklogItemDialog() {
     e.preventDefault();
     if (!item) return;
     try {
-      await updateBacklogItem(item.id, item);
+      const dataToSave = {
+        ...item,
+        dueDate: item.dueDate ? parseISO(item.dueDate).toISOString() : undefined,
+      };
+      await updateBacklogItem(item.id, dataToSave);
       handleOpenChange(false);
       if (onBacklogItemUpdated) {
         onBacklogItemUpdated();
@@ -176,6 +185,10 @@ export function EditBacklogItemDialog() {
                   {Object.values(TaskPriority).map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
                 </SelectContent>
               </Select>
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="dueDate" className="text-right">Due Date</Label>
+              <Input id="dueDate" type="date" value={item.dueDate || ''} onChange={handleInputChange} className="col-span-3" />
             </div>
           </div>
           <DialogFooter className="pt-4">

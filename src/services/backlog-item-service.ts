@@ -19,6 +19,7 @@ export interface BacklogItem {
   priority: TaskPriority;
   owner: string;
   ownerAvatarUrl?: string;
+  dueDate?: string;
 }
 
 const backlogItemsCollection = collection(db, 'backlogItems');
