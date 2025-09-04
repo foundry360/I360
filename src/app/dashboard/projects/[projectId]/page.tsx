@@ -27,7 +27,8 @@ import {
   HeartHandshake,
   BarChart3,
   Scaling,
-  Rocket
+  Rocket,
+  CheckCircle
 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
@@ -38,7 +39,7 @@ import { getProject, Project } from '@/services/project-service';
 import { getTasksForProject, updateTaskOrderAndStatus, Task, TaskStatus, updateTask, createTask } from '@/services/task-service';
 import { getEpicsForProject, Epic, deleteEpic } from '@/services/epic-service';
 import { getBacklogItemsForProject, BacklogItem, deleteBacklogItem, updateBacklogItem } from '@/services/backlog-item-service';
-import { getSprintsForProject, Sprint, SprintStatus, startSprint, deleteSprint, updateSprint } from '@/services/sprint-service';
+import { getSprintsForProject, Sprint, SprintStatus, startSprint, deleteSprint, updateSprint, completeSprint } from '@/services/sprint-service';
 import { getContactsForCompany, Contact } from '@/services/contact-service';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
@@ -363,14 +364,15 @@ export default function ProjectDetailsPage() {
     const handleMoveToSprint = async (backlogItemId: string, sprintId: string | null) => {
         try {
             await updateBacklogItem(backlogItemId, { sprintId });
-    
+            
             const sprint = sprints.find(s => s.id === sprintId);
-            // Create a task as soon as an item is moved to any non-completed sprint.
             if (sprint && sprint.status !== 'Completed') {
                 const item = backlogItems.find(bi => bi.id === backlogItemId);
-                if (item) {
+                const taskExists = tasks.some(t => t.backlogId === item?.backlogId);
+
+                if (item && !taskExists) {
                     const toDoColumn = columns['To Do'] || [];
-                    const newTask: Omit<Task, 'id'> = {
+                    await createTask({
                         projectId: projectId,
                         title: item.title,
                         status: 'To Do',
@@ -380,12 +382,11 @@ export default function ProjectDetailsPage() {
                         priority: item.priority,
                         type: 'Execution',
                         backlogId: item.backlogId,
-                    };
-                    await createTask(newTask);
+                    });
                 }
             }
     
-            fetchData();
+            await fetchData();
         } catch (error) {
             console.error("Failed to move item to sprint:", error);
         }
@@ -422,6 +423,27 @@ export default function ProjectDetailsPage() {
         }
     }
     
+    const handleCompleteSprint = async (sprintId: string) => {
+        try {
+            setLoading(true);
+            await completeSprint(sprintId, projectId);
+            toast({
+                title: 'Sprint Completed!',
+                description: 'Unfinished items have been moved back to the backlog.',
+            });
+            await fetchData();
+        } catch (error) {
+            console.error('Failed to complete sprint:', error);
+            toast({
+                variant: 'destructive',
+                title: 'Error Completing Sprint',
+                description: 'There was a problem completing the sprint.',
+            });
+        } finally {
+            setLoading(false);
+        }
+    }
+
     const upcomingSprints = sprints.filter(s => s.status === 'Not Started' || s.status === 'Active');
 
     if (loading) {
@@ -659,7 +681,7 @@ export default function ProjectDetailsPage() {
                         <div className="space-y-8">
                              {(['Active', 'Not Started', 'Completed'] as SprintStatus[]).map(status => {
                                 const sprintsByStatus = sprints.filter(s => s.status === status);
-                                if (sprintsByStatus.length === 0) return null;
+                                if (sprintsByStatus.length === 0 && status !== 'Completed') return null;
 
                                 return (
                                 <div key={status}>
@@ -676,7 +698,7 @@ export default function ProjectDetailsPage() {
                                                               <p className="text-sm text-muted-foreground">
                                                                   {format(parseISO(sprint.startDate), 'MMM d')} - {format(parseISO(sprint.endDate), 'MMM d, yyyy')}
                                                               </p>
-                                                              <Badge variant={sprint.status === 'Active' ? 'default' : 'secondary'} className={sprint.status === 'Active' ? 'bg-green-500' : ''}>{sprint.status}</Badge>
+                                                              <Badge variant={sprint.status === 'Active' ? 'default' : sprint.status === 'Completed' ? 'secondary' : 'outline'} className={sprint.status === 'Active' ? 'bg-green-500' : ''}>{sprint.status}</Badge>
                                                           </div>
                                                         </AccordionTrigger>
                                                         <div className="flex items-center gap-2 ml-auto shrink-0 pl-4">
@@ -690,9 +712,16 @@ export default function ProjectDetailsPage() {
                                                                             <Rocket className="mr-2 h-4 w-4" /> Start Sprint
                                                                         </DropdownMenuItem>
                                                                     )}
-                                                                    <DropdownMenuItem onSelect={() => openEditSprintDialog(sprint)}>
-                                                                        <Pencil className="mr-2 h-4 w-4" /> Edit
-                                                                    </DropdownMenuItem>
+                                                                    {sprint.status === 'Active' && (
+                                                                        <DropdownMenuItem onSelect={() => handleCompleteSprint(sprint.id)} disabled={loading}>
+                                                                            <CheckCircle className="mr-2 h-4 w-4" /> Complete Sprint
+                                                                        </DropdownMenuItem>
+                                                                    )}
+                                                                    {sprint.status !== 'Completed' && (
+                                                                      <DropdownMenuItem onSelect={() => openEditSprintDialog(sprint)}>
+                                                                          <Pencil className="mr-2 h-4 w-4" /> Edit
+                                                                      </DropdownMenuItem>
+                                                                    )}
                                                                     <DropdownMenuSeparator />
                                                                     <DropdownMenuItem className="text-destructive" onSelect={() => { setItemToDelete({type: 'sprint', id: sprint.id, name: sprint.name}); setIsDeleteDialogOpen(true);}}>
                                                                         <Trash2 className="mr-2 h-4 w-4" /> Delete

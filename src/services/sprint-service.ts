@@ -3,7 +3,7 @@
 
 import { db } from '@/lib/firebase';
 import { collection, query, where, getDocs, doc, setDoc, addDoc, updateDoc, deleteDoc, writeBatch } from 'firebase/firestore';
-import { createTask, type Task } from './task-service';
+import { deleteTask, type Task } from './task-service';
 import type { BacklogItem } from './backlog-item-service';
 
 export type SprintStatus = 'Not Started' | 'Active' | 'Completed';
@@ -65,6 +65,44 @@ export async function startSprint(sprintId: string, projectId: string, sprintIte
                 backlogId: item.backlogId,
             };
             batch.set(taskRef, newTask);
+        }
+    });
+
+    await batch.commit();
+}
+
+export async function completeSprint(sprintId: string, projectId: string): Promise<void> {
+    const batch = writeBatch(db);
+
+    // 1. Update sprint status
+    const sprintRef = doc(db, 'sprints', sprintId);
+    batch.update(sprintRef, { status: 'Completed' });
+
+    // 2. Find all backlog items and tasks for the project
+    const backlogQuery = query(collection(db, 'backlogItems'), where("sprintId", "==", sprintId));
+    const tasksQuery = query(collection(db, 'tasks'), where("projectId", "==", projectId));
+    
+    const [backlogSnapshot, tasksSnapshot] = await Promise.all([getDocs(backlogQuery), getDocs(tasksQuery)]);
+    
+    const sprintItems = backlogSnapshot.docs.map(doc => doc.data() as BacklogItem);
+    const allTasks = tasksSnapshot.docs.map(doc => doc.data() as Task);
+
+    const sprintItemBacklogIds = sprintItems.map(item => item.backlogId);
+    const tasksInSprint = allTasks.filter(task => task.backlogId && sprintItemBacklogIds.includes(task.backlogId));
+
+    // 3. Handle incomplete tasks
+    tasksInSprint.forEach(task => {
+        if (task.status !== 'Complete') {
+            // Find the corresponding backlog item
+            const backlogItem = sprintItems.find(item => item.backlogId === task.backlogId);
+            if (backlogItem) {
+                // Move item back to backlog
+                const backlogItemRef = doc(db, 'backlogItems', backlogItem.id);
+                batch.update(backlogItemRef, { sprintId: null });
+            }
+            // Delete the incomplete task from the board
+            const taskRef = doc(db, 'tasks', task.id);
+            batch.delete(taskRef);
         }
     });
 
