@@ -517,23 +517,32 @@ export default function ProjectDetailsPage() {
     }, [epics, backlogItems, tasks]);
 
     const velocityData = React.useMemo(() => {
-        const completedSprints = sprints.filter(s => s.status === 'Completed').sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
-
-        return completedSprints.slice(-5).map(sprint => { // Get last 5 sprints
-            const itemsInSprint = backlogItems.filter(item => item.sprintId === sprint.id);
-            const completedPoints = itemsInSprint.reduce((total, item) => {
-                const task = tasks.find(t => t.backlogId === item.backlogId);
-                if (task && task.status === 'Complete') {
-                    return total + (item.points || 0);
+        const completedSprints = sprints
+            .filter(s => s.status === 'Completed')
+            .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
+    
+        const sprintVelocities = new Map<string, number>();
+    
+        const completedTasks = tasks.filter(t => t.status === 'Complete' && t.backlogId);
+    
+        completedTasks.forEach(task => {
+            const backlogItem = backlogItems.find(item => item.backlogId === task.backlogId);
+            if (backlogItem?.sprintId) {
+                const sprint = sprints.find(s => s.id === backlogItem.sprintId);
+                if (sprint && sprint.status === 'Completed') {
+                    const currentVelocity = sprintVelocities.get(sprint.id) || 0;
+                    sprintVelocities.set(sprint.id, currentVelocity + (backlogItem.points || 0));
                 }
-                return total;
-            }, 0);
+            }
+        });
+    
+        return completedSprints.slice(-5).map(sprint => {
             return {
-                name: sprint.name.split(' ').slice(0, 2).join(' '), // Shorten name for chart
-                velocity: completedPoints,
+                name: sprint.name.split(' ').slice(0, 2).join(' '),
+                velocity: sprintVelocities.get(sprint.id) || 0,
             };
         });
-    }, [sprints, backlogItems, tasks]);
+    }, [sprints, tasks, backlogItems]);
 
 
     if (loading) {
@@ -1150,3 +1159,6 @@ export default function ProjectDetailsPage() {
 
 
 
+
+
+    
