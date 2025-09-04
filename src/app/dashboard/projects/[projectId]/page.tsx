@@ -462,7 +462,7 @@ export default function ProjectDetailsPage() {
                     </TabsContent>
                     <TabsContent value="backlog">
                        <div className="space-y-6">
-                            <Accordion type="multiple" collapsible className="w-full">
+                            <Accordion type="multiple" className="w-full">
                                 {epics.map(epic => {
                                     const epicConfig = epicIcons[epic.title] || { icon: Layers, color: 'text-foreground' };
                                     const IconComponent = epicConfig.icon;
