@@ -366,11 +366,12 @@ export default function ProjectDetailsPage() {
             await updateBacklogItem(backlogItemId, { sprintId });
             
             const sprint = sprints.find(s => s.id === sprintId);
-            if (sprint && sprint.status !== 'Completed') {
-                const item = backlogItems.find(bi => bi.id === backlogItemId);
+            const item = backlogItems.find(bi => bi.id === backlogItemId);
+
+            if (item && sprint && sprint.status !== 'Completed') {
                 const taskExists = tasks.some(t => t.backlogId === item?.backlogId);
 
-                if (item && !taskExists) {
+                if (!taskExists) {
                     const toDoColumn = columns['To Do'] || [];
                     await createTask({
                         projectId: projectId,
@@ -681,15 +682,17 @@ export default function ProjectDetailsPage() {
                         <div className="space-y-8">
                              {(['Active', 'Not Started', 'Completed'] as SprintStatus[]).map(status => {
                                 const sprintsByStatus = sprints.filter(s => s.status === status);
-                                if (sprintsByStatus.length === 0 && status !== 'Completed') return null;
+                                const isHidden = sprintsByStatus.length === 0 && status !== 'Completed' && status !== 'Not Started';
+
+                                if (isHidden) return null;
 
                                 return (
                                 <div key={status}>
                                     <h2 className="text-lg font-semibold mb-2">{status === 'Not Started' ? 'Upcoming Sprints' : `${status} Sprints`}</h2>
-                                    {sprintsByStatus.length === 0 && status === 'Completed' ? (
+                                    {sprintsByStatus.length === 0 ? (
                                         <Card className="border-dashed">
                                             <CardContent className="p-6 text-center text-muted-foreground">
-                                                No sprints have been completed yet.
+                                                {status === 'Completed' ? 'No sprints have been completed yet.' : 'No upcoming sprints have been planned.'}
                                             </CardContent>
                                         </Card>
                                     ) : (
