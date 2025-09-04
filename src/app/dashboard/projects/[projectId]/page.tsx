@@ -18,6 +18,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { DragDropContext, Droppable, Draggable, type DropResult } from '@hello-pangea/dnd';
 
 
 type TaskStatus = 'To Do' | 'In Progress' | 'In Review' | 'Needs Revisions' | 'Complete';
@@ -131,12 +132,36 @@ const BoardColumn = ({ title, tasks, projectPrefix }: { title: string; tasks: Ta
             <CardHeader className="p-4">
                 <CardTitle className="text-base font-semibold">{title}</CardTitle>
             </CardHeader>
-            <CardContent className="p-4">
-                {tasks.map((task, index) => {
-                    const originalIndex = initialTasks.findIndex(t => t.id === task.id);
-                    return <TaskCard key={task.id} task={task} taskNumber={`${projectPrefix}-${100 + originalIndex}`} />;
-                })}
-            </CardContent>
+            <Droppable droppableId={title}>
+                {(provided, snapshot) => (
+                    <CardContent 
+                        ref={provided.innerRef}
+                        {...provided.droppableProps}
+                        className={cn(
+                            "p-4 min-h-[400px] transition-colors",
+                            snapshot.isDraggingOver && "bg-primary-light"
+                        )}
+                    >
+                        {tasks.map((task, index) => {
+                            const originalIndex = initialTasks.findIndex(t => t.id === task.id);
+                            return (
+                                <Draggable key={task.id} draggableId={task.id} index={index}>
+                                    {(provided) => (
+                                        <div
+                                            ref={provided.innerRef}
+                                            {...provided.draggableProps}
+                                            {...provided.dragHandleProps}
+                                        >
+                                            <TaskCard task={task} taskNumber={`${projectPrefix}-${100 + originalIndex}`} />
+                                        </div>
+                                    )}
+                                </Draggable>
+                            );
+                        })}
+                        {provided.placeholder}
+                    </CardContent>
+                )}
+            </Droppable>
         </Card>
     </div>
 );
@@ -153,6 +178,42 @@ export default function ProjectDetailsPage() {
     const projectPrefix = project.name.substring(0, 2).toUpperCase();
     
     const columns: TaskStatus[] = ['To Do', 'In Progress', 'In Review', 'Needs Revisions', 'Complete'];
+
+    const onDragEnd = (result: DropResult) => {
+        const { source, destination } = result;
+
+        // Dropped outside the list
+        if (!destination) {
+            return;
+        }
+
+        const sourceCol = source.droppableId as TaskStatus;
+        const destCol = destination.droppableId as TaskStatus;
+
+        const draggedTask = tasks.find(task => task.id === result.draggableId);
+
+        if (!draggedTask) return;
+
+        // Reordering within the same column
+        if (sourceCol === destCol) {
+            const items = Array.from(tasks.filter(t => t.status === sourceCol));
+            const [reorderedItem] = items.splice(source.index, 1);
+            items.splice(destination.index, 0, reorderedItem);
+
+            const otherTasks = tasks.filter(t => t.status !== sourceCol);
+            setTasks([...otherTasks, ...items]);
+
+        } else {
+            // Moving to a different column
+            const updatedTask = { ...draggedTask, status: destCol };
+            
+            const newTasks = tasks.map(task => 
+                task.id === updatedTask.id ? updatedTask : task
+            );
+
+            setTasks(newTasks);
+        }
+    };
 
     return (
         <div className="flex flex-col h-full">
@@ -204,16 +265,18 @@ export default function ProjectDetailsPage() {
                        <p>Summary View - Under Construction</p>
                     </TabsContent>
                     <TabsContent value="board" className="h-full">
-                         <div className="flex gap-6 h-full">
-                           {columns.map(status => (
-                                <BoardColumn 
-                                    key={status}
-                                    title={status}
-                                    tasks={tasks.filter(t => t.status === status)}
-                                    projectPrefix={projectPrefix}
-                                />
-                           ))}
-                        </div>
+                        <DragDropContext onDragEnd={onDragEnd}>
+                            <div className="flex gap-6 h-full">
+                            {columns.map(status => (
+                                    <BoardColumn 
+                                        key={status}
+                                        title={status}
+                                        tasks={tasks.filter(t => t.status === status)}
+                                        projectPrefix={projectPrefix}
+                                    />
+                            ))}
+                            </div>
+                        </DragDropContext>
                     </TabsContent>
                     <TabsContent value="backlog">
                         <p>Backlog View - Under Construction</p>
