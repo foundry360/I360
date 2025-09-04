@@ -65,11 +65,11 @@ body {
     --sidebar-ring: 256 96% 63%;
   }
   .dark {
-    --background: 222.2 47.4% 11.2%;
+    --background: 220 4% 10%; /* #18191a */
     --foreground: 210 40% 98%;
-    --card: 222.2 47.4% 11.2%;
+    --card: 220 4% 10%;
     --card-foreground: 210 40% 98%;
-    --popover: 222.2 47.4% 11.2%;
+    --popover: 220 4% 10%;
     --popover-foreground: 210 40% 98%;
     --primary: 259 82% 56%;
     --primary-hover: 259 82% 50%;
