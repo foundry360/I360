@@ -326,7 +326,7 @@ export default function CompaniesPage() {
                 {currentVisibleCompanies.length > 0 ? (
                   currentVisibleCompanies.map((company) => (
                     <TableRow key={company.id} data-state={selectedCompanies.includes(company.id) && "selected"}>
-                      <TableCell>
+                      <TableCell className="p-2">
                         <Checkbox
                           checked={selectedCompanies.includes(company.id)}
                           onCheckedChange={(checked) =>
@@ -335,12 +335,12 @@ export default function CompaniesPage() {
                           aria-label={`Select ${company.name}`}
                         />
                       </TableCell>
-                      <TableCell className="font-medium">
+                      <TableCell className="font-medium p-2">
                         <Link href={`/dashboard/companies/${company.id}/details`} className="hover:text-primary">
                           {company.name}
                         </Link>
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="p-2">
                         {company.contact && company.contact.name && company.contact.name !== 'New Contact' ? (
                           <div className="flex items-center gap-2">
                             <Avatar className="h-8 w-8">
@@ -354,7 +354,7 @@ export default function CompaniesPage() {
                           <span className="text-muted-foreground">-</span>
                         )}
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="p-2">
                         <Badge
                           variant={
                             company.status === 'Active' ? 'default' : 'secondary'
@@ -366,18 +366,18 @@ export default function CompaniesPage() {
                           {company.status}
                         </Badge>
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="p-2">
                           <a href={`http://${company.website}`} target="_blank" rel="noopener noreferrer" className="hover:text-primary">
                               {company.website}
                           </a>
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="p-2">
                           {formatDate(company.lastActivity)}
                       </TableCell>
-                      <TableCell className="text-right">
+                      <TableCell className="text-right p-2">
                          <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" className="h-8 w-8 p-0">
+                            <Button variant="primary" className="h-8 w-8 p-0">
                               <span className="sr-only">Open menu</span>
                               <MoreHorizontal className="h-4 w-4" />
                             </Button>
@@ -474,3 +474,5 @@ export default function CompaniesPage() {
     </div>
   );
 }
+
+    

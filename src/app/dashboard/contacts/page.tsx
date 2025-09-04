@@ -282,7 +282,7 @@ export default function ContactsPage() {
                 {currentVisibleContacts.length > 0 ? (
                   currentVisibleContacts.map((contact) => (
                     <TableRow key={contact.id} data-state={selectedContacts.includes(contact.id) && "selected"}>
-                      <TableCell>
+                      <TableCell className="p-2">
                         <Checkbox
                           checked={selectedContacts.includes(contact.id)}
                           onCheckedChange={(checked) =>
@@ -291,7 +291,7 @@ export default function ContactsPage() {
                           aria-label={`Select ${contact.name}`}
                         />
                       </TableCell>
-                      <TableCell className="font-medium">
+                      <TableCell className="font-medium p-2">
                         <div className="flex items-center gap-2">
                           <Avatar className="h-8 w-8">
                             <AvatarFallback className="bg-primary text-primary-foreground">
@@ -301,7 +301,7 @@ export default function ContactsPage() {
                           <span>{contact.name}</span>
                         </div>
                       </TableCell>
-                       <TableCell>
+                       <TableCell className="p-2">
                         {contact.companyId && contact.companyName ? (
                           <Link href={`/dashboard/companies/${contact.companyId}/details`} className="hover:text-primary">
                             {contact.companyName}
@@ -311,13 +311,13 @@ export default function ContactsPage() {
                           )
                         }
                       </TableCell>
-                      <TableCell>{contact.email}</TableCell>
-                      <TableCell>{contact.phone}</TableCell>
-                      <TableCell>{contact.title}</TableCell>
-                      <TableCell className="text-right">
+                      <TableCell className="p-2">{contact.email}</TableCell>
+                      <TableCell className="p-2">{contact.phone}</TableCell>
+                      <TableCell className="p-2">{contact.title}</TableCell>
+                      <TableCell className="text-right p-2">
                          <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" className="h-8 w-8 p-0">
+                            <Button variant="primary" className="h-8 w-8 p-0">
                               <span className="sr-only">Open menu</span>
                               <MoreHorizontal className="h-4 w-4" />
                             </Button>
@@ -407,3 +407,5 @@ export default function ContactsPage() {
     </div>
   );
 }
+
+    

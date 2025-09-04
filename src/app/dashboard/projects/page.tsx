@@ -336,7 +336,7 @@ export default function ProjectsPage() {
                                 {currentVisibleProjects.length > 0 ? (
                                     currentVisibleProjects.map((project) => (
                                         <TableRow key={project.id}>
-                                            <TableCell>
+                                            <TableCell className="p-2">
                                                 <Checkbox
                                                     checked={selectedProjects.includes(project.id)}
                                                     onCheckedChange={(checked) =>
@@ -345,23 +345,23 @@ export default function ProjectsPage() {
                                                     aria-label={`Select ${project.name}`}
                                                 />
                                             </TableCell>
-                                            <TableCell className="font-medium">
+                                            <TableCell className="font-medium p-2">
                                                <Link href={`/dashboard/projects/${project.id}`} className="hover:text-primary">
                                                     {project.name}
                                                 </Link>
                                             </TableCell>
-                                            <TableCell>
+                                            <TableCell className="p-2">
                                                 <Link href={`/dashboard/companies/${project.companyId}/details`} className="hover:text-primary">
                                                     {project.companyName}
                                                 </Link>
                                             </TableCell>
-                                            <TableCell>
+                                            <TableCell className="p-2">
                                                 <Badge variant={statusBadgeVariant(project.status)} className={project.status === 'Active' ? 'bg-green-500' : ''}>
                                                     {project.status}
                                                 </Badge>
                                             </TableCell>
-                                            <TableCell>{project.category}</TableCell>
-                                            <TableCell>
+                                            <TableCell className="p-2">{project.category}</TableCell>
+                                            <TableCell className="p-2">
                                                 <div className="flex items-center gap-2">
                                                     <Avatar className="h-6 w-6">
                                                         <AvatarImage src={project.ownerAvatarUrl} />
@@ -372,13 +372,13 @@ export default function ProjectsPage() {
                                                     <span>{project.owner || getDisplayName(user?.email)}</span>
                                                 </div>
                                             </TableCell>
-                                            <TableCell>
+                                            <TableCell className="p-2">
                                                 {formatDate(project.lastActivity)}
                                             </TableCell>
-                                            <TableCell className="text-right">
+                                            <TableCell className="text-right p-2">
                                                 <DropdownMenu>
                                                     <DropdownMenuTrigger asChild>
-                                                        <Button variant="ghost" className="h-8 w-8 p-0">
+                                                        <Button variant="primary" className="h-8 w-8 p-0">
                                                             <span className="sr-only">Open menu</span>
                                                             <MoreHorizontal className="h-4 w-4" />
                                                         </Button>
