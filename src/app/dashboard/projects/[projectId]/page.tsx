@@ -527,6 +527,7 @@ export default function ProjectDetailsPage() {
 
     const velocityData = React.useMemo(() => {
         const completedSprints = sprints.filter(s => s.status === 'Completed').sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
+        
         return completedSprints.map(sprint => {
             const itemsInSprint = backlogItems.filter(item => item.sprintId === sprint.id);
             const completedTasksInSprint = tasks.filter(task =>
@@ -716,7 +717,7 @@ export default function ProjectDetailsPage() {
                                 <Card>
                                     <CardHeader>
                                         <CardTitle>Velocity</CardTitle>
-                                        <CardDescription>Story points completed per sprint.</CardDescription>
+                                        <CardDescription>Story points completed per sprint</CardDescription>
                                     </CardHeader>
                                     <CardContent>
                                         <ChartContainer config={chartConfig} className="h-[150px] w-full">
@@ -774,7 +775,7 @@ export default function ProjectDetailsPage() {
                                  <Card>
                                     <CardHeader>
                                         <CardTitle>Project Burndown</CardTitle>
-                                        <CardDescription>Ideal vs. actual work remaining.</CardDescription>
+                                        <CardDescription>Ideal vs actual work remaining</CardDescription>
                                     </CardHeader>
                                     <CardContent>
                                         <ChartContainer config={chartConfig} className="h-[150px] w-full">
@@ -822,7 +823,7 @@ export default function ProjectDetailsPage() {
                                 <Card>
                                     <CardHeader>
                                         <CardTitle>Epic Progress</CardTitle>
-                                        <CardDescription>A summary of completion for each project epic.</CardDescription>
+                                        <CardDescription>A summary of completion for each project epic</CardDescription>
                                     </CardHeader>
                                     <CardContent className="space-y-4">
                                         {epicProgressData.map((epic, index) => {
@@ -1253,3 +1254,6 @@ export default function ProjectDetailsPage() {
 
 
 
+
+
+    
