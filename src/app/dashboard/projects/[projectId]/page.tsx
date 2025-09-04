@@ -54,7 +54,7 @@ import { Separator } from '@/components/ui/separator';
 import { useQuickAction } from '@/contexts/quick-action-context';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuPortal, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-import { format, parseISO, isPast } from 'date-fns';
+import { format, parseISO, isPast, differenceInDays } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
@@ -99,6 +99,15 @@ const statusColors: Record<TaskStatus, string> = {
     'Needs Revisions': 'bg-orange-500/20 text-orange-600 dark:text-orange-400',
     'Final Approval': 'bg-yellow-500/20 text-yellow-600 dark:text-yellow-400',
     'Complete': 'bg-green-500/20 text-green-600 dark:text-green-400',
+};
+
+const statusHexColors: Record<TaskStatus, string> = {
+    'To Do': '#a1a1aa', // zinc-400
+    'In Progress': '#3b82f6', // blue-500
+    'In Review': '#a855f7', // purple-500
+    'Needs Revisions': '#f97316', // orange-500
+    'Final Approval': '#eab308', // yellow-500
+    'Complete': '#22c55e', // green-500
 };
 
 
@@ -240,7 +249,7 @@ const chartConfig = {
   },
   ideal: {
     label: "Ideal",
-    color: "hsl(120, 80%, 40%)",
+    color: "hsl(var(--chart-2))",
   },
 } satisfies ChartConfig
 
@@ -555,7 +564,7 @@ export default function ProjectDetailsPage() {
             .filter(s => s.status === 'Completed')
             .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
 
-        if (totalPoints === 0) {
+        if (totalPoints === 0 || completedSprints.length === 0) {
             return [];
         }
         
@@ -565,7 +574,7 @@ export default function ProjectDetailsPage() {
 
         const data = [{ name: 'Start', actual: totalPoints, ideal: totalPoints }];
 
-        completedSprints.forEach((sprint, index) => {
+        completedSprints.forEach((sprint) => {
             const itemsInSprint = backlogItems.filter(item => item.sprintId === sprint.id);
             const completedTasksInSprint = tasks.filter(task => task.status === 'Complete' && itemsInSprint.some(item => item.backlogId === task.backlogId));
             const pointsThisSprint = completedTasksInSprint.reduce((acc, task) => {
@@ -586,6 +595,38 @@ export default function ProjectDetailsPage() {
         return data;
 
     }, [sprints, backlogItems, tasks]);
+    
+    const activeSprint = sprints.find(s => s.status === 'Active');
+
+    const activeSprintHealthData = React.useMemo(() => {
+        if (!activeSprint) return null;
+
+        const sprintItems = backlogItems.filter(item => item.sprintId === activeSprint.id);
+        if (sprintItems.length === 0) return null;
+        
+        const sprintItemBacklogIds = sprintItems.map(item => item.backlogId);
+        const tasksInSprint = tasks.filter(task => task.backlogId && sprintItemBacklogIds.includes(task.backlogId));
+
+        const totalTasks = tasksInSprint.length;
+        if (totalTasks === 0) return null;
+
+        const statusCounts = tasksInSprint.reduce((acc, task) => {
+            acc[task.status] = (acc[task.status] || 0) + 1;
+            return acc;
+        }, {} as Record<TaskStatus, number>);
+
+        const segments = (Object.keys(statusColors) as TaskStatus[]).map(status => ({
+            status,
+            count: statusCounts[status] || 0,
+            percentage: totalTasks > 0 ? ((statusCounts[status] || 0) / totalTasks) * 100 : 0,
+            color: statusHexColors[status],
+        })).filter(segment => segment.count > 0);
+        
+        const daysLeft = differenceInDays(parseISO(activeSprint.endDate), new Date());
+
+        return { segments, daysLeft: Math.max(0, daysLeft) };
+
+    }, [activeSprint, backlogItems, tasks]);
 
 
     if (loading) {
@@ -606,8 +647,6 @@ export default function ProjectDetailsPage() {
     if (!project) {
         return <p>Project not found.</p>;
     }
-
-    const activeSprint = sprints.find(s => s.status === 'Active');
     
     const totalTasks = tasks.length;
     const inProgressTasks = columns['In Progress'].length;
@@ -822,6 +861,46 @@ export default function ProjectDetailsPage() {
                                         </ChartContainer>
                                     </CardContent>
                                 </Card>
+                                {activeSprintHealthData && (
+                                    <Card>
+                                        <CardHeader>
+                                            <CardTitle>Active Sprint Health</CardTitle>
+                                            <CardDescription>{activeSprint?.name}</CardDescription>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <div className="flex w-full h-3 rounded-full overflow-hidden bg-muted mb-2">
+                                                <TooltipProvider>
+                                                {activeSprintHealthData.segments.map(segment => (
+                                                    <Tooltip key={segment.status}>
+                                                        <TooltipTrigger asChild>
+                                                            <div 
+                                                                className="h-full"
+                                                                style={{ width: `${segment.percentage}%`, backgroundColor: segment.color }}
+                                                            />
+                                                        </TooltipTrigger>
+                                                        <TooltipContent>
+                                                            <p>{segment.status}: {segment.count} task(s)</p>
+                                                        </TooltipContent>
+                                                    </Tooltip>
+                                                ))}
+                                                </TooltipProvider>
+                                            </div>
+                                            <div className="flex justify-between text-xs text-muted-foreground">
+                                                {activeSprintHealthData.segments.map(segment => (
+                                                    <div key={segment.status} className="flex items-center gap-1">
+                                                        <div className="h-2 w-2 rounded-full" style={{ backgroundColor: segment.color }} />
+                                                        <span>{segment.status}</span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </CardContent>
+                                        <CardFooter>
+                                            <p className="text-sm text-muted-foreground w-full text-center">
+                                                <span className="font-bold">{activeSprintHealthData.daysLeft}</span> days remaining
+                                            </p>
+                                        </CardFooter>
+                                    </Card>
+                                )}
                             </div>
                             <div className="col-span-4">
                                 <Card>
@@ -1231,3 +1310,4 @@ export default function ProjectDetailsPage() {
         </div>
     );
 }
+
