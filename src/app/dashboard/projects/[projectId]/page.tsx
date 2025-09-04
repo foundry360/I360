@@ -374,16 +374,25 @@ export default function ProjectDetailsPage() {
 
                 if (!taskExists) {
                     const toDoColumn = columns['To Do'] || [];
-                    await createTask({
+                    const newTaskData = {
                         projectId: projectId,
                         title: item.title,
-                        status: 'To Do',
+                        status: 'To Do' as TaskStatus,
                         order: toDoColumn.length,
                         owner: item.owner || 'Unassigned',
                         ownerAvatarUrl: item.ownerAvatarUrl || '',
                         priority: item.priority,
-                        type: 'Execution',
+                        type: 'Execution' as TaskType,
                         backlogId: item.backlogId,
+                    };
+                    const newTaskId = await createTask(newTaskData);
+                    const newTask: Task = { ...newTaskData, id: newTaskId };
+                    
+                    // Optimistic UI update for the board
+                    setColumns(prevColumns => {
+                        const newColumns = { ...prevColumns };
+                        newColumns['To Do'] = [...newColumns['To Do'], newTask];
+                        return newColumns;
                     });
                 }
             }
@@ -703,7 +712,7 @@ export default function ProjectDetailsPage() {
                                                 return (
                                                     <AccordionItem key={sprint.id} value={sprint.id} className="border rounded-lg bg-card">
                                                         <div className="flex items-center p-4">
-                                                            <AccordionTrigger className="p-0 hover:no-underline flex-1" noChevron>
+                                                            <AccordionTrigger className="p-0 hover:no-underline flex-1">
                                                             <div className='flex items-center flex-1 gap-4'>
                                                                 <h3 className="font-semibold text-base">{sprint.name}</h3>
                                                                 <p className="text-sm text-muted-foreground">
