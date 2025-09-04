@@ -24,6 +24,8 @@ import { useQuickAction } from '@/contexts/quick-action-context';
 import { useUser } from '@/contexts/user-context';
 import { getContacts, Contact } from '@/services/contact-service';
 import { getBacklogItemsForProject, updateBacklogItem } from '@/services/backlog-item-service';
+import { Archive } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
 
 export function EditTaskDialog() {
   const {
@@ -168,14 +170,24 @@ export function EditTaskDialog() {
               </Select>
             </div>
           </div>
-          <DialogFooter className="pt-4 justify-between">
-            <Button type="button" variant="destructive" onClick={handleMoveToBacklog}>
-                Move to Backlog
+          <DialogFooter className="pt-4 flex justify-between items-center w-full">
+            <Button type="button" variant="outline" onClick={() => handleOpenChange(false)}>
+              Cancel
             </Button>
-            <div className="flex gap-2">
-                <Button type="button" variant="outline" onClick={() => handleOpenChange(false)}>
-                Cancel
-                </Button>
+            <div className="flex items-center gap-2">
+                <TooltipProvider>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <Button type="button" variant="ghost" size="icon" onClick={handleMoveToBacklog}>
+                                <Archive className="h-4 w-4" />
+                                <span className="sr-only">Move to Backlog</span>
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            <p>Move to Backlog</p>
+                        </TooltipContent>
+                    </Tooltip>
+                </TooltipProvider>
                 <Button type="submit">Save Changes</Button>
             </div>
           </DialogFooter>
