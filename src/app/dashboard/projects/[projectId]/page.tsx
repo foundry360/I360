@@ -38,7 +38,7 @@ import { getProject, Project } from '@/services/project-service';
 import { getTasksForProject, updateTaskOrderAndStatus, Task, TaskStatus, updateTask, createTask } from '@/services/task-service';
 import { getEpicsForProject, Epic, deleteEpic } from '@/services/epic-service';
 import { getBacklogItemsForProject, BacklogItem, deleteBacklogItem, updateBacklogItem } from '@/services/backlog-item-service';
-import { getSprintsForProject, Sprint, SprintStatus, startSprint, deleteSprint } from '@/services/sprint-service';
+import { getSprintsForProject, Sprint, SprintStatus, startSprint, deleteSprint, updateSprint } from '@/services/sprint-service';
 import { getContactsForCompany, Contact } from '@/services/contact-service';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
@@ -667,16 +667,16 @@ export default function ProjectDetailsPage() {
                                             return (
                                                 <AccordionItem key={sprint.id} value={sprint.id} className="border rounded-lg bg-card">
                                                     <div className="flex items-center p-4">
-                                                         <AccordionTrigger className="p-0 hover:no-underline flex-1 text-left">
-                                                            <div className='flex items-center flex-1 gap-4'>
-                                                                <h3 className="font-semibold text-base">{sprint.name}</h3>
-                                                                <p className="text-sm text-muted-foreground">
-                                                                    {format(parseISO(sprint.startDate), 'MMM d')} - {format(parseISO(sprint.endDate), 'MMM d, yyyy')}
-                                                                </p>
-                                                                <Badge variant={sprint.status === 'Active' ? 'default' : 'secondary'} className={sprint.status === 'Active' ? 'bg-green-500' : ''}>{sprint.status}</Badge>
-                                                            </div>
+                                                        <AccordionTrigger className="p-0 hover:no-underline flex-1" noChevron>
+                                                          <div className='flex items-center flex-1 gap-4'>
+                                                              <h3 className="font-semibold text-base">{sprint.name}</h3>
+                                                              <p className="text-sm text-muted-foreground">
+                                                                  {format(parseISO(sprint.startDate), 'MMM d')} - {format(parseISO(sprint.endDate), 'MMM d, yyyy')}
+                                                              </p>
+                                                              <Badge variant={sprint.status === 'Active' ? 'default' : 'secondary'} className={sprint.status === 'Active' ? 'bg-green-500' : ''}>{sprint.status}</Badge>
+                                                          </div>
                                                         </AccordionTrigger>
-                                                        <div className="flex items-center gap-2 ml-auto shrink-0">
+                                                        <div className="flex items-center gap-2 ml-auto shrink-0 pl-4">
                                                             <DropdownMenu>
                                                                 <DropdownMenuTrigger asChild>
                                                                     <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0"><MoreVertical className="h-4 w-4" /></Button>
@@ -772,3 +772,4 @@ export default function ProjectDetailsPage() {
         </div>
     );
 }
+
