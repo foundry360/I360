@@ -30,7 +30,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Skeleton } from '@/components/ui/skeleton';
-import { MoreHorizontal, Plus, Trash2, ArrowUpDown } from 'lucide-react';
+import { MoreHorizontal, Plus, Trash2, ArrowUpDown, Search } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import Link from 'next/link';
 import { useQuickAction } from '@/contexts/quick-action-context';
@@ -42,6 +42,7 @@ import { TablePagination } from '@/components/table-pagination';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { format, formatDistanceToNow, parseISO } from 'date-fns';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Input } from '@/components/ui/input';
 
 type SortKey = keyof Project;
 type ProjectStatus = 'Active' | 'Inactive' | 'Completed' | 'On Hold';
@@ -58,8 +59,9 @@ export default function ProjectsPage() {
   const [sortConfig, setSortConfig] = React.useState<{ key: SortKey; direction: 'ascending' | 'descending' } | null>({ key: 'lastActivity', direction: 'descending' });
   const [activeTab, setActiveTab] = React.useState<TabValue>('active');
 
-  const { openNewProjectDialog, setOnProjectCreated, openEditProjectDialog, setOnProjectUpdated, globalSearchTerm } = useQuickAction();
+  const { openNewProjectDialog, setOnProjectCreated, openEditProjectDialog, setOnProjectUpdated, globalSearchTerm, setGlobalSearchTerm } = useQuickAction();
   const { user } = useUser();
+  const [isSearchVisible, setIsSearchVisible] = React.useState(false);
 
   const fetchProjects = React.useCallback(async () => {
     try {
@@ -82,6 +84,12 @@ export default function ProjectsPage() {
       if (unsubscribeUpdated) unsubscribeUpdated();
     };
   }, [fetchProjects, setOnProjectCreated, setOnProjectUpdated]);
+
+  React.useEffect(() => {
+    return () => {
+      setGlobalSearchTerm('');
+    };
+  }, [setGlobalSearchTerm]);
   
   const openDeleteDialog = (project: Project) => {
     setProjectToDelete(project);
@@ -250,6 +258,22 @@ export default function ProjectsPage() {
                         Delete ({numSelected})
                     </Button>
                     )}
+                    {isSearchVisible && (
+                        <div className="relative">
+                            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                            <Input 
+                                placeholder="Search projects..." 
+                                className="pl-8 w-48 md:w-64"
+                                value={globalSearchTerm}
+                                onChange={(e) => setGlobalSearchTerm(e.target.value)}
+                                autoFocus
+                            />
+                        </div>
+                    )}
+                    <Button variant="ghost" size="icon" onClick={() => setIsSearchVisible(!isSearchVisible)}>
+                        <Search className="h-4 w-4" />
+                        <span className="sr-only">Search</span>
+                    </Button>
                     <Button size="icon" onClick={openNewProjectDialog}>
                         <Plus className="h-4 w-4" />
                         <span className="sr-only">New Project</span>
@@ -262,10 +286,10 @@ export default function ProjectsPage() {
                 </div>
                 <div className="border rounded-lg">
                     {loading ? (
-                        <div className="space-y-4 p-6">
-                            <Skeleton className="h-12 w-full" />
-                            <Skeleton className="h-12 w-full" />
-                            <Skeleton className="h-12 w-full" />
+                        <div className="space-y-4 p-4">
+                            <Skeleton className="h-10 w-full" />
+                            <Skeleton className="h-10 w-full" />
+                            <Skeleton className="h-10 w-full" />
                         </div>
                     ) : (
                         <Table>
@@ -378,7 +402,7 @@ export default function ProjectsPage() {
                                             <TableCell className="text-right p-2">
                                                 <DropdownMenu>
                                                     <DropdownMenuTrigger asChild>
-                                                        <Button variant="ghost" className="h-8 w-8 p-0">
+                                                        <Button variant="ghost" className="h-8 w-8 p-0 hover:bg-primary hover:text-primary-foreground">
                                                             <span className="sr-only">Open menu</span>
                                                             <MoreHorizontal className="h-4 w-4" />
                                                         </Button>
@@ -450,7 +474,3 @@ export default function ProjectsPage() {
     </>
   );
 }
-
-    
-
-    

@@ -40,7 +40,7 @@ import {
 import { getContacts, Contact } from '@/services/contact-service';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Checkbox } from '@/components/ui/checkbox';
-import { MoreHorizontal, Plus, Trash2, ArrowUpDown, Link2 } from 'lucide-react';
+import { MoreHorizontal, Plus, Trash2, ArrowUpDown, Link2, Search } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { TablePagination } from '@/components/table-pagination';
 import Link from 'next/link';
@@ -48,6 +48,7 @@ import { cn } from '@/lib/utils';
 import { useQuickAction } from '@/contexts/quick-action-context';
 import { useToast } from '@/hooks/use-toast';
 import { formatInTimeZone } from 'date-fns-tz';
+import { Input } from '@/components/ui/input';
 
 type SortKey = keyof Company | 'contactName';
 
@@ -70,8 +71,9 @@ export default function CompaniesPage() {
   
   const [sortConfig, setSortConfig] = React.useState<{ key: SortKey; direction: 'ascending' | 'descending' } | null>({ key: 'name', direction: 'ascending' });
 
-  const { openNewCompanyDialog, setOnCompanyCreated, globalSearchTerm } = useQuickAction();
+  const { openNewCompanyDialog, setOnCompanyCreated, globalSearchTerm, setGlobalSearchTerm } = useQuickAction();
   const { toast } = useToast();
+  const [isSearchVisible, setIsSearchVisible] = React.useState(false);
 
   const fetchCompanies = React.useCallback(async () => {
     try {
@@ -102,6 +104,12 @@ export default function CompaniesPage() {
       if (unsubscribe) unsubscribe();
     };
   }, [fetchCompanies, setOnCompanyCreated]);
+  
+  React.useEffect(() => {
+    return () => {
+      setGlobalSearchTerm('');
+    };
+  }, [setGlobalSearchTerm]);
 
   const handleViewDetails = (company: Company) => {
     router.push(`/dashboard/companies/${company.id}/details`);
@@ -252,6 +260,22 @@ export default function CompaniesPage() {
               Delete ({numSelected})
             </Button>
           )}
+          {isSearchVisible && (
+             <div className="relative">
+                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input 
+                    placeholder="Search companies..." 
+                    className="pl-8 w-48 md:w-64"
+                    value={globalSearchTerm}
+                    onChange={(e) => setGlobalSearchTerm(e.target.value)}
+                    autoFocus
+                />
+             </div>
+          )}
+          <Button variant="ghost" size="icon" onClick={() => setIsSearchVisible(!isSearchVisible)}>
+            <Search className="h-4 w-4" />
+            <span className="sr-only">Search</span>
+          </Button>
           <Button size="icon" onClick={openNewCompanyDialog}>
             <Plus className="h-4 w-4" />
             <span className="sr-only">New Company</span>
@@ -260,10 +284,10 @@ export default function CompaniesPage() {
       </div>
       <div className="border rounded-lg">
           {loading ? (
-            <div className="space-y-4 p-6">
-              <Skeleton className="h-12 w-full" />
-              <Skeleton className="h-12 w-full" />
-              <Skeleton className="h-12 w-full" />
+            <div className="space-y-4 p-4">
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-10 w-full" />
             </div>
           ) : (
             <Table>
@@ -377,7 +401,7 @@ export default function CompaniesPage() {
                       <TableCell className="text-right p-2">
                          <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" className="h-8 w-8 p-0">
+                            <Button variant="ghost" className="h-8 w-8 p-0 hover:bg-primary hover:text-primary-foreground">
                               <span className="sr-only">Open menu</span>
                               <MoreHorizontal className="h-4 w-4" />
                             </Button>
@@ -474,7 +498,3 @@ export default function CompaniesPage() {
     </div>
   );
 }
-
-    
-
-    
