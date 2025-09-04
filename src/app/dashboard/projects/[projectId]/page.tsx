@@ -82,6 +82,15 @@ const taskTypeColors: Record<TaskType, string> = {
     Review: 'bg-primary',
 };
 
+const statusColors: Record<TaskStatus, string> = {
+    'To Do': 'bg-muted-foreground/20 text-muted-foreground',
+    'In Progress': 'bg-blue-500/20 text-blue-600 dark:text-blue-400',
+    'In Review': 'bg-purple-500/20 text-purple-600 dark:text-purple-400',
+    'Needs Revisions': 'bg-orange-500/20 text-orange-600 dark:text-orange-400',
+    'Final Approval': 'bg-yellow-500/20 text-yellow-600 dark:text-yellow-400',
+    'Complete': 'bg-green-500/20 text-green-600 dark:text-green-400',
+};
+
 
 const TaskTypeIcon = ({ type }: { type: TaskType }) => {
     const Icon = taskTypeIcons[type];
@@ -343,7 +352,8 @@ export default function ProjectDetailsPage() {
         }
     };
     
-    const handleDelete = async () => {
+    const handleDelete = async (e?: React.MouseEvent<HTMLButtonElement>) => {
+        if (e) e.stopPropagation();
         if (!itemToDelete) return;
         try {
             if (itemToDelete.type === 'epic') {
@@ -609,7 +619,7 @@ export default function ProjectDetailsPage() {
                                                             </DropdownMenuTrigger>
                                                             <DropdownMenuContent align="end">
                                                                 <DropdownMenuItem onSelect={() => openEditEpicDialog(epic)}><Pencil className="mr-2 h-4 w-4" />Edit</DropdownMenuItem>
-                                                                <DropdownMenuItem onSelect={(e) => { e.stopPropagation(); setItemToDelete({type: 'epic', id: epic.id, name: epic.title}); setIsDeleteDialogOpen(true);}} className="text-destructive"><Trash2 className="mr-2 h-4 w-4" />Delete</DropdownMenuItem>
+                                                                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setItemToDelete({type: 'epic', id: epic.id, name: epic.title}); setIsDeleteDialogOpen(true);}} className="text-destructive"><Trash2 className="mr-2 h-4 w-4" />Delete</DropdownMenuItem>
                                                             </DropdownMenuContent>
                                                         </DropdownMenu>
                                                     </div>
@@ -742,7 +752,7 @@ export default function ProjectDetailsPage() {
                                                                         </DropdownMenuItem>
                                                                         )}
                                                                         <DropdownMenuSeparator />
-                                                                        <DropdownMenuItem className="text-destructive" onSelect={() => { setItemToDelete({type: 'sprint', id: sprint.id, name: sprint.name}); setIsDeleteDialogOpen(true);}}>
+                                                                        <DropdownMenuItem className="text-destructive" onClick={(e) => { e.stopPropagation(); setItemToDelete({type: 'sprint', id: sprint.id, name: sprint.name}); setIsDeleteDialogOpen(true);}}>
                                                                             <Trash2 className="mr-2 h-4 w-4" /> Delete
                                                                         </DropdownMenuItem>
                                                                     </DropdownMenuContent>
@@ -775,7 +785,7 @@ export default function ProjectDetailsPage() {
                                                                                 <p>{item.title}</p>
                                                                             </div>
                                                                             <div className="flex items-center gap-4">
-                                                                                <Badge variant="outline">{item.status}</Badge>
+                                                                                <Badge variant="outline" className={cn(statusColors[item.status])}>{item.status}</Badge>
                                                                                 <Badge variant="secondary">{item.points} Points</Badge>
                                                                                 <TooltipProvider>
                                                                                     <Tooltip>
