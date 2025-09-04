@@ -20,9 +20,11 @@ const sprintsCollection = collection(db, 'sprints');
 
 export async function getSprintsForProject(projectId: string): Promise<Sprint[]> {
     try {
-        const q = query(sprintsCollection, where("projectId", "==", projectId), orderBy("startDate", "asc"));
+        const q = query(sprintsCollection, where("projectId", "==", projectId));
         const snapshot = await getDocs(q);
-        return snapshot.docs.map(doc => doc.data() as Sprint);
+        return snapshot.docs
+          .map(doc => doc.data() as Sprint)
+          .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
     } catch (error) {
         console.error("Error fetching sprints for project:", error);
         return [];
