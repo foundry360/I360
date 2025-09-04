@@ -93,13 +93,13 @@ body {
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
 
-    --sidebar-background: 228 70% 10%; /* #090f2a */
+    --sidebar-background: 240 2% 12%; /* #1f1f21 */
     --sidebar-foreground: 210 40% 98%;
     --sidebar-primary: 256 96% 63%;
     --sidebar-primary-foreground: 210 40% 98%;
-    --sidebar-accent: 217.2 32.6% 17.5%;
+    --sidebar-accent: 240 2% 18%;
     --sidebar-accent-foreground: 210 40% 98%;
-    --sidebar-border: 217.2 32.6% 17.5%;
+    --sidebar-border: 240 2% 18%;
     --sidebar-ring: 256 96% 63%;
   }
 }
