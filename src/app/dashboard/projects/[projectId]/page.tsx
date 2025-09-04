@@ -614,36 +614,36 @@ export default function ProjectDetailsPage() {
                                             const itemsInSprint = backlogItems.filter(item => item.sprintId === sprint.id);
                                             return (
                                                 <AccordionItem key={sprint.id} value={sprint.id} className="border rounded-lg bg-card">
-                                                    <div className="flex items-center p-4">
-                                                        <AccordionTrigger className="flex-1 p-0 hover:no-underline">
-                                                            <div className="flex-1 flex items-center gap-4">
-                                                                <h3 className="font-semibold text-base">{sprint.name}</h3>
-                                                                <p className="text-sm text-muted-foreground">
-                                                                    {format(parseISO(sprint.startDate), 'MMM d')} - {format(parseISO(sprint.endDate), 'MMM d, yyyy')}
-                                                                </p>
-                                                                <Badge variant={sprint.status === 'Active' ? 'default' : 'secondary'} className={sprint.status === 'Active' ? 'bg-green-500' : ''}>{sprint.status}</Badge>
-                                                            </div>
-                                                        </AccordionTrigger>
-                                                        <DropdownMenu>
-                                                            <DropdownMenuTrigger asChild>
-                                                                <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0"><MoreVertical className="h-4 w-4" /></Button>
-                                                            </DropdownMenuTrigger>
-                                                            <DropdownMenuContent align="end">
-                                                                {sprint.status === 'Not Started' && (
-                                                                    <DropdownMenuItem onSelect={() => handleStartSprint(sprint.id)} disabled={loading}>
-                                                                        <Rocket className="mr-2 h-4 w-4" /> Start Sprint
+                                                    <AccordionTrigger className="flex p-4 hover:no-underline">
+                                                        <div className="flex-1 flex items-center gap-4">
+                                                            <h3 className="font-semibold text-base">{sprint.name}</h3>
+                                                            <p className="text-sm text-muted-foreground">
+                                                                {format(parseISO(sprint.startDate), 'MMM d')} - {format(parseISO(sprint.endDate), 'MMM d, yyyy')}
+                                                            </p>
+                                                            <Badge variant={sprint.status === 'Active' ? 'default' : 'secondary'} className={sprint.status === 'Active' ? 'bg-green-500' : ''}>{sprint.status}</Badge>
+                                                        </div>
+                                                        <div className="flex items-center gap-2 ml-auto">
+                                                            <DropdownMenu>
+                                                                <DropdownMenuTrigger asChild>
+                                                                    <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0"><MoreVertical className="h-4 w-4" /></Button>
+                                                                </DropdownMenuTrigger>
+                                                                <DropdownMenuContent align="end">
+                                                                    {sprint.status === 'Not Started' && (
+                                                                        <DropdownMenuItem onSelect={() => handleStartSprint(sprint.id)} disabled={loading}>
+                                                                            <Rocket className="mr-2 h-4 w-4" /> Start Sprint
+                                                                        </DropdownMenuItem>
+                                                                    )}
+                                                                    <DropdownMenuItem>
+                                                                        <Pencil className="mr-2 h-4 w-4" /> Edit
                                                                     </DropdownMenuItem>
-                                                                )}
-                                                                <DropdownMenuItem>
-                                                                    <Pencil className="mr-2 h-4 w-4" /> Edit
-                                                                </DropdownMenuItem>
-                                                                <DropdownMenuSeparator />
-                                                                <DropdownMenuItem className="text-destructive">
-                                                                    <Trash2 className="mr-2 h-4 w-4" /> Delete
-                                                                </DropdownMenuItem>
-                                                            </DropdownMenuContent>
-                                                        </DropdownMenu>
-                                                    </div>
+                                                                    <DropdownMenuSeparator />
+                                                                    <DropdownMenuItem className="text-destructive">
+                                                                        <Trash2 className="mr-2 h-4 w-4" /> Delete
+                                                                    </DropdownMenuItem>
+                                                                </DropdownMenuContent>
+                                                            </DropdownMenu>
+                                                        </div>
+                                                    </AccordionTrigger>
                                                     <AccordionContent className="p-4 pt-0">
                                                         <p className="italic text-muted-foreground mb-4">{sprint.goal}</p>
                                                         <div className="border rounded-lg">
