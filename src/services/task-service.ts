@@ -68,6 +68,15 @@ export async function deleteTask(id: string): Promise<void> {
     await deleteDoc(docRef);
 }
 
+export async function deleteTaskByBacklogId(projectId: string, backlogId: number): Promise<void> {
+    const q = query(tasksCollection, where("projectId", "==", projectId), where("backlogId", "==", backlogId));
+    const snapshot = await getDocs(q);
+    if (!snapshot.empty) {
+        const taskDoc = snapshot.docs[0];
+        await deleteDoc(taskDoc.ref);
+    }
+}
+
 
 export async function updateTaskStatus(id: string, status: TaskStatus): Promise<void> {
     const docRef = doc(db, 'tasks', id);
@@ -75,7 +84,6 @@ export async function updateTaskStatus(id: string, status: TaskStatus): Promise<
 }
 
 export async function updateTaskOrderAndStatus(taskId: string, newStatus: TaskStatus, newIndex: number, projectId: string): Promise<void> {
-    // First, fetch all tasks for the project outside the transaction.
     const tasksQuery = query(tasksCollection, where("projectId", "==", projectId));
     const tasksSnapshot = await getDocs(tasksQuery);
     const tasks = tasksSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Task));
@@ -86,7 +94,6 @@ export async function updateTaskOrderAndStatus(taskId: string, newStatus: TaskSt
         const oldStatus = taskToMove.status;
         const oldIndex = taskToMove.order;
 
-        // Decrement order for tasks in the old column that were after the moved task
         tasks
             .filter(t => t.id !== taskId && t.status === oldStatus && t.order > oldIndex)
             .forEach(t => {
@@ -94,7 +101,6 @@ export async function updateTaskOrderAndStatus(taskId: string, newStatus: TaskSt
                 transaction.update(taskRef, { order: t.order - 1 });
             });
 
-        // Increment order for tasks in the new column that are at or after the new index
         tasks
             .filter(t => t.id !== taskId && t.status === newStatus && t.order >= newIndex)
             .forEach(t => {
@@ -102,14 +108,12 @@ export async function updateTaskOrderAndStatus(taskId: string, newStatus: TaskSt
                 transaction.update(taskRef, { order: t.order + 1 });
             });
 
-        // Update the moved task's status and order
         const movedTaskRef = doc(db, "tasks", taskId);
         transaction.update(movedTaskRef, { status: newStatus, order: newIndex });
         
-        // Update the corresponding backlog item's status if it exists
         if (taskToMove.backlogId) {
             const backlogQuery = query(collection(db, 'backlogItems'), where("projectId", "==", projectId), where("backlogId", "==", taskToMove.backlogId));
-            const backlogSnapshot = await getDocs(backlogQuery); // getDocs is fine here as we are just reading before writing
+            const backlogSnapshot = await getDocs(backlogQuery);
             if (!backlogSnapshot.empty) {
                 const backlogItemRef = backlogSnapshot.docs[0].ref;
                 transaction.update(backlogItemRef, { status: newStatus });
