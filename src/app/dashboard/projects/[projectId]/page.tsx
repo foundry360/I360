@@ -324,8 +324,26 @@ export default function ProjectDetailsPage() {
                     </TabsList>
                     {activeTab === 'backlog' && (
                          <div className="flex items-center gap-2">
-                            <Button variant="outline"><Layers className="mr-2 h-4 w-4" /> Add Epic</Button>
-                            <Button><FilePlus className="mr-2 h-4 w-4" /> Add Backlog Item</Button>
+                            <TooltipProvider>
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <Button variant="outline" size="icon"><Layers className="h-4 w-4" /></Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                        <p>Add Epic</p>
+                                    </TooltipContent>
+                                </Tooltip>
+                            </TooltipProvider>
+                             <TooltipProvider>
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <Button size="icon"><FilePlus className="h-4 w-4" /></Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                        <p>Add Backlog Item</p>
+                                    </TooltipContent>
+                                </Tooltip>
+                            </TooltipProvider>
                         </div>
                     )}
                 </div>
