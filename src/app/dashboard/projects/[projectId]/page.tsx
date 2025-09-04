@@ -19,6 +19,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { DragDropContext, Droppable, Draggable, type DropResult } from '@hello-pangea/dnd';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 
 type TaskStatus = 'To Do' | 'In Progress' | 'In Review' | 'Needs Revisions' | 'Complete';
@@ -113,8 +114,26 @@ const TaskCard = ({ task, taskNumber }: { task: Task; taskNumber: string }) => {
                 <CardFooter className="p-3 flex justify-between items-center bg-muted/50 mt-auto">
                     <div className="flex items-center gap-2">
                         <span className="text-xs text-muted-foreground font-mono">{taskNumber}</span>
-                        <TaskTypeIcon type={task.type} />
-                        <PriorityIcon priority={task.priority} />
+                        <TooltipProvider>
+                            <Tooltip>
+                                <TooltipTrigger>
+                                    <TaskTypeIcon type={task.type} />
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    <p>Type: {task.type}</p>
+                                </TooltipContent>
+                            </Tooltip>
+                        </TooltipProvider>
+                         <TooltipProvider>
+                            <Tooltip>
+                                <TooltipTrigger>
+                                    <PriorityIcon priority={task.priority} />
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    <p>Priority: {task.priority}</p>
+                                </TooltipContent>
+                            </Tooltip>
+                        </TooltipProvider>
                     </div>
                     <Avatar className="h-6 w-6">
                         <AvatarImage src={task.ownerAvatarUrl} />
