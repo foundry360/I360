@@ -1,7 +1,7 @@
 
 'use client';
 import { db } from '@/lib/firebase';
-import { collection, doc, getDocs, setDoc, addDoc, writeBatch, deleteDoc, query, where, getDoc } from 'firebase/firestore';
+import { collection, doc, getDocs, setDoc, addDoc, writeBatch, deleteDoc, query, where, getDoc, updateDoc } from 'firebase/firestore';
 import type { Company } from './company-service';
 import { projectTemplate } from './project-template';
 
@@ -117,6 +117,10 @@ export async function createProject(projectData: Omit<Project, 'id' | 'companyNa
   return projectDocRef.id;
 }
 
+export async function updateProject(id: string, projectData: Partial<Omit<Project, 'id' | 'companyName'>>): Promise<void> {
+    const docRef = doc(db, 'projects', id);
+    await updateDoc(docRef, projectData);
+}
 
 export async function deleteProject(id: string): Promise<void> {
     const docRef = doc(db, 'projects', id);

@@ -7,6 +7,7 @@ import { QuickActionProvider } from '@/contexts/quick-action-context';
 import { NewCompanyDialog } from '@/components/new-company-dialog';
 import { NewContactDialog } from '@/components/new-contact-dialog';
 import { NewProjectDialog } from '@/components/new-project-dialog';
+import { EditProjectDialog } from '@/components/edit-project-dialog';
 import { NewBacklogItemDialog } from '@/components/new-backlog-item-dialog';
 import { NewEpicDialog } from '@/components/new-epic-dialog';
 import { EditEpicDialog } from '@/components/edit-epic-dialog';
@@ -100,6 +101,7 @@ export default function RootLayout({
                   <NewCompanyDialog />
                   <NewContactDialog />
                   <NewProjectDialog />
+                  <EditProjectDialog />
                   <NewBacklogItemDialog />
                   <NewEpicDialog />
                   <EditEpicDialog />

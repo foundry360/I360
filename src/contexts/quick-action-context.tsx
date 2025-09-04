@@ -8,6 +8,7 @@ import type { BacklogItem } from '@/services/backlog-item-service';
 import type { Sprint } from '@/services/sprint-service';
 import type { Task } from '@/services/task-service';
 import type { Contact } from '@/services/contact-service';
+import type { Project } from '@/services/project-service';
 
 type QuickActionContextType = {
   isNewCompanyDialogOpen: boolean;
@@ -34,6 +35,13 @@ type QuickActionContextType = {
   closeNewProjectDialog: () => void;
   onProjectCreated: (() => void) | null;
   setOnProjectCreated: (callback: (() => void) | null) => (() => void) | void;
+
+  isEditProjectDialogOpen: boolean;
+  openEditProjectDialog: (project: Project) => void;
+  closeEditProjectDialog: () => void;
+  onProjectUpdated: (() => void) | null;
+  setOnProjectUpdated: (callback: (() => void) | null) => (() => void) | void;
+  editProjectData: Project | null;
 
   isNewBacklogItemDialogOpen: boolean;
   openNewBacklogItemDialog: (projectId: string, companyId: string, epics: Epic[]) => void;
@@ -115,6 +123,11 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
   // New Project Dialog State
   const [isNewProjectDialogOpen, setIsNewProjectDialogOpen] = React.useState(false);
   const [onProjectCreated, setOnProjectCreated] = React.useState<(() => void) | null>(null);
+
+  // Edit Project Dialog State
+  const [isEditProjectDialogOpen, setIsEditProjectDialogOpen] = React.useState(false);
+  const [onProjectUpdated, setOnProjectUpdated] = React.useState<(() => void) | null>(null);
+  const [editProjectData, setEditProjectData] = React.useState<Project | null>(null);
 
   // New Backlog Item Dialog State
   const [isNewBacklogItemDialogOpen, setIsNewBacklogItemDialogOpen] = React.useState(false);
@@ -216,6 +229,24 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
     (callback: (() => void) | null) => {
         setOnProjectCreated(() => callback);
         return () => setOnProjectCreated(null);
+    },
+    []
+  );
+
+  const openEditProjectDialog = React.useCallback((project: Project) => {
+    setEditProjectData(project);
+    setIsEditProjectDialogOpen(true);
+  }, []);
+
+  const closeEditProjectDialog = React.useCallback(() => {
+    setIsEditProjectDialogOpen(false);
+    setEditProjectData(null);
+  }, []);
+
+  const handleSetOnProjectUpdated = React.useCallback(
+    (callback: (() => void) | null) => {
+      setOnProjectUpdated(() => callback);
+      return () => setOnProjectUpdated(null);
     },
     []
   );
@@ -374,6 +405,13 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
         closeNewProjectDialog,
         onProjectCreated,
         setOnProjectCreated: handleSetOnProjectCreated,
+
+        isEditProjectDialogOpen,
+        openEditProjectDialog,
+        closeEditProjectDialog,
+        onProjectUpdated,
+        setOnProjectUpdated: handleSetOnProjectUpdated,
+        editProjectData,
 
         isNewBacklogItemDialogOpen,
         openNewBacklogItemDialog,

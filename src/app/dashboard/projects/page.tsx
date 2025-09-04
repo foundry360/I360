@@ -56,7 +56,7 @@ export default function ProjectsPage() {
   const [sortConfig, setSortConfig] = React.useState<{ key: SortKey; direction: 'ascending' | 'descending' } | null>({ key: 'startDate', direction: 'descending' });
   const [activeTab, setActiveTab] = React.useState<TabValue>('active');
 
-  const { openNewProjectDialog, setOnProjectCreated, globalSearchTerm } = useQuickAction();
+  const { openNewProjectDialog, setOnProjectCreated, openEditProjectDialog, setOnProjectUpdated, globalSearchTerm } = useQuickAction();
   const { user } = useUser();
 
   const fetchProjects = React.useCallback(async () => {
@@ -73,11 +73,13 @@ export default function ProjectsPage() {
 
   React.useEffect(() => {
     fetchProjects();
-    const unsubscribe = setOnProjectCreated(() => fetchProjects);
+    const unsubscribeCreated = setOnProjectCreated(() => fetchProjects);
+    const unsubscribeUpdated = setOnProjectUpdated(() => fetchProjects);
     return () => {
-      if (unsubscribe) unsubscribe();
+      if (unsubscribeCreated) unsubscribeCreated();
+      if (unsubscribeUpdated) unsubscribeUpdated();
     };
-  }, [fetchProjects, setOnProjectCreated]);
+  }, [fetchProjects, setOnProjectCreated, setOnProjectUpdated]);
   
   const openDeleteDialog = (project: Project) => {
     setProjectToDelete(project);
@@ -344,7 +346,7 @@ export default function ProjectsPage() {
                                                         <DropdownMenuItem asChild>
                                                             <Link href={`/dashboard/projects/${project.id}`}>View Details</Link>
                                                         </DropdownMenuItem>
-                                                        <DropdownMenuItem>Edit Project</DropdownMenuItem>
+                                                        <DropdownMenuItem onSelect={() => openEditProjectDialog(project)}>Edit Project</DropdownMenuItem>
                                                         <DropdownMenuSeparator />
                                                         <DropdownMenuItem
                                                         onClick={() => openDeleteDialog(project)}
