@@ -108,6 +108,23 @@ export function EditProjectDialog() {
     }
   };
 
+  const ownerOptions = React.useMemo(() => {
+    const allOwners = [...contacts];
+    if (user && user.displayName && !contacts.some(c => c.name === user.displayName)) {
+      allOwners.push({ 
+        id: user.uid, 
+        name: user.displayName, 
+        avatar: user.photoURL || '',
+        email: user.email || '',
+        phone: '',
+        title: 'Current User',
+        companyId: '',
+        lastActivity: '',
+      });
+    }
+    return allOwners;
+  }, [contacts, user]);
+
   if (!formData) return null;
 
   return (
@@ -136,11 +153,8 @@ export function EditProjectDialog() {
                   <SelectValue placeholder="Select an owner" />
                 </SelectTrigger>
                 <SelectContent>
-                  {user && (
-                    <SelectItem value={user.displayName!}>{user.displayName}</SelectItem>
-                  )}
-                  {contacts.map((contact) => (
-                    <SelectItem key={contact.id} value={contact.name}>{contact.name}</SelectItem>
+                  {ownerOptions.map((owner) => (
+                    <SelectItem key={owner.id} value={owner.name}>{owner.name}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>

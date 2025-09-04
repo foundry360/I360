@@ -131,6 +131,23 @@ export function NewProjectDialog() {
     }
   };
 
+  const ownerOptions = React.useMemo(() => {
+    const allOwners = [...contacts];
+    if (user && user.displayName && !contacts.some(c => c.name === user.displayName)) {
+      allOwners.push({ 
+        id: user.uid, 
+        name: user.displayName, 
+        avatar: user.photoURL || '',
+        email: user.email || '',
+        phone: '',
+        title: 'Current User',
+        companyId: newProject.companyId,
+        lastActivity: '',
+      });
+    }
+    return allOwners;
+  }, [contacts, user, newProject.companyId]);
+
   return (
     <Dialog open={isNewProjectDialogOpen} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-[600px]">
@@ -170,12 +187,9 @@ export function NewProjectDialog() {
                     <SelectValue placeholder="Select an owner" />
                   </SelectTrigger>
                   <SelectContent>
-                    {contacts.map((contact) => (
-                        <SelectItem key={contact.id} value={contact.name}>{contact.name}</SelectItem>
+                    {ownerOptions.map((owner) => (
+                        <SelectItem key={owner.id} value={owner.name}>{owner.name}</SelectItem>
                     ))}
-                    {user && !contacts.some(c => c.name === user.displayName) && (
-                        <SelectItem value={user.displayName!}>{user.displayName}</SelectItem>
-                    )}
                   </SelectContent>
               </Select>
             </div>
