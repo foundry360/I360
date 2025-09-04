@@ -22,6 +22,7 @@ import {
 import { Textarea } from './ui/textarea';
 import { updateProject, type Project } from '@/services/project-service';
 import { useQuickAction } from '@/contexts/quick-action-context';
+import { getContactsForCompany, type Contact } from '@/services/contact-service';
 
 export function EditProjectDialog() {
   const {
@@ -32,6 +33,7 @@ export function EditProjectDialog() {
   } = useQuickAction();
   
   const [formData, setFormData] = React.useState<Project | null>(null);
+  const [contacts, setContacts] = React.useState<Contact[]>([]);
 
   React.useEffect(() => {
     if (editProjectData) {
@@ -42,6 +44,14 @@ export function EditProjectDialog() {
           startDate: projectData.startDate ? new Date(projectData.startDate).toISOString().split('T')[0] : '',
           endDate: projectData.endDate ? new Date(projectData.endDate).toISOString().split('T')[0] : '',
       });
+      
+      const fetchContacts = async () => {
+          if (projectData.companyId) {
+              const companyContacts = await getContactsForCompany(projectData.companyId);
+              setContacts(companyContacts);
+          }
+      };
+      fetchContacts();
     }
   }, [editProjectData]);
 
@@ -51,7 +61,7 @@ export function EditProjectDialog() {
     setFormData((prev) => ({ ...prev!, [id]: value }));
   };
 
-  const handleSelectChange = (field: 'status' | 'category' | 'priority') => (value: string) => {
+  const handleSelectChange = (field: 'status' | 'category' | 'priority' | 'owner') => (value: string) => {
     if (!formData) return;
     setFormData((prev) => ({ ...prev!, [field]: value }));
   };
@@ -107,7 +117,16 @@ export function EditProjectDialog() {
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="owner" className="text-right">Owner</Label>
-              <Input id="owner" value={formData.owner} onChange={handleInputChange} className="col-span-3" required />
+              <Select onValueChange={handleSelectChange('owner')} value={formData.owner} required>
+                <SelectTrigger className="col-span-3">
+                  <SelectValue placeholder="Select an owner" />
+                </SelectTrigger>
+                <SelectContent>
+                  {contacts.map((contact) => (
+                    <SelectItem key={contact.id} value={contact.name}>{contact.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
              <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="team" className="text-right">Team</Label>
