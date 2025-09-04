@@ -42,6 +42,7 @@ import { TablePagination } from '@/components/table-pagination';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { formatInTimeZone } from 'date-fns-tz';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { parseISO } from 'date-fns';
 
 type SortKey = keyof Project;
 type ProjectStatus = 'Active' | 'Inactive' | 'Completed' | 'On Hold';
@@ -211,9 +212,9 @@ export default function ProjectsPage() {
     }
   }
 
-  const formatDate = (isoDate: string) => {
+  const formatDate = (isoDate?: string) => {
     if (!isoDate) return 'N/A';
-    return formatInTimeZone(isoDate, 'UTC', 'MMM dd, yyyy');
+    return formatInTimeZone(parseISO(isoDate), 'UTC', 'MMM dd, yyyy');
   };
 
   return (
@@ -315,6 +316,14 @@ export default function ProjectsPage() {
                                             </div>
                                         </Button>
                                     </TableHead>
+                                    <TableHead className="border-t border-r border-b">
+                                        <Button variant="ghost" onClick={() => requestSort('lastActivity')} className="group w-full p-0 hover:bg-transparent hover:text-muted-foreground">
+                                            <div className="flex justify-between items-center w-full">
+                                                Last Updated
+                                                <ArrowUpDown className={cn("h-4 w-4", sortConfig?.key === 'lastActivity' ? 'opacity-100' : 'opacity-25')} />
+                                            </div>
+                                        </Button>
+                                    </TableHead>
                                     <TableHead className="text-right border-t border-b"></TableHead>
                                 </TableRow>
                             </TableHeader>
@@ -360,6 +369,9 @@ export default function ProjectsPage() {
                                             <TableCell>
                                                 {formatDate(project.startDate)}
                                             </TableCell>
+                                            <TableCell>
+                                                {formatDate(project.lastActivity)}
+                                            </TableCell>
                                             <TableCell className="text-right">
                                                 <DropdownMenu>
                                                     <DropdownMenuTrigger asChild>
@@ -388,7 +400,7 @@ export default function ProjectsPage() {
                                     ))
                                 ) : (
                                     <TableRow>
-                                        <TableCell colSpan={7} className="h-24 text-center">
+                                        <TableCell colSpan={8} className="h-24 text-center">
                                             No projects found.
                                         </TableCell>
                                     </TableRow>
@@ -435,4 +447,3 @@ export default function ProjectsPage() {
     </>
   );
 }
-

@@ -19,6 +19,7 @@ export interface Project {
   ownerAvatarUrl?: string;
   team: string; // Comma-separated list of team members
   category: 'Assessment' | 'Workshop' | 'Planning' | 'Execution' | 'Review' | 'Enablement';
+  lastActivity?: string;
 }
 
 const projectsCollection = collection(db, 'projects');
@@ -77,7 +78,7 @@ export async function createProject(projectData: Omit<Project, 'id' | 'companyNa
 
   // 1. Create the project document
   const projectDocRef = doc(collection(db, 'projects'));
-  const newProject = { ...projectData, id: projectDocRef.id };
+  const newProject = { ...projectData, id: projectDocRef.id, lastActivity: new Date().toISOString() };
   batch.set(projectDocRef, newProject);
 
   // 2. Create the epics and backlog items from the template
@@ -120,7 +121,8 @@ export async function createProject(projectData: Omit<Project, 'id' | 'companyNa
 
 export async function updateProject(id: string, projectData: Partial<Omit<Project, 'id' | 'companyName'>>): Promise<void> {
     const docRef = doc(db, 'projects', id);
-    await updateDoc(docRef, projectData);
+    const dataWithTimestamp = { ...projectData, lastActivity: new Date().toISOString() };
+    await updateDoc(docRef, dataWithTimestamp);
 }
 
 export async function deleteProject(id: string): Promise<void> {

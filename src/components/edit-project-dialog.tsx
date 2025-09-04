@@ -24,6 +24,7 @@ import { updateProject, type Project } from '@/services/project-service';
 import { useQuickAction } from '@/contexts/quick-action-context';
 import { getContactsForCompany, type Contact } from '@/services/contact-service';
 import { useUser } from '@/contexts/user-context';
+import { parseISO } from 'date-fns';
 
 export function EditProjectDialog() {
   const {
@@ -86,8 +87,8 @@ export function EditProjectDialog() {
       const { id, ...updateData } = formData;
       const dataToSave = {
           ...updateData,
-          startDate: new Date(updateData.startDate).toISOString(),
-          endDate: updateData.endDate ? new Date(updateData.endDate).toISOString() : undefined,
+          startDate: parseISO(updateData.startDate).toISOString(),
+          endDate: updateData.endDate ? parseISO(updateData.endDate).toISOString() : undefined,
       };
 
       await updateProject(id, dataToSave);
@@ -135,12 +136,12 @@ export function EditProjectDialog() {
                   <SelectValue placeholder="Select an owner" />
                 </SelectTrigger>
                 <SelectContent>
+                  {user && (
+                    <SelectItem value={user.displayName!}>{user.displayName}</SelectItem>
+                  )}
                   {contacts.map((contact) => (
                     <SelectItem key={contact.id} value={contact.name}>{contact.name}</SelectItem>
                   ))}
-                   {user && !contacts.some(c => c.name === user.displayName) && (
-                    <SelectItem value={user.displayName!}>{user.displayName}</SelectItem>
-                  )}
                 </SelectContent>
               </Select>
             </div>
