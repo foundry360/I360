@@ -2,7 +2,7 @@
 'use client';
 
 import { db } from '@/lib/firebase';
-import { collection, doc, getDocs, setDoc, updateDoc, query, where, writeBatch, runTransaction, DocumentReference, WriteBatch } from 'firebase/firestore';
+import { collection, doc, getDocs, setDoc, updateDoc, query, where, writeBatch, runTransaction, DocumentReference, WriteBatch, addDoc } from 'firebase/firestore';
 
 export type TaskStatus = 'To Do' | 'In Progress' | 'In Review' | 'Needs Revisions' | 'Final Approval' | 'Complete';
 
@@ -40,18 +40,15 @@ export async function getTasksForProject(projectId: string): Promise<Task[]> {
     }
 }
 
-export async function createTask(taskData: Omit<Task, 'id'>, batch?: WriteBatch): Promise<string> {
-  const docRef = doc(tasksCollection);
+export async function createTask(taskData: Omit<Task, 'id'>): Promise<string> {
+  const docRef = await addDoc(tasksCollection, {});
   const newTask: Task = { ...taskData, id: docRef.id };
-  if (batch) {
-      batch.set(docRef, newTask);
-  } else {
-      await setDoc(docRef, newTask);
-  }
+  await setDoc(docRef, newTask);
   return docRef.id;
 }
 
-export async function updateTask(id: string, taskData: Partial<Task>): Promise<void> {
+
+export async function updateTask(id: string, taskData: Partial<Omit<Task, 'id'>>): Promise<void> {
     const docRef = doc(db, 'tasks', id);
     await updateDoc(docRef, taskData);
 }

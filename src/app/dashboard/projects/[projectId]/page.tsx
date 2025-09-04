@@ -35,7 +35,7 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { DragDropContext, Droppable, Draggable, type DropResult } from '@hello-pangea/dnd';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { getProject, Project } from '@/services/project-service';
-import { getTasksForProject, updateTaskOrderAndStatus, Task, TaskStatus } from '@/services/task-service';
+import { getTasksForProject, updateTaskOrderAndStatus, Task, TaskStatus, updateTask } from '@/services/task-service';
 import { getEpicsForProject, Epic, deleteEpic } from '@/services/epic-service';
 import { getBacklogItemsForProject, BacklogItem, deleteBacklogItem, updateBacklogItem } from '@/services/backlog-item-service';
 import { getSprintsForProject, Sprint, SprintStatus, startSprint } from '@/services/sprint-service';
@@ -158,7 +158,7 @@ const TaskCard = ({ task, taskNumber }: { task: Task; taskNumber: string }) => {
     );
 };
 
-const BoardColumn = ({ title, tasks, projectPrefix }: { title: string; tasks: Task[]; projectPrefix: string;}) => (
+const BoardColumn = ({ title, tasks, projectPrefix, onTaskClick }: { title: string; tasks: Task[]; projectPrefix: string; onTaskClick: (task: Task) => void;}) => (
     <div className="flex-1">
         <Card className="bg-muted border-none shadow-none">
             <CardHeader className="p-4">
@@ -182,6 +182,8 @@ const BoardColumn = ({ title, tasks, projectPrefix }: { title: string; tasks: Ta
                                             ref={provided.innerRef}
                                             {...provided.draggableProps}
                                             {...provided.dragHandleProps}
+                                            onClick={() => onTaskClick(task)}
+                                            className="cursor-pointer"
                                         >
                                             <TaskCard task={task} taskNumber={`${projectPrefix}-${task.backlogId}`} />
                                         </div>
@@ -224,6 +226,7 @@ export default function ProjectDetailsPage() {
         openEditEpicDialog, setOnEpicUpdated,
         openEditBacklogItemDialog, setOnBacklogItemUpdated,
         openNewSprintDialog, setOnSprintCreated,
+        openEditTaskDialog, setOnTaskUpdated,
     } = useQuickAction();
     const { toast } = useToast();
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
@@ -280,14 +283,16 @@ export default function ProjectDetailsPage() {
         const unsubscribeEpicUpdate = setOnEpicUpdated(fetchData);
         const unsubscribeBacklogUpdate = setOnBacklogItemUpdated(fetchData);
         const unsubscribeSprint = setOnSprintCreated(fetchData);
+        const unsubscribeTask = setOnTaskUpdated(fetchData);
         return () => {
             if (unsubscribeBacklog) unsubscribeBacklog();
             if (unsubscribeEpic) unsubscribeEpic();
             if (unsubscribeEpicUpdate) unsubscribeEpicUpdate();
             if (unsubscribeBacklogUpdate) unsubscribeBacklogUpdate();
             if (unsubscribeSprint) unsubscribeSprint();
+            if (unsubscribeTask) unsubscribeTask();
         };
-    }, [fetchData, setOnBacklogItemCreated, setOnEpicCreated, setOnEpicUpdated, setOnBacklogItemUpdated, setOnSprintCreated]);
+    }, [fetchData, setOnBacklogItemCreated, setOnEpicCreated, setOnEpicUpdated, setOnBacklogItemUpdated, setOnSprintCreated, setOnTaskUpdated]);
 
     const projectPrefix = project ? project.name.substring(0, project.name.indexOf('-')) : '';
     
@@ -504,6 +509,7 @@ export default function ProjectDetailsPage() {
                                         title={status}
                                         tasks={tasks}
                                         projectPrefix={projectPrefix}
+                                        onTaskClick={(task) => openEditTaskDialog(task)}
                                     />
                             ))}
                             </div>
@@ -740,6 +746,7 @@ export default function ProjectDetailsPage() {
     
 
     
+
 
 
 

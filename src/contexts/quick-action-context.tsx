@@ -6,6 +6,7 @@ import type { Assessment } from '@/services/assessment-service';
 import type { Epic } from '@/services/epic-service';
 import type { BacklogItem } from '@/services/backlog-item-service';
 import type { Sprint } from '@/services/sprint-service';
+import type { Task } from '@/services/task-service';
 
 type QuickActionContextType = {
   isNewCompanyDialogOpen: boolean;
@@ -68,6 +69,13 @@ type QuickActionContextType = {
   setOnSprintCreated: (callback: (() => void) | null) => (() => void) | void;
   newSprintData: { projectId: string } | null;
 
+  isEditTaskDialogOpen: boolean;
+  openEditTaskDialog: (task: Task) => void;
+  closeEditTaskDialog: () => void;
+  onTaskUpdated: (() => void) | null;
+  setOnTaskUpdated: (callback: (() => void) | null) => (() => void) | void;
+  editTaskData: Task | null;
+
   globalSearchTerm: string;
   setGlobalSearchTerm: (term: string) => void;
 };
@@ -124,6 +132,11 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
   const [isNewSprintDialogOpen, setIsNewSprintDialogOpen] = React.useState(false);
   const [onSprintCreated, setOnSprintCreated] = React.useState<(() => void) | null>(null);
   const [newSprintData, setNewSprintData] = React.useState<{ projectId: string } | null>(null);
+
+  // Edit Task Dialog State
+  const [isEditTaskDialogOpen, setIsEditTaskDialogOpen] = React.useState(false);
+  const [onTaskUpdated, setOnTaskUpdated] = React.useState<(() => void) | null>(null);
+  const [editTaskData, setEditTaskData] = React.useState<Task | null>(null);
 
   // Global Search State
   const [globalSearchTerm, setGlobalSearchTerm] = React.useState('');
@@ -284,6 +297,25 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
     []
   );
 
+  const openEditTaskDialog = React.useCallback((task: Task) => {
+    setEditTaskData(task);
+    setIsEditTaskDialogOpen(true);
+  }, []);
+
+  const closeEditTaskDialog = React.useCallback(() => {
+    setIsEditTaskDialogOpen(false);
+    setEditTaskData(null);
+  }, []);
+
+  const handleSetOnTaskUpdated = React.useCallback(
+    (callback: (() => void) | null) => {
+      setOnTaskUpdated(() => callback);
+      return () => setOnTaskUpdated(null);
+    },
+    []
+  );
+
+
   return (
     <QuickActionContext.Provider
       value={{
@@ -346,6 +378,13 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
         onSprintCreated,
         setOnSprintCreated: handleSetOnSprintCreated,
         newSprintData,
+
+        isEditTaskDialogOpen,
+        openEditTaskDialog,
+        closeEditTaskDialog,
+        onTaskUpdated,
+        setOnTaskUpdated: handleSetOnTaskUpdated,
+        editTaskData,
 
         globalSearchTerm,
         setGlobalSearchTerm,
