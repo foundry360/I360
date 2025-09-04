@@ -4,7 +4,7 @@
 import * as React from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardFooter, CardDescription } from '@/components/ui/card';
 import {
   ArrowLeft,
   ClipboardList,
@@ -57,6 +57,8 @@ import { format, parseISO, isPast } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
+import { Bar, BarChart, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer } from 'recharts';
+import { ChartContainer, ChartTooltipContent, type ChartConfig } from '@/components/ui/chart';
 
 type TaskType = Task['type'];
 type BoardColumns = Record<TaskStatus, Task[]>;
@@ -491,6 +493,26 @@ export default function ProjectDetailsPage() {
             })
             .sort((a,b) => (sprints.find(s => s.id === b.sprintId)?.endDate || '').localeCompare(sprints.find(s => s.id === a.sprintId)?.endDate || ''))
     , [backlogItems, sprints, allWorkSearchTerm, epics, projectPrefix]);
+    
+    const epicProgressData = React.useMemo(() => {
+        return epics.map(epic => {
+            const itemsInEpic = backlogItems.filter(item => item.epicId === epic.id);
+            const completedItems = itemsInEpic.filter(item => item.status === 'Complete');
+            const progress = itemsInEpic.length > 0 ? (completedItems.length / itemsInEpic.length) * 100 : 0;
+            return {
+                name: epic.title,
+                progress: Math.round(progress),
+                fill: 'hsl(var(--primary))'
+            }
+        });
+    }, [epics, backlogItems]);
+
+    const chartConfig = {
+        progress: {
+            label: 'Progress',
+        },
+    } satisfies ChartConfig;
+
 
     if (loading) {
         return (
@@ -634,10 +656,40 @@ export default function ProjectDetailsPage() {
                             <div className="col-span-4">
                                 <Card>
                                     <CardHeader>
-                                        <CardTitle>Column 2</CardTitle>
+                                        <CardTitle>Epic Progress</CardTitle>
+                                        <CardDescription>A summary of completion for each project epic.</CardDescription>
                                     </CardHeader>
                                     <CardContent>
-                                        <p>40% width placeholder.</p>
+                                       <ChartContainer config={chartConfig} className="min-h-[200px] w-full">
+                                            <BarChart
+                                                accessibilityLayer
+                                                data={epicProgressData}
+                                                layout="vertical"
+                                                margin={{
+                                                    left: -20,
+                                                }}
+                                            >
+                                                <XAxis type="number" dataKey="progress" hide />
+                                                <YAxis
+                                                    dataKey="name"
+                                                    type="category"
+                                                    tickLine={false}
+                                                    tickMargin={10}
+                                                    axisLine={false}
+                                                    tickFormatter={(value) =>
+                                                        value.length > 35 ? `${value.substring(0, 35)}...` : value
+                                                    }
+                                                />
+                                                <RechartsTooltip
+                                                    cursor={false}
+                                                    content={<ChartTooltipContent
+                                                        formatter={(value) => `${value}%`}
+                                                        hideLabel
+                                                    />}
+                                                />
+                                                <Bar dataKey="progress" radius={5} />
+                                            </BarChart>
+                                        </ChartContainer>
                                     </CardContent>
                                 </Card>
                             </div>
@@ -1029,6 +1081,7 @@ export default function ProjectDetailsPage() {
     
 
     
+
 
 
 
