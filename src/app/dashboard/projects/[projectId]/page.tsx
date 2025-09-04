@@ -459,7 +459,11 @@ export default function ProjectDetailsPage() {
                                                     </div>
                                                     <div className="border rounded-lg">
                                                         {backlogItems.filter(item => item.epicId === epic.id).map(item => (
-                                                            <div key={item.id} className="flex justify-between items-center p-3 border-b last:border-b-0 hover:bg-muted/50">
+                                                            <div 
+                                                                key={item.id} 
+                                                                className="flex justify-between items-center p-3 border-b last:border-b-0 hover:bg-muted/50 cursor-pointer"
+                                                                onClick={() => openEditBacklogItemDialog(item, epics)}
+                                                            >
                                                                 <div className="flex items-center gap-3">
                                                                     <TooltipProvider>
                                                                         <Tooltip>
@@ -489,7 +493,7 @@ export default function ProjectDetailsPage() {
                                                                     </TooltipProvider>
                                                                     <DropdownMenu>
                                                                         <DropdownMenuTrigger asChild>
-                                                                            <Button variant="ghost" size="icon" className="h-8 w-8"><MoreVertical className="h-4 w-4" /></Button>
+                                                                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => e.stopPropagation()}><MoreVertical className="h-4 w-4" /></Button>
                                                                         </DropdownMenuTrigger>
                                                                         <DropdownMenuContent align="end">
                                                                             <DropdownMenuItem onSelect={() => openEditBacklogItemDialog(item, epics)}><Pencil className="mr-2 h-4 w-4" />Edit</DropdownMenuItem>
