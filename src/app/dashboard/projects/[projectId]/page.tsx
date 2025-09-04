@@ -29,7 +29,8 @@ import {
   Scaling,
   Rocket,
   CheckCircle,
-  Search
+  Search,
+  Clock
 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
@@ -49,7 +50,7 @@ import { Separator } from '@/components/ui/separator';
 import { useQuickAction } from '@/contexts/quick-action-context';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuPortal, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-import { format, parseISO } from 'date-fns';
+import { format, parseISO, isPast } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
@@ -398,6 +399,7 @@ export default function ProjectDetailsPage() {
                         priority: item.priority,
                         type: 'Execution' as TaskType,
                         backlogId: item.backlogId,
+                        dueDate: item.dueDate,
                     };
                     const newTaskId = await createTask(newTaskData);
                     const newTask: Task = { ...newTaskData, id: newTaskId };
@@ -511,8 +513,14 @@ export default function ProjectDetailsPage() {
     const totalTasks = tasks.length;
     const inProgressTasks = columns['In Progress'].length;
     const completedTasks = columns['Complete'].length;
+    
+    const overdueTasks = tasks.filter(task => 
+        task.dueDate && isPast(parseISO(task.dueDate)) && task.status !== 'Complete'
+    ).length;
+
     const inProgressPercentage = totalTasks > 0 ? (inProgressTasks / totalTasks) * 100 : 0;
     const completedPercentage = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
+    const overduePercentage = totalTasks > 0 ? (overdueTasks / totalTasks) * 100 : 0;
 
     return (
         <div className="flex flex-col h-full">
@@ -660,14 +668,14 @@ export default function ProjectDetailsPage() {
                                 <div className="grid grid-cols-2 gap-6">
                                     <Card>
                                         <CardHeader className="pb-2">
-                                            <CardTitle className="text-sm font-medium text-muted-foreground">Placeholder 1</CardTitle>
+                                            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-1"><Clock className="h-4 w-4 text-destructive" /> Overdue Tasks</CardTitle>
                                         </CardHeader>
                                         <CardContent>
-                                            <p className="text-2xl font-bold">-</p>
+                                            <p className="text-2xl font-bold text-destructive">{overdueTasks}</p>
                                         </CardContent>
                                         <CardFooter className="flex-col items-start gap-1 p-4 pt-0">
-                                            <p className="text-xs text-muted-foreground">0% of total</p>
-                                            <Progress value={0} />
+                                            <p className="text-xs text-muted-foreground">{Math.round(overduePercentage)}% of total</p>
+                                            <Progress value={overduePercentage} className="[&>div]:bg-destructive" />
                                         </CardFooter>
                                     </Card>
                                     <Card>
@@ -1014,5 +1022,6 @@ export default function ProjectDetailsPage() {
     
 
     
+
 
 

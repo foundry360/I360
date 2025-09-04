@@ -36,6 +36,7 @@ export interface Task {
   priority: TaskPriority;
   type: TaskType;
   backlogId?: number;
+  dueDate?: string;
 };
 
 const tasksCollection = collection(db, 'tasks');
