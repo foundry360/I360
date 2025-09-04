@@ -332,7 +332,7 @@ export default function ProjectsPage() {
                                             </TableCell>
                                             <TableCell>{project.owner || getDisplayName(user?.email)}</TableCell>
                                             <TableCell>
-                                                {new Date(project.startDate).toLocaleDateString()}
+                                                {new Date(project.startDate).toISOString().split('T')[0]}
                                             </TableCell>
                                             <TableCell className="text-right">
                                                 <DropdownMenu>
