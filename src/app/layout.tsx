@@ -16,6 +16,7 @@ import { AssessmentModal } from '@/components/assessment-modal';
 import * as React from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
+import { ThemeProvider } from '@/components/theme-provider';
 
 const unprotectedRoutes = ['/login', '/public/assessment/[companyId]', '/public/assessment/thanks'];
 
@@ -83,23 +84,30 @@ export default function RootLayout({
         />
       </head>
       <body className="font-sans antialiased" suppressHydrationWarning>
-        <UserProvider>
-          <QuickActionProvider>
-            <AuthGuard>
-                {children}
-                <NewCompanyDialog />
-                <NewContactDialog />
-                <NewProjectDialog />
-                <NewBacklogItemDialog />
-                <NewEpicDialog />
-                <EditEpicDialog />
-                <EditBacklogItemDialog />
-                <AssessmentModal 
-                  // These props are managed by the QuickActionProvider now
-                />
-            </AuthGuard>
-          </QuickActionProvider>
-        </UserProvider>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <UserProvider>
+            <QuickActionProvider>
+              <AuthGuard>
+                  {children}
+                  <NewCompanyDialog />
+                  <NewContactDialog />
+                  <NewProjectDialog />
+                  <NewBacklogItemDialog />
+                  <NewEpicDialog />
+                  <EditEpicDialog />
+                  <EditBacklogItemDialog />
+                  <AssessmentModal 
+                    // These props are managed by the QuickActionProvider now
+                  />
+              </AuthGuard>
+            </QuickActionProvider>
+          </UserProvider>
+        </ThemeProvider>
         <Toaster />
       </body>
     </html>
