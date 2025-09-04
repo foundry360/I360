@@ -228,6 +228,13 @@ const initialColumns: BoardColumns = {
     'Complete': [],
 };
 
+const chartConfig = {
+  velocity: {
+    label: "Velocity",
+    color: "hsl(var(--chart-1))",
+  },
+} satisfies ChartConfig
+
 export default function ProjectDetailsPage() {
     const params = useParams();
     const router = useRouter();
@@ -509,6 +516,25 @@ export default function ProjectDetailsPage() {
         });
     }, [epics, backlogItems, tasks]);
 
+    const velocityData = React.useMemo(() => {
+        const completedSprints = sprints.filter(s => s.status === 'Completed').sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
+
+        return completedSprints.slice(-5).map(sprint => { // Get last 5 sprints
+            const itemsInSprint = backlogItems.filter(item => item.sprintId === sprint.id);
+            const completedPoints = itemsInSprint.reduce((total, item) => {
+                const task = tasks.find(t => t.backlogId === item.backlogId);
+                if (task && task.status === 'Complete') {
+                    return total + (item.points || 0);
+                }
+                return total;
+            }, 0);
+            return {
+                name: sprint.name.split(' ').slice(0, 2).join(' '), // Shorten name for chart
+                velocity: completedPoints,
+            };
+        });
+    }, [sprints, backlogItems, tasks]);
+
 
     if (loading) {
         return (
@@ -639,13 +665,27 @@ export default function ProjectDetailsPage() {
                 <div className="flex-1 overflow-y-auto pt-6">
                     <TabsContent value="summary">
                        <div className="grid grid-cols-10 gap-6">
-                            <div className="col-span-3">
+                            <div className="col-span-3 space-y-6">
                                 <Card>
                                     <CardHeader>
-                                        <CardTitle>Column 1</CardTitle>
+                                        <CardTitle>Velocity</CardTitle>
+                                        <CardDescription>Story points completed per sprint.</CardDescription>
                                     </CardHeader>
                                     <CardContent>
-                                        <p>30% width placeholder.</p>
+                                        <ChartContainer config={chartConfig} className="h-[150px] w-full">
+                                            <BarChart data={velocityData} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
+                                                 <CartesianGrid vertical={false} />
+                                                 <XAxis
+                                                    dataKey="name"
+                                                    tickLine={false}
+                                                    axisLine={false}
+                                                    tickMargin={8}
+                                                    tickFormatter={(value) => value.slice(0, 3)}
+                                                />
+                                                <RechartsTooltip cursor={false} content={<ChartTooltipContent />} />
+                                                <Bar dataKey="velocity" fill="var(--color-velocity)" radius={4} />
+                                            </BarChart>
+                                        </ChartContainer>
                                     </CardContent>
                                 </Card>
                             </div>
@@ -1063,6 +1103,7 @@ export default function ProjectDetailsPage() {
     
 
     
+
 
 
 
