@@ -388,7 +388,6 @@ export default function ProjectDetailsPage() {
                     const newTaskId = await createTask(newTaskData);
                     const newTask: Task = { ...newTaskData, id: newTaskId };
                     
-                    // Optimistic UI update for the board
                     setColumns(prevColumns => {
                         const newColumns = { ...prevColumns };
                         newColumns['To Do'] = [...newColumns['To Do'], newTask];
@@ -692,7 +691,7 @@ export default function ProjectDetailsPage() {
                         <div className="space-y-8">
                              {(['Active', 'Not Started', 'Completed'] as SprintStatus[]).map(status => {
                                 const sprintsByStatus = sprints.filter(s => s.status === status);
-                                const isHidden = sprintsByStatus.length === 0 && status !== 'Completed' && status !== 'Not Started';
+                                const isHidden = sprintsByStatus.length === 0 && status === 'Active';
 
                                 if (isHidden) return null;
 
@@ -712,7 +711,7 @@ export default function ProjectDetailsPage() {
                                                 return (
                                                     <AccordionItem key={sprint.id} value={sprint.id} className="border rounded-lg bg-card">
                                                         <div className="flex items-center p-4">
-                                                            <AccordionTrigger className="p-0 hover:no-underline flex-1">
+                                                            <AccordionTrigger className="p-0 hover:no-underline flex-1" noChevron>
                                                             <div className='flex items-center flex-1 gap-4'>
                                                                 <h3 className="font-semibold text-base">{sprint.name}</h3>
                                                                 <p className="text-sm text-muted-foreground">
