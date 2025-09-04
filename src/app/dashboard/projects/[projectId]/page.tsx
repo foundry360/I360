@@ -346,7 +346,7 @@ export default function ProjectDetailsPage() {
                                 <Button variant="outline"><Layers className="mr-2 h-4 w-4" /> Add Epic</Button>
                                 <Button><FilePlus className="mr-2 h-4 w-4" /> Add Backlog Item</Button>
                             </div>
-                            <Accordion type="multiple" defaultValue={epics.map(e => e.id)} className="w-full">
+                            <Accordion type="multiple" className="w-full">
                                 {epics.map(epic => (
                                     <AccordionItem key={epic.id} value={epic.id}>
                                         <AccordionTrigger>
