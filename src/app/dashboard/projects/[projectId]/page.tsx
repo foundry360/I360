@@ -32,6 +32,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Separator } from '@/components/ui/separator';
+import { useQuickAction } from '@/contexts/quick-action-context';
 
 type TaskType = Task['type'];
 
@@ -182,30 +183,36 @@ export default function ProjectDetailsPage() {
     const [backlogItems, setBacklogItems] = React.useState<BacklogItem[]>([]);
     const [loading, setLoading] = React.useState(true);
     const [activeTab, setActiveTab] = React.useState('board');
+    const { openNewBacklogItemDialog, setOnBacklogItemCreated } = useQuickAction();
+
+    const fetchData = React.useCallback(async () => {
+        if (!projectId) return;
+        setLoading(true);
+        try {
+            const [projectData, tasksData, epicsData, backlogItemsData] = await Promise.all([
+                getProject(projectId),
+                getTasksForProject(projectId),
+                getEpicsForProject(projectId),
+                getBacklogItemsForProject(projectId),
+            ]);
+            setProject(projectData);
+            setTasks(tasksData.sort((a, b) => a.order - b.order));
+            setEpics(epicsData);
+            setBacklogItems(backlogItemsData);
+        } catch (error) {
+            console.error("Failed to fetch project data:", error);
+        } finally {
+            setLoading(false);
+        }
+    }, [projectId]);
     
     React.useEffect(() => {
-        const fetchData = async () => {
-            if (!projectId) return;
-            setLoading(true);
-            try {
-                const [projectData, tasksData, epicsData, backlogItemsData] = await Promise.all([
-                    getProject(projectId),
-                    getTasksForProject(projectId),
-                    getEpicsForProject(projectId),
-                    getBacklogItemsForProject(projectId),
-                ]);
-                setProject(projectData);
-                setTasks(tasksData.sort((a, b) => a.order - b.order));
-                setEpics(epicsData);
-                setBacklogItems(backlogItemsData);
-            } catch (error) {
-                console.error("Failed to fetch project data:", error);
-            } finally {
-                setLoading(false);
-            }
-        };
         fetchData();
-    }, [projectId]);
+        const unsubscribe = setOnBacklogItemCreated(() => fetchData);
+        return () => {
+            if (unsubscribe) unsubscribe();
+        };
+    }, [fetchData, setOnBacklogItemCreated]);
 
     const projectPrefix = project ? project.name.substring(0, project.name.indexOf('-')) : '';
     
@@ -339,7 +346,7 @@ export default function ProjectDetailsPage() {
                              <TooltipProvider>
                                 <Tooltip>
                                     <TooltipTrigger asChild>
-                                        <Button size="icon"><FilePlus className="h-4 w-4" /></Button>
+                                        <Button size="icon" onClick={() => openNewBacklogItemDialog(projectId, epics)}><FilePlus className="h-4 w-4" /></Button>
                                     </TooltipTrigger>
                                     <TooltipContent>
                                         <p>Add Backlog Item</p>
@@ -354,7 +361,7 @@ export default function ProjectDetailsPage() {
                     <TabsContent value="summary">
                        <p>Summary View - Under Construction</p>
                     </TabsContent>
-                    <TabsContent value="board">
+                    <TabsContent value="board" className="h-full">
                         <DragDropContext onDragEnd={onDragEnd}>
                             <div className="flex gap-6 h-full">
                             {columns.map(status => (

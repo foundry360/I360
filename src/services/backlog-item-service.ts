@@ -2,7 +2,7 @@
 'use client';
 
 import { db } from '@/lib/firebase';
-import { collection, query, where, getDocs, doc, setDoc, addDoc } from 'firebase/firestore';
+import { collection, query, where, getDocs, doc, setDoc, addDoc, getDoc } from 'firebase/firestore';
 import type { TaskPriority } from './task-service';
 
 export interface BacklogItem {
@@ -19,6 +19,30 @@ export interface BacklogItem {
 
 const backlogItemsCollection = collection(db, 'backlogItems');
 
+async function getNextBacklogId(projectId: string, epicId: string): Promise<number> {
+    const epicDocRef = doc(db, 'epics', epicId);
+    const epicDoc = await getDoc(epicDocRef);
+    if (!epicDoc.exists()) {
+        throw new Error("Epic not found");
+    }
+    const epicData = epicDoc.data();
+    const epicNumber = epicData.epicId;
+
+    const q = query(backlogItemsCollection, where("projectId", "==", projectId), where("epicId", "==", epicId));
+    const snapshot = await getDocs(q);
+    
+    if (snapshot.empty) {
+        return parseFloat(`${epicNumber}.1`);
+    }
+
+    const existingIds = snapshot.docs.map(d => (d.data() as BacklogItem).backlogId);
+    const maxId = Math.max(...existingIds);
+    const fractionalPart = maxId.toString().split('.')[1] || '0';
+    const nextFractional = parseInt(fractionalPart, 10) + 1;
+    
+    return parseFloat(`${epicNumber}.${nextFractional}`);
+}
+
 export async function getBacklogItemsForProject(projectId: string): Promise<BacklogItem[]> {
     try {
         const q = query(backlogItemsCollection, where("projectId", "==", projectId));
@@ -30,9 +54,10 @@ export async function getBacklogItemsForProject(projectId: string): Promise<Back
     }
 }
 
-export async function createBacklogItem(itemData: Omit<BacklogItem, 'id'>): Promise<string> {
+export async function createBacklogItem(itemData: Omit<BacklogItem, 'id' | 'backlogId'>): Promise<string> {
     const docRef = await addDoc(backlogItemsCollection, {});
-    const newItem = { ...itemData, id: docRef.id };
+    const nextId = await getNextBacklogId(itemData.projectId, itemData.epicId);
+    const newItem = { ...itemData, id: docRef.id, backlogId: nextId };
     await setDoc(docRef, newItem);
     return docRef.id;
 }

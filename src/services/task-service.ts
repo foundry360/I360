@@ -5,7 +5,13 @@ import { db } from '@/lib/firebase';
 import { collection, doc, getDocs, setDoc, updateDoc, query, where, writeBatch, runTransaction } from 'firebase/firestore';
 
 export type TaskStatus = 'To Do' | 'In Progress' | 'In Review' | 'Needs Revisions' | 'Final Approval' | 'Complete';
-export type TaskPriority = 'Low' | 'Medium' | 'High';
+
+export enum TaskPriority {
+  Low = 'Low',
+  Medium = 'Medium',
+  High = 'High'
+}
+
 export type TaskType = 'Assessment' | 'Workshop' | 'Enablement' | 'Planning' | 'Execution' | 'Review';
 
 export interface Task {

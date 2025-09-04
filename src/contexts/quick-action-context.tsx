@@ -3,6 +3,7 @@
 
 import * as React from 'react';
 import type { Assessment } from '@/services/assessment-service';
+import type { Epic } from '@/services/epic-service';
 
 type QuickActionContextType = {
   isNewCompanyDialogOpen: boolean;
@@ -29,6 +30,13 @@ type QuickActionContextType = {
   closeNewProjectDialog: () => void;
   onProjectCreated: (() => void) | null;
   setOnProjectCreated: (callback: (() => void) | null) => (() => void) | void;
+
+  isNewBacklogItemDialogOpen: boolean;
+  openNewBacklogItemDialog: (projectId: string, epics: Epic[]) => void;
+  closeNewBacklogItemDialog: () => void;
+  onBacklogItemCreated: (() => void) | null;
+  setOnBacklogItemCreated: (callback: (() => void) | null) => (() => void) | void;
+  newBacklogItemData: { projectId: string, epics: Epic[] } | null;
 
   globalSearchTerm: string;
   setGlobalSearchTerm: (term: string) => void;
@@ -61,6 +69,11 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
   // New Project Dialog State
   const [isNewProjectDialogOpen, setIsNewProjectDialogOpen] = React.useState(false);
   const [onProjectCreated, setOnProjectCreated] = React.useState<(() => void) | null>(null);
+
+  // New Backlog Item Dialog State
+  const [isNewBacklogItemDialogOpen, setIsNewBacklogItemDialogOpen] = React.useState(false);
+  const [onBacklogItemCreated, setOnBacklogItemCreated] = React.useState<(() => void) | null>(null);
+  const [newBacklogItemData, setNewBacklogItemData] = React.useState<{ projectId: string, epics: Epic[] } | null>(null);
 
   // Global Search State
   const [globalSearchTerm, setGlobalSearchTerm] = React.useState('');
@@ -131,6 +144,24 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
     []
   );
 
+  const openNewBacklogItemDialog = React.useCallback((projectId: string, epics: Epic[]) => {
+    setNewBacklogItemData({ projectId, epics });
+    setIsNewBacklogItemDialogOpen(true);
+  }, []);
+
+  const closeNewBacklogItemDialog = React.useCallback(() => {
+    setIsNewBacklogItemDialogOpen(false);
+    setNewBacklogItemData(null);
+  }, []);
+
+  const handleSetOnBacklogItemCreated = React.useCallback(
+    (callback: (() => void) | null) => {
+        setOnBacklogItemCreated(() => callback);
+        return () => setOnBacklogItemCreated(null);
+    },
+    []
+  );
+
 
   return (
     <QuickActionContext.Provider
@@ -159,6 +190,13 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
         closeNewProjectDialog,
         onProjectCreated,
         setOnProjectCreated: handleSetOnProjectCreated,
+
+        isNewBacklogItemDialogOpen,
+        openNewBacklogItemDialog,
+        closeNewBacklogItemDialog,
+        onBacklogItemCreated,
+        setOnBacklogItemCreated: handleSetOnBacklogItemCreated,
+        newBacklogItemData,
 
         globalSearchTerm,
         setGlobalSearchTerm,
