@@ -619,7 +619,7 @@ export default function ProjectDetailsPage() {
     
     const totalTasks = tasks.length;
     const inProgressTasks = columns['In Progress'].length;
-    const completedTasks = columns['Complete'].length;
+    const completedTasks = tasks.filter(task => task.status === 'Complete').length;
     
     const overdueTasks = tasks.filter(task => 
         task.dueDate && isPast(parseISO(task.dueDate)) && task.status !== 'Complete'
