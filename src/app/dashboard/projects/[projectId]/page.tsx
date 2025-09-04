@@ -240,7 +240,7 @@ const chartConfig = {
   },
   ideal: {
     label: "Ideal",
-    color: "hsl(var(--chart-2))",
+    color: "hsl(142.1 76.2% 36.3%)",
   },
 } satisfies ChartConfig
 
@@ -530,13 +530,19 @@ export default function ProjectDetailsPage() {
         
         return completedSprints.map(sprint => {
             const itemsInSprint = backlogItems.filter(item => item.sprintId === sprint.id);
-            const completedTasksInSprint = tasks.filter(task =>
-                task.status === 'Complete' && itemsInSprint.some(item => item.backlogId === task.backlogId)
+            const backlogIdsInSprint = itemsInSprint.map(item => item.backlogId);
+            
+            const completedTasksInSprint = tasks.filter(task => 
+                task.status === 'Complete' && 
+                task.backlogId && 
+                backlogIdsInSprint.includes(task.backlogId)
             );
-            const pointsThisSprint = completedTasksInSprint.reduce((acc, task) => {
-                const item = itemsInSprint.find(i => i.backlogId === task.backlogId);
-                return acc + (item?.points || 0);
-            }, 0);
+
+            const completedBacklogIds = completedTasksInSprint.map(task => task.backlogId);
+            
+            const pointsThisSprint = itemsInSprint
+                .filter(item => completedBacklogIds.includes(item.backlogId))
+                .reduce((acc, item) => acc + (item.points || 0), 0);
 
             return {
                 name: sprint.name,
@@ -723,7 +729,7 @@ export default function ProjectDetailsPage() {
                                         <ChartContainer config={chartConfig} className="h-[150px] w-full">
                                             <LineChart
                                                 data={velocityData}
-                                                margin={{ top: 5, right: 10, left: 0, bottom: 5 }}
+                                                margin={{ top: 5, right: 20, left: -20, bottom: 5 }}
                                             >
                                                 <CartesianGrid vertical={false} />
                                                 <XAxis
@@ -737,7 +743,7 @@ export default function ProjectDetailsPage() {
                                                     tickLine={false}
                                                     axisLine={false}
                                                     tickMargin={8}
-                                                    width={30}
+                                                    width={20}
                                                 />
                                                 <RechartsTooltip cursor={false} content={<ChartTooltipContent indicator="line" />} />
                                                 <defs>
@@ -1172,7 +1178,7 @@ export default function ProjectDetailsPage() {
                                                             <IconComponent className={cn("h-4 w-4", epicConfig.color)} />
                                                         </TooltipTrigger>
                                                         <TooltipContent>
-                                                            <p>Epic: {epic?.title || 'Unknown'}</p>
+                                                            <p>Epic: {epic?.title || 'Unknown'</p>
                                                         </TooltipContent>
                                                     </Tooltip>
                                                 </TooltipProvider>
