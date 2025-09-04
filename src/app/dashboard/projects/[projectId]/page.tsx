@@ -137,7 +137,7 @@ const TaskCard = ({ task, taskNumber }: { task: Task; taskNumber: string }) => {
                 </CardContent>
                 <CardFooter className="p-3 flex justify-between items-center bg-muted/50 mt-auto">
                     <div className="flex items-center gap-2">
-                        <span className="text-xs text-foreground font-mono">{taskNumber}</span>
+                        <span className="text-xs text-foreground">{taskNumber}</span>
                         <TooltipProvider>
                             <Tooltip>
                                 <TooltipTrigger>
@@ -643,7 +643,7 @@ export default function ProjectDetailsPage() {
                                                                             </TooltipContent>
                                                                         </Tooltip>
                                                                     </TooltipProvider>
-                                                                    <span className="text-foreground text-sm font-mono">{projectPrefix}-{item.backlogId}</span>
+                                                                    <span className="text-foreground text-sm">{projectPrefix}-{item.backlogId}</span>
                                                                     <p>{item.title}</p>
                                                                 </div>
                                                                 <div className="flex items-center gap-4">
@@ -783,7 +783,7 @@ export default function ProjectDetailsPage() {
                                                                                         </TooltipContent>
                                                                                     </Tooltip>
                                                                                 </TooltipProvider>
-                                                                                <span className="text-foreground text-sm font-mono">{projectPrefix}-{item.backlogId}</span>
+                                                                                <span className="text-foreground text-sm">{projectPrefix}-{item.backlogId}</span>
                                                                                 <p>{item.title}</p>
                                                                             </div>
                                                                             <div className="flex items-center gap-4">
