@@ -534,7 +534,7 @@ export default function ProjectDetailsPage() {
             const itemsInSprint = backlogItems.filter(item => item.sprintId === sprint.id);
             const completedTasksInSprint = tasks.filter(task => 
                 task.status === 'Complete' && 
-                sprintItems.some(item => item.backlogId === task.backlogId)
+                itemsInSprint.some(item => item.backlogId === task.backlogId)
             );
             
             const pointsThisSprint = completedTasksInSprint.reduce((acc, task) => {
@@ -550,7 +550,7 @@ export default function ProjectDetailsPage() {
     }, [sprints, backlogItems, tasks]);
     
     const burndownData = React.useMemo(() => {
-        const totalPoints = backlogItems.reduce((acc, item) => acc + (item.points || 0), 0);
+        const totalPoints = backlogItems.reduce((acc, item) => acc + (item?.points || 0), 0);
         const completedSprints = sprints
             .filter(s => s.status === 'Completed')
             .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
