@@ -44,7 +44,7 @@ import { Badge } from '@/components/ui/badge';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Separator } from '@/components/ui/separator';
 import { useQuickAction } from '@/contexts/quick-action-context';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuPortal } from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuPortal, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { format, parseISO } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
@@ -620,16 +620,25 @@ export default function ProjectDetailsPage() {
                                                             </p>
                                                             <Badge variant={sprint.status === 'Active' ? 'default' : 'secondary'} className={sprint.status === 'Active' ? 'bg-green-500' : ''}>{sprint.status}</Badge>
                                                         </div>
-                                                        {sprint.status === 'Not Started' && (
-                                                            <Button 
-                                                                onClick={(e) => { e.stopPropagation(); handleStartSprint(sprint.id); }} 
-                                                                className="mr-2"
-                                                                disabled={loading}
-                                                            >
-                                                                <Rocket className="mr-2 h-4 w-4" />
-                                                                Start Sprint
-                                                            </Button>
-                                                        )}
+                                                        <DropdownMenu>
+                                                            <DropdownMenuTrigger asChild>
+                                                                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => e.stopPropagation()}><MoreVertical className="h-4 w-4" /></Button>
+                                                            </DropdownMenuTrigger>
+                                                            <DropdownMenuContent align="end">
+                                                                {sprint.status === 'Not Started' && (
+                                                                    <DropdownMenuItem onSelect={(e) => { e.stopPropagation(); handleStartSprint(sprint.id); }} disabled={loading}>
+                                                                        <Rocket className="mr-2 h-4 w-4" /> Start Sprint
+                                                                    </DropdownMenuItem>
+                                                                )}
+                                                                <DropdownMenuItem>
+                                                                    <Pencil className="mr-2 h-4 w-4" /> Edit
+                                                                </DropdownMenuItem>
+                                                                <DropdownMenuSeparator />
+                                                                <DropdownMenuItem className="text-destructive">
+                                                                    <Trash2 className="mr-2 h-4 w-4" /> Delete
+                                                                </DropdownMenuItem>
+                                                            </DropdownMenuContent>
+                                                        </DropdownMenu>
                                                     </AccordionTrigger>
                                                     <AccordionContent className="p-4 border-t">
                                                         <p className="italic text-muted-foreground mb-4">{sprint.goal}</p>
