@@ -475,7 +475,7 @@ export default function ProjectDetailsPage() {
                                                                             </TooltipContent>
                                                                         </Tooltip>
                                                                     </TooltipProvider>
-                                                                    <span className="text-muted-foreground text-sm font-mono">{projectPrefix}-{item.backlogId}</span>
+                                                                    <span className="text-foreground text-sm font-mono">{projectPrefix}-{item.backlogId}</span>
                                                                     <p>{item.title}</p>
                                                                 </div>
                                                                 <div className="flex items-center gap-4">
