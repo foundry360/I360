@@ -522,17 +522,15 @@ export default function ProjectDetailsPage() {
             .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
     
         return completedSprints.slice(-5).map(sprint => {
-            const sprintEndDate = parseISO(sprint.endDate);
-            
-            const completedTasksInSprint = tasks.filter(task => {
-                if (task.status !== 'Complete' || !task.backlogId || !task.dueDate) return false;
-                const taskCompletionDate = parseISO(task.dueDate);
-                return taskCompletionDate <= sprintEndDate;
+            const itemsInSprint = backlogItems.filter(item => item.sprintId === sprint.id);
+    
+            const completedItemsInSprint = itemsInSprint.filter(item => {
+                const task = tasks.find(t => t.backlogId === item.backlogId);
+                return task?.status === 'Complete';
             });
     
-            const velocity = completedTasksInSprint.reduce((totalPoints, task) => {
-                const backlogItem = backlogItems.find(item => item.backlogId === task.backlogId);
-                return totalPoints + (backlogItem?.points || 0);
+            const velocity = completedItemsInSprint.reduce((totalPoints, item) => {
+                return totalPoints + (item.points || 0);
             }, 0);
     
             return {
@@ -540,7 +538,7 @@ export default function ProjectDetailsPage() {
                 velocity: velocity,
             };
         });
-    }, [sprints, tasks, backlogItems]);
+    }, [sprints, backlogItems, tasks]);
 
 
     if (loading) {
@@ -1160,4 +1158,5 @@ export default function ProjectDetailsPage() {
 
 
     
+
 
