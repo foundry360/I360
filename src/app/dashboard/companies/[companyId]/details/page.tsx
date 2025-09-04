@@ -53,6 +53,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { TablePagination } from '@/components/table-pagination';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
+import { parseISO } from 'date-fns';
 
 type ActivityItem = {
     activity: string;
@@ -110,18 +111,17 @@ export default function CompanyDetailsPage() {
       if (company) {
           const assessmentActivity: ActivityItem[] = allAssessments.map(a => ({
               activity: `Assessment "${a.name}" status: ${a.status}`,
-              time: new Date(a.startDate),
+              time: parseISO(a.startDate),
           }));
 
           const contactActivity: ActivityItem[] = companyContacts.map(c => ({
               activity: `Contact "${c.name}" added.`,
-              time: new Date(c.lastActivity),
+              time: parseISO(c.lastActivity),
           }));
       
-          const [year, month, day] = company.lastActivity.split('T')[0].split('-').map(Number);
           const companyUpdateActivity = {
               activity: "Company profile updated",
-              time: new Date(Date.UTC(year, month - 1, day))
+              time: parseISO(company.lastActivity)
           };
            const allActivity = [...assessmentActivity, ...contactActivity, companyUpdateActivity]
             .sort((a, b) => b.time.getTime() - a.time.getTime());
@@ -693,5 +693,7 @@ export default function CompanyDetailsPage() {
     </>
   );
 }
+
+    
 
     

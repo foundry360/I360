@@ -40,7 +40,7 @@ import { cn } from '@/lib/utils';
 import { Checkbox } from '@/components/ui/checkbox';
 import { TablePagination } from '@/components/table-pagination';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { format } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 
 type SortKey = keyof Project;
 type ProjectStatus = 'Active' | 'Inactive' | 'Completed' | 'On Hold';
@@ -74,8 +74,8 @@ export default function ProjectsPage() {
 
   React.useEffect(() => {
     fetchProjects();
-    const unsubscribeCreated = setOnProjectCreated(() => fetchProjects);
-    const unsubscribeUpdated = setOnProjectUpdated(() => fetchProjects);
+    const unsubscribeCreated = setOnProjectCreated(fetchProjects);
+    const unsubscribeUpdated = setOnProjectUpdated(fetchProjects);
     return () => {
       if (unsubscribeCreated) unsubscribeCreated();
       if (unsubscribeUpdated) unsubscribeUpdated();
@@ -202,9 +202,7 @@ export default function ProjectsPage() {
   }
 
   const formatDate = (isoDate: string) => {
-    const [year, month, day] = isoDate.split('T')[0].split('-').map(Number);
-    const date = new Date(Date.UTC(year, month - 1, day));
-    return format(date, 'MMM dd, yyyy');
+    return format(parseISO(isoDate), 'MMM dd, yyyy');
   }
 
   return (
@@ -416,5 +414,7 @@ export default function ProjectsPage() {
     </>
   );
 }
+
+    
 
     
