@@ -254,6 +254,14 @@ export default function ProjectDetailsPage() {
                 acc[status].push(task);
                 return acc;
             }, { ...initialColumns } as BoardColumns);
+
+            // Ensure all columns are present, even if empty
+            for (const status in initialColumns) {
+                if (!groupedTasks[status as TaskStatus]) {
+                    groupedTasks[status as TaskStatus] = [];
+                }
+            }
+
             setColumns(groupedTasks);
 
             setEpics(epicsData);
@@ -284,7 +292,7 @@ export default function ProjectDetailsPage() {
 
     const projectPrefix = project ? project.name.substring(0, project.name.indexOf('-')) : '';
     
-    const onDragEnd = async (result: DropResult) => {
+    const onDragEnd = (result: DropResult) => {
         const { source, destination, draggableId } = result;
 
         if (!destination) return;
@@ -293,25 +301,34 @@ export default function ProjectDetailsPage() {
         const sourceColId = source.droppableId as TaskStatus;
         const destColId = destination.droppableId as TaskStatus;
         
-        // Optimistic UI Update
-        const newColumns = { ...columns };
-        const sourceTasks = Array.from(newColumns[sourceColId]);
-        const [movedTask] = sourceTasks.splice(source.index, 1);
-
-        if (sourceColId === destColId) {
-            sourceTasks.splice(destination.index, 0, movedTask);
-            newColumns[sourceColId] = sourceTasks;
-        } else {
-            const destTasks = Array.from(newColumns[destColId]);
-            destTasks.splice(destination.index, 0, movedTask);
-            newColumns[sourceColId] = sourceTasks;
-            newColumns[destColId] = destTasks;
+        if (sourceColId === destColId && source.index === destination.index) {
+            return; // No change
         }
-        setColumns(newColumns);
+
+        const startCol = columns[sourceColId];
+        const finishCol = columns[destColId];
+        const task = startCol.find(t => t.id === taskId);
+
+        if (!task) return;
+
+        // Optimistic UI Update
+        const newColumnsState = { ...columns };
+        
+        // Remove from source column
+        const newStartCol = Array.from(startCol);
+        newStartCol.splice(source.index, 1);
+        newColumnsState[sourceColId] = newStartCol;
+
+        // Add to destination column
+        const newFinishCol = sourceColId === destColId ? newStartCol : Array.from(finishCol);
+        newFinishCol.splice(destination.index, 0, task);
+        newColumnsState[destColId] = newFinishCol;
+
+        setColumns(newColumnsState);
 
         // Persist changes to Firestore
         try {
-            await updateTaskOrderAndStatus(taskId, destColId, destination.index, projectId);
+            updateTaskOrderAndStatus(taskId, destColId, destination.index, projectId);
         } catch (error) {
             console.error("Failed to update task:", error);
             // Revert optimistic update on failure by re-fetching
@@ -618,13 +635,14 @@ export default function ProjectDetailsPage() {
                                 return (
                                 <div key={status}>
                                     <h2 className="text-lg font-semibold mb-2">{status === 'Not Started' ? 'Upcoming Sprints' : `${status} Sprints`}</h2>
-                                    <Accordion type="single" className="w-full space-y-4">
+                                    <Accordion type="single" collapsible className="w-full space-y-4">
                                         {sprintsByStatus.map(sprint => {
                                             const itemsInSprint = backlogItems.filter(item => item.sprintId === sprint.id);
                                             return (
                                                 <AccordionItem key={sprint.id} value={sprint.id} className="border rounded-lg bg-card">
                                                     <div className="flex items-center p-4">
-                                                        <AccordionTrigger className="flex-1 p-0 hover:no-underline text-left">
+                                                        <AccordionTrigger className="p-0 hover:no-underline flex-1 text-left [&[data-state=open]>div>svg]:rotate-180">
+                                                          <div className='flex items-center flex-1'>
                                                             <div className="flex flex-col gap-1">
                                                                 <h3 className="font-semibold text-base">{sprint.name}</h3>
                                                                 <div className="flex items-center gap-4">
@@ -634,8 +652,12 @@ export default function ProjectDetailsPage() {
                                                                     <Badge variant={sprint.status === 'Active' ? 'default' : 'secondary'} className={sprint.status === 'Active' ? 'bg-green-500' : ''}>{sprint.status}</Badge>
                                                                 </div>
                                                             </div>
+                                                            <div className="flex items-center gap-2 ml-auto">
+                                                              <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200" />
+                                                            </div>
+                                                          </div>
                                                         </AccordionTrigger>
-                                                        <div className="flex items-center gap-2 ml-auto">
+                                                        <div className="flex items-center gap-2 ml-4">
                                                             <DropdownMenu>
                                                                 <DropdownMenuTrigger asChild>
                                                                     <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0"><MoreVertical className="h-4 w-4" /></Button>
