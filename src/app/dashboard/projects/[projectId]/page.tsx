@@ -176,7 +176,7 @@ const BoardColumn = ({ title, tasks, projectPrefix, allTasks }: { title: string;
                         {tasks.map((task, index) => {
                             const originalIndex = allTasks.findIndex(t => t.id === task.id);
                             return (
-                                <Draggable key={task.id} draggableId={task.id} index={index}>
+                                <Draggable key={`${task.id}-${task.status}`} draggableId={`${task.id}-${task.status}`} index={index}>
                                     {(provided) => (
                                         <div
                                             ref={provided.innerRef}
@@ -267,6 +267,8 @@ export default function ProjectDetailsPage() {
         const { source, destination, draggableId } = result;
 
         if (!destination) return;
+        
+        const taskId = draggableId.split('-')[0];
 
         const sourceCol = source.droppableId as TaskStatus;
         const destCol = destination.droppableId as TaskStatus;
@@ -274,13 +276,13 @@ export default function ProjectDetailsPage() {
         if (sourceCol === destCol && source.index === destination.index) return;
         
         // Optimistic UI Update
-        const taskToMove = tasks.find(t => t.id === draggableId)!;
-        const remainingTasks = tasks.filter(t => t.id !== draggableId);
+        const taskToMove = tasks.find(t => t.id === taskId)!;
+        const remainingTasks = tasks.filter(t => t.id !== taskId);
         
         let newTasks = [...remainingTasks];
         if (sourceCol === destCol) {
             // Reordering in the same column
-            const columnTasks = tasks.filter(t => t.status === sourceCol).filter(t => t.id !== draggableId);
+            const columnTasks = tasks.filter(t => t.status === sourceCol).filter(t => t.id !== taskId);
             columnTasks.splice(destination.index, 0, taskToMove);
             const otherTasks = tasks.filter(t => t.status !== sourceCol);
             
@@ -291,7 +293,7 @@ export default function ProjectDetailsPage() {
             taskToMove.status = destCol;
             const destColumnTasks = tasks.filter(t => t.status === destCol);
             destColumnTasks.splice(destination.index, 0, taskToMove);
-            const sourceColumnTasks = tasks.filter(t => t.status === sourceCol && t.id !== draggableId);
+            const sourceColumnTasks = tasks.filter(t => t.status === sourceCol && t.id !== taskId);
             const otherTasks = tasks.filter(t => t.status !== sourceCol && t.status !== destCol);
 
             const updatedDestTasks = destColumnTasks.map((task, index) => ({...task, order: index, status: destCol}));
@@ -303,7 +305,7 @@ export default function ProjectDetailsPage() {
         
         // Persist changes to Firestore
         try {
-            await updateTaskOrderAndStatus(draggableId, destCol, destination.index, projectId);
+            await updateTaskOrderAndStatus(taskId, destCol, destination.index, projectId);
         } catch (error) {
             console.error("Failed to update task:", error);
             // Revert optimistic update on failure
@@ -615,7 +617,7 @@ export default function ProjectDetailsPage() {
                                             return (
                                                 <AccordionItem key={sprint.id} value={sprint.id} className="border rounded-lg bg-card">
                                                     <div className="flex items-center p-4">
-                                                        <AccordionTrigger className="flex-1 p-0 hover:no-underline justify-start [&>svg]:hidden">
+                                                        <AccordionTrigger className="flex-1 p-0 hover:no-underline [&>svg]:hidden">
                                                           <div className="flex items-center gap-4">
                                                               <h3 className="font-semibold text-base">{sprint.name}</h3>
                                                               <p className="text-sm text-muted-foreground">
@@ -644,6 +646,7 @@ export default function ProjectDetailsPage() {
                                                                     </DropdownMenuItem>
                                                                 </DropdownMenuContent>
                                                             </DropdownMenu>
+                                                            <AccordionTrigger className="p-0 [&>svg]:mx-1"></AccordionTrigger>
                                                         </div>
                                                     </div>
                                                     <AccordionContent className="p-4 pt-0">
