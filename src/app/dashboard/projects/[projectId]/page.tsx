@@ -410,38 +410,6 @@ export default function ProjectDetailsPage() {
     const handleMoveToSprint = async (backlogItemId: string, sprintId: string | null) => {
         try {
             await updateBacklogItem(backlogItemId, { sprintId });
-            
-            const sprint = sprints.find(s => s.id === sprintId);
-            const item = backlogItems.find(bi => bi.id === backlogItemId);
-
-            if (item && sprint && sprint.status !== 'Completed') {
-                const taskExists = tasks.some(t => t.backlogId === item?.backlogId);
-
-                if (!taskExists) {
-                    const toDoColumn = columns['To Do'] || [];
-                    const newTaskData = {
-                        projectId: projectId,
-                        title: item.title,
-                        status: 'To Do' as TaskStatus,
-                        order: toDoColumn.length,
-                        owner: item.owner || 'Unassigned',
-                        ownerAvatarUrl: item.ownerAvatarUrl || '',
-                        priority: item.priority,
-                        type: 'Execution' as TaskType,
-                        backlogId: item.backlogId,
-                        dueDate: item.dueDate,
-                    };
-                    const newTaskId = await createTask(newTaskData);
-                    const newTask: Task = { ...newTaskData, id: newTaskId };
-                    
-                    setColumns(prevColumns => {
-                        const newColumns = { ...prevColumns };
-                        newColumns['To Do'] = [...newColumns['To Do'], newTask];
-                        return newColumns;
-                    });
-                }
-            }
-    
             await fetchData();
         } catch (error) {
             console.error("Failed to move item to sprint:", error);

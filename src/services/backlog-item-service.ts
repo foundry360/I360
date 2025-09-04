@@ -3,7 +3,7 @@
 
 import { db } from '@/lib/firebase';
 import { collection, query, where, getDocs, doc, setDoc, addDoc, getDoc, updateDoc, deleteDoc, deleteField } from 'firebase/firestore';
-import { deleteTaskByBacklogId, type TaskPriority, type TaskStatus } from './task-service';
+import { createTask, deleteTaskByBacklogId, type TaskPriority, type TaskStatus, getTasksForProject } from './task-service';
 import { updateProjectLastActivity } from './project-service';
 import { parseISO } from 'date-fns';
 
@@ -75,13 +75,31 @@ export async function updateBacklogItem(id: string, data: Partial<BacklogItem>):
     if (!docSnap.exists()) return;
     
     const originalData = docSnap.data() as BacklogItem;
-    
-    // Check if item is being moved back to backlog
-    if (data.sprintId === null) {
-        if (originalData.sprintId && originalData.backlogId) {
-            // Item had a sprintId and is now being moved to backlog, so delete the task
-            await deleteTaskByBacklogId(originalData.projectId, originalData.backlogId);
+    const wasInSprint = !!originalData.sprintId;
+    const isInSprint = !!data.sprintId;
+
+    // Handle task creation/deletion based on sprint assignment change
+    if (!wasInSprint && isInSprint) {
+        // Moved TO a sprint: Create a task if it doesn't exist
+        const allTasks = await getTasksForProject(originalData.projectId);
+        const taskExists = allTasks.some(t => t.backlogId === originalData.backlogId);
+        if (!taskExists) {
+            await createTask({
+                projectId: originalData.projectId,
+                title: originalData.title,
+                status: 'To Do',
+                order: 999, // Will be reordered by other logic if needed
+                owner: originalData.owner,
+                ownerAvatarUrl: originalData.ownerAvatarUrl,
+                priority: originalData.priority,
+                type: 'Execution',
+                backlogId: originalData.backlogId,
+                dueDate: originalData.dueDate,
+            });
         }
+    } else if (wasInSprint && !isInSprint) {
+        // Moved FROM a sprint (back to backlog): Delete the task
+        await deleteTaskByBacklogId(originalData.projectId, originalData.backlogId);
     }
     
     const { dueDate, ...restOfData } = data;
@@ -101,8 +119,9 @@ export async function deleteBacklogItem(id: string): Promise<void> {
     const docRef = doc(db, 'backlogItems', id);
     const docSnap = await getDoc(docRef);
     if (docSnap.exists()) {
-        const projectId = docSnap.data().projectId;
+        const item = docSnap.data() as BacklogItem;
+        await deleteTaskByBacklogId(item.projectId, item.backlogId); // Also delete associated task
         await deleteDoc(docRef);
-        await updateProjectLastActivity(projectId);
+        await updateProjectLastActivity(item.projectId);
     }
 }

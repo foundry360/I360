@@ -88,8 +88,9 @@ export async function deleteTaskByBacklogId(projectId: string, backlogId: number
     const q = query(tasksCollection, where("projectId", "==", projectId), where("backlogId", "==", backlogId));
     const snapshot = await getDocs(q);
     if (!snapshot.empty) {
-        const taskDoc = snapshot.docs[0];
-        await deleteDoc(taskDoc.ref);
+        const batch = writeBatch(db);
+        snapshot.forEach(doc => batch.delete(doc.ref));
+        await batch.commit();
         await updateProjectLastActivity(projectId);
     }
 }
