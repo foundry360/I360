@@ -623,15 +623,43 @@ export default function ProjectDetailsPage() {
                                     </CardContent>
                                 </Card>
                             </div>
-                            <div className="col-span-3">
-                                <Card>
-                                    <CardHeader>
-                                        <CardTitle>Column 3</CardTitle>
-                                    </CardHeader>
-                                    <CardContent>
-                                        <p>30% width placeholder.</p>
-                                    </CardContent>
-                                </Card>
+                            <div className="col-span-3 space-y-6">
+                                <div className="grid grid-cols-2 gap-6">
+                                    <Card>
+                                        <CardHeader>
+                                            <CardTitle className="text-sm font-medium text-muted-foreground">In Progress</CardTitle>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <p className="text-2xl font-bold">{columns['In Progress'].length}</p>
+                                        </CardContent>
+                                    </Card>
+                                    <Card>
+                                        <CardHeader>
+                                            <CardTitle className="text-sm font-medium text-muted-foreground">Completed</CardTitle>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <p className="text-2xl font-bold">{columns['Complete'].length}</p>
+                                        </CardContent>
+                                    </Card>
+                                </div>
+                                <div className="grid grid-cols-2 gap-6">
+                                    <Card>
+                                        <CardHeader>
+                                            <CardTitle className="text-sm font-medium text-muted-foreground">Placeholder 1</CardTitle>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <p className="text-2xl font-bold">-</p>
+                                        </CardContent>
+                                    </Card>
+                                    <Card>
+                                        <CardHeader>
+                                            <CardTitle className="text-sm font-medium text-muted-foreground">Placeholder 2</CardTitle>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <p className="text-2xl font-bold">-</p>
+                                        </CardContent>
+                                    </Card>
+                                </div>
                             </div>
                        </div>
                     </TabsContent>
@@ -674,7 +702,7 @@ export default function ProjectDetailsPage() {
                                                         <p className="text-muted-foreground flex-1 pr-4">{epic.description}</p>
                                                         <DropdownMenu>
                                                             <DropdownMenuTrigger asChild>
-                                                                <Button variant="ghost" size="icon" className="h-8 w-8"><MoreVertical className="h-4 w-4" /></Button>
+                                                                <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-primary hover:text-primary-foreground"><MoreVertical className="h-4 w-4" /></Button>
                                                             </DropdownMenuTrigger>
                                                             <DropdownMenuContent align="end">
                                                                 <DropdownMenuItem onSelect={() => openEditEpicDialog(epic)}><Pencil className="mr-2 h-4 w-4" />Edit</DropdownMenuItem>
@@ -718,7 +746,7 @@ export default function ProjectDetailsPage() {
                                                                     </TooltipProvider>
                                                                     <DropdownMenu>
                                                                         <DropdownMenuTrigger asChild>
-                                                                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => e.stopPropagation()}><MoreVertical className="h-4 w-4" /></Button>
+                                                                            <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-primary hover:text-primary-foreground" onClick={(e) => e.stopPropagation()}><MoreVertical className="h-4 w-4" /></Button>
                                                                         </DropdownMenuTrigger>
                                                                         <DropdownMenuContent align="end">
                                                                             <DropdownMenuItem onSelect={(e) => { e.stopPropagation(); openEditBacklogItemDialog(item, epics, sprints, contacts); }}><Pencil className="mr-2 h-4 w-4" />Edit</DropdownMenuItem>
@@ -792,7 +820,7 @@ export default function ProjectDetailsPage() {
                                                             <div className="flex items-center gap-2 ml-auto shrink-0 pl-4">
                                                                 <DropdownMenu>
                                                                     <DropdownMenuTrigger asChild>
-                                                                        <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0"><MoreVertical className="h-4 w-4" /></Button>
+                                                                        <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0 hover:bg-primary hover:text-primary-foreground"><MoreVertical className="h-4 w-4" /></Button>
                                                                     </DropdownMenuTrigger>
                                                                     <DropdownMenuContent align="end">
                                                                         {sprint.status === 'Not Started' && (
@@ -963,3 +991,4 @@ export default function ProjectDetailsPage() {
     
 
     
+
