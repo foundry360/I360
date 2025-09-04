@@ -176,7 +176,7 @@ const BoardColumn = ({ title, tasks, projectPrefix, allTasks }: { title: string;
                         {tasks.map((task, index) => {
                             const originalIndex = allTasks.findIndex(t => t.id === task.id);
                             return (
-                                <Draggable key={task.id} draggableId={`${task.id}-${task.status}`} index={index}>
+                                <Draggable key={task.id} draggableId={task.id} index={index}>
                                     {(provided) => (
                                         <div
                                             ref={provided.innerRef}
@@ -268,7 +268,7 @@ export default function ProjectDetailsPage() {
 
         if (!destination) return;
         
-        const taskId = draggableId.split('-')[0];
+        const taskId = draggableId;
 
         const sourceCol = source.droppableId as TaskStatus;
         const destCol = destination.droppableId as TaskStatus;
