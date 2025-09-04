@@ -240,7 +240,7 @@ const chartConfig = {
   },
   ideal: {
     label: "Ideal",
-    color: "hsl(142.1 76.2% 36.3%)",
+    color: "hsl(var(--chart-2))",
   },
 } satisfies ChartConfig
 
@@ -526,17 +526,26 @@ export default function ProjectDetailsPage() {
     }, [epics, backlogItems, tasks]);
 
     const velocityData = React.useMemo(() => {
-        const completedSprints = sprints.filter(s => s.status === 'Completed').sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
+        const completedSprints = sprints
+            .filter(s => s.status === 'Completed')
+            .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
         
         return completedSprints.map(sprint => {
             const itemsInSprint = backlogItems.filter(item => item.sprintId === sprint.id);
-            const completedItemsInSprint = itemsInSprint.filter(item => {
-                const task = tasks.find(t => t.backlogId === item.backlogId);
-                return task?.status === 'Complete';
-            });
+            const backlogIdsInSprint = itemsInSprint.map(item => item.backlogId);
 
-            const pointsThisSprint = completedItemsInSprint.reduce((acc, item) => acc + (item.points || 0), 0);
+            const completedTasksInSprint = tasks.filter(task => 
+                task.status === 'Complete' && 
+                task.backlogId && 
+                backlogIdsInSprint.includes(task.backlogId)
+            );
             
+            const completedBacklogIds = completedTasksInSprint.map(task => task.backlogId);
+
+            const pointsThisSprint = itemsInSprint
+                .filter(item => completedBacklogIds.includes(item.backlogId))
+                .reduce((acc, item) => acc + (item.points || 0), 0);
+
             return {
                 name: sprint.name,
                 velocity: pointsThisSprint,
