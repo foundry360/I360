@@ -40,6 +40,7 @@ import { cn } from '@/lib/utils';
 import { Checkbox } from '@/components/ui/checkbox';
 import { TablePagination } from '@/components/table-pagination';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { format } from 'date-fns';
 
 type SortKey = keyof Project;
 type ProjectStatus = 'Active' | 'Inactive' | 'Completed' | 'On Hold';
@@ -332,7 +333,7 @@ export default function ProjectsPage() {
                                             </TableCell>
                                             <TableCell>{project.owner || getDisplayName(user?.email)}</TableCell>
                                             <TableCell>
-                                                {new Date(project.startDate).toISOString().split('T')[0]}
+                                                {format(new Date(project.startDate), 'MMM dd, yyyy')}
                                             </TableCell>
                                             <TableCell className="text-right">
                                                 <DropdownMenu>
