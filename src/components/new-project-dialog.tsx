@@ -22,6 +22,7 @@ import {
 import { Textarea } from './ui/textarea';
 import { createProject } from '@/services/project-service';
 import { getCompanies, type Company } from '@/services/company-service';
+import { getContactsForCompany, type Contact } from '@/services/contact-service';
 import { useQuickAction } from '@/contexts/quick-action-context';
 import { useUser } from '@/contexts/user-context';
 
@@ -42,6 +43,7 @@ export function NewProjectDialog() {
   const { isNewProjectDialogOpen, closeNewProjectDialog, onProjectCreated } = useQuickAction();
   const [newProject, setNewProject] = React.useState(initialNewProjectState);
   const [companies, setCompanies] = React.useState<Company[]>([]);
+  const [contacts, setContacts] = React.useState<Contact[]>([]);
   const { user } = useUser();
 
   React.useEffect(() => {
@@ -50,14 +52,26 @@ export function NewProjectDialog() {
       setNewProject(prev => ({ ...prev, owner: user?.displayName || user?.email || '' }));
     }
   }, [isNewProjectDialogOpen, user]);
+  
+  React.useEffect(() => {
+      if (newProject.companyId) {
+          getContactsForCompany(newProject.companyId).then(setContacts);
+      } else {
+          setContacts([]);
+      }
+  }, [newProject.companyId]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { id, value } = e.target;
     setNewProject((prev) => ({ ...prev, [id]: value }));
   };
 
-  const handleSelectChange = (field: 'companyId' | 'status' | 'category' | 'priority') => (value: string) => {
-    setNewProject((prev) => ({ ...prev, [field]: value }));
+  const handleSelectChange = (field: 'companyId' | 'status' | 'category' | 'priority' | 'owner') => (value: string) => {
+    if (field === 'companyId') {
+        setNewProject((prev) => ({ ...prev, [field]: value, owner: '' })); // Reset owner when company changes
+    } else {
+        setNewProject((prev) => ({ ...prev, [field]: value }));
+    }
   };
 
   const handleCreateProject = async (e: React.FormEvent) => {
@@ -133,7 +147,16 @@ export function NewProjectDialog() {
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="owner" className="text-right">Owner</Label>
-              <Input id="owner" value={newProject.owner} onChange={handleInputChange} className="col-span-3" required />
+              <Select onValueChange={handleSelectChange('owner')} value={newProject.owner} required>
+                  <SelectTrigger className="col-span-3">
+                    <SelectValue placeholder="Select an owner" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {contacts.map((contact) => (
+                        <SelectItem key={contact.id} value={contact.name}>{contact.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+              </Select>
             </div>
              <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="team" className="text-right">Team</Label>
