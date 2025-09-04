@@ -23,6 +23,7 @@ import { Textarea } from './ui/textarea';
 import { updateBacklogItem, type BacklogItem } from '@/services/backlog-item-service';
 import { useQuickAction } from '@/contexts/quick-action-context';
 import type { Epic } from '@/services/epic-service';
+import type { Sprint } from '@/services/sprint-service';
 import { TaskPriority } from '@/services/task-service';
 
 export function EditBacklogItemDialog() {
@@ -48,9 +49,9 @@ export function EditBacklogItemDialog() {
     setItem((prev) => ({ ...prev!, [id]: id === 'points' ? Number(value) : value }));
   };
 
-  const handleSelectChange = (field: 'epicId' | 'priority' | 'status') => (value: string) => {
+  const handleSelectChange = (field: 'epicId' | 'priority' | 'status' | 'sprintId') => (value: string) => {
      if (!item) return;
-    setItem((prev) => ({ ...prev!, [field]: value }));
+    setItem((prev) => ({ ...prev!, [field]: value === 'null' ? null : value }));
   };
 
   const handleUpdateItem = async (e: React.FormEvent) => {
@@ -104,6 +105,20 @@ export function EditBacklogItemDialog() {
                 <SelectContent>
                   {editBacklogItemData?.epics.map((epic) => (
                     <SelectItem key={epic.id} value={epic.id}>{epic.title}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="sprintId" className="text-right">Sprint</Label>
+              <Select onValueChange={handleSelectChange('sprintId')} value={item.sprintId ?? 'null'}>
+                <SelectTrigger className="col-span-3">
+                  <SelectValue placeholder="Assign to a sprint" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={'null'}>Backlog</SelectItem>
+                  {editBacklogItemData?.sprints.filter(s => s.status !== 'Completed').map((sprint) => (
+                    <SelectItem key={sprint.id} value={sprint.id}>{sprint.name}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>

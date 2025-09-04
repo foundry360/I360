@@ -9,6 +9,7 @@ export interface BacklogItem {
   id: string;
   projectId: string;
   epicId: string;
+  sprintId?: string | null; // Add sprintId
   backlogId: number;
   title: string;
   description: string;

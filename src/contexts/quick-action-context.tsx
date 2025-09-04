@@ -5,6 +5,7 @@ import * as React from 'react';
 import type { Assessment } from '@/services/assessment-service';
 import type { Epic } from '@/services/epic-service';
 import type { BacklogItem } from '@/services/backlog-item-service';
+import type { Sprint } from '@/services/sprint-service';
 
 type QuickActionContextType = {
   isNewCompanyDialogOpen: boolean;
@@ -54,11 +55,18 @@ type QuickActionContextType = {
   editEpicData: Epic | null;
 
   isEditBacklogItemDialogOpen: boolean;
-  openEditBacklogItemDialog: (item: BacklogItem, epics: Epic[]) => void;
+  openEditBacklogItemDialog: (item: BacklogItem, epics: Epic[], sprints: Sprint[]) => void;
   closeEditBacklogItemDialog: () => void;
   onBacklogItemUpdated: (() => void) | null;
   setOnBacklogItemUpdated: (callback: (() => void) | null) => (() => void) | void;
-  editBacklogItemData: { item: BacklogItem, epics: Epic[] } | null;
+  editBacklogItemData: { item: BacklogItem, epics: Epic[], sprints: Sprint[] } | null;
+
+  isNewSprintDialogOpen: boolean;
+  openNewSprintDialog: (projectId: string) => void;
+  closeNewSprintDialog: () => void;
+  onSprintCreated: (() => void) | null;
+  setOnSprintCreated: (callback: (() => void) | null) => (() => void) | void;
+  newSprintData: { projectId: string } | null;
 
   globalSearchTerm: string;
   setGlobalSearchTerm: (term: string) => void;
@@ -110,7 +118,12 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
   // Edit Backlog Item Dialog State
   const [isEditBacklogItemDialogOpen, setIsEditBacklogItemDialogOpen] = React.useState(false);
   const [onBacklogItemUpdated, setOnBacklogItemUpdated] = React.useState<(() => void) | null>(null);
-  const [editBacklogItemData, setEditBacklogItemData] = React.useState<{ item: BacklogItem, epics: Epic[] } | null>(null);
+  const [editBacklogItemData, setEditBacklogItemData] = React.useState<{ item: BacklogItem, epics: Epic[], sprints: Sprint[] } | null>(null);
+
+  // New Sprint Dialog State
+  const [isNewSprintDialogOpen, setIsNewSprintDialogOpen] = React.useState(false);
+  const [onSprintCreated, setOnSprintCreated] = React.useState<(() => void) | null>(null);
+  const [newSprintData, setNewSprintData] = React.useState<{ projectId: string } | null>(null);
 
   // Global Search State
   const [globalSearchTerm, setGlobalSearchTerm] = React.useState('');
@@ -235,8 +248,8 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
     []
   );
 
-  const openEditBacklogItemDialog = React.useCallback((item: BacklogItem, epics: Epic[]) => {
-    setEditBacklogItemData({ item, epics });
+  const openEditBacklogItemDialog = React.useCallback((item: BacklogItem, epics: Epic[], sprints: Sprint[]) => {
+    setEditBacklogItemData({ item, epics, sprints });
     setIsEditBacklogItemDialogOpen(true);
   }, []);
 
@@ -249,6 +262,24 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
     (callback: (() => void) | null) => {
         setOnBacklogItemUpdated(() => callback);
         return () => setOnBacklogItemUpdated(null);
+    },
+    []
+  );
+  
+  const openNewSprintDialog = React.useCallback((projectId: string) => {
+    setNewSprintData({ projectId });
+    setIsNewSprintDialogOpen(true);
+  }, []);
+
+  const closeNewSprintDialog = React.useCallback(() => {
+    setIsNewSprintDialogOpen(false);
+    setNewSprintData(null);
+  }, []);
+
+  const handleSetOnSprintCreated = React.useCallback(
+    (callback: (() => void) | null) => {
+        setOnSprintCreated(() => callback);
+        return () => setOnSprintCreated(null);
     },
     []
   );
@@ -308,6 +339,13 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
         onBacklogItemUpdated,
         setOnBacklogItemUpdated: handleSetOnBacklogItemUpdated,
         editBacklogItemData,
+
+        isNewSprintDialogOpen,
+        openNewSprintDialog,
+        closeNewSprintDialog,
+        onSprintCreated,
+        setOnSprintCreated: handleSetOnSprintCreated,
+        newSprintData,
 
         globalSearchTerm,
         setGlobalSearchTerm,

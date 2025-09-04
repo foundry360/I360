@@ -17,6 +17,7 @@ import * as React from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
 import { ThemeProvider } from '@/components/theme-provider';
+import { NewSprintDialog } from '@/components/new-sprint-dialog';
 
 const unprotectedRoutes = ['/login', '/public/assessment/[companyId]', '/public/assessment/thanks'];
 
@@ -101,6 +102,7 @@ export default function RootLayout({
                   <NewEpicDialog />
                   <EditEpicDialog />
                   <EditBacklogItemDialog />
+                  <NewSprintDialog />
                   <AssessmentModal 
                     // These props are managed by the QuickActionProvider now
                   />
