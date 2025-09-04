@@ -612,21 +612,23 @@ export default function ProjectDetailsPage() {
                                             const itemsInSprint = backlogItems.filter(item => item.sprintId === sprint.id);
                                             return (
                                                 <AccordionItem key={sprint.id} value={sprint.id} className="border rounded-lg bg-card">
-                                                    <AccordionTrigger className="p-4 hover:no-underline">
-                                                        <div className="flex items-center gap-4 flex-1">
-                                                            <h3 className="font-semibold text-base">{sprint.name}</h3>
-                                                            <p className="text-sm text-muted-foreground">
-                                                                {format(parseISO(sprint.startDate), 'MMM d')} - {format(parseISO(sprint.endDate), 'MMM d, yyyy')}
-                                                            </p>
-                                                            <Badge variant={sprint.status === 'Active' ? 'default' : 'secondary'} className={sprint.status === 'Active' ? 'bg-green-500' : ''}>{sprint.status}</Badge>
-                                                        </div>
+                                                    <div className="flex items-center p-4">
+                                                        <AccordionTrigger className="flex-1 p-0 hover:no-underline">
+                                                            <div className="flex items-center gap-4">
+                                                                <h3 className="font-semibold text-base">{sprint.name}</h3>
+                                                                <p className="text-sm text-muted-foreground">
+                                                                    {format(parseISO(sprint.startDate), 'MMM d')} - {format(parseISO(sprint.endDate), 'MMM d, yyyy')}
+                                                                </p>
+                                                                <Badge variant={sprint.status === 'Active' ? 'default' : 'secondary'} className={sprint.status === 'Active' ? 'bg-green-500' : ''}>{sprint.status}</Badge>
+                                                            </div>
+                                                        </AccordionTrigger>
                                                         <DropdownMenu>
                                                             <DropdownMenuTrigger asChild>
-                                                                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => e.stopPropagation()}><MoreVertical className="h-4 w-4" /></Button>
+                                                                <Button variant="ghost" size="icon" className="h-8 w-8"><MoreVertical className="h-4 w-4" /></Button>
                                                             </DropdownMenuTrigger>
                                                             <DropdownMenuContent align="end">
                                                                 {sprint.status === 'Not Started' && (
-                                                                    <DropdownMenuItem onSelect={(e) => { e.stopPropagation(); handleStartSprint(sprint.id); }} disabled={loading}>
+                                                                    <DropdownMenuItem onSelect={() => handleStartSprint(sprint.id)} disabled={loading}>
                                                                         <Rocket className="mr-2 h-4 w-4" /> Start Sprint
                                                                     </DropdownMenuItem>
                                                                 )}
@@ -639,8 +641,8 @@ export default function ProjectDetailsPage() {
                                                                 </DropdownMenuItem>
                                                             </DropdownMenuContent>
                                                         </DropdownMenu>
-                                                    </AccordionTrigger>
-                                                    <AccordionContent className="p-4 border-t">
+                                                    </div>
+                                                    <AccordionContent className="p-4 pt-0">
                                                         <p className="italic text-muted-foreground mb-4">{sprint.goal}</p>
                                                         <div className="border rounded-lg">
                                                             {itemsInSprint.length > 0 ? itemsInSprint.map(item => {
@@ -714,3 +716,4 @@ export default function ProjectDetailsPage() {
         </div>
     );
 }
+
