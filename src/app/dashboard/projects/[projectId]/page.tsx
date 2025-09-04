@@ -180,6 +180,7 @@ export default function ProjectDetailsPage() {
     const [epics, setEpics] = React.useState<Epic[]>([]);
     const [backlogItems, setBacklogItems] = React.useState<BacklogItem[]>([]);
     const [loading, setLoading] = React.useState(true);
+    const [activeTab, setActiveTab] = React.useState('board');
     
     React.useEffect(() => {
         const fetchData = async () => {
@@ -293,33 +294,41 @@ export default function ProjectDetailsPage() {
             </div>
 
             {/* Navigation Tabs */}
-            <Tabs defaultValue="board" className="flex-1 flex flex-col">
-                <TabsList className="bg-transparent p-0 border-b-2 border-border rounded-none justify-start h-auto">
-                    <TabsTrigger 
-                        value="summary"
-                        className="pb-3 rounded-none data-[state=active]:shadow-none data-[state=active]:border-primary data-[state=active]:border-b-4 data-[state=active]:text-primary"
-                    >
-                        Summary
-                    </TabsTrigger>
-                    <TabsTrigger 
-                        value="board"
-                        className="pb-3 rounded-none data-[state=active]:shadow-none data-[state=active]:border-primary data-[state=active]:border-b-4 data-[state=active]:text-primary"
-                    >
-                        Board
-                    </TabsTrigger>
-                     <TabsTrigger 
-                        value="backlog"
-                        className="pb-3 rounded-none data-[state=active]:shadow-none data-[state=active]:border-primary data-[state=active]:border-b-4 data-[state=active]:text-primary"
-                    >
-                        Backlog
-                    </TabsTrigger>
-                     <TabsTrigger 
-                        value="sprints"
-                        className="pb-3 rounded-none data-[state=active]:shadow-none data-[state=active]:border-primary data-[state=active]:border-b-4 data-[state=active]:text-primary"
-                    >
-                        Sprints
-                    </TabsTrigger>
-                </TabsList>
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
+                <div className="flex justify-between items-center border-b-2 border-border">
+                    <TabsList className="bg-transparent p-0 rounded-none justify-start h-auto">
+                        <TabsTrigger 
+                            value="summary"
+                            className="pb-3 rounded-none data-[state=active]:shadow-none data-[state=active]:border-primary data-[state=active]:border-b-4 data-[state=active]:text-primary"
+                        >
+                            Summary
+                        </TabsTrigger>
+                        <TabsTrigger 
+                            value="board"
+                            className="pb-3 rounded-none data-[state=active]:shadow-none data-[state=active]:border-primary data-[state=active]:border-b-4 data-[state=active]:text-primary"
+                        >
+                            Board
+                        </TabsTrigger>
+                         <TabsTrigger 
+                            value="backlog"
+                            className="pb-3 rounded-none data-[state=active]:shadow-none data-[state=active]:border-primary data-[state=active]:border-b-4 data-[state=active]:text-primary"
+                        >
+                            Backlog
+                        </TabsTrigger>
+                         <TabsTrigger 
+                            value="sprints"
+                            className="pb-3 rounded-none data-[state=active]:shadow-none data-[state=active]:border-primary data-[state=active]:border-b-4 data-[state=active]:text-primary"
+                        >
+                            Sprints
+                        </TabsTrigger>
+                    </TabsList>
+                    {activeTab === 'backlog' && (
+                         <div className="flex items-center gap-2">
+                            <Button variant="outline"><Layers className="mr-2 h-4 w-4" /> Add Epic</Button>
+                            <Button><FilePlus className="mr-2 h-4 w-4" /> Add Backlog Item</Button>
+                        </div>
+                    )}
+                </div>
 
                 <div className="flex-1 overflow-y-auto pt-6">
                     <TabsContent value="summary">
@@ -342,10 +351,6 @@ export default function ProjectDetailsPage() {
                     </TabsContent>
                     <TabsContent value="backlog">
                        <div className="space-y-6">
-                            <div className="flex justify-end gap-2">
-                                <Button variant="outline"><Layers className="mr-2 h-4 w-4" /> Add Epic</Button>
-                                <Button><FilePlus className="mr-2 h-4 w-4" /> Add Backlog Item</Button>
-                            </div>
                             <Accordion type="multiple" className="w-full">
                                 {epics.map(epic => (
                                     <AccordionItem key={epic.id} value={epic.id}>
