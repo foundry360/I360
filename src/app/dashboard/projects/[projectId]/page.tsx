@@ -292,34 +292,22 @@ export default function ProjectDetailsPage() {
         const taskId = draggableId;
         const sourceColId = source.droppableId as TaskStatus;
         const destColId = destination.droppableId as TaskStatus;
-
-        if (sourceColId === destColId && source.index === destination.index) return;
         
-        const startCol = columns[sourceColId];
-        const finishCol = columns[destColId];
-        
-        const startTasks = Array.from(startCol);
-        const [removed] = startTasks.splice(source.index, 1);
+        // Optimistic UI Update
+        const newColumns = { ...columns };
+        const sourceTasks = Array.from(newColumns[sourceColId]);
+        const [movedTask] = sourceTasks.splice(source.index, 1);
 
-        if(sourceColId === destColId) {
-            // Reordering in the same column
-            startTasks.splice(destination.index, 0, removed);
-            const newColumns = {
-                ...columns,
-                [sourceColId]: startTasks,
-            };
-            setColumns(newColumns);
+        if (sourceColId === destColId) {
+            sourceTasks.splice(destination.index, 0, movedTask);
+            newColumns[sourceColId] = sourceTasks;
         } else {
-            // Moving to a different column
-            const finishTasks = Array.from(finishCol);
-            finishTasks.splice(destination.index, 0, removed);
-            const newColumns = {
-                ...columns,
-                [sourceColId]: startTasks,
-                [destColId]: finishTasks,
-            };
-            setColumns(newColumns);
+            const destTasks = Array.from(newColumns[destColId]);
+            destTasks.splice(destination.index, 0, movedTask);
+            newColumns[sourceColId] = sourceTasks;
+            newColumns[destColId] = destTasks;
         }
+        setColumns(newColumns);
 
         // Persist changes to Firestore
         try {
@@ -636,13 +624,15 @@ export default function ProjectDetailsPage() {
                                             return (
                                                 <AccordionItem key={sprint.id} value={sprint.id} className="border rounded-lg bg-card">
                                                     <div className="flex items-center p-4">
-                                                        <AccordionTrigger className="flex-1 p-0 hover:no-underline [&>svg]:hidden">
-                                                            <div className="flex items-center gap-4">
+                                                        <AccordionTrigger className="flex-1 p-0 hover:no-underline text-left">
+                                                            <div className="flex flex-col gap-1">
                                                                 <h3 className="font-semibold text-base">{sprint.name}</h3>
-                                                                <p className="text-sm text-muted-foreground">
-                                                                    {format(parseISO(sprint.startDate), 'MMM d')} - {format(parseISO(sprint.endDate), 'MMM d, yyyy')}
-                                                                </p>
-                                                                <Badge variant={sprint.status === 'Active' ? 'default' : 'secondary'} className={sprint.status === 'Active' ? 'bg-green-500' : ''}>{sprint.status}</Badge>
+                                                                <div className="flex items-center gap-4">
+                                                                    <p className="text-sm text-muted-foreground">
+                                                                        {format(parseISO(sprint.startDate), 'MMM d')} - {format(parseISO(sprint.endDate), 'MMM d, yyyy')}
+                                                                    </p>
+                                                                    <Badge variant={sprint.status === 'Active' ? 'default' : 'secondary'} className={sprint.status === 'Active' ? 'bg-green-500' : ''}>{sprint.status}</Badge>
+                                                                </div>
                                                             </div>
                                                         </AccordionTrigger>
                                                         <div className="flex items-center gap-2 ml-auto">
@@ -665,7 +655,6 @@ export default function ProjectDetailsPage() {
                                                                     </DropdownMenuItem>
                                                                 </DropdownMenuContent>
                                                             </DropdownMenu>
-                                                            <AccordionTrigger className="p-0 [&>svg]:mx-1"></AccordionTrigger>
                                                         </div>
                                                     </div>
                                                     <AccordionContent className="p-4 pt-0">
@@ -743,5 +732,7 @@ export default function ProjectDetailsPage() {
     );
 }
 
+
+    
 
     
