@@ -18,6 +18,9 @@ import {
   Layers,
   FilePlus,
   ChevronDown,
+  MoreVertical,
+  Pencil,
+  Trash2,
 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
@@ -26,13 +29,16 @@ import { DragDropContext, Droppable, Draggable, type DropResult } from '@hello-p
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { getProject, Project } from '@/services/project-service';
 import { getTasksForProject, updateTaskOrderAndStatus, Task, TaskStatus } from '@/services/task-service';
-import { getEpicsForProject, Epic } from '@/services/epic-service';
-import { getBacklogItemsForProject, BacklogItem } from '@/services/backlog-item-service';
+import { getEpicsForProject, Epic, deleteEpic } from '@/services/epic-service';
+import { getBacklogItemsForProject, BacklogItem, deleteBacklogItem } from '@/services/backlog-item-service';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Separator } from '@/components/ui/separator';
 import { useQuickAction } from '@/contexts/quick-action-context';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+
 
 type TaskType = Task['type'];
 
@@ -183,7 +189,14 @@ export default function ProjectDetailsPage() {
     const [backlogItems, setBacklogItems] = React.useState<BacklogItem[]>([]);
     const [loading, setLoading] = React.useState(true);
     const [activeTab, setActiveTab] = React.useState('board');
-    const { openNewBacklogItemDialog, setOnBacklogItemCreated, openNewEpicDialog, setOnEpicCreated } = useQuickAction();
+    const { 
+        openNewBacklogItemDialog, setOnBacklogItemCreated,
+        openNewEpicDialog, setOnEpicCreated,
+        openEditEpicDialog, setOnEpicUpdated,
+        openEditBacklogItemDialog, setOnBacklogItemUpdated,
+    } = useQuickAction();
+    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
+    const [itemToDelete, setItemToDelete] = React.useState<{type: 'epic' | 'backlogItem', id: string, name: string} | null>(null);
 
     const fetchData = React.useCallback(async () => {
         if (!projectId) return;
@@ -210,11 +223,15 @@ export default function ProjectDetailsPage() {
         fetchData();
         const unsubscribeBacklog = setOnBacklogItemCreated(() => fetchData);
         const unsubscribeEpic = setOnEpicCreated(() => fetchData);
+        const unsubscribeEpicUpdate = setOnEpicUpdated(() => fetchData);
+        const unsubscribeBacklogUpdate = setOnBacklogItemUpdated(() => fetchData);
         return () => {
             if (unsubscribeBacklog) unsubscribeBacklog();
             if (unsubscribeEpic) unsubscribeEpic();
+            if (unsubscribeEpicUpdate) unsubscribeEpicUpdate();
+            if (unsubscribeBacklogUpdate) unsubscribeBacklogUpdate();
         };
-    }, [fetchData, setOnBacklogItemCreated, setOnEpicCreated]);
+    }, [fetchData, setOnBacklogItemCreated, setOnEpicCreated, setOnEpicUpdated, setOnBacklogItemUpdated]);
 
     const projectPrefix = project ? project.name.substring(0, project.name.indexOf('-')) : '';
     
@@ -268,6 +285,23 @@ export default function ProjectDetailsPage() {
         }
     };
     
+    const handleDelete = async () => {
+        if (!itemToDelete) return;
+        try {
+            if (itemToDelete.type === 'epic') {
+                await deleteEpic(itemToDelete.id);
+            } else {
+                await deleteBacklogItem(itemToDelete.id);
+            }
+            fetchData();
+        } catch (error) {
+            console.error(`Failed to delete ${itemToDelete.type}:`, error);
+        } finally {
+            setIsDeleteDialogOpen(false);
+            setItemToDelete(null);
+        }
+    };
+
     if (loading) {
         return (
              <div className="space-y-4">
@@ -384,18 +418,29 @@ export default function ProjectDetailsPage() {
                                 {epics.map(epic => (
                                     <AccordionItem key={epic.id} value={epic.id}>
                                         <AccordionTrigger>
-                                            <div className="flex items-center gap-3">
-                                                <Badge variant={epic.status === 'Done' ? 'default' : 'secondary'} className={epic.status === 'Done' ? 'bg-green-500' : ''}>{epic.status}</Badge>
+                                            <div className="flex items-center gap-3 flex-1">
+                                                <Badge variant={epic.status === 'Done' ? 'default' : 'secondary'} className={cn("whitespace-nowrap", epic.status === 'Done' ? 'bg-green-500' : '')}>{epic.status}</Badge>
                                                 <span className="font-semibold">{epic.title}</span>
                                                 <span className="text-muted-foreground text-sm">{projectPrefix}-{epic.epicId}</span>
                                             </div>
                                         </AccordionTrigger>
                                         <AccordionContent>
                                             <div className="pl-8 pr-4 space-y-4">
-                                                <p className="text-muted-foreground">{epic.description}</p>
+                                                <div className="flex justify-between items-start">
+                                                    <p className="text-muted-foreground flex-1 pr-4">{epic.description}</p>
+                                                    <DropdownMenu>
+                                                        <DropdownMenuTrigger asChild>
+                                                            <Button variant="ghost" size="icon" className="h-8 w-8"><MoreVertical className="h-4 w-4" /></Button>
+                                                        </DropdownMenuTrigger>
+                                                        <DropdownMenuContent align="end">
+                                                            <DropdownMenuItem onSelect={() => openEditEpicDialog(epic)}><Pencil className="mr-2 h-4 w-4" />Edit</DropdownMenuItem>
+                                                            <DropdownMenuItem onSelect={() => { setItemToDelete({type: 'epic', id: epic.id, name: epic.title}); setIsDeleteDialogOpen(true);}} className="text-destructive"><Trash2 className="mr-2 h-4 w-4" />Delete</DropdownMenuItem>
+                                                        </DropdownMenuContent>
+                                                    </DropdownMenu>
+                                                </div>
                                                 <div className="border rounded-lg">
                                                     {backlogItems.filter(item => item.epicId === epic.id).map(item => (
-                                                        <div key={item.id} className="flex justify-between items-center p-3 border-b last:border-b-0">
+                                                        <div key={item.id} className="flex justify-between items-center p-3 border-b last:border-b-0 hover:bg-muted/50">
                                                             <div className="flex items-center gap-3">
                                                                 <span className="text-muted-foreground text-sm font-mono">{projectPrefix}-{item.backlogId}</span>
                                                                 <p>{item.title}</p>
@@ -413,6 +458,15 @@ export default function ProjectDetailsPage() {
                                                                         </TooltipContent>
                                                                     </Tooltip>
                                                                 </TooltipProvider>
+                                                                 <DropdownMenu>
+                                                                    <DropdownMenuTrigger asChild>
+                                                                        <Button variant="ghost" size="icon" className="h-8 w-8"><MoreVertical className="h-4 w-4" /></Button>
+                                                                    </DropdownMenuTrigger>
+                                                                    <DropdownMenuContent align="end">
+                                                                        <DropdownMenuItem onSelect={() => openEditBacklogItemDialog(item, epics)}><Pencil className="mr-2 h-4 w-4" />Edit</DropdownMenuItem>
+                                                                        <DropdownMenuItem onSelect={() => { setItemToDelete({type: 'backlogItem', id: item.id, name: item.title}); setIsDeleteDialogOpen(true);}} className="text-destructive"><Trash2 className="mr-2 h-4 w-4" />Delete</DropdownMenuItem>
+                                                                    </DropdownMenuContent>
+                                                                </DropdownMenu>
                                                             </div>
                                                         </div>
                                                     ))}
@@ -429,6 +483,20 @@ export default function ProjectDetailsPage() {
                     </TabsContent>
                 </div>
             </Tabs>
+            <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            This action cannot be undone. This will permanently delete the {itemToDelete?.type} "{itemToDelete?.name}".
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleDelete}>Delete</AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     );
 }

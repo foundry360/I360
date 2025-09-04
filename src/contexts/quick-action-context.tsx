@@ -4,6 +4,7 @@
 import * as React from 'react';
 import type { Assessment } from '@/services/assessment-service';
 import type { Epic } from '@/services/epic-service';
+import type { BacklogItem } from '@/services/backlog-item-service';
 
 type QuickActionContextType = {
   isNewCompanyDialogOpen: boolean;
@@ -44,6 +45,20 @@ type QuickActionContextType = {
   onEpicCreated: (() => void) | null;
   setOnEpicCreated: (callback: (() => void) | null) => (() => void) | void;
   newEpicData: { projectId: string } | null;
+
+  isEditEpicDialogOpen: boolean;
+  openEditEpicDialog: (epic: Epic) => void;
+  closeEditEpicDialog: () => void;
+  onEpicUpdated: (() => void) | null;
+  setOnEpicUpdated: (callback: (() => void) | null) => (() => void) | void;
+  editEpicData: Epic | null;
+
+  isEditBacklogItemDialogOpen: boolean;
+  openEditBacklogItemDialog: (item: BacklogItem, epics: Epic[]) => void;
+  closeEditBacklogItemDialog: () => void;
+  onBacklogItemUpdated: (() => void) | null;
+  setOnBacklogItemUpdated: (callback: (() => void) | null) => (() => void) | void;
+  editBacklogItemData: { item: BacklogItem, epics: Epic[] } | null;
 
   globalSearchTerm: string;
   setGlobalSearchTerm: (term: string) => void;
@@ -86,6 +101,16 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
   const [isNewEpicDialogOpen, setIsNewEpicDialogOpen] = React.useState(false);
   const [onEpicCreated, setOnEpicCreated] = React.useState<(() => void) | null>(null);
   const [newEpicData, setNewEpicData] = React.useState<{ projectId: string } | null>(null);
+
+  // Edit Epic Dialog State
+  const [isEditEpicDialogOpen, setIsEditEpicDialogOpen] = React.useState(false);
+  const [onEpicUpdated, setOnEpicUpdated] = React.useState<(() => void) | null>(null);
+  const [editEpicData, setEditEpicData] = React.useState<Epic | null>(null);
+
+  // Edit Backlog Item Dialog State
+  const [isEditBacklogItemDialogOpen, setIsEditBacklogItemDialogOpen] = React.useState(false);
+  const [onBacklogItemUpdated, setOnBacklogItemUpdated] = React.useState<(() => void) | null>(null);
+  const [editBacklogItemData, setEditBacklogItemData] = React.useState<{ item: BacklogItem, epics: Epic[] } | null>(null);
 
   // Global Search State
   const [globalSearchTerm, setGlobalSearchTerm] = React.useState('');
@@ -192,6 +217,42 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
     []
   );
 
+  const openEditEpicDialog = React.useCallback((epic: Epic) => {
+    setEditEpicData(epic);
+    setIsEditEpicDialogOpen(true);
+  }, []);
+
+  const closeEditEpicDialog = React.useCallback(() => {
+    setIsEditEpicDialogOpen(false);
+    setEditEpicData(null);
+  }, []);
+
+  const handleSetOnEpicUpdated = React.useCallback(
+    (callback: (() => void) | null) => {
+        setOnEpicUpdated(() => callback);
+        return () => setOnEpicUpdated(null);
+    },
+    []
+  );
+
+  const openEditBacklogItemDialog = React.useCallback((item: BacklogItem, epics: Epic[]) => {
+    setEditBacklogItemData({ item, epics });
+    setIsEditBacklogItemDialogOpen(true);
+  }, []);
+
+  const closeEditBacklogItemDialog = React.useCallback(() => {
+    setIsEditBacklogItemDialogOpen(false);
+    setEditBacklogItemData(null);
+  }, []);
+
+  const handleSetOnBacklogItemUpdated = React.useCallback(
+    (callback: (() => void) | null) => {
+        setOnBacklogItemUpdated(() => callback);
+        return () => setOnBacklogItemUpdated(null);
+    },
+    []
+  );
+
   return (
     <QuickActionContext.Provider
       value={{
@@ -233,6 +294,20 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
         onEpicCreated,
         setOnEpicCreated: handleSetOnEpicCreated,
         newEpicData,
+
+        isEditEpicDialogOpen,
+        openEditEpicDialog,
+        closeEditEpicDialog,
+        onEpicUpdated,
+        setOnEpicUpdated: handleSetOnEpicUpdated,
+        editEpicData,
+
+        isEditBacklogItemDialogOpen,
+        openEditBacklogItemDialog,
+        closeEditBacklogItemDialog,
+        onBacklogItemUpdated,
+        setOnBacklogItemUpdated: handleSetOnBacklogItemUpdated,
+        editBacklogItemData,
 
         globalSearchTerm,
         setGlobalSearchTerm,

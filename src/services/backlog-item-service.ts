@@ -2,7 +2,7 @@
 'use client';
 
 import { db } from '@/lib/firebase';
-import { collection, query, where, getDocs, doc, setDoc, addDoc, getDoc } from 'firebase/firestore';
+import { collection, query, where, getDocs, doc, setDoc, addDoc, getDoc, updateDoc, deleteDoc } from 'firebase/firestore';
 import type { TaskPriority } from './task-service';
 
 export interface BacklogItem {
@@ -60,4 +60,14 @@ export async function createBacklogItem(itemData: Omit<BacklogItem, 'id' | 'back
     const newItem = { ...itemData, id: docRef.id, backlogId: nextId };
     await setDoc(docRef, newItem);
     return docRef.id;
+}
+
+export async function updateBacklogItem(id: string, data: Partial<BacklogItem>): Promise<void> {
+    const docRef = doc(db, 'backlogItems', id);
+    await updateDoc(docRef, data);
+}
+
+export async function deleteBacklogItem(id: string): Promise<void> {
+    const docRef = doc(db, 'backlogItems', id);
+    await deleteDoc(docRef);
 }
