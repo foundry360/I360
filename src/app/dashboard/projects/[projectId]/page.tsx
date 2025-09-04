@@ -569,7 +569,7 @@ export default function ProjectDetailsPage() {
             const itemsInSprint = backlogItems.filter(item => item.sprintId === sprint.id);
             const completedTasksInSprint = tasks.filter(task => task.status === 'Complete' && itemsInSprint.some(item => item.backlogId === task.backlogId));
             const pointsThisSprint = completedTasksInSprint.reduce((acc, task) => {
-                const item = backlogItems.find(i => i.backlogId === task.backlogId);
+                const item = itemsInSprint.find(i => i.backlogId === task.backlogId);
                 return acc + (item?.points || 0);
             }, 0);
             
@@ -793,7 +793,7 @@ export default function ProjectDetailsPage() {
                                                     tickLine={false}
                                                     axisLine={false}
                                                     tickMargin={8}
-                                                    tickFormatter={(value) => value.slice(0, 3)}
+                                                    tickFormatter={() => ""}
                                                 />
                                                 <YAxis
                                                     tickLine={false}
