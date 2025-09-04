@@ -529,7 +529,7 @@ export default function ProjectDetailsPage() {
         const completedSprints = sprints
             .filter(s => s.status === 'Completed')
             .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
-        
+    
         return completedSprints.map(sprint => {
             const itemsInSprint = backlogItems.filter(item => item.sprintId === sprint.id);
             const completedTasksInSprint = tasks.filter(task => 
@@ -541,7 +541,7 @@ export default function ProjectDetailsPage() {
                 const item = itemsInSprint.find(i => i.backlogId === task.backlogId);
                 return acc + (item?.points || 0);
             }, 0);
-
+    
             return {
                 name: sprint.name,
                 velocity: pointsThisSprint,
