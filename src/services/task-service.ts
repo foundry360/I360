@@ -2,7 +2,8 @@
 'use client';
 
 import { db } from '@/lib/firebase';
-import { collection, doc, getDocs, setDoc, updateDoc, query, where, writeBatch, runTransaction, DocumentReference, WriteBatch, addDoc, deleteDoc } from 'firebase/firestore';
+import { collection, doc, getDocs, setDoc, updateDoc, query, where, writeBatch, runTransaction, DocumentReference, WriteBatch, addDoc, deleteDoc, getDoc } from 'firebase/firestore';
+import type { BacklogItem } from './backlog-item-service';
 
 export type TaskStatus = 'To Do' | 'In Progress' | 'In Review' | 'Needs Revisions' | 'Final Approval' | 'Complete';
 
@@ -67,8 +68,8 @@ export async function updateTaskStatus(id: string, status: TaskStatus): Promise<
 export async function updateTaskOrderAndStatus(taskId: string, newStatus: TaskStatus, newIndex: number, projectId: string): Promise<void> {
     await runTransaction(db, async (transaction) => {
         const tasksQuery = query(tasksCollection, where("projectId", "==", projectId));
-        const tasksSnapshot = await getDocs(tasksQuery);
-        const tasks = tasksSnapshot.docs.map(doc => doc.data() as Task);
+        const tasksSnapshot = await transaction.get(tasksQuery);
+        const tasks = tasksSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Task));
 
         const taskToMove = tasks.find(t => t.id === taskId);
         if (!taskToMove) throw new Error("Task not found!");
@@ -76,7 +77,7 @@ export async function updateTaskOrderAndStatus(taskId: string, newStatus: TaskSt
         const oldStatus = taskToMove.status;
         const oldIndex = taskToMove.order;
 
-        // Remove from old position
+        // Decrement order for tasks in the old column that were after the moved task
         tasks
             .filter(t => t.status === oldStatus && t.order > oldIndex)
             .forEach(t => {
@@ -84,7 +85,7 @@ export async function updateTaskOrderAndStatus(taskId: string, newStatus: TaskSt
                 transaction.update(taskRef, { order: t.order - 1 });
             });
 
-        // Add to new position
+        // Increment order for tasks in the new column that are at or after the new index
         tasks
             .filter(t => t.status === newStatus && t.order >= newIndex)
             .forEach(t => {
@@ -92,8 +93,24 @@ export async function updateTaskOrderAndStatus(taskId: string, newStatus: TaskSt
                 transaction.update(taskRef, { order: t.order + 1 });
             });
 
-        // Update the moved task
+        // Update the moved task's status and order
         const movedTaskRef = doc(db, "tasks", taskId);
         transaction.update(movedTaskRef, { status: newStatus, order: newIndex });
+        
+        // Update the corresponding backlog item's status
+        if (taskToMove.backlogId) {
+            const backlogQuery = query(collection(db, 'backlogItems'), where("projectId", "==", projectId), where("backlogId", "==", taskToMove.backlogId));
+            const backlogSnapshot = await transaction.get(backlogQuery);
+            if (!backlogSnapshot.empty) {
+                const backlogDoc = backlogSnapshot.docs[0];
+                let backlogStatus: BacklogItem['status'] = 'In Progress';
+                if (newStatus === 'To Do') {
+                    backlogStatus = 'To Do';
+                } else if (newStatus === 'Complete') {
+                    backlogStatus = 'Done';
+                }
+                transaction.update(backlogDoc.ref, { status: backlogStatus });
+            }
+        }
     });
 }
