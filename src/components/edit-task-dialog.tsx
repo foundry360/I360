@@ -78,31 +78,6 @@ export function EditTaskDialog() {
     }
   };
   
-  const handleMoveToBacklog = async () => {
-    if (!task || !task.backlogId) return;
-    try {
-        // Find the corresponding backlog item
-        const backlogItems = await getBacklogItemsForProject(task.projectId);
-        const correspondingItem = backlogItems.find(item => item.backlogId === task.backlogId);
-
-        if (correspondingItem) {
-            // Update the backlog item to remove it from the sprint
-            await updateBacklogItem(correspondingItem.id, { sprintId: null });
-        }
-
-        // Delete the task from the board
-        await deleteTask(task.id);
-        
-        // Close dialog and refresh
-        handleOpenChange(false);
-        if (onTaskUpdated) {
-            onTaskUpdated();
-        }
-    } catch (error) {
-        console.error("Failed to move task to backlog:", error);
-    }
-  };
-
   const handleOpenChange = (isOpen: boolean) => {
     if (!isOpen) {
       setTask(null);
@@ -171,19 +146,6 @@ export function EditTaskDialog() {
               Cancel
             </Button>
             <div className="flex items-center gap-2">
-                <TooltipProvider>
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                            <Button type="button" variant="ghost" size="icon" onClick={handleMoveToBacklog}>
-                                <Archive className="h-4 w-4" />
-                                <span className="sr-only">Move to Backlog</span>
-                            </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                            <p>Move to Backlog</p>
-                        </TooltipContent>
-                    </Tooltip>
-                </TooltipProvider>
                 <Button type="submit">Save Changes</Button>
             </div>
           </DialogFooter>
