@@ -522,15 +522,12 @@ export default function ProjectDetailsPage() {
             .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
     
         return completedSprints.slice(-5).map(sprint => {
-            const sprintStartDate = parseISO(sprint.startDate);
             const sprintEndDate = parseISO(sprint.endDate);
             
             const completedTasksInSprint = tasks.filter(task => {
-                if (task.status !== 'Complete' || !task.backlogId) return false;
-                const backlogItem = backlogItems.find(item => item.backlogId === task.backlogId);
-                // Heuristic: if a backlog item was ever in this sprint, we can check if it was completed
-                // This is an approximation. A more robust solution would track historical sprint assignments.
-                return backlogItem?.sprintId === sprint.id;
+                if (task.status !== 'Complete' || !task.backlogId || !task.dueDate) return false;
+                const taskCompletionDate = parseISO(task.dueDate);
+                return taskCompletionDate <= sprintEndDate;
             });
     
             const velocity = completedTasksInSprint.reduce((totalPoints, task) => {
@@ -539,7 +536,7 @@ export default function ProjectDetailsPage() {
             }, 0);
     
             return {
-                name: sprint.name.split(' ').slice(0, 2).join(' '),
+                name: sprint.name,
                 velocity: velocity,
             };
         });
@@ -693,7 +690,7 @@ export default function ProjectDetailsPage() {
                                                     tickLine={false}
                                                     axisLine={false}
                                                     tickMargin={8}
-                                                    tickFormatter={(value) => value.slice(0, 3)}
+                                                    tickFormatter={(value) => value.split(' ').slice(0,2).join(' ')}
                                                 />
                                                 <YAxis
                                                     tickLine={false}
@@ -1163,3 +1160,4 @@ export default function ProjectDetailsPage() {
 
 
     
+
