@@ -36,7 +36,7 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { DragDropContext, Droppable, Draggable, type DropResult } from '@hello-pangea/dnd';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { getProject, Project } from '@/services/project-service';
-import { getTasksForProject, updateTaskOrderAndStatus, Task, TaskStatus, updateTask, createTask } from '@/services/task-service';
+import { getTasksForProject, updateTaskOrderAndStatus, Task, TaskStatus, updateTask, createTask, deleteTask } from '@/services/task-service';
 import { getEpicsForProject, Epic, deleteEpic } from '@/services/epic-service';
 import { getBacklogItemsForProject, BacklogItem, deleteBacklogItem, updateBacklogItem } from '@/services/backlog-item-service';
 import { getSprintsForProject, Sprint, SprintStatus, startSprint, deleteSprint, updateSprint, completeSprint } from '@/services/sprint-service';
@@ -686,100 +686,108 @@ export default function ProjectDetailsPage() {
                                 return (
                                 <div key={status}>
                                     <h2 className="text-lg font-semibold mb-2">{status === 'Not Started' ? 'Upcoming Sprints' : `${status} Sprints`}</h2>
-                                    <Accordion type="single" collapsible className="w-full space-y-4">
-                                        {sprintsByStatus.map(sprint => {
-                                            const itemsInSprint = backlogItems.filter(item => item.sprintId === sprint.id);
-                                            return (
-                                                <AccordionItem key={sprint.id} value={sprint.id} className="border rounded-lg bg-card">
-                                                    <div className="flex items-center p-4">
-                                                        <AccordionTrigger className="p-0 hover:no-underline flex-1" noChevron>
-                                                          <div className='flex items-center flex-1 gap-4'>
-                                                              <h3 className="font-semibold text-base">{sprint.name}</h3>
-                                                              <p className="text-sm text-muted-foreground">
-                                                                  {format(parseISO(sprint.startDate), 'MMM d')} - {format(parseISO(sprint.endDate), 'MMM d, yyyy')}
-                                                              </p>
-                                                              <Badge variant={sprint.status === 'Active' ? 'default' : sprint.status === 'Completed' ? 'secondary' : 'outline'} className={sprint.status === 'Active' ? 'bg-green-500' : ''}>{sprint.status}</Badge>
-                                                          </div>
-                                                        </AccordionTrigger>
-                                                        <div className="flex items-center gap-2 ml-auto shrink-0 pl-4">
-                                                            <DropdownMenu>
-                                                                <DropdownMenuTrigger asChild>
-                                                                    <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0"><MoreVertical className="h-4 w-4" /></Button>
-                                                                </DropdownMenuTrigger>
-                                                                <DropdownMenuContent align="end">
-                                                                    {sprint.status === 'Not Started' && (
-                                                                        <DropdownMenuItem onSelect={() => handleStartSprint(sprint.id)} disabled={loading}>
-                                                                            <Rocket className="mr-2 h-4 w-4" /> Start Sprint
+                                    {sprintsByStatus.length === 0 && status === 'Completed' ? (
+                                        <Card className="border-dashed">
+                                            <CardContent className="p-6 text-center text-muted-foreground">
+                                                No sprints have been completed yet.
+                                            </CardContent>
+                                        </Card>
+                                    ) : (
+                                        <Accordion type="single" collapsible className="w-full space-y-4">
+                                            {sprintsByStatus.map(sprint => {
+                                                const itemsInSprint = backlogItems.filter(item => item.sprintId === sprint.id);
+                                                return (
+                                                    <AccordionItem key={sprint.id} value={sprint.id} className="border rounded-lg bg-card">
+                                                        <div className="flex items-center p-4">
+                                                            <AccordionTrigger className="p-0 hover:no-underline flex-1" noChevron>
+                                                            <div className='flex items-center flex-1 gap-4'>
+                                                                <h3 className="font-semibold text-base">{sprint.name}</h3>
+                                                                <p className="text-sm text-muted-foreground">
+                                                                    {format(parseISO(sprint.startDate), 'MMM d')} - {format(parseISO(sprint.endDate), 'MMM d, yyyy')}
+                                                                </p>
+                                                                <Badge variant={sprint.status === 'Active' ? 'default' : sprint.status === 'Completed' ? 'secondary' : 'outline'} className={sprint.status === 'Active' ? 'bg-green-500' : ''}>{sprint.status}</Badge>
+                                                            </div>
+                                                            </AccordionTrigger>
+                                                            <div className="flex items-center gap-2 ml-auto shrink-0 pl-4">
+                                                                <DropdownMenu>
+                                                                    <DropdownMenuTrigger asChild>
+                                                                        <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0"><MoreVertical className="h-4 w-4" /></Button>
+                                                                    </DropdownMenuTrigger>
+                                                                    <DropdownMenuContent align="end">
+                                                                        {sprint.status === 'Not Started' && (
+                                                                            <DropdownMenuItem onSelect={() => handleStartSprint(sprint.id)} disabled={loading}>
+                                                                                <Rocket className="mr-2 h-4 w-4" /> Start Sprint
+                                                                            </DropdownMenuItem>
+                                                                        )}
+                                                                        {sprint.status === 'Active' && (
+                                                                            <DropdownMenuItem onSelect={() => handleCompleteSprint(sprint.id)} disabled={loading}>
+                                                                                <CheckCircle className="mr-2 h-4 w-4" /> Complete Sprint
+                                                                            </DropdownMenuItem>
+                                                                        )}
+                                                                        {sprint.status !== 'Completed' && (
+                                                                        <DropdownMenuItem onSelect={() => openEditSprintDialog(sprint)}>
+                                                                            <Pencil className="mr-2 h-4 w-4" /> Edit
                                                                         </DropdownMenuItem>
-                                                                    )}
-                                                                    {sprint.status === 'Active' && (
-                                                                        <DropdownMenuItem onSelect={() => handleCompleteSprint(sprint.id)} disabled={loading}>
-                                                                            <CheckCircle className="mr-2 h-4 w-4" /> Complete Sprint
+                                                                        )}
+                                                                        <DropdownMenuSeparator />
+                                                                        <DropdownMenuItem className="text-destructive" onSelect={() => { setItemToDelete({type: 'sprint', id: sprint.id, name: sprint.name}); setIsDeleteDialogOpen(true);}}>
+                                                                            <Trash2 className="mr-2 h-4 w-4" /> Delete
                                                                         </DropdownMenuItem>
-                                                                    )}
-                                                                    {sprint.status !== 'Completed' && (
-                                                                      <DropdownMenuItem onSelect={() => openEditSprintDialog(sprint)}>
-                                                                          <Pencil className="mr-2 h-4 w-4" /> Edit
-                                                                      </DropdownMenuItem>
-                                                                    )}
-                                                                    <DropdownMenuSeparator />
-                                                                    <DropdownMenuItem className="text-destructive" onSelect={() => { setItemToDelete({type: 'sprint', id: sprint.id, name: sprint.name}); setIsDeleteDialogOpen(true);}}>
-                                                                        <Trash2 className="mr-2 h-4 w-4" /> Delete
-                                                                    </DropdownMenuItem>
-                                                                </DropdownMenuContent>
-                                                            </DropdownMenu>
+                                                                    </DropdownMenuContent>
+                                                                </DropdownMenu>
+                                                            </div>
                                                         </div>
-                                                    </div>
-                                                    <AccordionContent className="p-4 pt-0">
-                                                        <p className="italic text-muted-foreground mb-4">{sprint.goal}</p>
-                                                        <div className="border rounded-lg">
-                                                            {itemsInSprint.length > 0 ? itemsInSprint.map(item => {
-                                                                 const epic = epics.find(e => e.id === item.epicId);
-                                                                 const epicConfig = epic ? (epicIcons[epic.title] || { icon: Layers, color: 'text-foreground' }) : { icon: Layers, color: 'text-foreground' };
-                                                                 const IconComponent = epicConfig.icon;
-                                                                return (
-                                                                    <div key={item.id} className="flex justify-between items-center p-3 border-b last:border-b-0 hover:bg-muted/50"
-                                                                        onClick={() => openEditBacklogItemDialog(item, epics, sprints, contacts)}
-                                                                    >
-                                                                         <div className="flex items-center gap-3">
-                                                                            <TooltipProvider>
-                                                                                <Tooltip>
-                                                                                    <TooltipTrigger>
-                                                                                        <IconComponent className={cn("h-4 w-4", epicConfig.color)} />
-                                                                                    </TooltipTrigger>
-                                                                                    <TooltipContent>
-                                                                                        <p>Epic: {epic?.title || 'Unknown'}</p>
-                                                                                    </TooltipContent>
-                                                                                </Tooltip>
-                                                                            </TooltipProvider>
-                                                                            <span className="text-foreground text-sm font-mono">{projectPrefix}-{item.backlogId}</span>
-                                                                            <p>{item.title}</p>
+                                                        <AccordionContent className="p-4 pt-0">
+                                                            <p className="italic text-muted-foreground mb-4">{sprint.goal}</p>
+                                                            <div className="border rounded-lg">
+                                                                {itemsInSprint.length > 0 ? itemsInSprint.map(item => {
+                                                                    const epic = epics.find(e => e.id === item.epicId);
+                                                                    const epicConfig = epic ? (epicIcons[epic.title] || { icon: Layers, color: 'text-foreground' }) : { icon: Layers, color: 'text-foreground' };
+                                                                    const IconComponent = epicConfig.icon;
+                                                                    return (
+                                                                        <div key={item.id} className="flex justify-between items-center p-3 border-b last:border-b-0 hover:bg-muted/50"
+                                                                            onClick={() => openEditBacklogItemDialog(item, epics, sprints, contacts)}
+                                                                        >
+                                                                            <div className="flex items-center gap-3">
+                                                                                <TooltipProvider>
+                                                                                    <Tooltip>
+                                                                                        <TooltipTrigger>
+                                                                                            <IconComponent className={cn("h-4 w-4", epicConfig.color)} />
+                                                                                        </TooltipTrigger>
+                                                                                        <TooltipContent>
+                                                                                            <p>Epic: {epic?.title || 'Unknown'}</p>
+                                                                                        </TooltipContent>
+                                                                                    </Tooltip>
+                                                                                </TooltipProvider>
+                                                                                <span className="text-foreground text-sm font-mono">{projectPrefix}-{item.backlogId}</span>
+                                                                                <p>{item.title}</p>
+                                                                            </div>
+                                                                            <div className="flex items-center gap-4">
+                                                                                <Badge variant="outline">{item.status}</Badge>
+                                                                                <Badge variant="secondary">{item.points} Points</Badge>
+                                                                                <TooltipProvider>
+                                                                                    <Tooltip>
+                                                                                        <TooltipTrigger>
+                                                                                            <PriorityIcon priority={item.priority} />
+                                                                                        </TooltipTrigger>
+                                                                                        <TooltipContent>
+                                                                                            <p>Priority: {item.priority}</p>
+                                                                                        </TooltipContent>
+                                                                                    </Tooltip>
+                                                                                </TooltipProvider>
+                                                                            </div>
                                                                         </div>
-                                                                        <div className="flex items-center gap-4">
-                                                                            <Badge variant="outline">{item.status}</Badge>
-                                                                            <Badge variant="secondary">{item.points} Points</Badge>
-                                                                            <TooltipProvider>
-                                                                                <Tooltip>
-                                                                                    <TooltipTrigger>
-                                                                                        <PriorityIcon priority={item.priority} />
-                                                                                    </TooltipTrigger>
-                                                                                    <TooltipContent>
-                                                                                        <p>Priority: {item.priority}</p>
-                                                                                    </TooltipContent>
-                                                                                </Tooltip>
-                                                                            </TooltipProvider>
-                                                                        </div>
-                                                                    </div>
-                                                                )
-                                                            }) : (
-                                                                <p className="text-sm text-muted-foreground text-center p-4">No items in this sprint.</p>
-                                                            )}
-                                                        </div>
-                                                    </AccordionContent>
-                                                </AccordionItem>
-                                            )
-                                        })}
-                                    </Accordion>
+                                                                    )
+                                                                }) : (
+                                                                    <p className="text-sm text-muted-foreground text-center p-4">No items in this sprint.</p>
+                                                                )}
+                                                            </div>
+                                                        </AccordionContent>
+                                                    </AccordionItem>
+                                                )
+                                            })}
+                                        </Accordion>
+                                    )}
                                 </div>
                                 )
                             })}
