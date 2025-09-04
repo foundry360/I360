@@ -57,7 +57,7 @@ import { format, parseISO, isPast } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
-import { Bar, BarChart, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, LabelList, CartesianGrid } from 'recharts';
+import { Line, LineChart, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, CartesianGrid, Area, Dot } from 'recharts';
 import { ChartContainer, ChartTooltipContent, type ChartConfig } from '@/components/ui/chart';
 
 type TaskType = Task['type'];
@@ -673,18 +673,54 @@ export default function ProjectDetailsPage() {
                                     </CardHeader>
                                     <CardContent>
                                         <ChartContainer config={chartConfig} className="h-[150px] w-full">
-                                            <BarChart data={velocityData} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
-                                                 <CartesianGrid vertical={false} />
-                                                 <XAxis
+                                            <LineChart
+                                                data={velocityData}
+                                                margin={{ top: 5, right: 20, left: -20, bottom: 5 }}
+                                            >
+                                                <CartesianGrid vertical={false} />
+                                                <XAxis
                                                     dataKey="name"
                                                     tickLine={false}
                                                     axisLine={false}
                                                     tickMargin={8}
                                                     tickFormatter={(value) => value.slice(0, 3)}
                                                 />
-                                                <RechartsTooltip cursor={false} content={<ChartTooltipContent />} />
-                                                <Bar dataKey="velocity" fill="var(--color-velocity)" radius={4} />
-                                            </BarChart>
+                                                <YAxis
+                                                    tickLine={false}
+                                                    axisLine={false}
+                                                    tickMargin={8}
+                                                    width={20}
+                                                />
+                                                <RechartsTooltip cursor={false} content={<ChartTooltipContent indicator="line" />} />
+                                                <defs>
+                                                    <linearGradient id="fillVelocity" x1="0" y1="0" x2="0" y2="1">
+                                                        <stop offset="5%" stopColor="var(--color-velocity)" stopOpacity={0.8} />
+                                                        <stop offset="95%" stopColor="var(--color-velocity)" stopOpacity={0.1} />
+                                                    </linearGradient>
+                                                </defs>
+                                                <Area
+                                                    dataKey="velocity"
+                                                    type="natural"
+                                                    fill="url(#fillVelocity)"
+                                                    fillOpacity={0.4}
+                                                    stroke="var(--color-velocity)"
+                                                    stackId="a"
+                                                />
+                                                <Line
+                                                    dataKey="velocity"
+                                                    type="natural"
+                                                    stroke="var(--color-velocity)"
+                                                    strokeWidth={2}
+                                                    dot={
+                                                        <Dot
+                                                            r={4}
+                                                            fill="var(--background)"
+                                                            stroke="var(--color-velocity)"
+                                                            strokeWidth={2}
+                                                        />
+                                                    }
+                                                />
+                                            </LineChart>
                                         </ChartContainer>
                                     </CardContent>
                                 </Card>
@@ -1103,6 +1139,7 @@ export default function ProjectDetailsPage() {
     
 
     
+
 
 
 
