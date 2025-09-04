@@ -485,6 +485,8 @@ export default function ProjectDetailsPage() {
         return <p>Project not found.</p>
     }
 
+    const activeSprint = sprints.find(s => s.status === 'Active');
+
     return (
         <div className="flex flex-col h-full">
             {/* Header */}
@@ -662,7 +664,7 @@ export default function ProjectDetailsPage() {
                                                                             <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => e.stopPropagation()}><MoreVertical className="h-4 w-4" /></Button>
                                                                         </DropdownMenuTrigger>
                                                                         <DropdownMenuContent align="end">
-                                                                            <DropdownMenuItem onSelect={() => openEditBacklogItemDialog(item, epics, sprints, contacts)}><Pencil className="mr-2 h-4 w-4" />Edit</DropdownMenuItem>
+                                                                            <DropdownMenuItem onSelect={(e) => { e.stopPropagation(); openEditBacklogItemDialog(item, epics, sprints, contacts); }}><Pencil className="mr-2 h-4 w-4" />Edit</DropdownMenuItem>
                                                                             <DropdownMenuSub>
                                                                                 <DropdownMenuSubTrigger>
                                                                                     <Rocket className="mr-2 h-4 w-4" />
@@ -715,7 +717,7 @@ export default function ProjectDetailsPage() {
                                             </CardContent>
                                         </Card>
                                     ) : (
-                                        <Accordion type="single" collapsible className="w-full space-y-4">
+                                        <Accordion type="single" collapsible className="w-full space-y-4" defaultValue={status === 'Active' && activeSprint ? activeSprint.id : undefined}>
                                             {sprintsByStatus.map(sprint => {
                                                 const itemsInSprint = backlogItems.filter(item => item.sprintId === sprint.id);
                                                 return (
@@ -767,7 +769,7 @@ export default function ProjectDetailsPage() {
                                                                     const epicConfig = epic ? (epicIcons[epic.title] || { icon: Layers, color: 'text-foreground' }) : { icon: Layers, color: 'text-foreground' };
                                                                     const IconComponent = epicConfig.icon;
                                                                     return (
-                                                                        <div key={item.id} className="flex justify-between items-center p-3 border-b last:border-b-0 hover:bg-muted/50"
+                                                                        <div key={item.id} className="flex justify-between items-center p-3 border-b last:border-b-0 hover:bg-muted/50 cursor-pointer"
                                                                             onClick={() => openEditBacklogItemDialog(item, epics, sprints, contacts)}
                                                                         >
                                                                             <div className="flex items-center gap-3">
@@ -826,8 +828,8 @@ export default function ProjectDetailsPage() {
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={handleDelete}>Delete</AlertDialogAction>
+                        <AlertDialogCancel onClick={() => setIsDeleteDialogOpen(false)}>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={(e) => handleDelete(e)}>Delete</AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
