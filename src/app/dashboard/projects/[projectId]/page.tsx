@@ -39,6 +39,7 @@ import { getTasksForProject, updateTaskOrderAndStatus, Task, TaskStatus, updateT
 import { getEpicsForProject, Epic, deleteEpic } from '@/services/epic-service';
 import { getBacklogItemsForProject, BacklogItem, deleteBacklogItem, updateBacklogItem } from '@/services/backlog-item-service';
 import { getSprintsForProject, Sprint, SprintStatus, startSprint } from '@/services/sprint-service';
+import { getContactsForCompany, Contact } from '@/services/contact-service';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
@@ -217,6 +218,7 @@ export default function ProjectDetailsPage() {
     const [epics, setEpics] = React.useState<Epic[]>([]);
     const [backlogItems, setBacklogItems] = React.useState<BacklogItem[]>([]);
     const [sprints, setSprints] = React.useState<Sprint[]>([]);
+    const [contacts, setContacts] = React.useState<Contact[]>([]);
     const [loading, setLoading] = React.useState(true);
     const [activeTab, setActiveTab] = React.useState('summary');
     const { 
@@ -243,6 +245,11 @@ export default function ProjectDetailsPage() {
                 getSprintsForProject(projectId),
             ]);
             setProject(projectData);
+            
+            if (projectData?.companyId) {
+                const companyContacts = await getContactsForCompany(projectData.companyId);
+                setContacts(companyContacts);
+            }
             
             const sortedTasks = tasksData.sort((a, b) => a.order - b.order);
             
@@ -528,7 +535,7 @@ export default function ProjectDetailsPage() {
                                         title={status}
                                         tasks={tasks}
                                         projectPrefix={projectPrefix}
-                                        onTaskClick={(task) => openEditTaskDialog(task)}
+                                        onTaskClick={(task) => openEditTaskDialog(task, contacts)}
                                     />
                             ))}
                             </div>
@@ -765,6 +772,7 @@ export default function ProjectDetailsPage() {
     
 
     
+
 
 
 

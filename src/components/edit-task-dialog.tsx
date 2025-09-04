@@ -22,10 +22,10 @@ import {
 import { updateTask, type Task, TaskPriority, deleteTask } from '@/services/task-service';
 import { useQuickAction } from '@/contexts/quick-action-context';
 import { useUser } from '@/contexts/user-context';
-import { getContacts, Contact } from '@/services/contact-service';
 import { getBacklogItemsForProject, updateBacklogItem } from '@/services/backlog-item-service';
 import { Archive } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
+import { Contact } from '@/services/contact-service';
 
 export function EditTaskDialog() {
   const {
@@ -41,17 +41,10 @@ export function EditTaskDialog() {
 
   React.useEffect(() => {
     if (editTaskData) {
-      setTask(editTaskData);
-      // This is a simplification. In a real app, you might fetch team members based on the project.
-      // For now, let's assume we can fetch all contacts and filter.
-      // Or better yet, we might need to pass the project's companyId to fetch relevant contacts.
-      // For now we will just use the current user as an option.
-      if (user?.displayName) {
-        const currentUserAsContact = { name: user.displayName, id: user.uid, email: user.email!, phone: '', title: 'Current User', companyId: '', lastActivity: '', avatar: '' };
-         // A more robust solution would be to get contacts for the project's company.
-      }
+      setTask(editTaskData.task);
+      setProjectTeam(editTaskData.contacts);
     }
-  }, [editTaskData, user]);
+  }, [editTaskData]);
   
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -63,7 +56,7 @@ export function EditTaskDialog() {
   const handleSelectChange = (field: 'priority' | 'type' | 'owner') => (value: string) => {
      if (!task) return;
      if (field === 'owner') {
-         const selectedUser = projectTeam.find(u => u.name === value) || { name: value, avatarUrl: '' };
+         const selectedUser = projectTeam.find(u => u.name === value) || { name: value, avatar: '' };
          setTask((prev) => ({ ...prev!, owner: selectedUser.name, ownerAvatarUrl: selectedUser.avatar || '' }));
      } else {
         setTask((prev) => ({ ...prev!, [field]: value }));
@@ -136,16 +129,19 @@ export function EditTaskDialog() {
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="owner" className="text-right">Owner</Label>
-              <Input id="owner" value={task.owner} onChange={handleInputChange} className="col-span-3" required />
-              {/* This is a simplified owner selector. A real implementation might use a searchable user select component. */}
-              {/* <Select onValueChange={handleSelectChange('owner')} value={task.owner} required>
+              <Select onValueChange={handleSelectChange('owner')} value={task.owner} required>
                 <SelectTrigger className="col-span-3">
                   <SelectValue placeholder="Select an owner" />
                 </SelectTrigger>
                 <SelectContent>
-                  {user && <SelectItem value={user.displayName!}>{user.displayName}</SelectItem>}
+                  {projectTeam.map(contact => (
+                    <SelectItem key={contact.id} value={contact.name}>{contact.name}</SelectItem>
+                  ))}
+                  {user && !projectTeam.some(c => c.name === user.displayName) && (
+                    <SelectItem value={user.displayName!}>{user.displayName}</SelectItem>
+                  )}
                 </SelectContent>
-              </Select> */}
+              </Select>
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="priority" className="text-right">Priority</Label>
