@@ -839,23 +839,23 @@ export default function ProjectDetailsPage() {
                                             <CardDescription>{activeSprint?.name}</CardDescription>
                                         </CardHeader>
                                         <CardContent>
-                                            <div className="flex w-full h-3 rounded-full overflow-hidden bg-muted mb-2">
-                                                <TooltipProvider>
-                                                {activeSprintHealthData.segments.map(segment => (
-                                                    <Tooltip key={segment.status}>
-                                                        <TooltipTrigger asChild>
-                                                            <div 
-                                                                className="h-full"
-                                                                style={{ width: `${segment.percentage}%`, backgroundColor: segment.color }}
-                                                            />
-                                                        </TooltipTrigger>
-                                                        <TooltipContent>
-                                                            <p>{segment.status}: {segment.count} task(s)</p>
-                                                        </TooltipContent>
-                                                    </Tooltip>
-                                                ))}
-                                                </TooltipProvider>
-                                            </div>
+                                            <TooltipProvider>
+                                                <div className="flex w-full h-3 rounded-full overflow-hidden bg-muted mb-2">
+                                                    {activeSprintHealthData.segments.map(segment => (
+                                                        <Tooltip key={segment.status}>
+                                                            <TooltipTrigger asChild>
+                                                                <div 
+                                                                    className="h-full"
+                                                                    style={{ width: `${segment.percentage}%`, backgroundColor: segment.color }}
+                                                                />
+                                                            </TooltipTrigger>
+                                                            <TooltipContent>
+                                                                <p>{segment.status}: {segment.count} task(s) ({Math.round(segment.percentage)}%)</p>
+                                                            </TooltipContent>
+                                                        </Tooltip>
+                                                    ))}
+                                                </div>
+                                            </TooltipProvider>
                                             <div className="flex justify-between text-xs text-muted-foreground">
                                                 {activeSprintHealthData.segments.map(segment => (
                                                     <div key={segment.status} className="flex items-center gap-1">
@@ -1279,4 +1279,3 @@ export default function ProjectDetailsPage() {
         </div>
     );
 }
-
