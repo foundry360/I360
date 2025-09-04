@@ -427,7 +427,16 @@ export default function ProjectDetailsPage() {
                             </>
                         )}
                          {activeTab === 'sprints' && (
-                             <Button size="sm" onClick={() => openNewSprintDialog(projectId)}><Rocket className="mr-2 h-4 w-4" />New Sprint</Button>
+                             <TooltipProvider>
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <Button size="icon" onClick={() => openNewSprintDialog(projectId)}><Rocket className="h-4 w-4" /></Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                        <p>New Sprint</p>
+                                    </TooltipContent>
+                                </Tooltip>
+                            </TooltipProvider>
                          )}
                     </div>
                 </div>
