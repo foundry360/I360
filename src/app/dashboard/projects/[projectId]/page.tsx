@@ -497,25 +497,17 @@ export default function ProjectDetailsPage() {
     const epicProgressData = React.useMemo(() => {
         return epics.map(epic => {
             const itemsInEpic = backlogItems.filter(item => item.epicId === epic.id);
-            const completedItems = itemsInEpic.filter(item => item.status === 'Complete');
+            const completedItems = itemsInEpic.filter(item => {
+                const task = tasks.find(t => t.backlogId === item.backlogId);
+                return task?.status === 'Complete';
+            });
             const progress = itemsInEpic.length > 0 ? (completedItems.length / itemsInEpic.length) * 100 : 0;
             return {
                 name: epic.title,
                 progress: Math.round(progress),
-                total: 100,
-                fill: 'hsl(var(--primary))'
             }
         });
-    }, [epics, backlogItems]);
-
-    const chartConfig = {
-        progress: {
-            label: 'Progress',
-        },
-        total: {
-            label: 'Total',
-        },
-    } satisfies ChartConfig;
+    }, [epics, backlogItems, tasks]);
 
 
     if (loading) {
@@ -663,42 +655,16 @@ export default function ProjectDetailsPage() {
                                         <CardTitle>Epic Progress</CardTitle>
                                         <CardDescription>A summary of completion for each project epic.</CardDescription>
                                     </CardHeader>
-                                    <CardContent>
-                                       <ChartContainer config={chartConfig} className="min-h-[200px] w-full">
-                                            <BarChart
-                                                accessibilityLayer
-                                                data={epicProgressData}
-                                                layout="vertical"
-                                                margin={{ left: 0, top: 20, right: 20 }}
-                                                barGap={4}
-                                            >
-                                                <CartesianGrid horizontal={false} />
-                                                <XAxis type="number" dataKey="progress" hide domain={[0, 100]}/>
-                                                <YAxis
-                                                    dataKey="name"
-                                                    type="category"
-                                                    tick={false}
-                                                    axisLine={false}
-                                                />
-                                                <RechartsTooltip
-                                                    cursor={false}
-                                                    content={<ChartTooltipContent
-                                                        formatter={(value) => `${value}%`}
-                                                        hideLabel
-                                                    />}
-                                                />
-                                                <Bar dataKey="total" radius={5} stackId="a" fill="hsl(var(--muted))" />
-                                                <Bar dataKey="progress" radius={5} stackId="a">
-                                                    <LabelList
-                                                        dataKey="name"
-                                                        position="top"
-                                                        offset={10}
-                                                        className="fill-foreground text-sm"
-                                                        formatter={(value: string) => value.length > 40 ? `${value.substring(0, 40)}...` : value}
-                                                    />
-                                                </Bar>
-                                            </BarChart>
-                                        </ChartContainer>
+                                    <CardContent className="space-y-4">
+                                        {epicProgressData.map((epic, index) => (
+                                            <div key={index} className="space-y-2">
+                                                <div className="flex justify-between items-baseline">
+                                                    <p className="text-sm font-medium">{epic.name}</p>
+                                                    <p className="text-sm text-muted-foreground">{epic.progress}% complete</p>
+                                                </div>
+                                                <Progress value={epic.progress} />
+                                            </div>
+                                        ))}
                                     </CardContent>
                                 </Card>
                             </div>
@@ -1090,6 +1056,7 @@ export default function ProjectDetailsPage() {
     
 
     
+
 
 
 
