@@ -656,15 +656,22 @@ export default function ProjectDetailsPage() {
                                         <CardDescription>A summary of completion for each project epic.</CardDescription>
                                     </CardHeader>
                                     <CardContent className="space-y-4">
-                                        {epicProgressData.map((epic, index) => (
-                                            <div key={index} className="space-y-2">
-                                                <div className="flex justify-between items-baseline">
-                                                    <p className="text-sm font-medium">{epic.name}</p>
-                                                    <p className="text-sm text-muted-foreground">{epic.progress}% complete</p>
+                                        {epicProgressData.map((epic, index) => {
+                                            const epicConfig = epicIcons[epic.name] || { icon: Layers, color: 'text-foreground' };
+                                            const IconComponent = epicConfig.icon;
+                                            return (
+                                                <div key={index} className="space-y-2">
+                                                    <div className="flex justify-between items-baseline">
+                                                        <div className="flex items-center gap-2">
+                                                            <IconComponent className={cn("h-4 w-4", epicConfig.color)} />
+                                                            <p className="text-sm font-medium">{epic.name}</p>
+                                                        </div>
+                                                        <p className="text-sm text-muted-foreground">{epic.progress}% complete</p>
+                                                    </div>
+                                                    <Progress value={epic.progress} />
                                                 </div>
-                                                <Progress value={epic.progress} />
-                                            </div>
-                                        ))}
+                                            )
+                                        })}
                                     </CardContent>
                                 </Card>
                             </div>
@@ -1056,6 +1063,7 @@ export default function ProjectDetailsPage() {
     
 
     
+
 
 
 
