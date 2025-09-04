@@ -35,11 +35,11 @@ type QuickActionContextType = {
   setOnProjectCreated: (callback: (() => void) | null) => (() => void) | void;
 
   isNewBacklogItemDialogOpen: boolean;
-  openNewBacklogItemDialog: (projectId: string, epics: Epic[]) => void;
+  openNewBacklogItemDialog: (projectId: string, companyId: string, epics: Epic[]) => void;
   closeNewBacklogItemDialog: () => void;
   onBacklogItemCreated: (() => void) | null;
   setOnBacklogItemCreated: (callback: (() => void) | null) => (() => void) | void;
-  newBacklogItemData: { projectId: string, epics: Epic[] } | null;
+  newBacklogItemData: { projectId: string, companyId: string, epics: Epic[] } | null;
 
   isNewEpicDialogOpen: boolean;
   openNewEpicDialog: (projectId: string) => void;
@@ -111,7 +111,7 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
   // New Backlog Item Dialog State
   const [isNewBacklogItemDialogOpen, setIsNewBacklogItemDialogOpen] = React.useState(false);
   const [onBacklogItemCreated, setOnBacklogItemCreated] = React.useState<(() => void) | null>(null);
-  const [newBacklogItemData, setNewBacklogItemData] = React.useState<{ projectId: string, epics: Epic[] } | null>(null);
+  const [newBacklogItemData, setNewBacklogItemData] = React.useState<{ projectId: string, companyId: string, epics: Epic[] } | null>(null);
 
   // New Epic Dialog State
   const [isNewEpicDialogOpen, setIsNewEpicDialogOpen] = React.useState(false);
@@ -207,8 +207,8 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
     []
   );
 
-  const openNewBacklogItemDialog = React.useCallback((projectId: string, epics: Epic[]) => {
-    setNewBacklogItemData({ projectId, epics });
+  const openNewBacklogItemDialog = React.useCallback((projectId: string, companyId: string, epics: Epic[]) => {
+    setNewBacklogItemData({ projectId, companyId, epics });
     setIsNewBacklogItemDialogOpen(true);
   }, []);
 

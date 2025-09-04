@@ -213,7 +213,6 @@ export default function ProjectDetailsPage() {
     const router = useRouter();
     const projectId = params.projectId as string;
     const [project, setProject] = React.useState<Project | null>(null);
-    const [allTasks, setAllTasks] = React.useState<Task[]>([]);
     const [columns, setColumns] = React.useState<BoardColumns>(initialColumns);
     const [epics, setEpics] = React.useState<Epic[]>([]);
     const [backlogItems, setBacklogItems] = React.useState<BacklogItem[]>([]);
@@ -246,7 +245,6 @@ export default function ProjectDetailsPage() {
             setProject(projectData);
             
             const sortedTasks = tasksData.sort((a, b) => a.order - b.order);
-            setAllTasks(sortedTasks);
             
             const newColumns = sortedTasks.reduce((acc, task) => {
                 const status = task.status;
@@ -470,7 +468,7 @@ export default function ProjectDetailsPage() {
                                 <TooltipProvider>
                                     <Tooltip>
                                         <TooltipTrigger asChild>
-                                            <Button size="icon" onClick={() => openNewBacklogItemDialog(projectId, epics)}><FilePlus className="h-4 w-4" /></Button>
+                                            <Button size="icon" onClick={() => openNewBacklogItemDialog(projectId, project.companyId, epics)}><FilePlus className="h-4 w-4" /></Button>
                                         </TooltipTrigger>
                                         <TooltipContent>
                                             <p>Add Backlog Item</p>
@@ -636,7 +634,7 @@ export default function ProjectDetailsPage() {
                                             return (
                                                 <AccordionItem key={sprint.id} value={sprint.id} className="border rounded-lg bg-card">
                                                     <div className="flex items-center p-4">
-                                                        <AccordionTrigger className="p-0 hover:no-underline flex-1 text-left">
+                                                         <AccordionTrigger className="p-0 hover:no-underline flex-1 text-left">
                                                             <div className='flex items-center flex-1 gap-4'>
                                                                 <h3 className="font-semibold text-base">{sprint.name}</h3>
                                                                 <p className="text-sm text-muted-foreground">
@@ -746,6 +744,7 @@ export default function ProjectDetailsPage() {
     
 
     
+
 
 
 
