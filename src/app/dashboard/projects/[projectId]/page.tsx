@@ -38,7 +38,7 @@ import { getProject, Project } from '@/services/project-service';
 import { getTasksForProject, updateTaskOrderAndStatus, Task, TaskStatus, updateTask, createTask } from '@/services/task-service';
 import { getEpicsForProject, Epic, deleteEpic } from '@/services/epic-service';
 import { getBacklogItemsForProject, BacklogItem, deleteBacklogItem, updateBacklogItem } from '@/services/backlog-item-service';
-import { getSprintsForProject, Sprint, SprintStatus, startSprint } from '@/services/sprint-service';
+import { getSprintsForProject, Sprint, SprintStatus, startSprint, deleteSprint } from '@/services/sprint-service';
 import { getContactsForCompany, Contact } from '@/services/contact-service';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
@@ -231,7 +231,7 @@ export default function ProjectDetailsPage() {
     } = useQuickAction();
     const { toast } = useToast();
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
-    const [itemToDelete, setItemToDelete] = React.useState<{type: 'epic' | 'backlogItem', id: string, name: string} | null>(null);
+    const [itemToDelete, setItemToDelete] = React.useState<{type: 'epic' | 'backlogItem' | 'sprint', id: string, name: string} | null>(null);
 
     const fetchData = React.useCallback(async () => {
         if (!projectId) return;
@@ -341,8 +341,10 @@ export default function ProjectDetailsPage() {
         try {
             if (itemToDelete.type === 'epic') {
                 await deleteEpic(itemToDelete.id);
-            } else {
+            } else if (itemToDelete.type === 'backlogItem') {
                 await deleteBacklogItem(itemToDelete.id);
+            } else if (itemToDelete.type === 'sprint') {
+                await deleteSprint(itemToDelete.id);
             }
             fetchData();
         } catch (error) {
@@ -686,7 +688,7 @@ export default function ProjectDetailsPage() {
                                                                         <Pencil className="mr-2 h-4 w-4" /> Edit
                                                                     </DropdownMenuItem>
                                                                     <DropdownMenuSeparator />
-                                                                    <DropdownMenuItem className="text-destructive">
+                                                                    <DropdownMenuItem className="text-destructive" onSelect={() => { setItemToDelete({type: 'sprint', id: sprint.id, name: sprint.name}); setIsDeleteDialogOpen(true);}}>
                                                                         <Trash2 className="mr-2 h-4 w-4" /> Delete
                                                                     </DropdownMenuItem>
                                                                 </DropdownMenuContent>
@@ -772,6 +774,7 @@ export default function ProjectDetailsPage() {
     
 
     
+
 
 
 

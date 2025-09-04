@@ -75,8 +75,18 @@ export async function updateSprint(id: string, data: Partial<Sprint>): Promise<v
 }
 
 export async function deleteSprint(id: string): Promise<void> {
-    // Note: This does not automatically reassign backlog items.
-    // That logic should be handled in the component calling this function.
-    const docRef = doc(db, 'sprints', id);
-    await deleteDoc(docRef);
+    const batch = writeBatch(db);
+
+    // 1. Find all backlog items in the sprint and move them back to the backlog
+    const backlogQuery = query(collection(db, 'backlogItems'), where("sprintId", "==", id));
+    const backlogSnapshot = await getDocs(backlogQuery);
+    backlogSnapshot.forEach(doc => {
+        batch.update(doc.ref, { sprintId: null });
+    });
+
+    // 2. Delete the sprint document itself
+    const sprintRef = doc(db, 'sprints', id);
+    batch.delete(sprintRef);
+
+    await batch.commit();
 }
