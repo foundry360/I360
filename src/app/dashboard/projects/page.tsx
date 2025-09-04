@@ -40,7 +40,7 @@ import { cn } from '@/lib/utils';
 import { Checkbox } from '@/components/ui/checkbox';
 import { TablePagination } from '@/components/table-pagination';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { format, parseISO } from 'date-fns';
+import { format } from 'date-fns';
 
 type SortKey = keyof Project;
 type ProjectStatus = 'Active' | 'Inactive' | 'Completed' | 'On Hold';
@@ -201,6 +201,12 @@ export default function ProjectsPage() {
     }
   }
 
+  const formatDate = (isoDate: string) => {
+    const [year, month, day] = isoDate.split('T')[0].split('-').map(Number);
+    const date = new Date(Date.UTC(year, month - 1, day));
+    return format(date, 'MMM dd, yyyy');
+  }
+
   return (
     <>
       <div className="space-y-6">
@@ -333,7 +339,7 @@ export default function ProjectsPage() {
                                             </TableCell>
                                             <TableCell>{project.owner || getDisplayName(user?.email)}</TableCell>
                                             <TableCell>
-                                                {format(parseISO(project.startDate), 'MMM dd, yyyy')}
+                                                {formatDate(project.startDate)}
                                             </TableCell>
                                             <TableCell className="text-right">
                                                 <DropdownMenu>
@@ -410,3 +416,5 @@ export default function ProjectsPage() {
     </>
   );
 }
+
+    

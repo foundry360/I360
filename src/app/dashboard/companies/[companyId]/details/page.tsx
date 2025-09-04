@@ -118,9 +118,10 @@ export default function CompanyDetailsPage() {
               time: new Date(c.lastActivity),
           }));
       
+          const [year, month, day] = company.lastActivity.split('T')[0].split('-').map(Number);
           const companyUpdateActivity = {
               activity: "Company profile updated",
-              time: new Date(company.lastActivity)
+              time: new Date(Date.UTC(year, month - 1, day))
           };
            const allActivity = [...assessmentActivity, ...contactActivity, companyUpdateActivity]
             .sort((a, b) => b.time.getTime() - a.time.getTime());
@@ -692,3 +693,5 @@ export default function CompanyDetailsPage() {
     </>
   );
 }
+
+    
