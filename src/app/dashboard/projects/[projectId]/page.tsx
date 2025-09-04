@@ -57,7 +57,7 @@ import { format, parseISO, isPast } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
-import { Bar, BarChart, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer } from 'recharts';
+import { Bar, BarChart, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, LabelList } from 'recharts';
 import { ChartContainer, ChartTooltipContent, type ChartConfig } from '@/components/ui/chart';
 
 type TaskType = Task['type'];
@@ -666,19 +666,16 @@ export default function ProjectDetailsPage() {
                                                 data={epicProgressData}
                                                 layout="vertical"
                                                 margin={{
-                                                    left: -20,
+                                                    left: 0,
+                                                    top: 20
                                                 }}
                                             >
                                                 <XAxis type="number" dataKey="progress" hide />
                                                 <YAxis
                                                     dataKey="name"
                                                     type="category"
-                                                    tickLine={false}
-                                                    tickMargin={10}
+                                                    tick={false}
                                                     axisLine={false}
-                                                    tickFormatter={(value) =>
-                                                        value.length > 35 ? `${value.substring(0, 35)}...` : value
-                                                    }
                                                 />
                                                 <RechartsTooltip
                                                     cursor={false}
@@ -687,7 +684,15 @@ export default function ProjectDetailsPage() {
                                                         hideLabel
                                                     />}
                                                 />
-                                                <Bar dataKey="progress" radius={5} />
+                                                <Bar dataKey="progress" radius={5} >
+                                                    <LabelList
+                                                        dataKey="name"
+                                                        position="top"
+                                                        offset={10}
+                                                        className="fill-foreground text-sm"
+                                                        formatter={(value: string) => value.length > 40 ? `${value.substring(0, 40)}...` : value}
+                                                    />
+                                                </Bar>
                                             </BarChart>
                                         </ChartContainer>
                                     </CardContent>
@@ -1081,6 +1086,7 @@ export default function ProjectDetailsPage() {
     
 
     
+
 
 
 
