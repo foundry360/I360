@@ -143,7 +143,7 @@ const BoardColumn = ({ title, tasks, projectPrefix, allTasks }: { title: string;
                         ref={provided.innerRef}
                         {...provided.droppableProps}
                         className={cn(
-                            "p-4 min-h-[400px] transition-colors",
+                            "p-4 transition-colors",
                             snapshot.isDraggingOver && "bg-primary-light"
                         )}
                     >
@@ -354,7 +354,7 @@ export default function ProjectDetailsPage() {
                     <TabsContent value="summary">
                        <p>Summary View - Under Construction</p>
                     </TabsContent>
-                    <TabsContent value="board" className="h-full">
+                    <TabsContent value="board">
                         <DragDropContext onDragEnd={onDragEnd}>
                             <div className="flex gap-6 h-full">
                             {columns.map(status => (
