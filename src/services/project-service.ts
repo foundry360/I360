@@ -7,12 +7,16 @@ import type { Company } from './company-service';
 export interface Project {
   id: string;
   name: string;
+  description: string;
   companyId: string;
   companyName?: string;
   status: 'Active' | 'Inactive' | 'Completed' | 'On Hold';
+  priority: 'High' | 'Medium' | 'Low';
   startDate: string;
   endDate?: string;
-  owner: string; 
+  owner: string;
+  team: string; // Comma-separated list of team members
+  category: 'Assessment' | 'Workshop' | 'Planning' | 'Execution' | 'Review' | 'Enablement';
 }
 
 const projectsCollection = collection(db, 'projects');
