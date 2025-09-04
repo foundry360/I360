@@ -38,6 +38,13 @@ type QuickActionContextType = {
   setOnBacklogItemCreated: (callback: (() => void) | null) => (() => void) | void;
   newBacklogItemData: { projectId: string, epics: Epic[] } | null;
 
+  isNewEpicDialogOpen: boolean;
+  openNewEpicDialog: (projectId: string) => void;
+  closeNewEpicDialog: () => void;
+  onEpicCreated: (() => void) | null;
+  setOnEpicCreated: (callback: (() => void) | null) => (() => void) | void;
+  newEpicData: { projectId: string } | null;
+
   globalSearchTerm: string;
   setGlobalSearchTerm: (term: string) => void;
 };
@@ -74,6 +81,11 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
   const [isNewBacklogItemDialogOpen, setIsNewBacklogItemDialogOpen] = React.useState(false);
   const [onBacklogItemCreated, setOnBacklogItemCreated] = React.useState<(() => void) | null>(null);
   const [newBacklogItemData, setNewBacklogItemData] = React.useState<{ projectId: string, epics: Epic[] } | null>(null);
+
+  // New Epic Dialog State
+  const [isNewEpicDialogOpen, setIsNewEpicDialogOpen] = React.useState(false);
+  const [onEpicCreated, setOnEpicCreated] = React.useState<(() => void) | null>(null);
+  const [newEpicData, setNewEpicData] = React.useState<{ projectId: string } | null>(null);
 
   // Global Search State
   const [globalSearchTerm, setGlobalSearchTerm] = React.useState('');
@@ -161,7 +173,24 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
     },
     []
   );
+  
+  const openNewEpicDialog = React.useCallback((projectId: string) => {
+    setNewEpicData({ projectId });
+    setIsNewEpicDialogOpen(true);
+  }, []);
 
+  const closeNewEpicDialog = React.useCallback(() => {
+    setIsNewEpicDialogOpen(false);
+    setNewEpicData(null);
+  }, []);
+
+  const handleSetOnEpicCreated = React.useCallback(
+    (callback: (() => void) | null) => {
+        setOnEpicCreated(() => callback);
+        return () => setOnEpicCreated(null);
+    },
+    []
+  );
 
   return (
     <QuickActionContext.Provider
@@ -197,6 +226,13 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
         onBacklogItemCreated,
         setOnBacklogItemCreated: handleSetOnBacklogItemCreated,
         newBacklogItemData,
+
+        isNewEpicDialogOpen,
+        openNewEpicDialog,
+        closeNewEpicDialog,
+        onEpicCreated,
+        setOnEpicCreated: handleSetOnEpicCreated,
+        newEpicData,
 
         globalSearchTerm,
         setGlobalSearchTerm,

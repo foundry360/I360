@@ -183,7 +183,7 @@ export default function ProjectDetailsPage() {
     const [backlogItems, setBacklogItems] = React.useState<BacklogItem[]>([]);
     const [loading, setLoading] = React.useState(true);
     const [activeTab, setActiveTab] = React.useState('board');
-    const { openNewBacklogItemDialog, setOnBacklogItemCreated } = useQuickAction();
+    const { openNewBacklogItemDialog, setOnBacklogItemCreated, openNewEpicDialog, setOnEpicCreated } = useQuickAction();
 
     const fetchData = React.useCallback(async () => {
         if (!projectId) return;
@@ -208,11 +208,13 @@ export default function ProjectDetailsPage() {
     
     React.useEffect(() => {
         fetchData();
-        const unsubscribe = setOnBacklogItemCreated(() => fetchData);
+        const unsubscribeBacklog = setOnBacklogItemCreated(() => fetchData);
+        const unsubscribeEpic = setOnEpicCreated(() => fetchData);
         return () => {
-            if (unsubscribe) unsubscribe();
+            if (unsubscribeBacklog) unsubscribeBacklog();
+            if (unsubscribeEpic) unsubscribeEpic();
         };
-    }, [fetchData, setOnBacklogItemCreated]);
+    }, [fetchData, setOnBacklogItemCreated, setOnEpicCreated]);
 
     const projectPrefix = project ? project.name.substring(0, project.name.indexOf('-')) : '';
     
@@ -336,7 +338,7 @@ export default function ProjectDetailsPage() {
                             <TooltipProvider>
                                 <Tooltip>
                                     <TooltipTrigger asChild>
-                                        <Button variant="outline" size="icon"><Layers className="h-4 w-4" /></Button>
+                                        <Button variant="outline" size="icon" onClick={() => openNewEpicDialog(projectId)}><Layers className="h-4 w-4" /></Button>
                                     </TooltipTrigger>
                                     <TooltipContent>
                                         <p>Add Epic</p>

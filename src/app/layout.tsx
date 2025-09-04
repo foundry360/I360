@@ -8,6 +8,7 @@ import { NewCompanyDialog } from '@/components/new-company-dialog';
 import { NewContactDialog } from '@/components/new-contact-dialog';
 import { NewProjectDialog } from '@/components/new-project-dialog';
 import { NewBacklogItemDialog } from '@/components/new-backlog-item-dialog';
+import { NewEpicDialog } from '@/components/new-epic-dialog';
 import { UserProvider, useUser } from '@/contexts/user-context';
 import { AssessmentModal } from '@/components/assessment-modal';
 import * as React from 'react';
@@ -88,6 +89,7 @@ export default function RootLayout({
                 <NewContactDialog />
                 <NewProjectDialog />
                 <NewBacklogItemDialog />
+                <NewEpicDialog />
                 <AssessmentModal 
                   // These props are managed by the QuickActionProvider now
                 />

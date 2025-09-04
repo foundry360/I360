@@ -15,6 +15,17 @@ export interface Epic {
 
 const epicsCollection = collection(db, 'epics');
 
+async function getNextEpicId(projectId: string): Promise<number> {
+    const q = query(epicsCollection, where("projectId", "==", projectId));
+    const snapshot = await getDocs(q);
+    if (snapshot.empty) {
+        return 1;
+    }
+    const existingIds = snapshot.docs.map(d => (d.data() as Epic).epicId);
+    return Math.max(...existingIds) + 1;
+}
+
+
 export async function getEpicsForProject(projectId: string): Promise<Epic[]> {
     try {
         const q = query(epicsCollection, where("projectId", "==", projectId));
@@ -26,9 +37,10 @@ export async function getEpicsForProject(projectId: string): Promise<Epic[]> {
     }
 }
 
-export async function createEpic(epicData: Omit<Epic, 'id'>): Promise<string> {
+export async function createEpic(epicData: Omit<Epic, 'id' | 'epicId'>): Promise<string> {
     const docRef = await addDoc(epicsCollection, {});
-    const newEpic = { ...epicData, id: docRef.id };
+    const nextId = await getNextEpicId(epicData.projectId);
+    const newEpic = { ...epicData, id: docRef.id, epicId: nextId };
     await setDoc(docRef, newEpic);
     return docRef.id;
 }
