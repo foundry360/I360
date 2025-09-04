@@ -20,35 +20,11 @@ import { cn } from '@/lib/utils';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { DragDropContext, Droppable, Draggable, type DropResult } from '@hello-pangea/dnd';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { getProject, Project } from '@/services/project-service';
+import { getTasksForProject, updateTaskOrderAndStatus, Task, TaskStatus } from '@/services/task-service';
+import { Skeleton } from '@/components/ui/skeleton';
 
-
-type TaskStatus = 'To Do' | 'In Progress' | 'In Review' | 'Needs Revisions' | 'Final Approval' | 'Complete';
-type TaskPriority = 'Low' | 'Medium' | 'High';
-type TaskType = 'Assessment' | 'Workshop' | 'Enablement' | 'Planning' | 'Execution' | 'Review';
-
-type Task = {
-  id: string;
-  title: string;
-  status: TaskStatus;
-  owner: string;
-  ownerAvatarUrl: string;
-  priority: TaskPriority;
-  type: TaskType;
-};
-
-const initialTasks: Task[] = [
-    { id: 'task-1', title: 'Setup project repository', status: 'Complete', owner: 'John Doe', ownerAvatarUrl: 'https://i.pravatar.cc/150?u=a042581f4e29026024d', priority: 'High', type: 'Planning' },
-    { id: 'task-2', title: 'Design database schema', status: 'Complete', owner: 'Jane Smith', ownerAvatarUrl: 'https://i.pravatar.cc/150?u=a042581f4e29026704d', priority: 'High', type: 'Planning' },
-    { id: 'task-3', title: 'Develop authentication flow', status: 'Final Approval', owner: 'John Doe', ownerAvatarUrl: 'https://i.pravatar.cc/150?u=a042581f4e29026024d', priority: 'Medium', type: 'Execution' },
-    { id: 'task-4', title: 'Build main dashboard UI', status: 'In Progress', owner: 'Mike Johnson', ownerAvatarUrl: 'https://i.pravatar.cc/150?u=a04258114e29026702d', priority: 'High', type: 'Execution' },
-    { id: 'task-8', title: 'Fix login button style', status: 'Needs Revisions', owner: 'Jane Smith', ownerAvatarUrl: 'https://i.pravatar.cc/150?u=a042581f4e29026704d', priority: 'Low', type: 'Review' },
-    { id: 'task-5', title: 'Implement assessment generation logic', status: 'To Do', owner: 'Mike Johnson', ownerAvatarUrl: 'https://i.pravatar.cc/150?u=a04258114e29026702d', priority: 'High', type: 'Assessment' },
-    { id: 'task-6', title: 'Write unit tests for services', status: 'To Do', owner: 'John Doe', ownerAvatarUrl: 'https://i.pravatar.cc/150?u=a042581f4e29026024d', priority: 'Medium', type: 'Execution' },
-    { id: 'task-7', title: 'Configure deployment pipeline', status: 'To Do', owner: 'Emily White', ownerAvatarUrl: 'https://i.pravatar.cc/150?u=a042581f4e29026704e', priority: 'Low', type: 'Enablement' },
-    { id: 'task-9', title: 'Client Workshop Prep', status: 'In Progress', owner: 'Emily White', ownerAvatarUrl: 'https://i.pravatar.cc/150?u=a042581f4e29026704e', priority: 'Medium', type: 'Workshop' },
-    { id: 'task-10', title: 'Q3 Planning Session', status: 'To Do', owner: 'Jane Smith', ownerAvatarUrl: 'https://i.pravatar.cc/150?u=a042581f4e29026704d', priority: 'High', type: 'Planning' },
-    { id: 'task-11', title: 'Review API endpoints', status: 'In Review', owner: 'Mike Johnson', ownerAvatarUrl: 'https://i.pravatar.cc/150?u=a04258114e29026702d', priority: 'Medium', type: 'Review'},
-];
+type TaskType = Task['type'];
 
 const taskTypeIcons: Record<TaskType, React.ElementType> = {
     Assessment: ClipboardList,
@@ -80,13 +56,13 @@ const TaskTypeIcon = ({ type }: { type: TaskType }) => {
 };
 
 
-const priorityContainerColors: Record<TaskPriority, string> = {
+const priorityContainerColors: Record<Task['priority'], string> = {
     High: 'bg-red-500',
     Medium: 'bg-yellow-500',
     Low: 'bg-green-500',
 }
 
-const PriorityIcon = ({ priority }: { priority: TaskPriority }) => {
+const PriorityIcon = ({ priority }: { priority: Task['priority'] }) => {
     const colorClass = priorityContainerColors[priority];
     const chevronCount = priority === 'High' ? 3 : priority === 'Medium' ? 2 : 1;
 
@@ -146,7 +122,7 @@ const TaskCard = ({ task, taskNumber }: { task: Task; taskNumber: string }) => {
     );
 };
 
-const BoardColumn = ({ title, tasks, projectPrefix }: { title: string; tasks: Task[]; projectPrefix: string; }) => (
+const BoardColumn = ({ title, tasks, projectPrefix, allTasks }: { title: string; tasks: Task[]; projectPrefix: string; allTasks: Task[]}) => (
     <div className="flex-1">
         <Card className="bg-muted border-none shadow-none">
             <CardHeader className="p-4">
@@ -154,7 +130,7 @@ const BoardColumn = ({ title, tasks, projectPrefix }: { title: string; tasks: Ta
             </CardHeader>
             <Droppable droppableId={title}>
                 {(provided, snapshot) => (
-                    <CardContent 
+                    <CardContent
                         ref={provided.innerRef}
                         {...provided.droppableProps}
                         className={cn(
@@ -163,7 +139,7 @@ const BoardColumn = ({ title, tasks, projectPrefix }: { title: string; tasks: Ta
                         )}
                     >
                         {tasks.map((task, index) => {
-                            const originalIndex = initialTasks.findIndex(t => t.id === task.id);
+                            const originalIndex = allTasks.findIndex(t => t.id === task.id);
                             return (
                                 <Draggable key={task.id} draggableId={task.id} index={index}>
                                     {(provided) => (
@@ -172,7 +148,7 @@ const BoardColumn = ({ title, tasks, projectPrefix }: { title: string; tasks: Ta
                                             {...provided.draggableProps}
                                             {...provided.dragHandleProps}
                                         >
-                                            <TaskCard task={task} taskNumber={`${projectPrefix}-${100 + originalIndex}`} />
+                                            <TaskCard task={task} taskNumber={`${projectPrefix}-${101 + originalIndex}`} />
                                         </div>
                                     )}
                                 </Draggable>
@@ -191,49 +167,100 @@ export default function ProjectDetailsPage() {
     const params = useParams();
     const router = useRouter();
     const projectId = params.projectId as string;
-    const [tasks, setTasks] = React.useState(initialTasks);
+    const [project, setProject] = React.useState<Project | null>(null);
+    const [tasks, setTasks] = React.useState<Task[]>([]);
+    const [loading, setLoading] = React.useState(true);
+    
+    React.useEffect(() => {
+        const fetchData = async () => {
+            if (!projectId) return;
+            setLoading(true);
+            try {
+                const [projectData, tasksData] = await Promise.all([
+                    getProject(projectId),
+                    getTasksForProject(projectId)
+                ]);
+                setProject(projectData);
+                setTasks(tasksData.sort((a, b) => a.order - b.order));
+            } catch (error) {
+                console.error("Failed to fetch project data:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchData();
+    }, [projectId]);
 
-    // In a real app, you would fetch project details here
-    const project = { name: 'New Initiative' }; 
-    const projectPrefix = project.name.substring(0, 2).toUpperCase();
+    const projectPrefix = project ? project.name.substring(0, project.name.indexOf('-')) : '';
     
     const columns: TaskStatus[] = ['To Do', 'In Progress', 'In Review', 'Needs Revisions', 'Final Approval', 'Complete'];
 
-    const onDragEnd = (result: DropResult) => {
-        const { source, destination } = result;
+    const onDragEnd = async (result: DropResult) => {
+        const { source, destination, draggableId } = result;
 
-        // Dropped outside the list
-        if (!destination) {
-            return;
-        }
+        if (!destination) return;
 
         const sourceCol = source.droppableId as TaskStatus;
         const destCol = destination.droppableId as TaskStatus;
 
-        const draggedTask = tasks.find(task => task.id === result.draggableId);
-
-        if (!draggedTask) return;
-
-        // Reordering within the same column
+        if (sourceCol === destCol && source.index === destination.index) return;
+        
+        // Optimistic UI Update
+        const taskToMove = tasks.find(t => t.id === draggableId)!;
+        const remainingTasks = tasks.filter(t => t.id !== draggableId);
+        
+        let newTasks = [...remainingTasks];
         if (sourceCol === destCol) {
-            const items = Array.from(tasks.filter(t => t.status === sourceCol));
-            const [reorderedItem] = items.splice(source.index, 1);
-            items.splice(destination.index, 0, reorderedItem);
-
+            // Reordering in the same column
+            const columnTasks = tasks.filter(t => t.status === sourceCol).filter(t => t.id !== draggableId);
+            columnTasks.splice(destination.index, 0, taskToMove);
             const otherTasks = tasks.filter(t => t.status !== sourceCol);
-            setTasks([...otherTasks, ...items]);
-
-        } else {
-            // Moving to a different column
-            const updatedTask = { ...draggedTask, status: destCol };
             
-            const newTasks = tasks.map(task => 
-                task.id === updatedTask.id ? updatedTask : task
-            );
+            const updatedColumnTasks = columnTasks.map((task, index) => ({...task, order: index}));
+            newTasks = [...otherTasks, ...updatedColumnTasks];
+        } else {
+             // Moving to a different column
+            taskToMove.status = destCol;
+            const destColumnTasks = tasks.filter(t => t.status === destCol);
+            destColumnTasks.splice(destination.index, 0, taskToMove);
+            const sourceColumnTasks = tasks.filter(t => t.status === sourceCol && t.id !== draggableId);
+            const otherTasks = tasks.filter(t => t.status !== sourceCol && t.status !== destCol);
 
-            setTasks(newTasks);
+            const updatedDestTasks = destColumnTasks.map((task, index) => ({...task, order: index, status: destCol}));
+            const updatedSourceTasks = sourceColumnTasks.map((task, index) => ({...task, order: index}));
+            newTasks = [...otherTasks, ...updatedDestTasks, ...updatedSourceTasks];
+        }
+        
+        setTasks(newTasks.sort((a, b) => a.order - b.order));
+        
+        // Persist changes to Firestore
+        try {
+            await updateTaskOrderAndStatus(draggableId, destCol, destination.index, projectId);
+        } catch (error) {
+            console.error("Failed to update task:", error);
+            // Revert optimistic update on failure
+            setTasks(tasks); 
         }
     };
+    
+    if (loading) {
+        return (
+             <div className="space-y-4">
+                <Skeleton className="h-10 w-1/4" />
+                <Skeleton className="h-6 w-1/2" />
+                <div className="flex gap-6">
+                    <Skeleton className="h-[600px] flex-1" />
+                    <Skeleton className="h-[600px] flex-1" />
+                    <Skeleton className="h-[600px] flex-1" />
+                    <Skeleton className="h-[600px] flex-1" />
+                </div>
+            </div>
+        )
+    }
+
+    if (!project) {
+        return <p>Project not found.</p>
+    }
 
     return (
         <div className="flex flex-col h-full">
@@ -291,8 +318,9 @@ export default function ProjectDetailsPage() {
                                     <BoardColumn 
                                         key={status}
                                         title={status}
-                                        tasks={tasks.filter(t => t.status === status)}
+                                        tasks={tasks.filter(t => t.status === status).sort((a, b) => a.order - b.order)}
                                         projectPrefix={projectPrefix}
+                                        allTasks={tasks}
                                     />
                             ))}
                             </div>
@@ -309,5 +337,3 @@ export default function ProjectDetailsPage() {
         </div>
     );
 }
-
-    

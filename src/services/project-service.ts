@@ -1,7 +1,7 @@
 
 'use client';
 import { db } from '@/lib/firebase';
-import { collection, doc, getDocs, setDoc, addDoc, writeBatch, deleteDoc, query, where } from 'firebase/firestore';
+import { collection, doc, getDocs, setDoc, addDoc, writeBatch, deleteDoc, query, where, getDoc } from 'firebase/firestore';
 import type { Company } from './company-service';
 
 export interface Project {
@@ -40,6 +40,22 @@ export async function getProjects(): Promise<Project[]> {
     } catch (error) {
         console.error("Error fetching projects:", error);
         return [];
+    }
+}
+
+export async function getProject(id: string): Promise<Project | null> {
+    try {
+        const docRef = doc(db, 'projects', id);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+            return docSnap.data() as Project;
+        } else {
+            console.warn(`Project with id ${id} not found.`);
+            return null;
+        }
+    } catch (error) {
+        console.error("Error fetching project: ", error);
+        return null;
     }
 }
 

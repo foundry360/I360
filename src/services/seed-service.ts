@@ -2,11 +2,28 @@
 'use client';
 
 import { db } from '@/lib/firebase';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, writeBatch, collection } from 'firebase/firestore';
 import type { Company } from './company-service';
 import type { Contact } from './contact-service';
+import type { Task, TaskStatus, TaskType, TaskPriority } from './task-service';
 
 const ACME_INC_ID = 'acme-inc';
+
+const initialTasks: {
+    id: string; title: string; status: TaskStatus; owner: string; ownerAvatarUrl: string; priority: TaskPriority; type: TaskType; order: number; projectId: string;
+}[] = [
+    { id: 'task-1', title: 'Setup project repository', status: 'Complete', owner: 'John Doe', ownerAvatarUrl: 'https://i.pravatar.cc/150?u=a042581f4e29026024d', priority: 'High', type: 'Planning', order: 0, projectId: 'acme-inc-project' },
+    { id: 'task-2', title: 'Design database schema', status: 'Complete', owner: 'Jane Smith', ownerAvatarUrl: 'https://i.pravatar.cc/150?u=a042581f4e29026704d', priority: 'High', type: 'Planning', order: 1, projectId: 'acme-inc-project' },
+    { id: 'task-3', title: 'Develop authentication flow', status: 'Final Approval', owner: 'John Doe', ownerAvatarUrl: 'https://i.pravatar.cc/150?u=a042581f4e29026024d', priority: 'Medium', type: 'Execution', order: 0, projectId: 'acme-inc-project' },
+    { id: 'task-4', title: 'Build main dashboard UI', status: 'In Progress', owner: 'Mike Johnson', ownerAvatarUrl: 'https://i.pravatar.cc/150?u=a04258114e29026702d', priority: 'High', type: 'Execution', order: 0, projectId: 'acme-inc-project' },
+    { id: 'task-8', title: 'Fix login button style', status: 'Needs Revisions', owner: 'Jane Smith', ownerAvatarUrl: 'https://i.pravatar.cc/150?u=a042581f4e29026704d', priority: 'Low', type: 'Review', order: 0, projectId: 'acme-inc-project' },
+    { id: 'task-5', title: 'Implement assessment generation logic', status: 'To Do', owner: 'Mike Johnson', ownerAvatarUrl: 'https://i.pravatar.cc/150?u=a04258114e29026702d', priority: 'High', type: 'Assessment', order: 0, projectId: 'acme-inc-project' },
+    { id: 'task-6', title: 'Write unit tests for services', status: 'To Do', owner: 'John Doe', ownerAvatarUrl: 'https://i.pravatar.cc/150?u=a042581f4e29026024d', priority: 'Medium', type: 'Execution', order: 1, projectId: 'acme-inc-project' },
+    { id: 'task-7', title: 'Configure deployment pipeline', status: 'To Do', owner: 'Emily White', ownerAvatarUrl: 'https://i.pravatar.cc/150?u=a042581f4e29026704e', priority: 'Low', type: 'Enablement', order: 2, projectId: 'acme-inc-project' },
+    { id: 'task-9', title: 'Client Workshop Prep', status: 'In Progress', owner: 'Emily White', ownerAvatarUrl: 'https://i.pravatar.cc/150?u=a042581f4e29026704e', priority: 'Medium', type: 'Workshop', order: 1, projectId: 'acme-inc-project' },
+    { id: 'task-10', title: 'Q3 Planning Session', status: 'To Do', owner: 'Jane Smith', ownerAvatarUrl: 'https://i.pravatar.cc/150?u=a042581f4e29026704d', priority: 'High', type: 'Planning', order: 3, projectId: 'acme-inc-project' },
+    { id: 'task-11', title: 'Review API endpoints', status: 'In Review', owner: 'Mike Johnson', ownerAvatarUrl: 'https://i.pravatar.cc/150?u=a04258114e29026702d', priority: 'Medium', type: 'Review', order: 0, projectId: 'acme-inc-project'},
+];
 
 export const seedInitialData = async () => {
     const companyDocRef = doc(db, 'companies', ACME_INC_ID);
@@ -51,17 +68,47 @@ export const seedInitialData = async () => {
             lastActivity: new Date().toISOString(),
             avatar: `https://i.pravatar.cc/150?u=beep.beep@acme.inc`
         };
+        
+        const acmeProject = {
+            id: 'acme-inc-project',
+            name: 'ACME-01012024-Default Project',
+            description: 'Default seed project for Acme Inc.',
+            companyId: ACME_INC_ID,
+            status: 'Active' as const,
+            priority: 'High' as const,
+            startDate: new Date().toISOString(),
+            owner: 'Wile E. Coyote',
+            team: 'Wile E. Coyote, Road Runner',
+            category: 'Execution' as const,
+        }
 
         try {
-            await setDoc(companyDocRef, acmeCompany);
+            const batch = writeBatch(db);
+
+            // Set Company
+            batch.set(companyDocRef, acmeCompany);
             
+            // Set Contacts
             const contact1Ref = doc(db, 'contacts', 'wile-e-coyote');
-            await setDoc(contact1Ref, { ...wileContact, id: 'wile-e-coyote' });
+            batch.set(contact1Ref, { ...wileContact, id: 'wile-e-coyote' });
 
             const contact2Ref = doc(db, 'contacts', 'road-runner');
-            await setDoc(contact2Ref, { ...roadRunnerContact, id: 'road-runner' });
+            batch.set(contact2Ref, { ...roadRunnerContact, id: 'road-runner' });
+
+            // Set Project
+            const projectRef = doc(db, 'projects', 'acme-inc-project');
+            batch.set(projectRef, acmeProject);
+
+            // Set Tasks
+            const tasksCollectionRef = collection(db, 'tasks');
+            initialTasks.forEach(task => {
+                const taskRef = doc(tasksCollectionRef, task.id);
+                batch.set(taskRef, task);
+            });
             
-            console.log("Successfully seeded 'Acme Inc' and contacts.");
+            await batch.commit();
+
+            console.log("Successfully seeded 'Acme Inc', contacts, project, and tasks.");
         } catch (error) {
             console.error("Error seeding data: ", error);
         }
