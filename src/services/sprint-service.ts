@@ -44,32 +44,37 @@ export async function createSprint(sprintData: Omit<Sprint, 'id'>): Promise<stri
 
 export async function startSprint(sprintId: string, projectId: string, sprintItems: BacklogItem[], existingTasks: Task[]): Promise<void> {
     const batch = writeBatch(db);
-
-    // 1. Update the sprint status
     const sprintRef = doc(db, 'sprints', sprintId);
-    batch.update(sprintRef, { status: 'Active' });
 
-    // 2. Create a task for each backlog item that doesn't already have one
-    sprintItems.forEach((item, index) => {
-        const taskExists = existingTasks.some(task => task.backlogId === item.backlogId);
-        if (!taskExists) {
-            const taskRef = doc(collection(db, 'tasks'));
-            const newTask: Task = {
-                id: taskRef.id,
-                projectId: projectId,
-                title: item.title,
-                status: 'To Do',
-                order: index, // This might need refinement to place at the end of the To Do list
-                owner: item.owner || 'Unassigned',
-                ownerAvatarUrl: item.ownerAvatarUrl || '',
-                priority: item.priority,
-                type: 'Execution', // Default type, can be adjusted
-                backlogId: item.backlogId,
-                dueDate: item.dueDate
-            };
-            batch.set(taskRef, newTask);
-        }
+    // 1. Clean slate: Delete existing tasks for these backlog items to avoid orphans/duplicates
+    const sprintItemBacklogIds = sprintItems.map(item => item.backlogId);
+    const tasksToDelete = existingTasks.filter(task => task.backlogId && sprintItemBacklogIds.includes(task.backlogId));
+    tasksToDelete.forEach(task => {
+        const taskRef = doc(db, 'tasks', task.id);
+        batch.delete(taskRef);
     });
+
+    // 2. Create a fresh task for every item in the sprint
+    sprintItems.forEach((item, index) => {
+        const taskRef = doc(collection(db, 'tasks')); // Create new ref
+        const newTask: Task = {
+            id: taskRef.id,
+            projectId: projectId,
+            title: item.title,
+            status: 'To Do',
+            order: index, // Position in the "To Do" column
+            owner: item.owner || 'Unassigned',
+            ownerAvatarUrl: item.ownerAvatarUrl || '',
+            priority: item.priority,
+            type: 'Execution', // Default type, can be adjusted
+            backlogId: item.backlogId,
+            dueDate: item.dueDate
+        };
+        batch.set(taskRef, newTask);
+    });
+
+    // 3. Update the sprint status to Active
+    batch.update(sprintRef, { status: 'Active' });
 
     await batch.commit();
     await updateProjectLastActivity(projectId);
