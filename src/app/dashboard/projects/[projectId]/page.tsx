@@ -522,16 +522,13 @@ export default function ProjectDetailsPage() {
             .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
     
         return completedSprints.slice(-5).map(sprint => {
-            const itemsInSprint = backlogItems.filter(item => {
+            const itemsInSprint = backlogItems.filter(item => item.sprintId === sprint.id);
+            const completedItemsInSprint = itemsInSprint.filter(item => {
                 const task = tasks.find(t => t.backlogId === item.backlogId);
-                if (!task) return false;
-                // Check if the task was completed within the sprint dates
-                // This part is tricky if task completion dates aren't stored.
-                // Assuming if a task is 'Complete' and its item was in a 'Completed' sprint, it counts.
-                return item.sprintId === sprint.id && task.status === 'Complete';
+                return task?.status === 'Complete';
             });
     
-            const velocity = itemsInSprint.reduce((totalPoints, item) => {
+            const velocity = completedItemsInSprint.reduce((totalPoints, item) => {
                 return totalPoints + (item.points || 0);
             }, 0);
     
@@ -690,7 +687,7 @@ export default function ProjectDetailsPage() {
                                                     tickLine={false}
                                                     axisLine={false}
                                                     tickMargin={8}
-                                                    tickFormatter={(value) => value.split(' ').slice(0,2).join(' ')}
+                                                    tickFormatter={() => ""}
                                                 />
                                                 <YAxis
                                                     tickLine={false}
@@ -1160,6 +1157,7 @@ export default function ProjectDetailsPage() {
 
 
     
+
 
 
 
