@@ -414,7 +414,7 @@ export default function ProjectDetailsPage() {
                     </TabsContent>
                     <TabsContent value="board">
                         <DragDropContext onDragEnd={onDragEnd}>
-                            <div className="flex gap-6 h-full">
+                            <div className="flex gap-6">
                             {columns.map(status => (
                                     <BoardColumn 
                                         key={status}
@@ -437,6 +437,7 @@ export default function ProjectDetailsPage() {
                                         <AccordionItem key={epic.id} value={epic.id}>
                                             <AccordionTrigger>
                                                 <div className="flex items-center gap-3 flex-1">
+                                                    <IconComponent className={cn("h-5 w-5", epicConfig.color)} />
                                                     <Badge variant={epic.status === 'Done' ? 'default' : 'secondary'} className={cn("whitespace-nowrap", epic.status === 'Done' ? 'bg-green-500' : '')}>{epic.status}</Badge>
                                                     <span className="font-semibold">{epic.title}</span>
                                                     <span className="text-muted-foreground text-sm">{projectPrefix}-{epic.epicId}</span>
