@@ -50,6 +50,7 @@ import { format, parseISO } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 
 type TaskType = Task['type'];
+type BoardColumns = Record<TaskStatus, Task[]>;
 
 const taskTypeIcons: Record<TaskType, React.ElementType> = {
     Assessment: ClipboardList,
@@ -169,7 +170,7 @@ const BoardColumn = ({ title, tasks, projectPrefix, allTasks }: { title: string;
                         ref={provided.innerRef}
                         {...provided.droppableProps}
                         className={cn(
-                            "p-4 transition-colors",
+                            "p-4 transition-colors min-h-[300px]",
                             snapshot.isDraggingOver && "bg-primary-light"
                         )}
                     >
@@ -197,13 +198,22 @@ const BoardColumn = ({ title, tasks, projectPrefix, allTasks }: { title: string;
     </div>
 );
 
+const initialColumns: BoardColumns = {
+    'To Do': [],
+    'In Progress': [],
+    'In Review': [],
+    'Needs Revisions': [],
+    'Final Approval': [],
+    'Complete': [],
+};
 
 export default function ProjectDetailsPage() {
     const params = useParams();
     const router = useRouter();
     const projectId = params.projectId as string;
     const [project, setProject] = React.useState<Project | null>(null);
-    const [tasks, setTasks] = React.useState<Task[]>([]);
+    const [allTasks, setAllTasks] = React.useState<Task[]>([]);
+    const [columns, setColumns] = React.useState<BoardColumns>(initialColumns);
     const [epics, setEpics] = React.useState<Epic[]>([]);
     const [backlogItems, setBacklogItems] = React.useState<BacklogItem[]>([]);
     const [sprints, setSprints] = React.useState<Sprint[]>([]);
@@ -232,7 +242,20 @@ export default function ProjectDetailsPage() {
                 getSprintsForProject(projectId),
             ]);
             setProject(projectData);
-            setTasks(tasksData.sort((a, b) => a.order - b.order));
+            
+            const sortedTasks = tasksData.sort((a, b) => a.order - b.order);
+            setAllTasks(sortedTasks);
+            
+            const groupedTasks = sortedTasks.reduce((acc, task) => {
+                const status = task.status;
+                if (!acc[status]) {
+                    acc[status] = [];
+                }
+                acc[status].push(task);
+                return acc;
+            }, { ...initialColumns } as BoardColumns);
+            setColumns(groupedTasks);
+
             setEpics(epicsData);
             setBacklogItems(backlogItemsData);
             setSprints(sprintsData);
@@ -261,55 +284,50 @@ export default function ProjectDetailsPage() {
 
     const projectPrefix = project ? project.name.substring(0, project.name.indexOf('-')) : '';
     
-    const columns: TaskStatus[] = ['To Do', 'In Progress', 'In Review', 'Needs Revisions', 'Final Approval', 'Complete'];
-    
     const onDragEnd = async (result: DropResult) => {
         const { source, destination, draggableId } = result;
 
         if (!destination) return;
         
         const taskId = draggableId;
+        const sourceColId = source.droppableId as TaskStatus;
+        const destColId = destination.droppableId as TaskStatus;
 
-        const sourceCol = source.droppableId as TaskStatus;
-        const destCol = destination.droppableId as TaskStatus;
+        if (sourceColId === destColId && source.index === destination.index) return;
+        
+        const startCol = columns[sourceColId];
+        const finishCol = columns[destColId];
+        
+        const startTasks = Array.from(startCol);
+        const [removed] = startTasks.splice(source.index, 1);
 
-        if (sourceCol === destCol && source.index === destination.index) return;
-        
-        // Optimistic UI Update
-        const taskToMove = tasks.find(t => t.id === taskId)!;
-        const remainingTasks = tasks.filter(t => t.id !== taskId);
-        
-        let newTasks = [...remainingTasks];
-        if (sourceCol === destCol) {
+        if(sourceColId === destColId) {
             // Reordering in the same column
-            const columnTasks = tasks.filter(t => t.status === sourceCol).filter(t => t.id !== taskId);
-            columnTasks.splice(destination.index, 0, taskToMove);
-            const otherTasks = tasks.filter(t => t.status !== sourceCol);
-            
-            const updatedColumnTasks = columnTasks.map((task, index) => ({...task, order: index}));
-            newTasks = [...otherTasks, ...updatedColumnTasks];
+            startTasks.splice(destination.index, 0, removed);
+            const newColumns = {
+                ...columns,
+                [sourceColId]: startTasks,
+            };
+            setColumns(newColumns);
         } else {
-             // Moving to a different column
-            taskToMove.status = destCol;
-            const destColumnTasks = tasks.filter(t => t.status === destCol);
-            destColumnTasks.splice(destination.index, 0, taskToMove);
-            const sourceColumnTasks = tasks.filter(t => t.status === sourceCol && t.id !== taskId);
-            const otherTasks = tasks.filter(t => t.status !== sourceCol && t.status !== destCol);
-
-            const updatedDestTasks = destColumnTasks.map((task, index) => ({...task, order: index, status: destCol}));
-            const updatedSourceTasks = sourceColumnTasks.map((task, index) => ({...task, order: index}));
-            newTasks = [...otherTasks, ...updatedDestTasks, ...updatedSourceTasks];
+            // Moving to a different column
+            const finishTasks = Array.from(finishCol);
+            finishTasks.splice(destination.index, 0, removed);
+            const newColumns = {
+                ...columns,
+                [sourceColId]: startTasks,
+                [destColId]: finishTasks,
+            };
+            setColumns(newColumns);
         }
-        
-        setTasks(newTasks.sort((a, b) => a.order - b.order));
-        
+
         // Persist changes to Firestore
         try {
-            await updateTaskOrderAndStatus(taskId, destCol, destination.index, projectId);
+            await updateTaskOrderAndStatus(taskId, destColId, destination.index, projectId);
         } catch (error) {
             console.error("Failed to update task:", error);
-            // Revert optimistic update on failure
-            setTasks(tasks); 
+            // Revert optimistic update on failure by re-fetching
+            fetchData();
         }
     };
     
@@ -349,6 +367,7 @@ export default function ProjectDetailsPage() {
                     title: 'Cannot Start Empty Sprint',
                     description: 'Add items to the sprint before starting it.',
                 });
+                setLoading(false);
                 return;
             }
             await startSprint(sprintId, projectId, sprintItems);
@@ -484,13 +503,13 @@ export default function ProjectDetailsPage() {
                     <TabsContent value="board">
                         <DragDropContext onDragEnd={onDragEnd}>
                             <div className="flex gap-6">
-                            {columns.map(status => (
+                            {Object.entries(columns).map(([status, tasks]) => (
                                     <BoardColumn 
                                         key={status}
                                         title={status}
-                                        tasks={tasks.filter(t => t.status === status).sort((a, b) => a.order - b.order)}
+                                        tasks={tasks}
                                         projectPrefix={projectPrefix}
-                                        allTasks={tasks}
+                                        allTasks={allTasks}
                                     />
                             ))}
                             </div>
@@ -724,3 +743,5 @@ export default function ProjectDetailsPage() {
     );
 }
 
+
+    
