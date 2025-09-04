@@ -173,7 +173,7 @@ const BoardColumn = ({ title, tasks, projectPrefix, onTaskClick }: { title: stri
                         {...provided.droppableProps}
                         className={cn(
                             "p-4 transition-colors min-h-[300px]",
-                            snapshot.isDraggingOver && "bg-primary-light"
+                            snapshot.isDraggingOver && "bg-muted/50"
                         )}
                     >
                         {tasks.map((task, index) => {
@@ -609,7 +609,7 @@ export default function ProjectDetailsPage() {
                                                             </DropdownMenuTrigger>
                                                             <DropdownMenuContent align="end">
                                                                 <DropdownMenuItem onSelect={() => openEditEpicDialog(epic)}><Pencil className="mr-2 h-4 w-4" />Edit</DropdownMenuItem>
-                                                                <DropdownMenuItem onSelect={() => { setItemToDelete({type: 'epic', id: epic.id, name: epic.title}); setIsDeleteDialogOpen(true);}} className="text-destructive"><Trash2 className="mr-2 h-4 w-4" />Delete</DropdownMenuItem>
+                                                                <DropdownMenuItem onSelect={(e) => { e.stopPropagation(); setItemToDelete({type: 'epic', id: epic.id, name: epic.title}); setIsDeleteDialogOpen(true);}} className="text-destructive"><Trash2 className="mr-2 h-4 w-4" />Delete</DropdownMenuItem>
                                                             </DropdownMenuContent>
                                                         </DropdownMenu>
                                                     </div>
