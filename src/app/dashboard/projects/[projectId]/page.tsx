@@ -602,7 +602,38 @@ export default function ProjectDetailsPage() {
 
                 <div className="flex-1 overflow-y-auto pt-6">
                     <TabsContent value="summary">
-                       <p>Summary View - Under Construction</p>
+                       <div className="grid grid-cols-10 gap-6">
+                            <div className="col-span-3">
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle>Column 1</CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <p>30% width placeholder.</p>
+                                    </CardContent>
+                                </Card>
+                            </div>
+                            <div className="col-span-4">
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle>Column 2</CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <p>40% width placeholder.</p>
+                                    </CardContent>
+                                </Card>
+                            </div>
+                            <div className="col-span-3">
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle>Column 3</CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <p>30% width placeholder.</p>
+                                    </CardContent>
+                                </Card>
+                            </div>
+                       </div>
                     </TabsContent>
                     <TabsContent value="board">
                         <DragDropContext onDragEnd={onDragEnd}>
