@@ -529,20 +529,18 @@ export default function ProjectDetailsPage() {
         const completedSprints = sprints.filter(s => s.status === 'Completed').sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
         
         return completedSprints.map(sprint => {
-            const itemsInSprint = backlogItems.filter(item => item.sprintId === sprint.id);
-            const backlogIdsInSprint = itemsInSprint.map(item => item.backlogId);
-            
-            const completedTasksInSprint = tasks.filter(task => 
-                task.status === 'Complete' && 
-                task.backlogId && 
-                backlogIdsInSprint.includes(task.backlogId)
-            );
+            const itemsInSprint = backlogItems.filter(item => {
+                const task = tasks.find(t => t.backlogId === item.backlogId);
+                if (!task) return false;
 
-            const completedBacklogIds = completedTasksInSprint.map(task => task.backlogId);
+                const taskCompletionDate = task.status === 'Complete' ? new Date() : null; // This is an approximation. We need a 'completedAt' field on tasks for accuracy.
+                const sprintStartDate = parseISO(sprint.startDate);
+                const sprintEndDate = parseISO(sprint.endDate);
+
+                return task.status === 'Complete' && taskCompletionDate && taskCompletionDate >= sprintStartDate && taskCompletionDate <= sprintEndDate;
+            });
             
-            const pointsThisSprint = itemsInSprint
-                .filter(item => completedBacklogIds.includes(item.backlogId))
-                .reduce((acc, item) => acc + (item.points || 0), 0);
+            const pointsThisSprint = itemsInSprint.reduce((acc, item) => acc + (item.points || 0), 0);
 
             return {
                 name: sprint.name,
@@ -606,7 +604,7 @@ export default function ProjectDetailsPage() {
     }
 
     if (!project) {
-        return <p>Project not found.</p>
+        return <p>Project not found.</p>;
     }
 
     const activeSprint = sprints.find(s => s.status === 'Active');
@@ -729,7 +727,7 @@ export default function ProjectDetailsPage() {
                                         <ChartContainer config={chartConfig} className="h-[150px] w-full">
                                             <LineChart
                                                 data={velocityData}
-                                                margin={{ top: 5, right: 20, left: -20, bottom: 5 }}
+                                                margin={{ top: 5, right: 20, left: 0, bottom: 5 }}
                                             >
                                                 <CartesianGrid vertical={false} />
                                                 <XAxis
@@ -743,7 +741,7 @@ export default function ProjectDetailsPage() {
                                                     tickLine={false}
                                                     axisLine={false}
                                                     tickMargin={8}
-                                                    width={20}
+                                                    width={30}
                                                 />
                                                 <RechartsTooltip cursor={false} content={<ChartTooltipContent indicator="line" />} />
                                                 <defs>
@@ -1178,7 +1176,7 @@ export default function ProjectDetailsPage() {
                                                             <IconComponent className={cn("h-4 w-4", epicConfig.color)} />
                                                         </TooltipTrigger>
                                                         <TooltipContent>
-                                                            <p>Epic: {epic?.title || 'Unknown'</p>
+                                                            <p>Epic: {epic?.title || 'Unknown'}</p>
                                                         </TooltipContent>
                                                     </Tooltip>
                                                 </TooltipProvider>
@@ -1233,33 +1231,5 @@ export default function ProjectDetailsPage() {
         </div>
     );
 }
-
-
-
-    
-
-    
-
-
-
-
-
-
-
-
-
-
-
-
-
-    
-
-
-
-
-
-
-
-
 
     
