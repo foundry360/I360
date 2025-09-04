@@ -24,7 +24,6 @@ import { createProject } from '@/services/project-service';
 import { getCompanies, type Company } from '@/services/company-service';
 import { useQuickAction } from '@/contexts/quick-action-context';
 import { useUser } from '@/contexts/user-context';
-import { format } from 'date-fns';
 
 const initialNewProjectState = {
   name: '',
@@ -75,8 +74,7 @@ export function NewProjectDialog() {
       }
       
       const companyPrefix = company.name.substring(0, 4).toUpperCase();
-      const formattedDate = format(new Date(newProject.startDate), 'MMddyyyy');
-      const formattedName = `${companyPrefix}-${formattedDate}-${newProject.name}`;
+      const formattedName = `${companyPrefix}-${newProject.name}`;
 
       const projectToCreate = {
         ...newProject,
