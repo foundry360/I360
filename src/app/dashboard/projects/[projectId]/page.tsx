@@ -176,7 +176,7 @@ const BoardColumn = ({ title, tasks, projectPrefix, allTasks }: { title: string;
                         {tasks.map((task, index) => {
                             const originalIndex = allTasks.findIndex(t => t.id === task.id);
                             return (
-                                <Draggable key={`${task.id}-${task.status}`} draggableId={`${task.id}-${task.status}`} index={index}>
+                                <Draggable key={task.id} draggableId={`${task.id}-${task.status}`} index={index}>
                                     {(provided) => (
                                         <div
                                             ref={provided.innerRef}
@@ -611,20 +611,20 @@ export default function ProjectDetailsPage() {
                                 return (
                                 <div key={status}>
                                     <h2 className="text-lg font-semibold mb-2">{status === 'Not Started' ? 'Upcoming Sprints' : `${status} Sprints`}</h2>
-                                    <Accordion type="single" collapsible className="w-full space-y-4">
+                                    <Accordion type="single" className="w-full space-y-4">
                                         {sprintsByStatus.map(sprint => {
                                             const itemsInSprint = backlogItems.filter(item => item.sprintId === sprint.id);
                                             return (
                                                 <AccordionItem key={sprint.id} value={sprint.id} className="border rounded-lg bg-card">
                                                     <div className="flex items-center p-4">
                                                         <AccordionTrigger className="flex-1 p-0 hover:no-underline [&>svg]:hidden">
-                                                          <div className="flex items-center gap-4">
-                                                              <h3 className="font-semibold text-base">{sprint.name}</h3>
-                                                              <p className="text-sm text-muted-foreground">
-                                                                  {format(parseISO(sprint.startDate), 'MMM d')} - {format(parseISO(sprint.endDate), 'MMM d, yyyy')}
-                                                              </p>
-                                                              <Badge variant={sprint.status === 'Active' ? 'default' : 'secondary'} className={sprint.status === 'Active' ? 'bg-green-500' : ''}>{sprint.status}</Badge>
-                                                          </div>
+                                                            <div className="flex items-center gap-4">
+                                                                <h3 className="font-semibold text-base">{sprint.name}</h3>
+                                                                <p className="text-sm text-muted-foreground">
+                                                                    {format(parseISO(sprint.startDate), 'MMM d')} - {format(parseISO(sprint.endDate), 'MMM d, yyyy')}
+                                                                </p>
+                                                                <Badge variant={sprint.status === 'Active' ? 'default' : 'secondary'} className={sprint.status === 'Active' ? 'bg-green-500' : ''}>{sprint.status}</Badge>
+                                                            </div>
                                                         </AccordionTrigger>
                                                         <div className="flex items-center gap-2 ml-auto">
                                                             <DropdownMenu>
