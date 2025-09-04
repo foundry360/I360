@@ -66,11 +66,12 @@ export async function updateTaskStatus(id: string, status: TaskStatus): Promise<
 }
 
 export async function updateTaskOrderAndStatus(taskId: string, newStatus: TaskStatus, newIndex: number, projectId: string): Promise<void> {
-    await runTransaction(db, async (transaction) => {
-        const tasksQuery = query(tasksCollection, where("projectId", "==", projectId));
-        const tasksSnapshot = await transaction.get(tasksQuery);
-        const tasks = tasksSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Task));
+    // First, fetch all tasks for the project outside the transaction.
+    const tasksQuery = query(tasksCollection, where("projectId", "==", projectId));
+    const tasksSnapshot = await getDocs(tasksQuery);
+    const tasks = tasksSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Task));
 
+    await runTransaction(db, async (transaction) => {
         const taskToMove = tasks.find(t => t.id === taskId);
         if (!taskToMove) throw new Error("Task not found!");
 
@@ -79,7 +80,7 @@ export async function updateTaskOrderAndStatus(taskId: string, newStatus: TaskSt
 
         // Decrement order for tasks in the old column that were after the moved task
         tasks
-            .filter(t => t.status === oldStatus && t.order > oldIndex)
+            .filter(t => t.id !== taskId && t.status === oldStatus && t.order > oldIndex)
             .forEach(t => {
                 const taskRef = doc(db, "tasks", t.id);
                 transaction.update(taskRef, { order: t.order - 1 });
@@ -87,7 +88,7 @@ export async function updateTaskOrderAndStatus(taskId: string, newStatus: TaskSt
 
         // Increment order for tasks in the new column that are at or after the new index
         tasks
-            .filter(t => t.status === newStatus && t.order >= newIndex)
+            .filter(t => t.id !== taskId && t.status === newStatus && t.order >= newIndex)
             .forEach(t => {
                 const taskRef = doc(db, "tasks", t.id);
                 transaction.update(taskRef, { order: t.order + 1 });
@@ -100,7 +101,8 @@ export async function updateTaskOrderAndStatus(taskId: string, newStatus: TaskSt
         // Update the corresponding backlog item's status
         if (taskToMove.backlogId) {
             const backlogQuery = query(collection(db, 'backlogItems'), where("projectId", "==", projectId), where("backlogId", "==", taskToMove.backlogId));
-            const backlogSnapshot = await transaction.get(backlogQuery);
+            const backlogSnapshot = await getDocs(backlogQuery); // Fetch inside transaction is ok if we re-read, but getDocs might not be. Let's fetch outside.
+            
             if (!backlogSnapshot.empty) {
                 const backlogDoc = backlogSnapshot.docs[0];
                 let backlogStatus: BacklogItem['status'] = 'In Progress';
