@@ -53,7 +53,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { TablePagination } from '@/components/table-pagination';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
-import { formatInTimeZone } from 'date-fns-tz';
+import { format, formatDistanceToNow, parseISO } from 'date-fns';
 
 type ActivityItem = {
     activity: string;
@@ -260,11 +260,11 @@ export default function CompanyDetailsPage() {
 
   const formatDate = (isoDate: string) => {
     if (!isoDate) return 'N/A';
-    return formatInTimeZone(isoDate, 'UTC', 'MMM dd, yyyy');
+    return format(parseISO(isoDate), 'MMM dd, yyyy');
   };
 
   const formatDateTime = (date: Date) => {
-    return formatInTimeZone(date, 'UTC', 'MMM dd, yyyy, hh:mm a');
+    return formatDistanceToNow(date, { addSuffix: true });
   }
 
   if (loading && !companyData) {
@@ -702,3 +702,5 @@ export default function CompanyDetailsPage() {
     </>
   );
 }
+
+    

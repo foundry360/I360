@@ -40,9 +40,8 @@ import { cn } from '@/lib/utils';
 import { Checkbox } from '@/components/ui/checkbox';
 import { TablePagination } from '@/components/table-pagination';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { formatInTimeZone } from 'date-fns-tz';
+import { format, formatDistanceToNow, parseISO } from 'date-fns';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { parseISO } from 'date-fns';
 
 type SortKey = keyof Project;
 type ProjectStatus = 'Active' | 'Inactive' | 'Completed' | 'On Hold';
@@ -56,7 +55,7 @@ export default function ProjectsPage() {
   const [selectedProjects, setSelectedProjects] = React.useState<string[]>([]);
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(25);
-  const [sortConfig, setSortConfig] = React.useState<{ key: SortKey; direction: 'ascending' | 'descending' } | null>({ key: 'startDate', direction: 'descending' });
+  const [sortConfig, setSortConfig] = React.useState<{ key: SortKey; direction: 'ascending' | 'descending' } | null>({ key: 'lastActivity', direction: 'descending' });
   const [activeTab, setActiveTab] = React.useState<TabValue>('active');
 
   const { openNewProjectDialog, setOnProjectCreated, openEditProjectDialog, setOnProjectUpdated, globalSearchTerm } = useQuickAction();
@@ -214,7 +213,13 @@ export default function ProjectsPage() {
 
   const formatDate = (isoDate?: string) => {
     if (!isoDate) return 'N/A';
-    return formatInTimeZone(parseISO(isoDate), 'UTC', 'MMM dd, yyyy');
+    try {
+        const date = parseISO(isoDate);
+        return formatDistanceToNow(date, { addSuffix: true });
+    } catch (error) {
+        console.error("Error formatting date:", error);
+        return 'Invalid Date';
+    }
   };
 
   return (
@@ -317,14 +322,6 @@ export default function ProjectsPage() {
                                         </Button>
                                     </TableHead>
                                     <TableHead className="border-t border-r border-b">
-                                        <Button variant="ghost" onClick={() => requestSort('startDate')} className="group w-full p-0 hover:bg-transparent hover:text-muted-foreground">
-                                            <div className="flex justify-between items-center w-full">
-                                                Start Date
-                                                <ArrowUpDown className={cn("h-4 w-4", sortConfig?.key === 'startDate' ? 'opacity-100' : 'opacity-25')} />
-                                            </div>
-                                        </Button>
-                                    </TableHead>
-                                    <TableHead className="border-t border-r border-b">
                                         <Button variant="ghost" onClick={() => requestSort('lastActivity')} className="group w-full p-0 hover:bg-transparent hover:text-muted-foreground">
                                             <div className="flex justify-between items-center w-full">
                                                 Last Updated
@@ -376,9 +373,6 @@ export default function ProjectsPage() {
                                                 </div>
                                             </TableCell>
                                             <TableCell>
-                                                {formatDate(project.startDate)}
-                                            </TableCell>
-                                            <TableCell>
                                                 {formatDate(project.lastActivity)}
                                             </TableCell>
                                             <TableCell className="text-right">
@@ -409,7 +403,7 @@ export default function ProjectsPage() {
                                     ))
                                 ) : (
                                     <TableRow>
-                                        <TableCell colSpan={9} className="h-24 text-center">
+                                        <TableCell colSpan={8} className="h-24 text-center">
                                             No projects found.
                                         </TableCell>
                                     </TableRow>
@@ -456,3 +450,5 @@ export default function ProjectsPage() {
     </>
   );
 }
+
+    
