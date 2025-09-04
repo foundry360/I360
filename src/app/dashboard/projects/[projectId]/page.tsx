@@ -521,25 +521,26 @@ export default function ProjectDetailsPage() {
             .filter(s => s.status === 'Completed')
             .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
     
-        const sprintVelocities = new Map<string, number>();
-    
-        const completedTasks = tasks.filter(t => t.status === 'Complete' && t.backlogId);
-    
-        completedTasks.forEach(task => {
-            const backlogItem = backlogItems.find(item => item.backlogId === task.backlogId);
-            if (backlogItem?.sprintId) {
-                const sprint = sprints.find(s => s.id === backlogItem.sprintId);
-                if (sprint && sprint.status === 'Completed') {
-                    const currentVelocity = sprintVelocities.get(sprint.id) || 0;
-                    sprintVelocities.set(sprint.id, currentVelocity + (backlogItem.points || 0));
-                }
-            }
-        });
-    
         return completedSprints.slice(-5).map(sprint => {
+            const sprintStartDate = parseISO(sprint.startDate);
+            const sprintEndDate = parseISO(sprint.endDate);
+            
+            const completedTasksInSprint = tasks.filter(task => {
+                if (task.status !== 'Complete' || !task.backlogId) return false;
+                const backlogItem = backlogItems.find(item => item.backlogId === task.backlogId);
+                // Heuristic: if a backlog item was ever in this sprint, we can check if it was completed
+                // This is an approximation. A more robust solution would track historical sprint assignments.
+                return backlogItem?.sprintId === sprint.id;
+            });
+    
+            const velocity = completedTasksInSprint.reduce((totalPoints, task) => {
+                const backlogItem = backlogItems.find(item => item.backlogId === task.backlogId);
+                return totalPoints + (backlogItem?.points || 0);
+            }, 0);
+    
             return {
                 name: sprint.name.split(' ').slice(0, 2).join(' '),
-                velocity: sprintVelocities.get(sprint.id) || 0,
+                velocity: velocity,
             };
         });
     }, [sprints, tasks, backlogItems]);
