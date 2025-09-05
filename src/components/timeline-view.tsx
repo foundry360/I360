@@ -145,17 +145,18 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ items, projectStartD
                                             value={progress} 
                                             className="h-full w-full bg-transparent"
                                             style={{
-                                                backgroundColor: item.type === 'epic' ? 'hsl(126, 68%, 40%, 0.3)' : item.type === 'sprint' ? 'hsl(38, 92%, 55%, 0.3)' : undefined
+                                                backgroundColor: 
+                                                  item.type === 'epic' ? 'hsl(240, 2%, 12%)'
+                                                  : item.type === 'sprint' ? 'hsl(38, 92%, 55%, 0.3)' 
+                                                  : undefined
                                             }}
-                                          >
-                                             <ProgressPrimitive.Indicator
-                                                className="h-full w-full flex-1 transition-all"
-                                                style={{ 
-                                                    transform: `translateX(-${100 - (progress || 0)}%)`,
-                                                    backgroundColor: item.type === 'epic' ? 'hsl(126, 68%, 40%)' : item.type === 'sprint' ? 'hsl(38, 92%, 55%)' : undefined
-                                                }}
-                                             />
-                                          </Progress>
+                                            indicatorClassName={
+                                                cn({
+                                                    'bg-[hsl(126,68%,40%)]': item.type === 'epic',
+                                                    'bg-[hsl(38,92%,55%)]': item.type === 'sprint'
+                                                })
+                                            }
+                                          />
                                           <span className="absolute inset-0 flex items-center justify-center text-xs font-semibold text-primary-foreground mix-blend-difference">
                                               {Math.round(progress)}%
                                           </span>
@@ -232,14 +233,3 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ items, projectStartD
         </div>
     );
 };
-
-// Add this to your component to use the custom progress indicator styling
-const ProgressPrimitive = {
-    Indicator: React.forwardRef<
-        HTMLDivElement,
-        { style: React.CSSProperties, className?: string }
-    >(({ className, style }, ref) => (
-        <div ref={ref} style={style} className={cn("h-full w-full flex-1 bg-primary transition-all", className)} />
-    ))
-};
-ProgressPrimitive.Indicator.displayName = "ProgressIndicator";
