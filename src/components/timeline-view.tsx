@@ -105,7 +105,7 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ items, projectStartD
                                 <TooltipTrigger asChild>
                                     <div
                                         className={cn(
-                                            "h-6 rounded cursor-pointer",
+                                            "h-6 rounded cursor-pointer relative",
                                             item.type === 'epic' && 'bg-primary/70',
                                             item.type === 'sprint' && 'bg-secondary',
                                             item.type === 'item' && 'bg-muted' // Use muted for the background of progress
@@ -117,7 +117,12 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ items, projectStartD
                                         }}
                                     >
                                       {item.type === 'item' && (
-                                        <Progress value={progress} className="h-full w-full bg-transparent" />
+                                        <div className="relative h-full w-full">
+                                            <Progress value={progress} className="h-full w-full bg-transparent" />
+                                            <span className="absolute inset-0 flex items-center justify-center text-xs font-semibold text-primary-foreground mix-blend-difference">
+                                                {progress}%
+                                            </span>
+                                        </div>
                                       )}
                                     </div>
                                 </TooltipTrigger>
