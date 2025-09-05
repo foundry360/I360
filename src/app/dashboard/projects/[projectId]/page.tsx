@@ -1028,9 +1028,9 @@ export default function ProjectDetailsPage() {
                                         <CardTitle>Epic Progress</CardTitle>
                                         <CardDescription>A summary of completion for each engagement epic</CardDescription>
                                     </CardHeader>
-                                    <CardContent className="space-y-4">
+                                    <CardContent>
                                          {epicProgressData.length > 0 ? (
-                                            <Accordion type="multiple" value={activeBacklogAccordion} onValueChange={setActiveBacklogAccordion} className="w-full">
+                                            <Accordion type="multiple" value={activeBacklogAccordion} onValueChange={setActiveBacklogAccordion} className="w-full space-y-2">
                                                 {epicProgressData.map((epic, index) => {
                                                     const epicConfig = epicIcons[epic.name] || { icon: Layers, color: 'text-foreground' };
                                                     const IconComponent = epicConfig.icon;
