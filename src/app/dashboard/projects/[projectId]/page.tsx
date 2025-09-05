@@ -137,10 +137,10 @@ const PriorityIcon = ({ priority }: { priority: Task['priority'] }) => {
     const chevronCount = priority === 'High' ? 3 : priority === 'Medium' ? 2 : 1;
 
     return (
-        <div className={cn("flex items-center justify-center h-6 w-6 rounded-full", colorClass)}>
+        <div className={cn("flex items-center justify-center h-6 w-6 rounded-full bg-primary", colorClass)}>
             <div className="flex flex-col items-center justify-center -space-y-2">
                 {Array.from({ length: chevronCount }).map((_, i) => (
-                    <ChevronUp key={i} className="h-3 w-3 text-white" />
+                    <ChevronUp key={i} className="h-3 w-3 text-primary-foreground" />
                 ))}
             </div>
         </div>
@@ -1048,9 +1048,9 @@ export default function ProjectDetailsPage() {
                                                     const epicConfig = epicIcons[epic.name] || { icon: Layers, color: 'text-foreground' };
                                                     const IconComponent = epicConfig.icon;
                                                     return (
-                                                        <AccordionItem value={epic.id} key={epic.id} className="border-none">
+                                                        <AccordionItem value={epic.id} key={epic.id} className="border-none mb-2">
                                                             <AccordionTrigger 
-                                                                className="space-y-2 p-2 -m-2 rounded-md hover:bg-muted no-underline cursor-pointer mb-2"
+                                                                className="space-y-2 p-2 -m-2 rounded-md hover:bg-muted no-underline cursor-pointer"
                                                                 onClick={(e) => {
                                                                     e.preventDefault();
                                                                     setActiveTab('backlog');
@@ -1541,3 +1541,5 @@ export default function ProjectDetailsPage() {
         </div>
     );
 }
+
+    
