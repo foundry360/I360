@@ -37,7 +37,7 @@ export interface Task {
   priority: TaskPriority;
   type: TaskType;
   backlogId?: number;
-  dueDate?: string;
+  dueDate?: string | null;
 };
 
 const tasksCollection = collection(db, 'tasks');
@@ -57,28 +57,13 @@ export async function createTask(taskData: Omit<Task, 'id'>): Promise<string> {
   const docRef = await addDoc(tasksCollection, {});
   const newTask: Task = { 
     ...taskData, 
-    id: docRef.id,
-    dueDate: taskData.dueDate || undefined
+    id: docRef.id
   };
 
-  // Right before your setDoc() call, add this:
-  console.log('=== DEBUGGING FIREBASE DATA ===');
-  console.log('Full data object:', JSON.stringify(newTask, null, 2));
-  console.log('dueDate specifically:', newTask.dueDate);
-  console.log('dueDate type:', typeof newTask.dueDate);
-  console.log('Is dueDate undefined?', newTask.dueDate === undefined);
-
-  // Check for nested undefined values
-  Object.entries(newTask).forEach(([key, value]) => {
-    if (value === undefined) {
-      console.error(`❌ FOUND UNDEFINED: ${key} =`, value);
-    }
-    if (typeof value === 'object' && value !== null) {
-      console.log(`Checking nested object ${key}:`, value);
-    }
-  });
-
-
+  if (newTask.dueDate === undefined) {
+    newTask.dueDate = null;
+  }
+  
   await setDoc(docRef, newTask);
   await updateProjectLastActivity(taskData.projectId);
   return docRef.id;
