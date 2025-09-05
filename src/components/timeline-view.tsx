@@ -52,19 +52,16 @@ const statusColors: Record<TaskStatus, string> = {
 const getMonthHeaders = (startDate: Date, endDate: Date) => {
     const months = [];
     let currentDate = startOfMonth(startDate);
-    const finalDate = endOfMonth(endDate);
 
-    // 1. Generate all individual months in the range
-    while (currentDate <= finalDate) {
+    while (currentDate <= endOfMonth(endDate)) {
         months.push({
+            date: currentDate,
             name: format(currentDate, 'MMM yyyy'),
             days: differenceInDays(endOfMonth(currentDate), startOfMonth(currentDate)) + 1,
-            date: currentDate
         });
         currentDate = addMonths(currentDate, 1);
     }
     
-    // 2. Group months into pairs
     const twoMonthGroups = [];
     for (let i = 0; i < months.length; i += 2) {
         if (i + 1 < months.length) {
