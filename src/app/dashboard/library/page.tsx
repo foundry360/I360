@@ -330,8 +330,8 @@ export default function LibraryPage() {
 
                   return (
                     <AccordionItem value={tag} key={tag}>
-                        <AccordionPrimitive.Header className="flex items-center">
-                            {projectId && (
+                        <div className="flex items-center">
+                             {projectId && (
                                 <Checkbox
                                     id={`select-all-${tag}`}
                                     checked={allInTagSelected}
@@ -346,7 +346,7 @@ export default function LibraryPage() {
                                     <Badge variant="secondary">{storiesByTag[tag].length}</Badge>
                                 </div>
                             </AccordionTrigger>
-                        </AccordionPrimitive.Header>
+                        </div>
                       <AccordionContent>
                         <div className="space-y-2 pl-4">
                           {storiesByTag[tag].map(story => (
