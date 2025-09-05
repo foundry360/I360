@@ -1132,7 +1132,7 @@ export default function ProjectDetailsPage() {
                                                                         </Tooltip>
                                                                     </TooltipProvider>
                                                                     <span className="text-foreground text-sm">{projectPrefix}-{item.backlogId}</span>
-                                                                    <p>{item.title}</p>
+                                                                    <p className="text-sm font-medium">{item.title}</p>
                                                                 </div>
                                                                 <div className="flex items-center gap-4">
                                                                     <Badge variant="outline">{item.status}</Badge>
@@ -1260,7 +1260,7 @@ export default function ProjectDetailsPage() {
                                                                         >
                                                                             <div className="flex items-center gap-3 flex-wrap">
                                                                                 <span className="text-foreground text-sm">{projectPrefix}-{item.backlogId}</span>
-                                                                                <p className="font-medium">{item.title}</p>
+                                                                                <p className="text-sm font-medium">{item.title}</p>
                                                                                 {epic && (
                                                                                     <Badge variant="secondary" className="cursor-pointer" onClick={(e) => { e.stopPropagation(); setActiveTab('backlog')}}>
                                                                                         <IconComponent className={cn("h-3 w-3 mr-1", epicConfig.color)} />
@@ -1332,7 +1332,7 @@ export default function ProjectDetailsPage() {
                                                     </Tooltip>
                                                 </TooltipProvider>
                                                 <span className="text-foreground text-sm">{projectPrefix}-{item.backlogId}</span>
-                                                <p>{item.title}</p>
+                                                <p className="text-sm font-medium">{item.title}</p>
                                             </div>
                                             <div className="flex items-center gap-4">
                                                 {sprint && <Badge variant={sprint.status === 'Active' ? 'success' : sprint.status === 'Completed' ? 'secondary' : 'outline'}>{sprint.name}</Badge>}
