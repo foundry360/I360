@@ -651,20 +651,49 @@ export default function ProjectDetailsPage() {
 
     const timelineData = React.useMemo(() => {
         if (!project || !epics.length || !sprints.length) return { items: [], projectStartDate: new Date(), projectEndDate: new Date() };
-
+    
         const epicItems = epics.map(epic => {
             const itemsInEpic = backlogItems.filter(item => item.epicId === epic.id);
-            const completedItemsInEpic = itemsInEpic.filter(item => item.status === 'Complete');
-            const epicProgress = itemsInEpic.length > 0 ? (completedItemsInEpic.length / itemsInEpic.length) * 100 : 0;
-
             const sprintIdsInEpic = [...new Set(itemsInEpic.map(item => item.sprintId).filter(Boolean))];
             const sprintsInEpic = sprints.filter(sprint => sprintIdsInEpic.includes(sprint.id));
-
+    
             if (sprintsInEpic.length === 0) return null;
-
+    
             const epicStartDate = new Date(Math.min(...sprintsInEpic.map(s => parseISO(s.startDate).getTime())));
             const epicEndDate = new Date(Math.max(...sprintsInEpic.map(s => parseISO(s.endDate).getTime())));
-
+            
+            const epicChildren = sprintsInEpic.map(sprint => {
+                const itemsInSprint = backlogItems.filter(item => item.sprintId === sprint.id && item.epicId === epic.id);
+                
+                const sprintIsUnstarted = sprint.status === 'Not Started';
+                
+                const completedItemsInSprint = itemsInSprint.filter(item => item.status === 'Complete');
+                
+                let sprintProgress = sprintIsUnstarted ? 0 : (itemsInSprint.length > 0 ? (completedItemsInSprint.length / itemsInSprint.length) * 100 : 0);
+    
+                return {
+                    id: sprint.id,
+                    title: sprint.name,
+                    startDate: parseISO(sprint.startDate),
+                    endDate: parseISO(sprint.endDate),
+                    type: 'sprint' as const,
+                    progress: sprintProgress,
+                    children: itemsInSprint.map(item => ({
+                        id: item.id,
+                        title: item.title,
+                        startDate: parseISO(sprint.startDate),
+                        endDate: parseISO(sprint.endDate),
+                        status: item.status,
+                        type: 'item' as const,
+                        dueDate: item.dueDate,
+                        progress: sprintIsUnstarted ? 0 : undefined,
+                    }))
+                };
+            }).sort((a, b) => a.startDate.getTime() - b.startDate.getTime());
+            
+            const totalSprintProgress = epicChildren.reduce((acc, child) => acc + child.progress, 0);
+            const epicProgress = epicChildren.length > 0 ? totalSprintProgress / epicChildren.length : 0;
+    
             return {
                 id: epic.id,
                 title: epic.title,
@@ -672,37 +701,16 @@ export default function ProjectDetailsPage() {
                 endDate: epicEndDate,
                 type: 'epic' as const,
                 progress: epicProgress,
-                children: sprintsInEpic.map(sprint => {
-                    const itemsInSprint = backlogItems.filter(item => item.sprintId === sprint.id && item.epicId === epic.id);
-                    const completedItemsInSprint = itemsInSprint.filter(item => item.status === 'Complete');
-                    const sprintProgress = itemsInSprint.length > 0 ? (completedItemsInSprint.length / itemsInSprint.length) * 100 : 0;
-                    return {
-                        id: sprint.id,
-                        title: sprint.name,
-                        startDate: parseISO(sprint.startDate),
-                        endDate: parseISO(sprint.endDate),
-                        type: 'sprint' as const,
-                        progress: sprintProgress,
-                        children: itemsInSprint.map(item => ({
-                            id: item.id,
-                            title: item.title,
-                            startDate: parseISO(sprint.startDate),
-                            endDate: parseISO(sprint.endDate),
-                            status: item.status,
-                            type: 'item' as const,
-                            dueDate: item.dueDate,
-                        }))
-                    };
-                }).sort((a, b) => a.startDate.getTime() - b.startDate.getTime()),
+                children: epicChildren,
             };
         }).filter(Boolean);
-
+    
         const projectStartDate = new Date(Math.min(...sprints.map(s => parseISO(s.startDate).getTime())));
         const projectEndDate = new Date(Math.max(...sprints.map(s => parseISO(s.endDate).getTime())));
-
+    
         return { items: epicItems as any[], projectStartDate, projectEndDate };
-
-    }, [epics, sprints, backlogItems, project]);
+    
+    }, [epics, sprints, backlogItems, project, tasks]);
 
     if (loading) {
         return (
@@ -1463,3 +1471,4 @@ export default function ProjectDetailsPage() {
 }
 
     
+

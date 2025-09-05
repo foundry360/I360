@@ -100,7 +100,14 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ items, projectStartD
         
         const epicConfig = epicIcons[item.title] || { icon: Layers, color: 'text-foreground' };
         const IconComponent = epicConfig.icon;
-        const progress = item.progress ?? (item.status ? statusToProgress[item.status] : 0);
+        
+        let progress: number;
+        if (item.progress !== undefined) {
+            progress = item.progress;
+        } else {
+            progress = item.status ? statusToProgress[item.status] : 0;
+        }
+
 
         return (
             <React.Fragment key={item.id}>
