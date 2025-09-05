@@ -357,7 +357,8 @@ export default function ContactsPage() {
                               onClick={() => openDeleteDialog(contact)}
                               className="text-destructive focus:bg-destructive focus:text-destructive-foreground"
                             >
-                              Delete Contact
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              Delete
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>

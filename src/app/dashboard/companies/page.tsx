@@ -420,7 +420,8 @@ export default function CompaniesPage() {
                               onClick={() => openDeleteDialog(company)}
                               className="text-destructive focus:bg-destructive focus:text-destructive-foreground"
                             >
-                              Delete Company
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              Delete
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>

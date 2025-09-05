@@ -417,8 +417,8 @@ export default function ProjectsPage() {
                                                             onClick={() => openDeleteDialog(project)}
                                                             className="text-destructive focus:bg-destructive focus:text-destructive-foreground"
                                                         >
-                                                        <Trash2 className="mr-2 h-4 w-4" />
-                                                        Delete
+                                                            <Trash2 className="mr-2 h-4 w-4" />
+                                                            Delete
                                                         </DropdownMenuItem>
                                                     </DropdownMenuContent>
                                                 </DropdownMenu>
