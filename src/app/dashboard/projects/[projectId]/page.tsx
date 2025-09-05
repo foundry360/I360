@@ -1060,7 +1060,7 @@ export default function ProjectDetailsPage() {
                                             <HealthIcon className={cn("h-4 w-4", projectHealth.color)} />
                                         </CardHeader>
                                         <CardContent>
-                                            <p className={cn("text-2xl font-bold", projectHealth.color)}>{projectHealth.status}</p>
+                                            <p className={cn("text-xl font-bold", projectHealth.color)}>{projectHealth.status}</p>
                                         </CardContent>
                                         <CardFooter className="flex-col items-start gap-1 p-4 pt-0">
                                             <p className="text-xs text-muted-foreground">{Math.round(projectHealth.tasksCompletedPercent)}% complete</p>
