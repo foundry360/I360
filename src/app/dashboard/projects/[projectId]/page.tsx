@@ -1226,114 +1226,129 @@ export default function ProjectDetailsPage() {
                     </TabsContent>
                     <TabsContent value="backlog">
                        <div className="space-y-6">
-                            <Accordion type="multiple" className="w-full" value={activeBacklogAccordion} onValueChange={setActiveBacklogAccordion}>
-                                {epics.map(epic => {
-                                    const epicConfig = epicIcons[epic.title] || { icon: Layers, color: 'text-foreground' };
-                                    const IconComponent = epicConfig.icon;
-                                    const itemsInEpic = backlogItems.filter(item => item.epicId === epic.id && !item.sprintId);
-                                    
-                                    return (
-                                        <AccordionItem key={epic.id} value={epic.id}>
-                                            <AccordionTrigger className="text-base font-normal">
-                                                <div className="flex items-center gap-3 flex-1">
-                                                    <IconComponent className={cn("h-5 w-5", epicConfig.color)} />
-                                                    <Badge variant={epic.status === 'Done' ? 'success' : 'secondary'} className="whitespace-nowrap">{epic.status}</Badge>
-                                                    <span className="font-semibold text-sm">{epic.title}</span>
-                                                    <span className="text-muted-foreground text-sm">{projectPrefix}-{epic.epicId}</span>
-                                                </div>
-                                            </AccordionTrigger>
-                                            <AccordionContent>
-                                                <div className="pl-8 pr-4 space-y-4">
-                                                    <div className="flex justify-between items-start">
-                                                        <p className="text-muted-foreground flex-1 pr-4">{epic.description}</p>
-                                                        <DropdownMenu>
-                                                            <DropdownMenuTrigger asChild>
-                                                                <Button variant="ghost" size="icon" className="h-8 w-8"><MoreVertical className="h-4 w-4" /></Button>
-                                                            </DropdownMenuTrigger>
-                                                            <DropdownMenuContent align="end">
-                                                                <DropdownMenuItem onSelect={() => openEditEpicDialog(epic)}><Pencil className="mr-2 h-4 w-4" />Edit</DropdownMenuItem>
-                                                                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setItemToDelete({type: 'epic', id: epic.id, name: epic.title}); setIsDeleteDialogOpen(true);}} className="text-destructive focus:bg-destructive/90 focus:text-destructive-foreground">
-                                                                    <Trash2 className="mr-2 h-4 w-4" />
-                                                                    Delete
-                                                                </DropdownMenuItem>
-                                                            </DropdownMenuContent>
-                                                        </DropdownMenu>
+                            {backlogItems.length === 0 ? (
+                                <Card className="border-dashed">
+                                    <CardContent className="p-6 text-center text-muted-foreground">
+                                        <p>This engagement has no backlog items yet.</p>
+                                        <Button
+                                            variant="link"
+                                            className="mt-2"
+                                            onClick={() => openNewBacklogItemDialog(projectId, project.companyId, epics)}
+                                        >
+                                            Add the first item
+                                        </Button>
+                                    </CardContent>
+                                </Card>
+                            ) : (
+                                <Accordion type="multiple" className="w-full" value={activeBacklogAccordion} onValueChange={setActiveBacklogAccordion}>
+                                    {epics.map(epic => {
+                                        const epicConfig = epicIcons[epic.title] || { icon: Layers, color: 'text-foreground' };
+                                        const IconComponent = epicConfig.icon;
+                                        const itemsInEpic = backlogItems.filter(item => item.epicId === epic.id && !item.sprintId);
+                                        
+                                        return (
+                                            <AccordionItem key={epic.id} value={epic.id}>
+                                                <AccordionTrigger className="text-base font-normal">
+                                                    <div className="flex items-center gap-3 flex-1">
+                                                        <IconComponent className={cn("h-5 w-5", epicConfig.color)} />
+                                                        <Badge variant={epic.status === 'Done' ? 'success' : 'secondary'} className="whitespace-nowrap">{epic.status}</Badge>
+                                                        <span className="font-semibold text-sm">{epic.title}</span>
+                                                        <span className="text-muted-foreground text-sm">{projectPrefix}-{epic.epicId}</span>
                                                     </div>
-                                                    <div className="border rounded-lg">
-                                                        {itemsInEpic.length > 0 ? itemsInEpic.map(item => (
-                                                            <div 
-                                                                key={item.id} 
-                                                                className="flex justify-between items-center p-3 border-b last:border-b-0 hover:bg-muted/50 cursor-pointer"
-                                                                onClick={() => openEditBacklogItemDialog(item, epics, sprints, contacts)}
-                                                            >
-                                                                <div className="flex items-center gap-3">
-                                                                    <TooltipProvider>
-                                                                        <Tooltip>
-                                                                            <TooltipTrigger>
-                                                                                <IconComponent className={cn("h-4 w-4", epicConfig.color)} />
-                                                                            </TooltipTrigger>
-                                                                            <TooltipContent>
-                                                                                <p>Epic: {epic.title}</p>
-                                                                            </TooltipContent>
-                                                                        </Tooltip>
-                                                                    </TooltipProvider>
-                                                                    <span className="text-foreground text-sm">{projectPrefix}-{item.backlogId}</span>
-                                                                    <p className="text-sm font-medium">{item.title}</p>
+                                                </AccordionTrigger>
+                                                <AccordionContent>
+                                                    <div className="pl-8 pr-4 space-y-4">
+                                                        <div className="flex justify-between items-start">
+                                                            <p className="text-muted-foreground flex-1 pr-4">{epic.description}</p>
+                                                            <DropdownMenu>
+                                                                <DropdownMenuTrigger asChild>
+                                                                    <Button variant="ghost" size="icon" className="h-8 w-8"><MoreVertical className="h-4 w-4" /></Button>
+                                                                </DropdownMenuTrigger>
+                                                                <DropdownMenuContent align="end">
+                                                                    <DropdownMenuItem onSelect={() => openEditEpicDialog(epic)}><Pencil className="mr-2 h-4 w-4" />Edit</DropdownMenuItem>
+                                                                    <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setItemToDelete({type: 'epic', id: epic.id, name: epic.title}); setIsDeleteDialogOpen(true);}} className="text-destructive focus:bg-destructive/90 focus:text-destructive-foreground">
+                                                                        <Trash2 className="mr-2 h-4 w-4" />
+                                                                        Delete
+                                                                    </DropdownMenuItem>
+                                                                </DropdownMenuContent>
+                                                            </DropdownMenu>
+                                                        </div>
+                                                        <div className="border rounded-lg">
+                                                            {itemsInEpic.length > 0 ? itemsInEpic.map(item => (
+                                                                <div 
+                                                                    key={item.id} 
+                                                                    className="flex justify-between items-center p-3 border-b last:border-b-0 hover:bg-muted/50 cursor-pointer"
+                                                                    onClick={() => openEditBacklogItemDialog(item, epics, sprints, contacts)}
+                                                                >
+                                                                    <div className="flex items-center gap-3">
+                                                                        <TooltipProvider>
+                                                                            <Tooltip>
+                                                                                <TooltipTrigger>
+                                                                                    <IconComponent className={cn("h-4 w-4", epicConfig.color)} />
+                                                                                </TooltipTrigger>
+                                                                                <TooltipContent>
+                                                                                    <p>Epic: {epic.title}</p>
+                                                                                </TooltipContent>
+                                                                            </Tooltip>
+                                                                        </TooltipProvider>
+                                                                        <span className="text-foreground text-sm">{projectPrefix}-{item.backlogId}</span>
+                                                                        <p className="text-sm font-medium">{item.title}</p>
+                                                                    </div>
+                                                                    <div className="flex items-center gap-4">
+                                                                        <Badge variant="outline">{item.status}</Badge>
+                                                                        <Badge variant="secondary">{item.points} Points</Badge>
+                                                                        <TooltipProvider>
+                                                                            <Tooltip>
+                                                                                <TooltipTrigger>
+                                                                                    <PriorityIcon priority={item.priority} />
+                                                                                </TooltipTrigger>
+                                                                                <TooltipContent>
+                                                                                    <p>Priority: {item.priority}</p>
+                                                                                </TooltipContent>
+                                                                            </Tooltip>
+                                                                        </TooltipProvider>
+                                                                        <DropdownMenu>
+                                                                            <DropdownMenuTrigger asChild>
+                                                                                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => e.stopPropagation()}><MoreVertical className="h-4 w-4" /></Button>
+                                                                            </DropdownMenuTrigger>
+                                                                            <DropdownMenuContent align="end">
+                                                                                <DropdownMenuItem onSelect={(e) => { e.stopPropagation(); openEditBacklogItemDialog(item, epics, sprints, contacts); }}><Pencil className="mr-2 h-4 w-4" />Edit</DropdownMenuItem>
+                                                                                <DropdownMenuSub>
+                                                                                    <DropdownMenuSubTrigger>
+                                                                                        <Rocket className="mr-2 h-4 w-4" />
+                                                                                        <span>Move to Sprint</span>
+                                                                                    </DropdownMenuSubTrigger>
+                                                                                    <DropdownMenuPortal>
+                                                                                    <DropdownMenuSubContent>
+                                                                                        <DropdownMenuItem onSelect={() => handleMoveToSprint(item.id, null)}>Backlog</DropdownMenuItem>
+                                                                                        <Separator />
+                                                                                        {upcomingSprints.map(sprint => (
+                                                                                            <DropdownMenuItem key={sprint.id} onSelect={() => handleMoveToSprint(item.id, sprint.id)}>
+                                                                                                {sprint.name}
+                                                                                            </DropdownMenuItem>
+                                                                                        ))}
+                                                                                    </DropdownMenuSubContent>
+                                                                                    </DropdownMenuPortal>
+                                                                                </DropdownMenuSub>
+                                                                                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setItemToDelete({type: 'backlogItem', id: item.id, name: item.title}); setIsDeleteDialogOpen(true);}} className="text-destructive focus:bg-destructive/90 focus:text-destructive-foreground">
+                                                                                    <Trash2 className="mr-2 h-4 w-4" />
+                                                                                    Delete
+                                                                                </DropdownMenuItem>
+                                                                            </DropdownMenuContent>
+                                                                        </DropdownMenu>
+                                                                    </div>
                                                                 </div>
-                                                                <div className="flex items-center gap-4">
-                                                                    <Badge variant="outline">{item.status}</Badge>
-                                                                    <Badge variant="secondary">{item.points} Points</Badge>
-                                                                    <TooltipProvider>
-                                                                        <Tooltip>
-                                                                            <TooltipTrigger>
-                                                                                <PriorityIcon priority={item.priority} />
-                                                                            </TooltipTrigger>
-                                                                            <TooltipContent>
-                                                                                <p>Priority: {item.priority}</p>
-                                                                            </TooltipContent>
-                                                                        </Tooltip>
-                                                                    </TooltipProvider>
-                                                                    <DropdownMenu>
-                                                                        <DropdownMenuTrigger asChild>
-                                                                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => e.stopPropagation()}><MoreVertical className="h-4 w-4" /></Button>
-                                                                        </DropdownMenuTrigger>
-                                                                        <DropdownMenuContent align="end">
-                                                                            <DropdownMenuItem onSelect={(e) => { e.stopPropagation(); openEditBacklogItemDialog(item, epics, sprints, contacts); }}><Pencil className="mr-2 h-4 w-4" />Edit</DropdownMenuItem>
-                                                                            <DropdownMenuSub>
-                                                                                <DropdownMenuSubTrigger>
-                                                                                    <Rocket className="mr-2 h-4 w-4" />
-                                                                                    <span>Move to Sprint</span>
-                                                                                </DropdownMenuSubTrigger>
-                                                                                <DropdownMenuPortal>
-                                                                                <DropdownMenuSubContent>
-                                                                                    <DropdownMenuItem onSelect={() => handleMoveToSprint(item.id, null)}>Backlog</DropdownMenuItem>
-                                                                                    <Separator />
-                                                                                    {upcomingSprints.map(sprint => (
-                                                                                        <DropdownMenuItem key={sprint.id} onSelect={() => handleMoveToSprint(item.id, sprint.id)}>
-                                                                                            {sprint.name}
-                                                                                        </DropdownMenuItem>
-                                                                                    ))}
-                                                                                </DropdownMenuSubContent>
-                                                                                </DropdownMenuPortal>
-                                                                            </DropdownMenuSub>
-                                                                            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setItemToDelete({type: 'backlogItem', id: item.id, name: item.title}); setIsDeleteDialogOpen(true);}} className="text-destructive focus:bg-destructive/90 focus:text-destructive-foreground">
-                                                                                <Trash2 className="mr-2 h-4 w-4" />
-                                                                                Delete
-                                                                            </DropdownMenuItem>
-                                                                        </DropdownMenuContent>
-                                                                    </DropdownMenu>
-                                                                </div>
-                                                            </div>
-                                                        )) : (
-                                                            <p className="text-sm text-muted-foreground text-center p-4">No unassigned backlog items for this epic.</p>
-                                                        )}
+                                                            )) : (
+                                                                <p className="text-sm text-muted-foreground text-center p-4">No unassigned backlog items for this epic.</p>
+                                                            )}
+                                                        </div>
                                                     </div>
-                                                </div>
-                                            </AccordionContent>
-                                        </AccordionItem>
-                                    )
-                                })}
-                            </Accordion>
+                                                </AccordionContent>
+                                            </AccordionItem>
+                                        )
+                                    })}
+                                </Accordion>
+                            )}
                        </div>
                     </TabsContent>
                     <TabsContent value="sprints">
@@ -1545,3 +1560,4 @@ export default function ProjectDetailsPage() {
     
 
     
+
