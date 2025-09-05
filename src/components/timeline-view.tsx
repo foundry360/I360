@@ -145,7 +145,7 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ items, projectStartD
                                             value={progress} 
                                             className={cn(
                                                 "h-full w-full bg-transparent",
-                                                item.type === 'epic' && 'bg-[hsl(220,20%,97%)] dark:bg-muted'
+                                                item.type === 'epic' && 'bg-[hsl(220,20%,97%)] dark:bg-[hsl(240,2%,12%)]'
                                             )}
                                             indicatorClassName={
                                                 cn({
@@ -154,7 +154,7 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ items, projectStartD
                                                 })
                                             }
                                           />
-                                          <span className="absolute inset-0 flex items-center justify-center text-xs font-semibold text-primary-foreground mix-blend-difference">
+                                          <span className="absolute inset-0 flex items-center justify-center text-xs font-semibold text-primary-foreground">
                                               {Math.round(progress)}%
                                           </span>
                                       </div>
