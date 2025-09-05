@@ -24,8 +24,35 @@ import { getUserStories, deleteUserStory, UserStory, bulkCreateUserStories } fro
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import Papa from 'papaparse';
+import { epicIcons } from '@/app/dashboard/projects/[projectId]/page';
+import { cn } from '@/lib/utils';
+import { Layers } from 'lucide-react';
 
 type StoryWithDateAsString = Omit<UserStory, 'createdAt'> & { createdAt: string };
+
+const getIconForTag = (tag: string) => {
+    const lowerCaseTag = tag.toLowerCase();
+    if (lowerCaseTag.includes('foundation') || lowerCaseTag.includes('strategy')) {
+      return epicIcons['Foundation & Strategic Alignment'];
+    }
+    if (lowerCaseTag.includes('data') || lowerCaseTag.includes('revops')) {
+      return epicIcons['RevOps Foundation & Data Infrastructure'];
+    }
+    if (lowerCaseTag.includes('sales') || lowerCaseTag.includes('pipeline')) {
+      return epicIcons['Sales Process Enhancement & Pipeline Optimization'];
+    }
+    if (lowerCaseTag.includes('customer') || lowerCaseTag.includes('cx')) {
+      return epicIcons['Customer Experience & Lifecycle Management'];
+    }
+    if (lowerCaseTag.includes('performance') || lowerCaseTag.includes('optimization')) {
+      return epicIcons['Performance Measurement & Continuous Optimization'];
+    }
+    if (lowerCaseTag.includes('scaling') || lowerCaseTag.includes('advanced')) {
+      return epicIcons['Advanced Capabilities & Scaling'];
+    }
+    return { icon: Layers, color: 'text-foreground' };
+}
+
 
 export default function LibraryPage() {
   const [stories, setStories] = React.useState<StoryWithDateAsString[]>([]);
@@ -83,7 +110,7 @@ export default function LibraryPage() {
           const storiesToCreate = results.data.map((row: any) => ({
             title: row.title || '',
             story: row.story || '',
-            acceptanceCriteria: (row['acceptance criteria'] || row.acceptancecriteria || '').split('\n').filter(Boolean),
+            acceptanceCriteria: (row['acceptance criteria'] || '').split('\n').filter(Boolean),
             tags: (row.tags || '').split(',').map((t: string) => t.trim()).filter(Boolean),
             points: Number(row.points) || 0,
           })).filter(story => story.title);
@@ -203,48 +230,55 @@ export default function LibraryPage() {
         ) : (
           <Accordion type="multiple" className="w-full">
             {allTags.length > 0 ? (
-              allTags.map(tag => (
-                <AccordionItem value={tag} key={tag}>
-                  <AccordionTrigger>
-                    <div className="flex items-center gap-2">
-                       <h3 className="text-base font-semibold">{tag}</h3>
-                       <Badge variant="secondary">{storiesByTag[tag].length}</Badge>
-                    </div>
-                  </AccordionTrigger>
-                  <AccordionContent>
-                    <div className="space-y-2 pl-4">
-                      {storiesByTag[tag].map(story => (
-                        <div key={story.id} className="flex items-center justify-between p-3 rounded-md hover:bg-muted">
-                           <div className="flex-1">
-                                <p className="font-medium text-sm">{story.title}</p>
-                                <p className="text-xs text-muted-foreground line-clamp-1">{story.story}</p>
-                            </div>
-                           <div className="flex items-center gap-4 ml-4">
-                               <Badge variant="outline">{story.points || 0} Points</Badge>
-                               <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                  <Button variant="ghost" className="h-8 w-8 p-0">
-                                    <span className="sr-only">Open menu</span>
-                                    <MoreHorizontal className="h-4 w-4" />
-                                  </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                  <DropdownMenuItem>View/Edit</DropdownMenuItem>
-                                  <DropdownMenuItem
-                                    onClick={() => handleDelete(story.id)}
-                                    className="text-destructive focus:text-destructive-foreground"
-                                  >
-                                    <Trash2 className="mr-2 h-4 w-4" /> Delete
-                                  </DropdownMenuItem>
-                                </DropdownMenuContent>
-                              </DropdownMenu>
-                           </div>
-                        </div>
-                      ))}
-                    </div>
-                  </AccordionContent>
-                </AccordionItem>
-              ))
+              allTags.map(tag => {
+                const { icon: Icon, color } = getIconForTag(tag);
+                return (
+                  <AccordionItem value={tag} key={tag}>
+                    <AccordionTrigger>
+                      <div className="flex items-center gap-2 flex-1">
+                         <Icon className={cn("h-5 w-5", color)} />
+                         <h3 className="text-base font-semibold">{tag}</h3>
+                         <Badge variant="secondary">{storiesByTag[tag].length}</Badge>
+                      </div>
+                    </AccordionTrigger>
+                    <AccordionContent>
+                      <div className="space-y-2 pl-4">
+                        {storiesByTag[tag].map(story => (
+                          <div key={story.id} className="flex items-center justify-between p-3 rounded-md hover:bg-muted">
+                             <div className="flex-1 flex items-center gap-3">
+                                 <Icon className={cn("h-4 w-4", color)} />
+                                 <div>
+                                      <p className="font-medium text-sm">{story.title}</p>
+                                      <p className="text-xs text-muted-foreground line-clamp-1">{story.story}</p>
+                                  </div>
+                              </div>
+                             <div className="flex items-center gap-4 ml-4">
+                                 <Badge variant="outline">{story.points || 0} Points</Badge>
+                                 <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" className="h-8 w-8 p-0">
+                                      <span className="sr-only">Open menu</span>
+                                      <MoreHorizontal className="h-4 w-4" />
+                                    </Button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent align="end">
+                                    <DropdownMenuItem>View/Edit</DropdownMenuItem>
+                                    <DropdownMenuItem
+                                      onClick={() => handleDelete(story.id)}
+                                      className="text-destructive focus:text-destructive-foreground"
+                                    >
+                                      <Trash2 className="mr-2 h-4 w-4" /> Delete
+                                    </DropdownMenuItem>
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
+                             </div>
+                          </div>
+                        ))}
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
+                )
+              })
             ) : (
               <div className="h-24 text-center flex items-center justify-center text-muted-foreground">
                 No user stories found.
@@ -256,4 +290,3 @@ export default function LibraryPage() {
     </div>
   );
 }
-
