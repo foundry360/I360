@@ -280,7 +280,6 @@ export default function ProjectDetailsPage() {
         openNewSprintDialog, setOnSprintCreated,
         openEditSprintDialog, setOnSprintUpdated,
         openEditTaskDialog, setOnTaskUpdated,
-        setOnAddFromLibrary,
     } = useQuickAction();
     const { toast } = useToast();
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
@@ -359,7 +358,6 @@ export default function ProjectDetailsPage() {
         const unsubscribeSprint = setOnSprintCreated(fetchData);
         const unsubscribeSprintUpdate = setOnSprintUpdated(fetchData);
         const unsubscribeTask = setOnTaskUpdated(fetchData);
-        const unsubscribeLibraryAdd = setOnAddFromLibrary(fetchData);
         return () => {
             if (unsubscribeBacklog) unsubscribeBacklog();
             if (unsubscribeEpic) unsubscribeEpic();
@@ -368,9 +366,8 @@ export default function ProjectDetailsPage() {
             if (unsubscribeSprint) unsubscribeSprint();
             if (unsubscribeSprintUpdate) unsubscribeSprintUpdate();
             if (unsubscribeTask) unsubscribeTask();
-            if (unsubscribeLibraryAdd) unsubscribeLibraryAdd();
         };
-    }, [fetchData, setOnBacklogItemCreated, setOnEpicCreated, setOnEpicUpdated, setOnBacklogItemUpdated, setOnSprintCreated, setOnSprintUpdated, setOnTaskUpdated, setOnAddFromLibrary]);
+    }, [fetchData, setOnBacklogItemCreated, setOnEpicCreated, setOnEpicUpdated, setOnBacklogItemUpdated, setOnSprintCreated, setOnSprintUpdated, setOnTaskUpdated]);
 
     const projectPrefix = project ? project.name.substring(0, project.name.indexOf('-')) : '';
     
@@ -843,7 +840,11 @@ export default function ProjectDetailsPage() {
                                 <TooltipProvider>
                                     <Tooltip>
                                         <TooltipTrigger asChild>
-                                            <Button asChild variant="outline" size="icon"><Link href="/dashboard/library"><Library className="h-4 w-4" /></Link></Button>
+                                            <Button asChild variant="outline" size="icon">
+                                                <Link href={`/dashboard/library?projectId=${projectId}`}>
+                                                    <Library className="h-4 w-4" />
+                                                </Link>
+                                            </Button>
                                         </TooltipTrigger>
                                         <TooltipContent>
                                             <p>Add from Library</p>
@@ -1058,7 +1059,7 @@ export default function ProjectDetailsPage() {
                                     </CardHeader>
                                     <CardContent>
                                          {epicProgressData.length > 0 ? (
-                                            <Accordion type="multiple" value={activeBacklogAccordion} onValueChange={setActiveBacklogAccordion} className="w-full">
+                                            <Accordion type="multiple" className="w-full">
                                                 {epicProgressData.map((epic, index) => {
                                                     const epicConfig = epicIcons[epic.name] || { icon: Layers, color: 'text-foreground' };
                                                     const IconComponent = epicConfig.icon;
@@ -1073,7 +1074,6 @@ export default function ProjectDetailsPage() {
                                                                         prev.includes(epic.id) ? prev.filter(id => id !== epic.id) : [...prev, epic.id]
                                                                     );
                                                                 }}
-                                                                noChevron
                                                             >
                                                                 <div className="flex flex-col w-full gap-2">
                                                                     <div className="flex justify-between items-baseline w-full">
@@ -1255,7 +1255,7 @@ export default function ProjectDetailsPage() {
                                         </p>
                                         <div className="flex justify-center gap-4">
                                             <Button asChild>
-                                                <Link href="/dashboard/library"><Plus className="h-4 w-4 mr-2" /> Add from Library</Link>
+                                                <Link href={`/dashboard/library?projectId=${projectId}`}><Plus className="h-4 w-4 mr-2" /> Add from Library</Link>
                                             </Button>
                                             <Button variant="secondary" onClick={() => openNewBacklogItemDialog(projectId, project.companyId, epics)}>
                                                 Create New Item
@@ -1580,12 +1580,3 @@ export default function ProjectDetailsPage() {
         </div>
     );
 }
-
-    
-
-    
-
-
-
-
-

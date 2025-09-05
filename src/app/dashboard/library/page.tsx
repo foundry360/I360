@@ -2,6 +2,7 @@
 'use client';
 
 import * as React from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import {
   Accordion,
   AccordionContent,
@@ -17,10 +18,12 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Skeleton } from '@/components/ui/skeleton';
-import { MoreHorizontal, Plus, Trash2, Search, Upload } from 'lucide-react';
+import { MoreHorizontal, Plus, Trash2, Search, Upload, FilePlus } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { useQuickAction } from '@/contexts/quick-action-context';
-import { getUserStories, deleteUserStory, UserStory, bulkCreateUserStories } from '@/services/user-story-service';
+import { getUserStories, deleteUserStory, UserStory, bulkCreateUserStories as bulkCreateLibraryStories } from '@/services/user-story-service';
+import { getEpicsForProject, Epic } from '@/services/epic-service';
+import { bulkCreateBacklogItems } from '@/services/backlog-item-service';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import Papa from 'papaparse';
@@ -28,7 +31,8 @@ import { epicIcons } from '@/app/dashboard/projects/[projectId]/page';
 import { cn } from '@/lib/utils';
 import { Layers } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-
+import { Checkbox } from '@/components/ui/checkbox';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 type StoryWithDateAsString = Omit<UserStory, 'createdAt'> & { createdAt: string };
 
@@ -57,39 +61,55 @@ const getIconForTag = (tag: string) => {
 
 
 export default function LibraryPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const projectId = searchParams.get('projectId');
+  
   const [stories, setStories] = React.useState<StoryWithDateAsString[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [searchTerm, setSearchTerm] = React.useState('');
+  const [selectedStories, setSelectedStories] = React.useState<string[]>([]);
+  const [epics, setEpics] = React.useState<Epic[]>([]);
+  const [targetEpicId, setTargetEpicId] = React.useState<string>('');
+
   const { openNewUserStoryDialog, setOnUserStoryCreated } = useQuickAction();
   const { toast } = useToast();
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   const [isUploadResultDialogOpen, setIsUploadResultDialogOpen] = React.useState(false);
   const [uploadStats, setUploadStats] = React.useState<{ importedCount: number, skippedCount: number } | null>(null);
 
-  const fetchStories = React.useCallback(async () => {
+  const fetchLibraryData = React.useCallback(async () => {
     try {
       setLoading(true);
       const storiesFromDb = await getUserStories();
       setStories(storiesFromDb);
+      
+      if (projectId) {
+        const projectEpics = await getEpicsForProject(projectId);
+        setEpics(projectEpics);
+        if (projectEpics.length > 0) {
+          setTargetEpicId(projectEpics[0].id);
+        }
+      }
     } catch (error) {
-      console.error('Failed to fetch user stories:', error);
+      console.error('Failed to fetch library data:', error);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [projectId]);
 
   React.useEffect(() => {
-    fetchStories();
-    const unsubscribe = setOnUserStoryCreated(fetchStories);
+    fetchLibraryData();
+    const unsubscribe = setOnUserStoryCreated(fetchLibraryData);
     return () => {
       if (unsubscribe) unsubscribe();
     };
-  }, [fetchStories, setOnUserStoryCreated]);
+  }, [fetchLibraryData, setOnUserStoryCreated]);
 
   const handleDelete = async (id: string) => {
     try {
       await deleteUserStory(id);
-      fetchStories();
+      fetchLibraryData();
     } catch (error) {
       console.error('Failed to delete user story:', error);
     }
@@ -97,6 +117,37 @@ export default function LibraryPage() {
 
   const handleUploadClick = () => {
     fileInputRef.current?.click();
+  };
+  
+  const handleAddToBacklog = async () => {
+    if (!projectId || !targetEpicId || selectedStories.length === 0) {
+      toast({
+        variant: 'destructive',
+        title: 'Selection Required',
+        description: 'Please select an epic and at least one user story to add.',
+      });
+      return;
+    }
+    
+    try {
+        setLoading(true);
+        const storiesToAdd = stories.filter(story => selectedStories.includes(story.id));
+        await bulkCreateBacklogItems(projectId, targetEpicId, storiesToAdd);
+        toast({
+            title: 'Success!',
+            description: `${storiesToAdd.length} user stor${storiesToAdd.length > 1 ? 'ies' : 'y'} added to the engagement backlog.`,
+        });
+        router.push(`/dashboard/projects/${projectId}`);
+    } catch (error) {
+        console.error("Error adding stories to backlog:", error);
+        toast({
+            variant: "destructive",
+            title: "Error",
+            description: "There was a problem adding the stories to the engagement.",
+        });
+    } finally {
+        setLoading(false);
+    }
   };
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -128,10 +179,10 @@ export default function LibraryPage() {
             return;
           }
 
-          const { importedCount, skippedCount } = await bulkCreateUserStories(storiesToCreate);
+          const { importedCount, skippedCount } = await bulkCreateLibraryStories(storiesToCreate);
           setUploadStats({ importedCount, skippedCount });
           setIsUploadResultDialogOpen(true);
-          fetchStories();
+          fetchLibraryData();
         } catch (error) {
           console.error("Failed to upload stories:", error);
           toast({
@@ -184,6 +235,22 @@ export default function LibraryPage() {
   }, [stories, searchTerm]);
   
   const allTags = Object.keys(storiesByTag).sort();
+  
+  const handleSelectStory = (storyId: string) => {
+    setSelectedStories(prev => 
+        prev.includes(storyId) ? prev.filter(id => id !== storyId) : [...prev, storyId]
+    );
+  };
+  
+  const handleSelectAllForTag = (tag: string, isSelected: boolean) => {
+    const storyIdsInTag = storiesByTag[tag].map(s => s.id);
+    if (isSelected) {
+      setSelectedStories(prev => [...new Set([...prev, ...storyIdsInTag])]);
+    } else {
+      setSelectedStories(prev => prev.filter(id => !storyIdsInTag.includes(id)));
+    }
+  };
+
 
   return (
     <>
@@ -198,21 +265,42 @@ export default function LibraryPage() {
         <div>
           <h1 className="text-2xl font-bold">User Story Library</h1>
           <p className="text-muted-foreground">
-            Browse and manage reusable user stories for your projects.
+            {projectId 
+                ? "Select stories to add to your engagement's backlog."
+                : "Browse and manage reusable user stories for your projects."
+            }
           </p>
         </div>
         <Separator />
         <div className="flex justify-between items-center">
-          <div className="relative">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+          <div className="flex items-center gap-2">
+            <Search className="h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Search library..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-8 w-64"
+              className="w-64"
             />
           </div>
           <div className="flex items-center gap-2">
+            {projectId && (
+                <>
+                 <Select value={targetEpicId} onValueChange={setTargetEpicId}>
+                    <SelectTrigger className="w-[250px]">
+                      <SelectValue placeholder="Select an Epic to add to" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {epics.map(epic => (
+                        <SelectItem key={epic.id} value={epic.id}>{epic.title}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Button onClick={handleAddToBacklog} disabled={selectedStories.length === 0 || loading}>
+                    <FilePlus className="mr-2 h-4 w-4" />
+                    Add to Engagement ({selectedStories.length})
+                  </Button>
+                </>
+            )}
             <Button variant="outline" size="icon" onClick={handleUploadClick}>
               <Upload className="h-4 w-4" />
               <span className="sr-only">Upload CSV</span>
@@ -231,14 +319,26 @@ export default function LibraryPage() {
               <Skeleton className="h-12 w-full" />
             </div>
           ) : (
-            <Accordion type="multiple" className="w-full">
+            <Accordion type="multiple" className="w-full" defaultValue={allTags}>
               {allTags.length > 0 ? (
                 allTags.map(tag => {
                   const { icon: Icon, color } = getIconForTag(tag);
+                  const storyIdsInTag = storiesByTag[tag].map(s => s.id);
+                  const allInTagSelected = storyIdsInTag.every(id => selectedStories.includes(id));
+
                   return (
                     <AccordionItem value={tag} key={tag}>
                       <AccordionTrigger>
                         <div className="flex items-center gap-2 flex-1">
+                          {projectId && (
+                            <Checkbox
+                                id={`select-all-${tag}`}
+                                checked={allInTagSelected}
+                                onCheckedChange={(checked) => handleSelectAllForTag(tag, checked as boolean)}
+                                onClick={e => e.stopPropagation()}
+                                className="mr-2"
+                            />
+                          )}
                           <Icon className={cn("h-5 w-5", color)} />
                           <h3 className="text-base font-semibold">{tag}</h3>
                           <Badge variant="secondary">{storiesByTag[tag].length}</Badge>
@@ -249,6 +349,13 @@ export default function LibraryPage() {
                           {storiesByTag[tag].map(story => (
                             <div key={story.id} className="flex items-center justify-between p-3 rounded-md hover:bg-muted">
                               <div className="flex-1 flex items-center gap-3">
+                                  {projectId && (
+                                    <Checkbox
+                                        id={story.id}
+                                        checked={selectedStories.includes(story.id)}
+                                        onCheckedChange={() => handleSelectStory(story.id)}
+                                    />
+                                  )}
                                   <Icon className={cn("h-4 w-4", color)} />
                                   <div>
                                         <p className="font-medium text-sm">{story.title}</p>
