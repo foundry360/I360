@@ -194,7 +194,7 @@ export function AddFromLibraryDialog() {
                     <Skeleton className="h-12 w-full" />
                 </div>
             ) : (
-                <Accordion type="multiple" className="w-full" defaultValue={allTags}>
+                <Accordion type="multiple" className="w-full">
                 {allTags.length > 0 ? (
                     allTags.map(tag => {
                     const { icon: Icon, color } = getIconForTag(tag);
