@@ -1047,14 +1047,16 @@ export default function ProjectDetailsPage() {
                                                                 }}
                                                                 noChevron
                                                             >
-                                                                <div className="flex justify-between items-baseline w-full">
-                                                                    <div className="flex items-center gap-2">
-                                                                        <IconComponent className={cn("h-4 w-4", epicConfig.color)} />
-                                                                        <p className="text-sm font-medium">{epic.name}</p>
+                                                                <div className="flex flex-col w-full gap-2">
+                                                                    <div className="flex justify-between items-baseline w-full">
+                                                                        <div className="flex items-center gap-2">
+                                                                            <IconComponent className={cn("h-4 w-4", epicConfig.color)} />
+                                                                            <p className="text-sm font-medium">{epic.name}</p>
+                                                                        </div>
+                                                                        <p className="text-sm text-muted-foreground">{epic.progress}% complete</p>
                                                                     </div>
-                                                                    <p className="text-sm text-muted-foreground">{epic.progress}% complete</p>
+                                                                    <Progress value={epic.progress} />
                                                                 </div>
-                                                                <Progress value={epic.progress} />
                                                             </AccordionTrigger>
                                                         </AccordionItem>
                                                     )
