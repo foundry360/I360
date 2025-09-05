@@ -65,6 +65,7 @@ import { Progress } from '@/components/ui/progress';
 import { Line, LineChart, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, CartesianGrid, Area, Dot, Legend } from 'recharts';
 import { ChartContainer, ChartTooltipContent, type ChartConfig, ChartLegend, ChartLegendContent } from '@/components/ui/chart';
 import { TimelineView } from '@/components/timeline-view';
+import Link from 'next/link';
 
 type TaskType = Task['type'];
 type BoardColumns = Record<TaskStatus, Task[]>;
@@ -279,7 +280,7 @@ export default function ProjectDetailsPage() {
         openNewSprintDialog, setOnSprintCreated,
         openEditSprintDialog, setOnSprintUpdated,
         openEditTaskDialog, setOnTaskUpdated,
-        openAddFromLibraryDialog, setOnAddFromLibrary,
+        setOnAddFromLibrary,
     } = useQuickAction();
     const { toast } = useToast();
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
@@ -842,7 +843,7 @@ export default function ProjectDetailsPage() {
                                 <TooltipProvider>
                                     <Tooltip>
                                         <TooltipTrigger asChild>
-                                            <Button variant="outline" size="icon" onClick={() => openAddFromLibraryDialog(projectId, epics)}><Library className="h-4 w-4" /></Button>
+                                            <Button asChild variant="outline" size="icon"><Link href="/dashboard/library"><Library className="h-4 w-4" /></Link></Button>
                                         </TooltipTrigger>
                                         <TooltipContent>
                                             <p>Add from Library</p>
@@ -1253,8 +1254,8 @@ export default function ProjectDetailsPage() {
                                             Start building your engagement by adding items from your library or creating them from scratch.
                                         </p>
                                         <div className="flex justify-center gap-4">
-                                            <Button onClick={() => openAddFromLibraryDialog(projectId, epics)}>
-                                                <Plus className="h-4 w-4 mr-2" /> Add from Library
+                                            <Button asChild>
+                                                <Link href="/dashboard/library"><Plus className="h-4 w-4 mr-2" /> Add from Library</Link>
                                             </Button>
                                             <Button variant="secondary" onClick={() => openNewBacklogItemDialog(projectId, project.companyId, epics)}>
                                                 Create New Item
@@ -1583,6 +1584,7 @@ export default function ProjectDetailsPage() {
     
 
     
+
 
 
 

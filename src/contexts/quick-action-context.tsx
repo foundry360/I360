@@ -98,13 +98,9 @@ type QuickActionContextType = {
   onUserStoryCreated: (() => void) | null;
   setOnUserStoryCreated: (callback: (() => void) | null) => (() => void) | void;
 
-  isAddFromLibraryDialogOpen: boolean;
-  openAddFromLibraryDialog: (projectId: string, epics: Epic[]) => void;
-  closeAddFromLibraryDialog: () => void;
   onAddFromLibrary: (() => void) | null;
   setOnAddFromLibrary: (callback: (() => void) | null) => (() => void) | void;
-  addFromLibraryData: { projectId: string, epics: Epic[] } | null;
-
+  
   globalSearchTerm: string;
   setGlobalSearchTerm: (term: string) => void;
 };
@@ -162,9 +158,7 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
   const [isNewUserStoryDialogOpen, setIsNewUserStoryDialogOpen] = React.useState(false);
   const onUserStoryCreatedRef = React.useRef<(() => void) | null>(null);
   
-  const [isAddFromLibraryDialogOpen, setIsAddFromLibraryDialogOpen] = React.useState(false);
   const onAddFromLibraryRef = React.useRef<(() => void) | null>(null);
-  const [addFromLibraryData, setAddFromLibraryData] = React.useState<{ projectId: string, epics: Epic[] } | null>(null);
 
   const [globalSearchTerm, setGlobalSearchTerm] = React.useState('');
 
@@ -313,14 +307,6 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
     return () => { onUserStoryCreatedRef.current = null; };
   }, []);
   
-  const openAddFromLibraryDialog = React.useCallback((projectId: string, epics: Epic[]) => {
-    setAddFromLibraryData({ projectId, epics });
-    setIsAddFromLibraryDialogOpen(true);
-  }, []);
-  const closeAddFromLibraryDialog = React.useCallback(() => {
-    setIsAddFromLibraryDialogOpen(false);
-    setAddFromLibraryData(null);
-  }, []);
   const setOnAddFromLibrary = React.useCallback((callback: (() => void) | null) => {
     onAddFromLibraryRef.current = callback;
     return () => { onAddFromLibraryRef.current = null; };
@@ -414,81 +400,25 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
     onUserStoryCreated: onUserStoryCreatedRef.current,
     setOnUserStoryCreated,
     
-    isAddFromLibraryDialogOpen,
-    openAddFromLibraryDialog,
-    closeAddFromLibraryDialog,
     onAddFromLibrary: onAddFromLibraryRef.current,
     setOnAddFromLibrary,
-    addFromLibraryData,
-
+    
     globalSearchTerm,
     setGlobalSearchTerm,
   }), [
-    isNewCompanyDialogOpen,
-    openNewCompanyDialog,
-    closeNewCompanyDialog,
-    setOnCompanyCreated,
-    isNewContactDialogOpen,
-    openNewContactDialog,
-    closeNewContactDialog,
-    setOnContactCreated,
-    isAssessmentModalOpen,
-    openAssessmentModal,
-    closeAssessmentModal,
-    assessmentToResume,
-    setOnAssessmentCompleted,
-    isNewProjectDialogOpen,
-    openNewProjectDialog,
-    closeNewProjectDialog,
-    setOnProjectCreated,
-    isEditProjectDialogOpen,
-    openEditProjectDialog,
-    closeEditProjectDialog,
-    editProjectData,
-    setOnProjectUpdated,
-    isNewBacklogItemDialogOpen,
-    openNewBacklogItemDialog,
-    closeNewBacklogItemDialog,
-    newBacklogItemData,
-    setOnBacklogItemCreated,
-    isNewEpicDialogOpen,
-    openNewEpicDialog,
-    closeNewEpicDialog,
-    newEpicData,
-    setOnEpicCreated,
-    isEditEpicDialogOpen,
-    openEditEpicDialog,
-    closeEditEpicDialog,
-    editEpicData,
-    setOnEpicUpdated,
-    isEditBacklogItemDialogOpen,
-    openEditBacklogItemDialog,
-    closeEditBacklogItemDialog,
-    editBacklogItemData,
-    setOnBacklogItemUpdated,
-    isNewSprintDialogOpen,
-    openNewSprintDialog,
-    closeNewSprintDialog,
-    newSprintData,
-    setOnSprintCreated,
-    isEditSprintDialogOpen,
-    openEditSprintDialog,
-    closeEditSprintDialog,
-    editSprintData,
-    setOnSprintUpdated,
-    isEditTaskDialogOpen,
-    openEditTaskDialog,
-    closeEditTaskDialog,
-    editTaskData,
-    setOnTaskUpdated,
-    isNewUserStoryDialogOpen,
-    openNewUserStoryDialog,
-    closeNewUserStoryDialog,
-    setOnUserStoryCreated,
-    isAddFromLibraryDialogOpen,
-    openAddFromLibraryDialog,
-    closeAddFromLibraryDialog,
-    addFromLibraryData,
+    isNewCompanyDialogOpen, openNewCompanyDialog, closeNewCompanyDialog, setOnCompanyCreated,
+    isNewContactDialogOpen, openNewContactDialog, closeNewContactDialog, setOnContactCreated,
+    isAssessmentModalOpen, openAssessmentModal, closeAssessmentModal, assessmentToResume, setOnAssessmentCompleted,
+    isNewProjectDialogOpen, openNewProjectDialog, closeNewProjectDialog, setOnProjectCreated,
+    isEditProjectDialogOpen, openEditProjectDialog, closeEditProjectDialog, editProjectData, setOnProjectUpdated,
+    isNewBacklogItemDialogOpen, openNewBacklogItemDialog, closeNewBacklogItemDialog, newBacklogItemData, setOnBacklogItemCreated,
+    isNewEpicDialogOpen, openNewEpicDialog, closeNewEpicDialog, newEpicData, setOnEpicCreated,
+    isEditEpicDialogOpen, openEditEpicDialog, closeEditEpicDialog, editEpicData, setOnEpicUpdated,
+    isEditBacklogItemDialogOpen, openEditBacklogItemDialog, closeEditBacklogItemDialog, editBacklogItemData, setOnBacklogItemUpdated,
+    isNewSprintDialogOpen, openNewSprintDialog, closeNewSprintDialog, newSprintData, setOnSprintCreated,
+    isEditSprintDialogOpen, openEditSprintDialog, closeEditSprintDialog, editSprintData, setOnSprintUpdated,
+    isEditTaskDialogOpen, openEditTaskDialog, closeEditTaskDialog, editTaskData, setOnTaskUpdated,
+    isNewUserStoryDialogOpen, openNewUserStoryDialog, closeNewUserStoryDialog, setOnUserStoryCreated,
     setOnAddFromLibrary,
     globalSearchTerm,
   ]);

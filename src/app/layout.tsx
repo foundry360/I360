@@ -22,7 +22,6 @@ import { NewSprintDialog } from '@/components/new-sprint-dialog';
 import { EditSprintDialog } from '@/components/edit-sprint-dialog';
 import { EditTaskDialog } from '@/components/edit-task-dialog';
 import { NewUserStoryDialog } from '@/components/new-user-story-dialog';
-import { AddFromLibraryDialog } from '@/components/add-from-library-dialog';
 
 const unprotectedRoutes = ['/login', '/public/assessment/[companyId]', '/public/assessment/thanks'];
 
@@ -112,7 +111,6 @@ export default function RootLayout({
                   <EditSprintDialog />
                   <EditTaskDialog />
                   <NewUserStoryDialog />
-                  <AddFromLibraryDialog />
                   <AssessmentModal 
                     // These props are managed by the QuickActionProvider now
                   />
