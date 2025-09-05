@@ -85,6 +85,9 @@ export async function updateTask(id: string, taskData: Partial<Omit<Task, 'id'>>
             if (taskData.status) backlogUpdateData.status = taskData.status;
             if (taskData.dueDate) backlogUpdateData.dueDate = taskData.dueDate;
             if (taskData.description) backlogUpdateData.description = taskData.description;
+            if (taskData.owner) backlogUpdateData.owner = taskData.owner;
+            if (taskData.ownerAvatarUrl) backlogUpdateData.ownerAvatarUrl = taskData.ownerAvatarUrl;
+
 
             if (Object.keys(backlogUpdateData).length > 0) {
                  await updateDoc(backlogItemRef, backlogUpdateData);
