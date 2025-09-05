@@ -253,7 +253,7 @@ const chartConfig = {
   },
   ideal: {
     label: "Ideal",
-    color: "hsl(var(--chart-2))",
+    color: "hsl(142 71% 45%)",
   },
 } satisfies ChartConfig
 
@@ -899,7 +899,7 @@ export default function ProjectDetailsPage() {
                                 </Card>
                                  <Card>
                                     <CardHeader>
-                                        <CardTitle>Engagement Burndown</CardTitle>
+                                        <CardTitle>Burndown</CardTitle>
                                         <CardDescription>Ideal vs actual work remaining</CardDescription>
                                     </CardHeader>
                                     <CardContent>
