@@ -140,7 +140,7 @@ const PriorityIcon = ({ priority }: { priority: Task['priority'] }) => {
         <div className={cn("flex items-center justify-center h-6 w-6 rounded-full", colorClass)}>
             <div className="flex flex-col items-center justify-center -space-y-2">
                 {Array.from({ length: chevronCount }).map((_, i) => (
-                    <ChevronUp key={i} className="h-3 w-3 text-primary-foreground" />
+                    <ChevronUp key={i} className="h-3 w-3 text-primary" />
                 ))}
             </div>
         </div>
