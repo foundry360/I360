@@ -56,7 +56,7 @@ import { Separator } from '@/components/ui/separator';
 import { useQuickAction } from '@/contexts/quick-action-context';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuPortal, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-import { format, parseISO, isPast, differenceInDays } from 'date-fns';
+import { format, parseISO, isPast, differenceInDays, add } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
@@ -664,7 +664,7 @@ export default function ProjectDetailsPage() {
 
     const inProgressPercentage = totalTasks > 0 ? (inProgressTasks / totalTasks) * 100 : 0;
     const completedPercentage = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
-    const overduePercentage = totalTasks > 0 ? (overdueTasks / totalTasks) * 100 : 0;
+    const overduePercentage = totalTasks > 0 ? (overdueTasks / tasks.length) * 100 : 0;
     
     const HealthIcon = projectHealth.icon;
 
