@@ -1048,9 +1048,9 @@ export default function ProjectDetailsPage() {
                                                     const epicConfig = epicIcons[epic.name] || { icon: Layers, color: 'text-foreground' };
                                                     const IconComponent = epicConfig.icon;
                                                     return (
-                                                        <AccordionItem value={epic.id} key={epic.id} className="border-none space-y-2">
+                                                        <AccordionItem value={epic.id} key={epic.id} className="border-none">
                                                             <AccordionTrigger 
-                                                                className="space-y-2 p-2 -m-2 rounded-md hover:bg-muted no-underline cursor-pointer"
+                                                                className="space-y-2 p-2 -m-2 rounded-md hover:bg-muted no-underline cursor-pointer mb-2"
                                                                 onClick={(e) => {
                                                                     e.preventDefault();
                                                                     setActiveTab('backlog');
