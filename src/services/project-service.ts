@@ -3,7 +3,6 @@
 import { db } from '@/lib/firebase';
 import { collection, doc, getDocs, setDoc, addDoc, writeBatch, deleteDoc, query, where, getDoc, updateDoc } from 'firebase/firestore';
 import type { Company } from './company-service';
-import { projectTemplate } from './project-template';
 
 export interface Project {
   id: string;
@@ -86,50 +85,9 @@ export async function getProjectsForCompany(companyId: string): Promise<Project[
 }
 
 export async function createProject(projectData: Omit<Project, 'id' | 'companyName'>): Promise<string> {
-  const batch = writeBatch(db);
-
-  // 1. Create the project document
   const projectDocRef = doc(collection(db, 'projects'));
   const newProject = { ...projectData, id: projectDocRef.id, lastActivity: new Date().toISOString() };
-  batch.set(projectDocRef, newProject);
-
-  // 2. Create the epics and backlog items from the template
-  const epicsCollectionRef = collection(db, 'epics');
-  const backlogItemsCollectionRef = collection(db, 'backlogItems');
-
-  projectTemplate.epics.forEach((epicTemplate) => {
-    const epicDocRef = doc(epicsCollectionRef);
-    const newEpic = {
-      id: epicDocRef.id,
-      projectId: newProject.id,
-      epicId: epicTemplate.epicId,
-      title: epicTemplate.title,
-      description: epicTemplate.backlogItems.filter(item => item.isDescription).map(item => item.title).join(' '),
-      status: 'To Do' as const,
-    };
-    batch.set(epicDocRef, newEpic);
-
-    epicTemplate.backlogItems.filter(item => !item.isDescription).forEach((itemTemplate, itemIndex) => {
-        const itemDocRef = doc(backlogItemsCollectionRef);
-        const newBacklogItem = {
-            id: itemDocRef.id,
-            projectId: newProject.id,
-            epicId: newEpic.id,
-            backlogId: parseFloat(`${epicTemplate.epicId}.${itemIndex + 1}`),
-            title: itemTemplate.title,
-            description: '',
-            status: 'To Do' as const,
-            points: 0,
-            priority: 'Medium' as const,
-            owner: newProject.owner,
-            ownerAvatarUrl: newProject.ownerAvatarUrl || '',
-        };
-        batch.set(itemDocRef, newBacklogItem);
-    });
-  });
-  
-  await batch.commit();
-
+  await setDoc(projectDocRef, newProject);
   return projectDocRef.id;
 }
 

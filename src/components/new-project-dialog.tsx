@@ -96,21 +96,7 @@ export function NewProjectDialog() {
       return;
     }
     try {
-      const company = companies.find(c => c.id === newProject.companyId);
-      if (!company) {
-          alert('Could not find selected company');
-          return;
-      }
-      
-      const companyPrefix = company.name.substring(0, 4).toUpperCase();
-      const formattedName = `${companyPrefix}-${newProject.name}`;
-
-      const projectToCreate = {
-        ...newProject,
-        name: formattedName,
-      };
-
-      await createProject(projectToCreate);
+      await createProject(newProject);
       setNewProject(initialNewProjectState);
       closeNewProjectDialog();
       if (onProjectCreated) {
