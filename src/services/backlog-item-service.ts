@@ -2,10 +2,12 @@
 'use client';
 
 import { db } from '@/lib/firebase';
-import { collection, query, where, getDocs, doc, setDoc, addDoc, getDoc, updateDoc, deleteDoc, deleteField } from 'firebase/firestore';
+import { collection, query, where, getDocs, doc, setDoc, addDoc, getDoc, updateDoc, deleteDoc, deleteField, writeBatch } from 'firebase/firestore';
 import { createTask, deleteTaskByBacklogId, type TaskPriority, type TaskStatus, getTasksForProject } from './task-service';
 import { updateProjectLastActivity } from './project-service';
 import { parseISO } from 'date-fns';
+import type { UserStory } from './user-story-service';
+import { getProject } from './project-service';
 
 export interface BacklogItem {
   id: string;
@@ -75,6 +77,38 @@ export async function createBacklogItem(itemData: Omit<BacklogItem, 'id' | 'back
     await updateProjectLastActivity(itemData.projectId);
     return docRef.id;
 }
+
+export async function bulkCreateBacklogItems(projectId: string, epicId: string, stories: (Omit<UserStory, 'createdAt'> & { createdAt: string })[]): Promise<void> {
+    const project = await getProject(projectId);
+    if (!project) throw new Error("Project not found");
+
+    const batch = writeBatch(db);
+    let lastBacklogId = await getNextBacklogId(projectId, epicId) - 0.1; // Start before the first available ID
+
+    for (const story of stories) {
+        const docRef = doc(backlogItemsCollection);
+        lastBacklogId = parseFloat((lastBacklogId + 0.1).toFixed(1));
+        const newItem: BacklogItem = {
+            id: docRef.id,
+            projectId,
+            epicId,
+            backlogId: lastBacklogId,
+            title: story.title,
+            description: story.story,
+            status: 'To Do',
+            points: story.points || 0,
+            priority: 'Medium',
+            owner: project.owner,
+            ownerAvatarUrl: project.ownerAvatarUrl,
+            dueDate: null,
+        };
+        batch.set(docRef, newItem);
+    }
+
+    await batch.commit();
+    await updateProjectLastActivity(projectId);
+}
+
 
 export async function updateBacklogItem(id: string, data: Partial<BacklogItem>): Promise<void> {
     const docRef = doc(db, 'backlogItems', id);

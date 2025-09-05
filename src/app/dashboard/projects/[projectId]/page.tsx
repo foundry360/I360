@@ -38,6 +38,7 @@ import {
   TrendingUp,
   AlertTriangle,
   Calendar,
+  Library,
 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
@@ -278,6 +279,7 @@ export default function ProjectDetailsPage() {
         openNewSprintDialog, setOnSprintCreated,
         openEditSprintDialog, setOnSprintUpdated,
         openEditTaskDialog, setOnTaskUpdated,
+        openAddFromLibraryDialog, setOnAddFromLibrary,
     } = useQuickAction();
     const { toast } = useToast();
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
@@ -356,6 +358,7 @@ export default function ProjectDetailsPage() {
         const unsubscribeSprint = setOnSprintCreated(fetchData);
         const unsubscribeSprintUpdate = setOnSprintUpdated(fetchData);
         const unsubscribeTask = setOnTaskUpdated(fetchData);
+        const unsubscribeLibraryAdd = setOnAddFromLibrary(fetchData);
         return () => {
             if (unsubscribeBacklog) unsubscribeBacklog();
             if (unsubscribeEpic) unsubscribeEpic();
@@ -364,8 +367,9 @@ export default function ProjectDetailsPage() {
             if (unsubscribeSprint) unsubscribeSprint();
             if (unsubscribeSprintUpdate) unsubscribeSprintUpdate();
             if (unsubscribeTask) unsubscribeTask();
+            if (unsubscribeLibraryAdd) unsubscribeLibraryAdd();
         };
-    }, [fetchData, setOnBacklogItemCreated, setOnEpicCreated, setOnEpicUpdated, setOnBacklogItemUpdated, setOnSprintCreated, setOnSprintUpdated, setOnTaskUpdated]);
+    }, [fetchData, setOnBacklogItemCreated, setOnEpicCreated, setOnEpicUpdated, setOnBacklogItemUpdated, setOnSprintCreated, setOnSprintUpdated, setOnTaskUpdated, setOnAddFromLibrary]);
 
     const projectPrefix = project ? project.name.substring(0, project.name.indexOf('-')) : '';
     
@@ -834,7 +838,17 @@ export default function ProjectDetailsPage() {
                     </TabsList>
                      <div className="flex items-center gap-2">
                         {activeTab === 'backlog' && (
-                             <>
+                             <div className="flex items-center gap-2">
+                                <TooltipProvider>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <Button variant="outline" size="icon" onClick={() => openAddFromLibraryDialog(projectId, epics)}><Library className="h-4 w-4" /></Button>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                            <p>Add from Library</p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                </TooltipProvider>
                                 <TooltipProvider>
                                     <Tooltip>
                                         <TooltipTrigger asChild>
@@ -855,7 +869,7 @@ export default function ProjectDetailsPage() {
                                         </TooltipContent>
                                     </Tooltip>
                                 </TooltipProvider>
-                            </>
+                            </div>
                         )}
                          {activeTab === 'sprints' && (
                             <TooltipProvider>
@@ -1560,4 +1574,5 @@ export default function ProjectDetailsPage() {
     
 
     
+
 

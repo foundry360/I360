@@ -98,6 +98,13 @@ type QuickActionContextType = {
   onUserStoryCreated: (() => void) | null;
   setOnUserStoryCreated: (callback: (() => void) | null) => (() => void) | void;
 
+  isAddFromLibraryDialogOpen: boolean;
+  openAddFromLibraryDialog: (projectId: string, epics: Epic[]) => void;
+  closeAddFromLibraryDialog: () => void;
+  onAddFromLibrary: (() => void) | null;
+  setOnAddFromLibrary: (callback: (() => void) | null) => (() => void) | void;
+  addFromLibraryData: { projectId: string, epics: Epic[] } | null;
+
   globalSearchTerm: string;
   setGlobalSearchTerm: (term: string) => void;
 };
@@ -173,6 +180,11 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
   // New User Story Dialog State
   const [isNewUserStoryDialogOpen, setIsNewUserStoryDialogOpen] = React.useState(false);
   const [onUserStoryCreated, setOnUserStoryCreated] = React.useState<(() => void) | null>(null);
+  
+  // Add from Library Dialog State
+  const [isAddFromLibraryDialogOpen, setIsAddFromLibraryDialogOpen] = React.useState(false);
+  const [onAddFromLibrary, setOnAddFromLibrary] = React.useState<(() => void) | null>(null);
+  const [addFromLibraryData, setAddFromLibraryData] = React.useState<{ projectId: string, epics: Epic[] } | null>(null);
 
   // Global Search State
   const [globalSearchTerm, setGlobalSearchTerm] = React.useState('');
@@ -403,6 +415,24 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
     []
   );
 
+  const openAddFromLibraryDialog = React.useCallback((projectId: string, epics: Epic[]) => {
+    setAddFromLibraryData({ projectId, epics });
+    setIsAddFromLibraryDialogOpen(true);
+  }, []);
+
+  const closeAddFromLibraryDialog = React.useCallback(() => {
+    setIsAddFromLibraryDialogOpen(false);
+    setAddFromLibraryData(null);
+  }, []);
+
+  const handleSetOnAddFromLibrary = React.useCallback(
+    (callback: (() => void) | null) => {
+        setOnAddFromLibrary(() => callback);
+        return () => setOnAddFromLibrary(null);
+    },
+    []
+  );
+
 
   return (
     <QuickActionContext.Provider
@@ -493,6 +523,13 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
         closeNewUserStoryDialog,
         onUserStoryCreated,
         setOnUserStoryCreated: handleSetOnUserStoryCreated,
+        
+        isAddFromLibraryDialogOpen,
+        openAddFromLibraryDialog,
+        closeAddFromLibraryDialog,
+        onAddFromLibrary,
+        setOnAddFromLibrary: handleSetOnAddFromLibrary,
+        addFromLibraryData,
 
         globalSearchTerm,
         setGlobalSearchTerm,
