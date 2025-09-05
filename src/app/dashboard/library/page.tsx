@@ -85,6 +85,7 @@ export default function LibraryPage() {
             story: row.story || '',
             acceptanceCriteria: (row.acceptanceCriteria || '').split('\n').filter(Boolean),
             tags: (row.tags || '').split(',').map((t: string) => t.trim()).filter(Boolean),
+            points: Number(row.points) || 0,
           })).filter(story => story.title && story.story);
 
           if (storiesToCreate.length === 0) {
@@ -183,6 +184,7 @@ export default function LibraryPage() {
               <TableRow>
                 <TableHead>Title</TableHead>
                 <TableHead>Tags</TableHead>
+                <TableHead>Points</TableHead>
                 <TableHead>Created</TableHead>
                 <TableHead className="text-right"></TableHead>
               </TableRow>
@@ -200,6 +202,7 @@ export default function LibraryPage() {
                         {story.tags.map(tag => <Badge key={tag} variant="secondary">{tag}</Badge>)}
                       </div>
                     </TableCell>
+                    <TableCell>{story.points}</TableCell>
                     <TableCell>{format(parseISO(story.createdAt), 'MMM dd, yyyy')}</TableCell>
                     <TableCell className="text-right">
                       <DropdownMenu>
@@ -224,7 +227,7 @@ export default function LibraryPage() {
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={4} className="h-24 text-center">
+                  <TableCell colSpan={5} className="h-24 text-center">
                     No user stories found.
                   </TableCell>
                 </TableRow>

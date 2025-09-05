@@ -21,12 +21,13 @@ export interface UserStory {
   story: string;
   acceptanceCriteria: string[];
   tags: string[];
+  points?: number;
   createdAt: FieldValue;
 }
 
 const userStoriesCollection = collection(db, 'userStories');
 
-export async function getUserStories(): Promise<Omit<UserStory, 'createdAt'> & { createdAt: string }[]> {
+export async function getUserStories(): Promise<(Omit<UserStory, 'createdAt'> & { createdAt: string })[]> {
   try {
     const snapshot = await getDocs(userStoriesCollection);
     return snapshot.docs.map((doc) => {
@@ -46,6 +47,7 @@ export async function getUserStories(): Promise<Omit<UserStory, 'createdAt'> & {
 export async function createUserStory(storyData: Omit<UserStory, 'id' | 'createdAt'>): Promise<string> {
   const docRef = await addDoc(userStoriesCollection, {
     ...storyData,
+    points: storyData.points || 0,
     createdAt: serverTimestamp(),
   });
   await updateDoc(docRef, { id: docRef.id });
@@ -60,6 +62,7 @@ export async function bulkCreateUserStories(storiesData: Omit<UserStory, 'id' | 
     const storyWithTimestamp = {
       ...storyData,
       id: docRef.id,
+      points: storyData.points || 0,
       createdAt: serverTimestamp(),
     };
     batch.set(docRef, storyWithTimestamp);

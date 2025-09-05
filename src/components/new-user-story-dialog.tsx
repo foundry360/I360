@@ -23,6 +23,7 @@ const initialNewStoryState = {
   story: '',
   acceptanceCriteria: [] as string[],
   tags: [] as string[],
+  points: 0,
 };
 
 export function NewUserStoryDialog() {
@@ -34,7 +35,7 @@ export function NewUserStoryDialog() {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { id, value } = e.target;
-    setNewStory((prev) => ({ ...prev, [id]: value }));
+    setNewStory((prev) => ({ ...prev, [id]: id === 'points' ? Number(value) : value }));
   };
 
   const handleAddCriterion = () => {
@@ -123,7 +124,7 @@ export function NewUserStoryDialog() {
                 required
               />
             </div>
-            <div className="grid grid-cols-4 items-start gap-4">
+             <div className="grid grid-cols-4 items-start gap-4">
               <Label htmlFor="acceptanceCriteria" className="text-right pt-2">Acceptance Criteria</Label>
               <div className="col-span-3 space-y-2">
                 <div className="flex gap-2">
@@ -172,6 +173,10 @@ export function NewUserStoryDialog() {
                     ))}
                 </div>
               </div>
+            </div>
+             <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="points" className="text-right">Story Points</Label>
+              <Input id="points" type="number" value={newStory.points} onChange={handleInputChange} className="col-span-3" />
             </div>
           </div>
           <DialogFooter className="pt-4">
