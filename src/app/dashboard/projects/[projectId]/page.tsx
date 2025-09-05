@@ -1096,7 +1096,7 @@ export default function ProjectDetailsPage() {
                                                             </DropdownMenuTrigger>
                                                             <DropdownMenuContent align="end">
                                                                 <DropdownMenuItem onSelect={() => openEditEpicDialog(epic)}><Pencil className="mr-2 h-4 w-4" />Edit</DropdownMenuItem>
-                                                                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setItemToDelete({type: 'epic', id: epic.id, name: epic.title}); setIsDeleteDialogOpen(true);}} className="text-destructive"><Trash2 className="mr-2 h-4 w-4" />Delete</DropdownMenuItem>
+                                                                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setItemToDelete({type: 'epic', id: epic.id, name: epic.title}); setIsDeleteDialogOpen(true);}} className="text-destructive focus:bg-destructive focus:text-destructive-foreground"><Trash2 className="mr-2 h-4 w-4" />Delete</DropdownMenuItem>
                                                             </DropdownMenuContent>
                                                         </DropdownMenu>
                                                     </div>
@@ -1157,7 +1157,7 @@ export default function ProjectDetailsPage() {
                                                                                 </DropdownMenuSubContent>
                                                                                 </DropdownMenuPortal>
                                                                             </DropdownMenuSub>
-                                                                            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setItemToDelete({type: 'backlogItem', id: item.id, name: item.title}); setIsDeleteDialogOpen(true);}} className="text-destructive"><Trash2 className="mr-2 h-4 w-4" />Delete</DropdownMenuItem>
+                                                                            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setItemToDelete({type: 'backlogItem', id: item.id, name: item.title}); setIsDeleteDialogOpen(true);}} className="text-destructive focus:bg-destructive focus:text-destructive-foreground"><Trash2 className="mr-2 h-4 w-4" />Delete</DropdownMenuItem>
                                                                         </DropdownMenuContent>
                                                                     </DropdownMenu>
                                                                 </div>
@@ -1229,7 +1229,7 @@ export default function ProjectDetailsPage() {
                                                                         </DropdownMenuItem>
                                                                         )}
                                                                         <DropdownMenuSeparator />
-                                                                        <DropdownMenuItem className="text-destructive" onClick={(e) => { e.stopPropagation(); setItemToDelete({type: 'sprint', id: sprint.id, name: sprint.name}); setIsDeleteDialogOpen(true);}}>
+                                                                        <DropdownMenuItem className="text-destructive focus:bg-destructive focus:text-destructive-foreground" onClick={(e) => { e.stopPropagation(); setItemToDelete({type: 'sprint', id: sprint.id, name: sprint.name}); setIsDeleteDialogOpen(true);}}>
                                                                             <Trash2 className="mr-2 h-4 w-4" /> Delete
                                                                         </DropdownMenuItem>
                                                                     </DropdownMenuContent>

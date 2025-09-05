@@ -421,7 +421,7 @@ export default function CompaniesPage() {
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
                               onClick={() => openDeleteDialog(company)}
-                              className="text-destructive"
+                              className="text-destructive focus:bg-destructive focus:text-destructive-foreground"
                             >
                               Delete Company
                             </DropdownMenuItem>

@@ -431,7 +431,7 @@ export default function AssessmentsPage() {
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem
                                   onClick={() => openDeleteDialog(assessment)}
-                                  className="text-destructive"
+                                  className="text-destructive focus:bg-destructive focus:text-destructive-foreground"
                                 >
                                   <Trash2 className="mr-2 h-4 w-4" />
                                   Delete
