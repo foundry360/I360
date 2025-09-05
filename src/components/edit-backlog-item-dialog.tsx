@@ -95,6 +95,10 @@ export function EditBacklogItemDialog() {
   };
   
   if (!item) return null;
+  
+  const sprint = editBacklogItemData?.sprints.find(s => s.id === item.sprintId);
+  const isStatusDisabled = sprint?.status === 'Not Started' || sprint?.status === 'Completed';
+
 
   return (
     <Dialog open={isEditBacklogItemDialogOpen} onOpenChange={handleOpenChange}>
@@ -160,7 +164,7 @@ export function EditBacklogItemDialog() {
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="status" className="text-right">Status</Label>
-                <Select onValueChange={handleSelectChange('status')} value={item.status}>
+                <Select onValueChange={handleSelectChange('status')} value={item.status} disabled={isStatusDisabled}>
                     <SelectTrigger className="col-span-3">
                         <SelectValue placeholder="Select a status" />
                     </SelectTrigger>
