@@ -27,6 +27,8 @@ import Papa from 'papaparse';
 import { epicIcons } from '@/app/dashboard/projects/[projectId]/page';
 import { cn } from '@/lib/utils';
 import { Layers } from 'lucide-react';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+
 
 type StoryWithDateAsString = Omit<UserStory, 'createdAt'> & { createdAt: string };
 
@@ -61,6 +63,8 @@ export default function LibraryPage() {
   const { openNewUserStoryDialog, setOnUserStoryCreated } = useQuickAction();
   const { toast } = useToast();
   const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const [isUploadResultDialogOpen, setIsUploadResultDialogOpen] = React.useState(false);
+  const [uploadStats, setUploadStats] = React.useState<{ importedCount: number, skippedCount: number } | null>(null);
 
   const fetchStories = React.useCallback(async () => {
     try {
@@ -125,10 +129,8 @@ export default function LibraryPage() {
           }
 
           const { importedCount, skippedCount } = await bulkCreateUserStories(storiesToCreate);
-          toast({
-            title: 'Upload Complete',
-            description: `${importedCount} stories imported. ${skippedCount} duplicates skipped.`,
-          });
+          setUploadStats({ importedCount, skippedCount });
+          setIsUploadResultDialogOpen(true);
           fetchStories();
         } catch (error) {
           console.error("Failed to upload stories:", error);
@@ -184,7 +186,7 @@ export default function LibraryPage() {
   const allTags = Object.keys(storiesByTag).sort();
 
   return (
-    <div className="space-y-6">
+    <>
       <input
         type="file"
         ref={fileInputRef}
@@ -192,101 +194,120 @@ export default function LibraryPage() {
         className="hidden"
         accept=".csv"
       />
-      <div>
-        <h1 className="text-2xl font-bold">User Story Library</h1>
-        <p className="text-muted-foreground">
-          Browse and manage reusable user stories for your projects.
-        </p>
-      </div>
-      <Separator />
-      <div className="flex justify-between items-center">
-        <div className="relative">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search library..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-8 w-64"
-          />
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-2xl font-bold">User Story Library</h1>
+          <p className="text-muted-foreground">
+            Browse and manage reusable user stories for your projects.
+          </p>
         </div>
-        <div className="flex items-center gap-2">
-           <Button variant="outline" size="icon" onClick={handleUploadClick}>
-            <Upload className="h-4 w-4" />
-            <span className="sr-only">Upload CSV</span>
-          </Button>
-          <Button size="icon" onClick={openNewUserStoryDialog}>
-            <Plus className="h-4 w-4" />
-            <span className="sr-only">New User Story</span>
-          </Button>
-        </div>
-      </div>
-      <div className="border rounded-lg p-2">
-        {loading ? (
-          <div className="space-y-4 p-4">
-            <Skeleton className="h-12 w-full" />
-            <Skeleton className="h-12 w-full" />
-            <Skeleton className="h-12 w-full" />
+        <Separator />
+        <div className="flex justify-between items-center">
+          <div className="relative">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search library..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-8 w-64"
+            />
           </div>
-        ) : (
-          <Accordion type="multiple" className="w-full">
-            {allTags.length > 0 ? (
-              allTags.map(tag => {
-                const { icon: Icon, color } = getIconForTag(tag);
-                return (
-                  <AccordionItem value={tag} key={tag}>
-                    <AccordionTrigger>
-                      <div className="flex items-center gap-2 flex-1">
-                         <Icon className={cn("h-5 w-5", color)} />
-                         <h3 className="text-base font-semibold">{tag}</h3>
-                         <Badge variant="secondary">{storiesByTag[tag].length}</Badge>
-                      </div>
-                    </AccordionTrigger>
-                    <AccordionContent>
-                      <div className="space-y-2 pl-4">
-                        {storiesByTag[tag].map(story => (
-                          <div key={story.id} className="flex items-center justify-between p-3 rounded-md hover:bg-muted">
-                             <div className="flex-1 flex items-center gap-3">
-                                 <Icon className={cn("h-4 w-4", color)} />
-                                 <div>
-                                      <p className="font-medium text-sm">{story.title}</p>
-                                      <p className="text-xs text-muted-foreground line-clamp-1">{story.story}</p>
-                                  </div>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="icon" onClick={handleUploadClick}>
+              <Upload className="h-4 w-4" />
+              <span className="sr-only">Upload CSV</span>
+            </Button>
+            <Button size="icon" onClick={openNewUserStoryDialog}>
+              <Plus className="h-4 w-4" />
+              <span className="sr-only">New User Story</span>
+            </Button>
+          </div>
+        </div>
+        <div className="border rounded-lg p-2">
+          {loading ? (
+            <div className="space-y-4 p-4">
+              <Skeleton className="h-12 w-full" />
+              <Skeleton className="h-12 w-full" />
+              <Skeleton className="h-12 w-full" />
+            </div>
+          ) : (
+            <Accordion type="multiple" className="w-full">
+              {allTags.length > 0 ? (
+                allTags.map(tag => {
+                  const { icon: Icon, color } = getIconForTag(tag);
+                  return (
+                    <AccordionItem value={tag} key={tag}>
+                      <AccordionTrigger>
+                        <div className="flex items-center gap-2 flex-1">
+                          <Icon className={cn("h-5 w-5", color)} />
+                          <h3 className="text-base font-semibold">{tag}</h3>
+                          <Badge variant="secondary">{storiesByTag[tag].length}</Badge>
+                        </div>
+                      </AccordionTrigger>
+                      <AccordionContent>
+                        <div className="space-y-2 pl-4">
+                          {storiesByTag[tag].map(story => (
+                            <div key={story.id} className="flex items-center justify-between p-3 rounded-md hover:bg-muted">
+                              <div className="flex-1 flex items-center gap-3">
+                                  <Icon className={cn("h-4 w-4", color)} />
+                                  <div>
+                                        <p className="font-medium text-sm">{story.title}</p>
+                                        <p className="text-xs text-muted-foreground line-clamp-1">{story.story}</p>
+                                    </div>
+                                </div>
+                              <div className="flex items-center gap-4 ml-4">
+                                  <Badge variant="outline">{story.points || 0} Points</Badge>
+                                  <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                      <Button variant="ghost" className="h-8 w-8 p-0">
+                                        <span className="sr-only">Open menu</span>
+                                        <MoreHorizontal className="h-4 w-4" />
+                                      </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end">
+                                      <DropdownMenuItem>View/Edit</DropdownMenuItem>
+                                      <DropdownMenuItem
+                                        onClick={() => handleDelete(story.id)}
+                                        className="text-destructive focus:text-destructive-foreground"
+                                      >
+                                        <Trash2 className="mr-2 h-4 w-4" /> Delete
+                                      </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                  </DropdownMenu>
                               </div>
-                             <div className="flex items-center gap-4 ml-4">
-                                 <Badge variant="outline">{story.points || 0} Points</Badge>
-                                 <DropdownMenu>
-                                  <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" className="h-8 w-8 p-0">
-                                      <span className="sr-only">Open menu</span>
-                                      <MoreHorizontal className="h-4 w-4" />
-                                    </Button>
-                                  </DropdownMenuTrigger>
-                                  <DropdownMenuContent align="end">
-                                    <DropdownMenuItem>View/Edit</DropdownMenuItem>
-                                    <DropdownMenuItem
-                                      onClick={() => handleDelete(story.id)}
-                                      className="text-destructive focus:text-destructive-foreground"
-                                    >
-                                      <Trash2 className="mr-2 h-4 w-4" /> Delete
-                                    </DropdownMenuItem>
-                                  </DropdownMenuContent>
-                                </DropdownMenu>
-                             </div>
-                          </div>
-                        ))}
-                      </div>
-                    </AccordionContent>
-                  </AccordionItem>
-                )
-              })
-            ) : (
-              <div className="h-24 text-center flex items-center justify-center text-muted-foreground">
-                No user stories found.
-              </div>
-            )}
-          </Accordion>
-        )}
+                            </div>
+                          ))}
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
+                  )
+                })
+              ) : (
+                <div className="h-24 text-center flex items-center justify-center text-muted-foreground">
+                  No user stories found.
+                </div>
+              )}
+            </Accordion>
+          )}
+        </div>
       </div>
-    </div>
+      <AlertDialog open={isUploadResultDialogOpen} onOpenChange={setIsUploadResultDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Upload Complete</AlertDialogTitle>
+            <AlertDialogDescription>
+              Your CSV file has been processed.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="py-4">
+            <p><strong>Successfully Imported:</strong> {uploadStats?.importedCount || 0} user stories.</p>
+            <p><strong>Duplicates Skipped:</strong> {uploadStats?.skippedCount || 0} user stories.</p>
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogAction onClick={() => setIsUploadResultDialogOpen(false)}>OK</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }
