@@ -63,7 +63,12 @@ export async function getBacklogItemsForProject(projectId: string): Promise<Back
 export async function createBacklogItem(itemData: Omit<BacklogItem, 'id' | 'backlogId'>): Promise<string> {
     const docRef = await addDoc(backlogItemsCollection, {});
     const nextId = await getNextBacklogId(itemData.projectId, itemData.epicId);
-    const newItem = { ...itemData, id: docRef.id, backlogId: nextId };
+    const newItem = { 
+        ...itemData, 
+        id: docRef.id, 
+        backlogId: nextId,
+        dueDate: itemData.dueDate ? parseISO(itemData.dueDate).toISOString() : null
+    };
     await setDoc(docRef, newItem);
     await updateProjectLastActivity(itemData.projectId);
     return docRef.id;
