@@ -24,7 +24,7 @@ import { createBacklogItem, type BacklogItem } from '@/services/backlog-item-ser
 import { useQuickAction } from '@/contexts/quick-action-context';
 import type { Epic } from '@/services/epic-service';
 import { TaskPriority } from '@/services/task-service';
-import { useUser } from '@/contexts/user-context';
+import { getProject } from '@/services/project-service';
 
 type NewBacklogItemState = Omit<BacklogItem, 'id' | 'backlogId'>;
 
@@ -41,13 +41,6 @@ const initialNewItemState: NewBacklogItemState = {
   dueDate: '',
 };
 
-// MOCK USER DATA - Replace with a service call to fetch actual users
-const mockUsers = [
-    { id: 'user-1', displayName: 'Alice Johnson', photoURL: 'https://i.pravatar.cc/150?u=alice' },
-    { id: 'user-2', displayName: 'Bob Williams', photoURL: 'https://i.pravatar.cc/150?u=bob' },
-];
-// END MOCK USER DATA
-
 export function NewBacklogItemDialog() {
   const {
     isNewBacklogItemDialogOpen,
@@ -57,30 +50,25 @@ export function NewBacklogItemDialog() {
   } = useQuickAction();
   
   const [newItem, setNewItem] = React.useState<NewBacklogItemState>(initialNewItemState);
-  const { user } = useUser();
-  const [systemUsers, setSystemUsers] = React.useState<any[]>([]);
 
   React.useEffect(() => {
-    if (newBacklogItemData?.projectId && newBacklogItemData?.companyId) {
-      const defaultOwner = user?.displayName || user?.email || '';
-      const defaultAvatar = user?.photoURL || '';
-      setNewItem(prev => ({ 
-        ...prev, 
-        projectId: newBacklogItemData.projectId,
-        owner: defaultOwner,
-        ownerAvatarUrl: defaultAvatar
-      }));
+    const setInitialOwner = async () => {
+        if (newBacklogItemData?.projectId) {
+            const project = await getProject(newBacklogItemData.projectId);
+            if (project) {
+                 setNewItem(prev => ({ 
+                    ...prev, 
+                    projectId: newBacklogItemData.projectId,
+                    owner: project.owner,
+                    ownerAvatarUrl: project.ownerAvatarUrl || '',
+                }));
+            }
+        }
     }
-    if (user) {
-        const allUsers = [
-            { id: user.uid, displayName: user.displayName || user.email, photoURL: user.photoURL },
-            ...mockUsers
-        ];
-        const uniqueUsers = Array.from(new Set(allUsers.map(u => u.id)))
-            .map(id => allUsers.find(u => u.id === id)!);
-        setSystemUsers(uniqueUsers);
+    if(isNewBacklogItemDialogOpen) {
+        setInitialOwner();
     }
-  }, [newBacklogItemData, user]);
+  }, [newBacklogItemData, isNewBacklogItemDialogOpen]);
   
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -88,21 +76,14 @@ export function NewBacklogItemDialog() {
     setNewItem((prev) => ({ ...prev, [id]: id === 'points' ? Number(value) : value }));
   };
 
-  const handleSelectChange = (field: 'epicId' | 'priority' | 'owner') => (value: string) => {
-    if (field === 'owner') {
-        const selectedUser = systemUsers.find(u => u.displayName === value);
-        if (selectedUser) {
-            setNewItem(prev => ({...prev, owner: selectedUser.displayName!, ownerAvatarUrl: selectedUser.photoURL || '' }));
-        }
-    } else {
-        setNewItem((prev) => ({ ...prev, [field]: value }));
-    }
+  const handleSelectChange = (field: 'epicId' | 'priority') => (value: string) => {
+    setNewItem((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleCreateItem = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newItem.title || !newItem.epicId || !newItem.owner) {
-      alert('Title, Epic, and Owner are required');
+      alert('Title and Epic are required, and an owner must be set on the project.');
       return;
     }
     try {
@@ -130,7 +111,7 @@ export function NewBacklogItemDialog() {
           <DialogHeader>
             <DialogTitle>Create New Backlog Item</DialogTitle>
             <DialogDescription>
-              Fill in the details below to add an item to the project backlog.
+              Fill in the details below to add an item to the project backlog. The owner will be automatically assigned from the project.
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4 max-h-[70vh] overflow-y-auto pr-4">
@@ -153,19 +134,6 @@ export function NewBacklogItemDialog() {
                     <SelectItem key={epic.id} value={epic.id}>{epic.title}</SelectItem>
                   ))}
                 </SelectContent>
-              </Select>
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="owner" className="text-right">Owner</Label>
-              <Select onValueChange={handleSelectChange('owner')} value={newItem.owner} required>
-                  <SelectTrigger className="col-span-3">
-                    <SelectValue placeholder="Select an owner" />
-                  </SelectTrigger>
-                  <SelectContent>
-                      {systemUsers.map((u) => (
-                          <SelectItem key={u.id} value={u.displayName!}>{u.displayName}</SelectItem>
-                      ))}
-                  </SelectContent>
               </Select>
             </div>
              <div className="grid grid-cols-4 items-center gap-4">
