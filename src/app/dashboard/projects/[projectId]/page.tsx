@@ -735,7 +735,6 @@ export default function ProjectDetailsPage() {
     const completedPercentage = totalTasks > 0 ? (completedTasksCount / totalTasks) * 100 : 0;
     const overduePercentage = totalTasks > 0 ? (overdueTasksCount / totalTasks) * 100 : 0;
     
-    const HealthIcon = projectHealth.icon;
 
     return (
         <div className="flex flex-col h-full">
@@ -1044,7 +1043,7 @@ export default function ProjectDetailsPage() {
                                     <Card>
                                         <CardHeader className="flex flex-row items-center justify-between pb-2">
                                             <CardTitle className="text-sm font-medium text-muted-foreground">Overdue Tasks</CardTitle>
-                                            <Clock className="h-4 w-4 text-danger" />
+                                            <Loader className="h-4 w-4 text-danger" />
                                         </CardHeader>
                                         <CardContent>
                                             <p className="text-2xl font-bold text-danger">{overdueTasksCount}</p>
@@ -1057,7 +1056,7 @@ export default function ProjectDetailsPage() {
                                     <Card>
                                         <CardHeader className="flex flex-row items-center justify-between pb-2">
                                             <CardTitle className="text-sm font-medium text-muted-foreground">Engagement Health</CardTitle>
-                                            <HealthIcon className={cn("h-4 w-4", projectHealth.color)} />
+                                            <CheckCircle2 className={cn("h-4 w-4", projectHealth.color)} />
                                         </CardHeader>
                                         <CardContent>
                                             <p className={cn("text-xl font-bold", projectHealth.color)}>{projectHealth.status}</p>
