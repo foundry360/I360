@@ -2,7 +2,7 @@
 'use client';
 
 import { db } from '@/lib/firebase';
-import { collection, doc, getDocs, setDoc, updateDoc, query, where, writeBatch, runTransaction, DocumentReference, WriteBatch, addDoc, deleteDoc, getDoc } from 'firebase/firestore';
+import { collection, doc, getDocs, setDoc, updateDoc, query, where, writeBatch, runTransaction, DocumentReference, WriteBatch, addDoc, deleteDoc, getDoc, deleteField } from 'firebase/firestore';
 import type { BacklogItem } from './backlog-item-service';
 import { updateProjectLastActivity } from './project-service';
 
@@ -84,10 +84,8 @@ export async function updateTask(id: string, taskData: Partial<Omit<Task, 'id'>>
             const backlogUpdateData: Partial<Omit<BacklogItem, 'id'>> = {};
             if (taskData.status) backlogUpdateData.status = taskData.status;
 
-            if (taskData.dueDate) {
-                backlogUpdateData.dueDate = taskData.dueDate;
-            } else if (taskData.hasOwnProperty('dueDate')) { // Handle removal of due date
-                backlogUpdateData.dueDate = null;
+            if (taskData.hasOwnProperty('dueDate')) {
+                backlogUpdateData.dueDate = taskData.dueDate || null;
             }
 
             if (taskData.description) backlogUpdateData.description = taskData.description;

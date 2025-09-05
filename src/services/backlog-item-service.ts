@@ -114,8 +114,8 @@ export async function updateBacklogItem(id: string, data: Partial<BacklogItem>):
     
     if (dueDate) {
         finalData.dueDate = parseISO(dueDate).toISOString();
-    } else if (dueDate === null) {
-        finalData.dueDate = deleteField();
+    } else if (dueDate === null || dueDate === '') {
+        finalData.dueDate = null;
     }
 
     await updateDoc(docRef, finalData);
