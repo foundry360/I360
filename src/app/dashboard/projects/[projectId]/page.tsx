@@ -1091,11 +1091,11 @@ export default function ProjectDetailsPage() {
                                     
                                     return (
                                         <AccordionItem key={epic.id} value={epic.id}>
-                                            <AccordionTrigger>
+                                            <AccordionTrigger className="text-base">
                                                 <div className="flex items-center gap-3 flex-1">
                                                     <IconComponent className={cn("h-5 w-5", epicConfig.color)} />
                                                     <Badge variant={epic.status === 'Done' ? 'success' : 'secondary'} className="whitespace-nowrap">{epic.status}</Badge>
-                                                    <span className="font-semibold">{epic.title}</span>
+                                                    <span className="font-semibold text-sm">{epic.title}</span>
                                                     <span className="text-muted-foreground text-sm">{projectPrefix}-{epic.epicId}</span>
                                                 </div>
                                             </AccordionTrigger>
@@ -1211,9 +1211,9 @@ export default function ProjectDetailsPage() {
                                                 return (
                                                     <AccordionItem key={sprint.id} value={sprint.id} className="border rounded-lg bg-card">
                                                         <div className="flex items-center p-4">
-                                                            <AccordionTrigger className="p-0 hover:no-underline flex-1" noChevron>
+                                                            <AccordionTrigger className="p-0 hover:no-underline flex-1 text-sm" noChevron>
                                                             <div className='flex items-center flex-1 gap-4'>
-                                                                <h3 className="font-semibold text-base">{sprint.name}</h3>
+                                                                <h3 className="font-semibold text-sm">{sprint.name}</h3>
                                                                 <p className="text-sm text-muted-foreground">
                                                                     {format(parseISO(sprint.startDate), 'MMM d')} - {format(parseISO(sprint.endDate), 'MMM d, yyyy')}
                                                                 </p>
