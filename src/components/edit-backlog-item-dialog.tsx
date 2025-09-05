@@ -154,7 +154,7 @@ export function EditBacklogItemDialog() {
             </div>
              <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="owner" className="text-right">Owner</Label>
-              <Select onValueChange={handleSelectChange('owner')} value={item.owner}>
+              <Select onValueChange={handleSelectChange('owner')} value={item.owner} required>
                   <SelectTrigger className="col-span-3">
                     <SelectValue placeholder="Select an owner" />
                   </SelectTrigger>

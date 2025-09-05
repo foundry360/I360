@@ -101,8 +101,8 @@ export function NewBacklogItemDialog() {
 
   const handleCreateItem = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newItem.title || !newItem.epicId) {
-      alert('Title and Epic are required');
+    if (!newItem.title || !newItem.epicId || !newItem.owner) {
+      alert('Title, Epic, and Owner are required');
       return;
     }
     try {
@@ -157,7 +157,7 @@ export function NewBacklogItemDialog() {
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="owner" className="text-right">Owner</Label>
-              <Select onValueChange={handleSelectChange('owner')} value={newItem.owner}>
+              <Select onValueChange={handleSelectChange('owner')} value={newItem.owner} required>
                   <SelectTrigger className="col-span-3">
                     <SelectValue placeholder="Select an owner" />
                   </SelectTrigger>
