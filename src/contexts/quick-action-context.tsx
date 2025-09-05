@@ -117,73 +117,69 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
   // New Company Dialog State
   const [isNewCompanyDialogOpen, setIsNewCompanyDialogOpen] =
     React.useState(false);
-  const [onCompanyCreated, setOnCompanyCreated] = React.useState<
-    (() => void) | null
-  >(null);
+  const onCompanyCreatedRef = React.useRef<(() => void) | null>(null);
 
   // New Contact Dialog State
   const [isNewContactDialogOpen, setIsNewContactDialogOpen] =
     React.useState(false);
-  const [onContactCreated, setOnContactCreated] = React.useState<
-    (() => void) | null
-  >(null);
+  const onContactCreatedRef = React.useRef<(() => void) | null>(null);
 
   // New Assessment Modal State
   const [isAssessmentModalOpen, setIsAssessmentModalOpen] = React.useState(false);
   const [assessmentToResume, setAssessmentToResume] = React.useState<Assessment | null>(null);
-  const [onAssessmentCompleted, setOnAssessmentCompleted] = React.useState<(() => void) | null>(null);
+  const onAssessmentCompletedRef = React.useRef<(() => void) | null>(null);
   
   // New Project Dialog State
   const [isNewProjectDialogOpen, setIsNewProjectDialogOpen] = React.useState(false);
-  const [onProjectCreated, setOnProjectCreated] = React.useState<(() => void) | null>(null);
+  const onProjectCreatedRef = React.useRef<(() => void) | null>(null);
 
   // Edit Project Dialog State
   const [isEditProjectDialogOpen, setIsEditProjectDialogOpen] = React.useState(false);
-  const [onProjectUpdated, setOnProjectUpdated] = React.useState<(() => void) | null>(null);
+  const onProjectUpdatedRef = React.useRef<(() => void) | null>(null);
   const [editProjectData, setEditProjectData] = React.useState<Project | null>(null);
 
   // New Backlog Item Dialog State
   const [isNewBacklogItemDialogOpen, setIsNewBacklogItemDialogOpen] = React.useState(false);
-  const [onBacklogItemCreated, setOnBacklogItemCreated] = React.useState<(() => void) | null>(null);
+  const onBacklogItemCreatedRef = React.useRef<(() => void) | null>(null);
   const [newBacklogItemData, setNewBacklogItemData] = React.useState<{ projectId: string, companyId: string, epics: Epic[] } | null>(null);
 
   // New Epic Dialog State
   const [isNewEpicDialogOpen, setIsNewEpicDialogOpen] = React.useState(false);
-  const [onEpicCreated, setOnEpicCreated] = React.useState<(() => void) | null>(null);
+  const onEpicCreatedRef = React.useRef<(() => void) | null>(null);
   const [newEpicData, setNewEpicData] = React.useState<{ projectId: string } | null>(null);
 
   // Edit Epic Dialog State
   const [isEditEpicDialogOpen, setIsEditEpicDialogOpen] = React.useState(false);
-  const [onEpicUpdated, setOnEpicUpdated] = React.useState<(() => void) | null>(null);
+  const onEpicUpdatedRef = React.useRef<(() => void) | null>(null);
   const [editEpicData, setEditEpicData] = React.useState<Epic | null>(null);
 
   // Edit Backlog Item Dialog State
   const [isEditBacklogItemDialogOpen, setIsEditBacklogItemDialogOpen] = React.useState(false);
-  const [onBacklogItemUpdated, setOnBacklogItemUpdated] = React.useState<(() => void) | null>(null);
+  const onBacklogItemUpdatedRef = React.useRef<(() => void) | null>(null);
   const [editBacklogItemData, setEditBacklogItemData] = React.useState<{ item: BacklogItem, epics: Epic[], sprints: Sprint[], contacts: Contact[] } | null>(null);
 
   // New Sprint Dialog State
   const [isNewSprintDialogOpen, setIsNewSprintDialogOpen] = React.useState(false);
-  const [onSprintCreated, setOnSprintCreated] = React.useState<(() => void) | null>(null);
+  const onSprintCreatedRef = React.useRef<(() => void) | null>(null);
   const [newSprintData, setNewSprintData] = React.useState<{ projectId: string } | null>(null);
   
   // Edit Sprint Dialog State
   const [isEditSprintDialogOpen, setIsEditSprintDialogOpen] = React.useState(false);
-  const [onSprintUpdated, setOnSprintUpdated] = React.useState<(() => void) | null>(null);
+  const onSprintUpdatedRef = React.useRef<(() => void) | null>(null);
   const [editSprintData, setEditSprintData] = React.useState<Sprint | null>(null);
 
   // Edit Task Dialog State
   const [isEditTaskDialogOpen, setIsEditTaskDialogOpen] = React.useState(false);
-  const [onTaskUpdated, setOnTaskUpdated] = React.useState<(() => void) | null>(null);
+  const onTaskUpdatedRef = React.useRef<(() => void) | null>(null);
   const [editTaskData, setEditTaskData] = React.useState<{ task: Task, contacts: Contact[] } | null>(null);
 
   // New User Story Dialog State
   const [isNewUserStoryDialogOpen, setIsNewUserStoryDialogOpen] = React.useState(false);
-  const [onUserStoryCreated, setOnUserStoryCreated] = React.useState<(() => void) | null>(null);
+  const onUserStoryCreatedRef = React.useRef<(() => void) | null>(null);
   
   // Add from Library Dialog State
   const [isAddFromLibraryDialogOpen, setIsAddFromLibraryDialogOpen] = React.useState(false);
-  const [onAddFromLibrary, setOnAddFromLibrary] = React.useState<(() => void) | null>(null);
+  const onAddFromLibraryRef = React.useRef<(() => void) | null>(null);
   const [addFromLibraryData, setAddFromLibraryData] = React.useState<{ projectId: string, epics: Epic[] } | null>(null);
 
   // Global Search State
@@ -199,8 +195,8 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
 
   const handleSetOnCompanyCreated = React.useCallback(
     (callback: (() => void) | null) => {
-      setOnCompanyCreated(() => callback);
-      return () => setOnCompanyCreated(null);
+      onCompanyCreatedRef.current = callback;
+      return () => { onCompanyCreatedRef.current = null; };
     },
     []
   );
@@ -215,8 +211,8 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
 
   const handleSetOnContactCreated = React.useCallback(
     (callback: (() => void) | null) => {
-      setOnContactCreated(() => callback);
-       return () => setOnContactCreated(null);
+      onContactCreatedRef.current = callback;
+       return () => { onContactCreatedRef.current = null; };
     },
     []
   );
@@ -233,8 +229,8 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
 
   const handleSetOnAssessmentCompleted = React.useCallback(
     (callback: (() => void) | null) => {
-      setOnAssessmentCompleted(() => callback);
-       return () => setOnAssessmentCompleted(null);
+      onAssessmentCompletedRef.current = callback;
+       return () => { onAssessmentCompletedRef.current = null; };
     },
     []
   );
@@ -249,8 +245,8 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
 
   const handleSetOnProjectCreated = React.useCallback(
     (callback: (() => void) | null) => {
-        setOnProjectCreated(() => callback);
-        return () => setOnProjectCreated(null);
+        onProjectCreatedRef.current = callback;
+        return () => { onProjectCreatedRef.current = null; };
     },
     []
   );
@@ -267,8 +263,8 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
 
   const handleSetOnProjectUpdated = React.useCallback(
     (callback: (() => void) | null) => {
-      setOnProjectUpdated(() => callback);
-      return () => setOnProjectUpdated(null);
+      onProjectUpdatedRef.current = callback;
+      return () => { onProjectUpdatedRef.current = null; };
     },
     []
   );
@@ -285,8 +281,8 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
 
   const handleSetOnBacklogItemCreated = React.useCallback(
     (callback: (() => void) | null) => {
-        setOnBacklogItemCreated(() => callback);
-        return () => setOnBacklogItemCreated(null);
+        onBacklogItemCreatedRef.current = callback;
+        return () => { onBacklogItemCreatedRef.current = null; };
     },
     []
   );
@@ -303,8 +299,8 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
 
   const handleSetOnEpicCreated = React.useCallback(
     (callback: (() => void) | null) => {
-        setOnEpicCreated(() => callback);
-        return () => setOnEpicCreated(null);
+        onEpicCreatedRef.current = callback;
+        return () => { onEpicCreatedRef.current = null; };
     },
     []
   );
@@ -321,8 +317,8 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
 
   const handleSetOnEpicUpdated = React.useCallback(
     (callback: (() => void) | null) => {
-        setOnEpicUpdated(() => callback);
-        return () => setOnEpicUpdated(null);
+        onEpicUpdatedRef.current = callback;
+        return () => { onEpicUpdatedRef.current = null; };
     },
     []
   );
@@ -339,8 +335,8 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
 
   const handleSetOnBacklogItemUpdated = React.useCallback(
     (callback: (() => void) | null) => {
-        setOnBacklogItemUpdated(() => callback);
-        return () => setOnBacklogItemUpdated(null);
+        onBacklogItemUpdatedRef.current = callback;
+        return () => { onBacklogItemUpdatedRef.current = null; };
     },
     []
   );
@@ -357,8 +353,8 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
 
   const handleSetOnSprintCreated = React.useCallback(
     (callback: (() => void) | null) => {
-        setOnSprintCreated(() => callback);
-        return () => setOnSprintCreated(null);
+        onSprintCreatedRef.current = callback;
+        return () => { onSprintCreatedRef.current = null; };
     },
     []
   );
@@ -375,8 +371,8 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
 
   const handleSetOnSprintUpdated = React.useCallback(
     (callback: (() => void) | null) => {
-      setOnSprintUpdated(() => callback);
-      return () => setOnSprintUpdated(null);
+      onSprintUpdatedRef.current = callback;
+      return () => { onSprintUpdatedRef.current = null; };
     },
     []
   );
@@ -393,8 +389,8 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
 
   const handleSetOnTaskUpdated = React.useCallback(
     (callback: (() => void) | null) => {
-      setOnTaskUpdated(() => callback);
-      return () => setOnTaskUpdated(null);
+      onTaskUpdatedRef.current = callback;
+      return () => { onTaskUpdatedRef.current = null; };
     },
     []
   );
@@ -409,8 +405,8 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
 
   const handleSetOnUserStoryCreated = React.useCallback(
     (callback: (() => void) | null) => {
-        setOnUserStoryCreated(() => callback);
-        return () => setOnUserStoryCreated(null);
+        onUserStoryCreatedRef.current = callback;
+        return () => { onUserStoryCreatedRef.current = null; };
     },
     []
   );
@@ -427,8 +423,8 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
 
   const handleSetOnAddFromLibrary = React.useCallback(
     (callback: (() => void) | null) => {
-        setOnAddFromLibrary(() => callback);
-        return () => setOnAddFromLibrary(null);
+        onAddFromLibraryRef.current = callback;
+        return () => { onAddFromLibraryRef.current = null; };
     },
     []
   );
@@ -440,94 +436,94 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
         isNewCompanyDialogOpen,
         openNewCompanyDialog,
         closeNewCompanyDialog,
-        onCompanyCreated,
+        onCompanyCreated: onCompanyCreatedRef.current,
         setOnCompanyCreated: handleSetOnCompanyCreated,
 
         isNewContactDialogOpen,
         openNewContactDialog,
         closeNewContactDialog,
-        onContactCreated,
+        onContactCreated: onContactCreatedRef.current,
         setOnContactCreated: handleSetOnContactCreated,
         
         isAssessmentModalOpen,
         openAssessmentModal,
         closeAssessmentModal,
         assessmentToResume,
-        onAssessmentCompleted,
+        onAssessmentCompleted: onAssessmentCompletedRef.current,
         setOnAssessmentCompleted: handleSetOnAssessmentCompleted,
         
         isNewProjectDialogOpen,
         openNewProjectDialog,
         closeNewProjectDialog,
-        onProjectCreated,
+        onProjectCreated: onProjectCreatedRef.current,
         setOnProjectCreated: handleSetOnProjectCreated,
 
         isEditProjectDialogOpen,
         openEditProjectDialog,
         closeEditProjectDialog,
-        onProjectUpdated,
+        onProjectUpdated: onProjectUpdatedRef.current,
         setOnProjectUpdated: handleSetOnProjectUpdated,
         editProjectData,
 
         isNewBacklogItemDialogOpen,
         openNewBacklogItemDialog,
         closeNewBacklogItemDialog,
-        onBacklogItemCreated,
+        onBacklogItemCreated: onBacklogItemCreatedRef.current,
         setOnBacklogItemCreated: handleSetOnBacklogItemCreated,
         newBacklogItemData,
 
         isNewEpicDialogOpen,
         openNewEpicDialog,
         closeNewEpicDialog,
-        onEpicCreated,
+        onEpicCreated: onEpicCreatedRef.current,
         setOnEpicCreated: handleSetOnEpicCreated,
         newEpicData,
 
         isEditEpicDialogOpen,
         openEditEpicDialog,
         closeEditEpicDialog,
-        onEpicUpdated,
+        onEpicUpdated: onEpicUpdatedRef.current,
         setOnEpicUpdated: handleSetOnEpicUpdated,
         editEpicData,
 
         isEditBacklogItemDialogOpen,
         openEditBacklogItemDialog,
         closeEditBacklogItemDialog,
-        onBacklogItemUpdated,
+        onBacklogItemUpdated: onBacklogItemUpdatedRef.current,
         setOnBacklogItemUpdated: handleSetOnBacklogItemUpdated,
         editBacklogItemData,
 
         isNewSprintDialogOpen,
         openNewSprintDialog,
         closeNewSprintDialog,
-        onSprintCreated,
+        onSprintCreated: onSprintCreatedRef.current,
         setOnSprintCreated: handleSetOnSprintCreated,
         newSprintData,
 
         isEditSprintDialogOpen,
         openEditSprintDialog,
         closeEditSprintDialog,
-        onSprintUpdated,
+        onSprintUpdated: onSprintUpdatedRef.current,
         setOnSprintUpdated: handleSetOnSprintUpdated,
         editSprintData,
 
         isEditTaskDialogOpen,
         openEditTaskDialog,
         closeEditTaskDialog,
-        onTaskUpdated,
+        onTaskUpdated: onTaskUpdatedRef.current,
         setOnTaskUpdated: handleSetOnTaskUpdated,
         editTaskData,
         
         isNewUserStoryDialogOpen,
         openNewUserStoryDialog,
         closeNewUserStoryDialog,
-        onUserStoryCreated,
+        onUserStoryCreated: onUserStoryCreatedRef.current,
         setOnUserStoryCreated: handleSetOnUserStoryCreated,
         
         isAddFromLibraryDialogOpen,
         openAddFromLibraryDialog,
         closeAddFromLibraryDialog,
-        onAddFromLibrary,
+        onAddFromLibrary: onAddFromLibraryRef.current,
         setOnAddFromLibrary: handleSetOnAddFromLibrary,
         addFromLibraryData,
 
