@@ -81,14 +81,17 @@ export async function updateTask(id: string, taskData: Partial<Omit<Task, 'id'>>
         const backlogSnapshot = await getDocs(backlogQuery);
         if (!backlogSnapshot.empty) {
             const backlogItemRef = backlogSnapshot.docs[0].ref;
-            const backlogUpdateData: Partial<BacklogItem> = {};
+            const backlogUpdateData: Partial<Omit<BacklogItem, 'id'>> = {};
             if (taskData.status) backlogUpdateData.status = taskData.status;
-            if (taskData.dueDate) backlogUpdateData.dueDate = taskData.dueDate;
+
+            if (taskData.dueDate) {
+                backlogUpdateData.dueDate = taskData.dueDate;
+            } else if (taskData.hasOwnProperty('dueDate')) { // Handle removal of due date
+                backlogUpdateData.dueDate = null;
+            }
+
             if (taskData.description) backlogUpdateData.description = taskData.description;
-            if (taskData.owner) backlogUpdateData.owner = taskData.owner;
-            if (taskData.ownerAvatarUrl) backlogUpdateData.ownerAvatarUrl = taskData.ownerAvatarUrl;
             
-            // Ensure owner fields are present even if not changed, to prevent undefined errors
             backlogUpdateData.owner = taskData.owner || originalTask.owner;
             backlogUpdateData.ownerAvatarUrl = taskData.ownerAvatarUrl || originalTask.ownerAvatarUrl;
 
