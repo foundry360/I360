@@ -8,13 +8,16 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuSub,
+  DropdownMenuSubTrigger,
+  DropdownMenuSubContent
 } from '@/components/ui/dropdown-menu';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Button } from './ui/button';
-import { Plus, Search, LogOut, Briefcase, UserPlus, FilePlus, Bell, CheckCheck, Maximize, Minimize } from 'lucide-react';
+import { Plus, Search, LogOut, Briefcase, UserPlus, FilePlus, Bell, CheckCheck, Maximize, Minimize, FolderKanban, Moon, Sun, Monitor } from 'lucide-react';
 import { useQuickAction } from '@/contexts/quick-action-context';
 import * as React from 'react';
 import { Input } from './ui/input';
@@ -24,12 +27,14 @@ import { useUser } from '@/contexts/user-context';
 import { getNotifications, markAllNotificationsAsRead, type Notification } from '@/services/notification-service';
 import { Badge } from './ui/badge';
 import { cn } from '@/lib/utils';
+import { useTheme } from 'next-themes';
 
 
 export function Header() {
   const router = useRouter();
   const { user } = useUser();
-  const { openNewCompanyDialog, openNewContactDialog, openAssessmentModal, globalSearchTerm, setGlobalSearchTerm } = useQuickAction();
+  const { setTheme } = useTheme();
+  const { openNewCompanyDialog, openNewContactDialog, openAssessmentModal, openNewProjectDialog, globalSearchTerm, setGlobalSearchTerm } = useQuickAction();
   const [isSearchVisible, setIsSearchVisible] = React.useState(false);
   const [searchResults, setSearchResults] = React.useState<Company[]>([]);
   const searchInputRef = React.useRef<HTMLInputElement>(null);
@@ -226,6 +231,10 @@ export function Header() {
               <FilePlus className="mr-2 h-4 w-4" />
               New Assessment
             </DropdownMenuItem>
+            <DropdownMenuItem onSelect={openNewProjectDialog}>
+              <FolderKanban className="mr-2 h-4 w-4" />
+              New Engagement
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
 
@@ -247,6 +256,22 @@ export function Header() {
               <Link href={`/dashboard/profile`}>Profile</Link>
             </DropdownMenuItem>
             <DropdownMenuItem>Settings</DropdownMenuItem>
+            <DropdownMenuSub>
+              <DropdownMenuSubTrigger>
+                  Theme
+              </DropdownMenuSubTrigger>
+              <DropdownMenuSubContent>
+                  <DropdownMenuItem onClick={() => setTheme('light')}>
+                      <Sun className="mr-2 h-4 w-4" /> Light
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setTheme('dark')}>
+                      <Moon className="mr-2 h-4 w-4" /> Dark
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setTheme('system')}>
+                      <Monitor className="mr-2 h-4 w-4" /> System
+                  </DropdownMenuItem>
+              </DropdownMenuSubContent>
+            </DropdownMenuSub>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleSignOut}>
                 <LogOut className="mr-2 h-4 w-4" />

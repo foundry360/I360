@@ -6,11 +6,21 @@ import { Toaster } from '@/components/ui/toaster';
 import { QuickActionProvider } from '@/contexts/quick-action-context';
 import { NewCompanyDialog } from '@/components/new-company-dialog';
 import { NewContactDialog } from '@/components/new-contact-dialog';
+import { NewProjectDialog } from '@/components/new-project-dialog';
+import { EditProjectDialog } from '@/components/edit-project-dialog';
+import { NewBacklogItemDialog } from '@/components/new-backlog-item-dialog';
+import { NewEpicDialog } from '@/components/new-epic-dialog';
+import { EditEpicDialog } from '@/components/edit-epic-dialog';
+import { EditBacklogItemDialog } from '@/components/edit-backlog-item-dialog';
 import { UserProvider, useUser } from '@/contexts/user-context';
 import { AssessmentModal } from '@/components/assessment-modal';
 import * as React from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
+import { ThemeProvider } from '@/components/theme-provider';
+import { NewSprintDialog } from '@/components/new-sprint-dialog';
+import { EditSprintDialog } from '@/components/edit-sprint-dialog';
+import { EditTaskDialog } from '@/components/edit-task-dialog';
 
 const unprotectedRoutes = ['/login', '/public/assessment/[companyId]', '/public/assessment/thanks'];
 
@@ -78,18 +88,34 @@ export default function RootLayout({
         />
       </head>
       <body className="font-sans antialiased" suppressHydrationWarning>
-        <UserProvider>
-          <QuickActionProvider>
-            <AuthGuard>
-                {children}
-                <NewCompanyDialog />
-                <NewContactDialog />
-                <AssessmentModal 
-                  // These props are managed by the QuickActionProvider now
-                />
-            </AuthGuard>
-          </QuickActionProvider>
-        </UserProvider>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <UserProvider>
+            <QuickActionProvider>
+              <AuthGuard>
+                  {children}
+                  <NewCompanyDialog />
+                  <NewContactDialog />
+                  <NewProjectDialog />
+                  <EditProjectDialog />
+                  <NewBacklogItemDialog />
+                  <NewEpicDialog />
+                  <EditEpicDialog />
+                  <EditBacklogItemDialog />
+                  <NewSprintDialog />
+                  <EditSprintDialog />
+                  <EditTaskDialog />
+                  <AssessmentModal 
+                    // These props are managed by the QuickActionProvider now
+                  />
+              </AuthGuard>
+            </QuickActionProvider>
+          </UserProvider>
+        </ThemeProvider>
         <Toaster />
       </body>
     </html>

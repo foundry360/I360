@@ -21,7 +21,7 @@ import { AppLayout } from '@/components/app-layout';
 import { useParams, useRouter } from 'next/navigation';
 import React from 'react';
 import { Progress } from '@/components/ui/progress';
-import { Phone, Globe, MapPin, ArrowLeft, Plus, Pencil, FileText, Trash2, Paperclip, Upload, Link2 } from 'lucide-react';
+import { Phone, Globe, MapPin, ArrowLeft, Plus, Pencil, FileText, Trash2, Paperclip, Upload, Link2, FolderKanban } from 'lucide-react';
 import type { Company } from '@/services/company-service';
 import { getCompany, updateCompany } from '@/services/company-service';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -46,12 +46,14 @@ import {
 import { EditCompanyModal } from '@/components/edit-company-modal';
 import { getAssessmentsForCompany, type Assessment, deleteAssessments, uploadAssessmentDocument } from '@/services/assessment-service';
 import { getContactsForCompany, type Contact } from '@/services/contact-service';
+import { getProjectsForCompany, type Project } from '@/services/project-service';
 import { cn } from '@/lib/utils';
 import { useQuickAction } from '@/contexts/quick-action-context';
 import { Checkbox } from '@/components/ui/checkbox';
 import { TablePagination } from '@/components/table-pagination';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
+import { format, formatDistanceToNow, parseISO } from 'date-fns';
 
 type ActivityItem = {
     activity: string;
@@ -63,11 +65,12 @@ export default function CompanyDetailsPage() {
   const router = useRouter();
   const { toast } = useToast();
   const companyId = params.companyId as string;
-  const { openAssessmentModal, setOnAssessmentCompleted, openNewContactDialog, setOnContactCreated } = useQuickAction();
+  const { openAssessmentModal, setOnAssessmentCompleted, openNewContactDialog, setOnContactCreated, openNewProjectDialog, setOnProjectCreated } = useQuickAction();
   const [companyData, setCompanyData] = React.useState<Company | null>(null);
   const [currentAssessments, setCurrentAssessments] = React.useState<Assessment[]>([]);
   const [completedAssessments, setCompletedAssessments] = React.useState<Assessment[]>([]);
   const [contacts, setContacts] = React.useState<Contact[]>([]);
+  const [projects, setProjects] = React.useState<Project[]>([]);
   const [allRecentActivity, setAllRecentActivity] = React.useState<ActivityItem[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [isEditModalOpen, setIsEditModalOpen] = React.useState(false);
@@ -87,9 +90,17 @@ export default function CompanyDetailsPage() {
       const companyPromise = getCompany(companyId);
       const assessmentsPromise = getAssessmentsForCompany(companyId);
       const contactsPromise = getContactsForCompany(companyId);
-      const [company, allAssessments, companyContacts] = await Promise.all([companyPromise, assessmentsPromise, contactsPromise]);
+      const projectsPromise = getProjectsForCompany(companyId);
+
+      const [company, allAssessments, companyContacts, companyProjects] = await Promise.all([
+          companyPromise, 
+          assessmentsPromise, 
+          contactsPromise,
+          projectsPromise
+      ]);
       
       setCompanyData(company);
+      setProjects(companyProjects);
       
       const current = allAssessments.filter(a => a.status === 'In Progress');
       const completed = allAssessments.filter(a => a.status === 'Completed').sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime());
@@ -131,12 +142,14 @@ export default function CompanyDetailsPage() {
     fetchCompanyData();
     const unsubscribeAssessment = setOnAssessmentCompleted(() => fetchCompanyData);
     const unsubscribeContact = setOnContactCreated(() => fetchCompanyData);
-    
+    const unsubscribeProject = setOnProjectCreated(() => fetchCompanyData);
+
     return () => {
       if (typeof unsubscribeAssessment === 'function') unsubscribeAssessment();
       if (typeof unsubscribeContact === 'function') unsubscribeContact();
+      if (typeof unsubscribeProject === 'function') unsubscribeProject();
     }
-  }, [fetchCompanyData, setOnAssessmentCompleted, setOnContactCreated]);
+  }, [fetchCompanyData, setOnAssessmentCompleted, setOnContactCreated, setOnProjectCreated]);
   
   const handleOpenAssessment = (assessment: Assessment) => {
     if (assessment.status === 'Completed') {
@@ -244,6 +257,15 @@ export default function CompanyDetailsPage() {
   const isAssessmentIndeterminate = paginatedAssessments.some(a => selectedAssessments.includes(a.id)) && !allOnPageSelected;
 
   const recentActivity = isActivityExpanded ? allRecentActivity : allRecentActivity.slice(0, 5);
+
+  const formatDate = (isoDate: string) => {
+    if (!isoDate) return 'N/A';
+    return format(parseISO(isoDate), 'MMM dd, yyyy');
+  };
+
+  const formatDateTime = (date: Date) => {
+    return formatDistanceToNow(date, { addSuffix: true });
+  }
 
   if (loading && !companyData) {
       return (
@@ -400,7 +422,7 @@ export default function CompanyDetailsPage() {
                           <TableCell>
                               <Progress value={assessment.progress} className="h-2" />
                           </TableCell>
-                          <TableCell>{new Date(assessment.startDate).toLocaleDateString()}</TableCell>
+                          <TableCell>{formatDate(assessment.startDate)}</TableCell>
                         </TableRow>
                       ))
                     ) : (
@@ -481,15 +503,14 @@ export default function CompanyDetailsPage() {
                             <Badge
                               variant={
                                 assessment.status === 'Completed'
-                                  ? 'default'
+                                  ? 'success'
                                   : 'outline'
                               }
-                              className={assessment.status === 'Completed' ? 'bg-green-500' : ''}
                             >
                               {assessment.status}
                             </Badge>
                           </TableCell>
-                          <TableCell>{new Date(assessment.startDate).toLocaleDateString()}</TableCell>
+                          <TableCell>{formatDate(assessment.startDate)}</TableCell>
                           <TableCell className="text-right">
                               {assessment.documentUrl && (
                                 <Button asChild variant="ghost" size="icon" title="View Document">
@@ -590,6 +611,34 @@ export default function CompanyDetailsPage() {
               </CardContent>
             </Card>
             <Card>
+              <CardHeader className="flex flex-row items-center justify-between">
+                  <CardTitle className="text-xl">Company Engagements</CardTitle>
+                  <Button variant="outline" size="icon" onClick={openNewProjectDialog}>
+                      <Plus className="h-4 w-4" />
+                      <span className="sr-only">New Engagement</span>
+                  </Button>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                  {projects.length > 0 ? (
+                      projects.map(project => (
+                        <Link href={`/dashboard/projects/${project.id}`} key={project.id}>
+                          <div className="flex justify-between items-center p-2 rounded-md hover:bg-muted cursor-pointer">
+                              <div>
+                                  <p className="font-medium text-sm">{project.name}</p>
+                                  <p className="text-xs text-muted-foreground">{project.owner}</p>
+                              </div>
+                              <Badge variant={project.status === 'Active' ? 'success' : 'secondary'}>
+                                  {project.status}
+                              </Badge>
+                          </div>
+                        </Link>
+                      ))
+                  ) : (
+                      <p className="text-sm text-muted-foreground text-center py-4">No engagements found for this company.</p>
+                  )}
+              </CardContent>
+            </Card>
+            <Card>
               <CardHeader>
                 <CardTitle className="text-xl">Recent Activity</CardTitle>
               </CardHeader>
@@ -600,7 +649,7 @@ export default function CompanyDetailsPage() {
                             <div className="mt-1 h-2 w-2 rounded-full bg-primary" />
                             <div>
                             <p className="font-medium text-sm">{item.activity}</p>
-                            <p className="text-xs text-muted-foreground">{item.time.toLocaleString([], { year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric', hour12: true, timeZoneName: 'short' })}</p>
+                            <p className="text-xs text-muted-foreground">{formatDateTime(item.time)}</p>
                             </div>
                         </div>
                     ))
@@ -654,5 +703,3 @@ export default function CompanyDetailsPage() {
     </>
   );
 }
-
-    

@@ -37,7 +37,7 @@ import {
 } from '@/services/assessment-service';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Checkbox } from '@/components/ui/checkbox';
-import { MoreHorizontal, Plus, Trash2, ArrowUpDown, FileText, Upload, Paperclip } from 'lucide-react';
+import { MoreHorizontal, Plus, Trash2, ArrowUpDown, FileText, Upload, Paperclip, Search } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { TablePagination } from '@/components/table-pagination';
 import Link from 'next/link';
@@ -45,6 +45,7 @@ import { cn } from '@/lib/utils';
 import { useQuickAction } from '@/contexts/quick-action-context';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
+import { Input } from '@/components/ui/input';
 
 type SortKey = keyof Assessment;
 
@@ -64,11 +65,12 @@ export default function AssessmentsPage() {
   
   const [sortConfig, setSortConfig] = React.useState<{ key: SortKey; direction: 'ascending' | 'descending' } | null>({ key: 'startDate', direction: 'descending' });
 
-  const { openAssessmentModal, setOnAssessmentCompleted, globalSearchTerm } = useQuickAction();
+  const { openAssessmentModal, setOnAssessmentCompleted, globalSearchTerm, setGlobalSearchTerm } = useQuickAction();
   const router = useRouter();
   const { toast } = useToast();
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   const [assessmentToUpload, setAssessmentToUpload] = React.useState<string | null>(null);
+  const [isSearchVisible, setIsSearchVisible] = React.useState(false);
 
   const fetchAssessments = React.useCallback(async () => {
     try {
@@ -89,6 +91,12 @@ export default function AssessmentsPage() {
         if(unsubscribe) unsubscribe();
     }
   }, [fetchAssessments, setOnAssessmentCompleted]);
+  
+  React.useEffect(() => {
+    return () => {
+      setGlobalSearchTerm('');
+    };
+  }, [setGlobalSearchTerm]);
 
 
   const openDeleteDialog = (assessment: Assessment) => {
@@ -255,6 +263,22 @@ export default function AssessmentsPage() {
                 Delete ({numSelected})
               </Button>
             )}
+            {isSearchVisible && (
+               <div className="relative">
+                  <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input 
+                      placeholder="Search assessments..." 
+                      className="pl-8 w-48 md:w-64"
+                      value={globalSearchTerm}
+                      onChange={(e) => setGlobalSearchTerm(e.target.value)}
+                      autoFocus
+                  />
+               </div>
+            )}
+            <Button variant="ghost" size="icon" onClick={() => setIsSearchVisible(!isSearchVisible)}>
+              <Search className="h-4 w-4" />
+              <span className="sr-only">Search</span>
+            </Button>
             <Button size="icon" onClick={() => openAssessmentModal()}>
               <Plus className="h-4 w-4" />
               <span className="sr-only">New Assessment</span>
@@ -263,10 +287,10 @@ export default function AssessmentsPage() {
         </div>
         <div className="border rounded-lg">
             {loading ? (
-              <div className="space-y-4 p-6">
-                <Skeleton className="h-12 w-full" />
-                <Skeleton className="h-12 w-full" />
-                <Skeleton className="h-12 w-full" />
+              <div className="space-y-4 p-4">
+                <Skeleton className="h-10 w-full" />
+                <Skeleton className="h-10 w-full" />
+                <Skeleton className="h-10 w-full" />
               </div>
             ) : (
               <Table>
@@ -356,10 +380,7 @@ export default function AssessmentsPage() {
                         <TableCell className="p-2">
                           <Badge
                               variant={
-                                  assessment.status === 'Completed' ? 'default' : (assessment.status === 'In Progress' ? 'secondary' : 'outline')
-                              }
-                              className={
-                                  assessment.status === 'Completed' ? 'bg-green-500' : ''
+                                  assessment.status === 'Completed' ? 'success' : (assessment.status === 'In Progress' ? 'secondary' : 'outline')
                               }
                           >
                             {assessment.status}
@@ -392,7 +413,7 @@ export default function AssessmentsPage() {
                             )}
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" className="h-8 w-8 p-0">
+                                <Button variant="ghost" className="h-8 w-8 p-0 hover:bg-primary hover:text-primary-foreground">
                                   <span className="sr-only">Open menu</span>
                                   <MoreHorizontal className="h-4 w-4" />
                                 </Button>
@@ -407,7 +428,6 @@ export default function AssessmentsPage() {
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem
                                   onClick={() => openDeleteDialog(assessment)}
-                                  className="text-destructive"
                                 >
                                   <Trash2 className="mr-2 h-4 w-4" />
                                   Delete
@@ -464,4 +484,3 @@ export default function AssessmentsPage() {
     </>
   );
 }
-

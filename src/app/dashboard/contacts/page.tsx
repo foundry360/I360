@@ -37,12 +37,13 @@ import {
 } from '@/services/contact-service';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Checkbox } from '@/components/ui/checkbox';
-import { MoreHorizontal, Plus, Trash2, ArrowUpDown } from 'lucide-react';
+import { MoreHorizontal, Plus, Trash2, ArrowUpDown, Search } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { TablePagination } from '@/components/table-pagination';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { useQuickAction } from '@/contexts/quick-action-context';
+import { Input } from '@/components/ui/input';
 
 type SortKey = keyof Contact;
 
@@ -64,7 +65,8 @@ export default function ContactsPage() {
   
   const [sortConfig, setSortConfig] = React.useState<{ key: SortKey; direction: 'ascending' | 'descending' } | null>({ key: 'name', direction: 'ascending' });
 
-  const { openNewContactDialog, setOnContactCreated, globalSearchTerm } = useQuickAction();
+  const { openNewContactDialog, setOnContactCreated, globalSearchTerm, setGlobalSearchTerm } = useQuickAction();
+  const [isSearchVisible, setIsSearchVisible] = React.useState(false);
 
   const fetchContacts = React.useCallback(async () => {
     try {
@@ -85,6 +87,12 @@ export default function ContactsPage() {
         if (unsubscribe) unsubscribe();
     }
   }, [fetchContacts, setOnContactCreated]);
+
+  React.useEffect(() => {
+    return () => {
+      setGlobalSearchTerm('');
+    };
+  }, [setGlobalSearchTerm]);
 
   const openDeleteDialog = (contact: Contact) => {
     setContactToDelete(contact);
@@ -208,6 +216,22 @@ export default function ContactsPage() {
               Delete ({numSelected})
             </Button>
           )}
+          {isSearchVisible && (
+             <div className="relative">
+                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input 
+                    placeholder="Search contacts..." 
+                    className="pl-8 w-48 md:w-64"
+                    value={globalSearchTerm}
+                    onChange={(e) => setGlobalSearchTerm(e.target.value)}
+                    autoFocus
+                />
+             </div>
+          )}
+          <Button variant="ghost" size="icon" onClick={() => setIsSearchVisible(!isSearchVisible)}>
+            <Search className="h-4 w-4" />
+            <span className="sr-only">Search</span>
+          </Button>
           <Button size="icon" onClick={openNewContactDialog}>
             <Plus className="h-4 w-4" />
             <span className="sr-only">New Contact</span>
@@ -216,10 +240,10 @@ export default function ContactsPage() {
       </div>
       <div className="border rounded-lg">
           {loading ? (
-            <div className="space-y-4 p-6">
-              <Skeleton className="h-12 w-full" />
-              <Skeleton className="h-12 w-full" />
-              <Skeleton className="h-12 w-full" />
+            <div className="space-y-4 p-4">
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-10 w-full" />
             </div>
           ) : (
             <Table>
@@ -282,7 +306,7 @@ export default function ContactsPage() {
                 {currentVisibleContacts.length > 0 ? (
                   currentVisibleContacts.map((contact) => (
                     <TableRow key={contact.id} data-state={selectedContacts.includes(contact.id) && "selected"}>
-                      <TableCell>
+                      <TableCell className="p-2">
                         <Checkbox
                           checked={selectedContacts.includes(contact.id)}
                           onCheckedChange={(checked) =>
@@ -291,7 +315,7 @@ export default function ContactsPage() {
                           aria-label={`Select ${contact.name}`}
                         />
                       </TableCell>
-                      <TableCell className="font-medium">
+                      <TableCell className="font-medium p-2">
                         <div className="flex items-center gap-2">
                           <Avatar className="h-8 w-8">
                             <AvatarFallback className="bg-primary text-primary-foreground">
@@ -301,7 +325,7 @@ export default function ContactsPage() {
                           <span>{contact.name}</span>
                         </div>
                       </TableCell>
-                       <TableCell>
+                       <TableCell className="p-2">
                         {contact.companyId && contact.companyName ? (
                           <Link href={`/dashboard/companies/${contact.companyId}/details`} className="hover:text-primary">
                             {contact.companyName}
@@ -311,13 +335,13 @@ export default function ContactsPage() {
                           )
                         }
                       </TableCell>
-                      <TableCell>{contact.email}</TableCell>
-                      <TableCell>{contact.phone}</TableCell>
-                      <TableCell>{contact.title}</TableCell>
-                      <TableCell className="text-right">
+                      <TableCell className="p-2">{contact.email}</TableCell>
+                      <TableCell className="p-2">{contact.phone}</TableCell>
+                      <TableCell className="p-2">{contact.title}</TableCell>
+                      <TableCell className="text-right p-2">
                          <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" className="h-8 w-8 p-0">
+                            <Button variant="ghost" className="h-8 w-8 p-0 hover:bg-primary hover:text-primary-foreground">
                               <span className="sr-only">Open menu</span>
                               <MoreHorizontal className="h-4 w-4" />
                             </Button>

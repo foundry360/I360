@@ -40,13 +40,15 @@ import {
 import { getContacts, Contact } from '@/services/contact-service';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Checkbox } from '@/components/ui/checkbox';
-import { MoreHorizontal, Plus, Trash2, ArrowUpDown, Link2 } from 'lucide-react';
+import { MoreHorizontal, Plus, Trash2, ArrowUpDown, Link2, Search } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { TablePagination } from '@/components/table-pagination';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { useQuickAction } from '@/contexts/quick-action-context';
 import { useToast } from '@/hooks/use-toast';
+import { formatInTimeZone } from 'date-fns-tz';
+import { Input } from '@/components/ui/input';
 
 type SortKey = keyof Company | 'contactName';
 
@@ -69,8 +71,9 @@ export default function CompaniesPage() {
   
   const [sortConfig, setSortConfig] = React.useState<{ key: SortKey; direction: 'ascending' | 'descending' } | null>({ key: 'name', direction: 'ascending' });
 
-  const { openNewCompanyDialog, setOnCompanyCreated, globalSearchTerm } = useQuickAction();
+  const { openNewCompanyDialog, setOnCompanyCreated, globalSearchTerm, setGlobalSearchTerm } = useQuickAction();
   const { toast } = useToast();
+  const [isSearchVisible, setIsSearchVisible] = React.useState(false);
 
   const fetchCompanies = React.useCallback(async () => {
     try {
@@ -101,6 +104,12 @@ export default function CompaniesPage() {
       if (unsubscribe) unsubscribe();
     };
   }, [fetchCompanies, setOnCompanyCreated]);
+  
+  React.useEffect(() => {
+    return () => {
+      setGlobalSearchTerm('');
+    };
+  }, [setGlobalSearchTerm]);
 
   const handleViewDetails = (company: Company) => {
     router.push(`/dashboard/companies/${company.id}/details`);
@@ -204,6 +213,11 @@ export default function CompaniesPage() {
     });
   };
 
+  const formatDate = (isoDate: string) => {
+    if (!isoDate) return 'N/A';
+    // The date is stored as an ISO string. We need to display it as if it were in UTC.
+    return formatInTimeZone(isoDate, 'UTC', 'MMM dd, yyyy, hh:mm a');
+  };
 
   const currentVisibleCompanies = sortedCompanies.slice(
     page * rowsPerPage,
@@ -246,6 +260,22 @@ export default function CompaniesPage() {
               Delete ({numSelected})
             </Button>
           )}
+          {isSearchVisible && (
+             <div className="relative">
+                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input 
+                    placeholder="Search companies..." 
+                    className="pl-8 w-48 md:w-64"
+                    value={globalSearchTerm}
+                    onChange={(e) => setGlobalSearchTerm(e.target.value)}
+                    autoFocus
+                />
+             </div>
+          )}
+          <Button variant="ghost" size="icon" onClick={() => setIsSearchVisible(!isSearchVisible)}>
+            <Search className="h-4 w-4" />
+            <span className="sr-only">Search</span>
+          </Button>
           <Button size="icon" onClick={openNewCompanyDialog}>
             <Plus className="h-4 w-4" />
             <span className="sr-only">New Company</span>
@@ -254,10 +284,10 @@ export default function CompaniesPage() {
       </div>
       <div className="border rounded-lg">
           {loading ? (
-            <div className="space-y-4 p-6">
-              <Skeleton className="h-12 w-full" />
-              <Skeleton className="h-12 w-full" />
-              <Skeleton className="h-12 w-full" />
+            <div className="space-y-4 p-4">
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-10 w-full" />
             </div>
           ) : (
             <Table>
@@ -320,7 +350,7 @@ export default function CompaniesPage() {
                 {currentVisibleCompanies.length > 0 ? (
                   currentVisibleCompanies.map((company) => (
                     <TableRow key={company.id} data-state={selectedCompanies.includes(company.id) && "selected"}>
-                      <TableCell>
+                      <TableCell className="p-2">
                         <Checkbox
                           checked={selectedCompanies.includes(company.id)}
                           onCheckedChange={(checked) =>
@@ -329,12 +359,12 @@ export default function CompaniesPage() {
                           aria-label={`Select ${company.name}`}
                         />
                       </TableCell>
-                      <TableCell className="font-medium">
+                      <TableCell className="font-medium p-2">
                         <Link href={`/dashboard/companies/${company.id}/details`} className="hover:text-primary">
                           {company.name}
                         </Link>
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="p-2">
                         {company.contact && company.contact.name && company.contact.name !== 'New Contact' ? (
                           <div className="flex items-center gap-2">
                             <Avatar className="h-8 w-8">
@@ -348,30 +378,27 @@ export default function CompaniesPage() {
                           <span className="text-muted-foreground">-</span>
                         )}
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="p-2">
                         <Badge
                           variant={
-                            company.status === 'Active' ? 'default' : 'secondary'
-                          }
-                          className={
-                            company.status === 'Active' ? 'bg-green-500' : ''
+                            company.status === 'Active' ? 'success' : 'secondary'
                           }
                         >
                           {company.status}
                         </Badge>
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="p-2">
                           <a href={`http://${company.website}`} target="_blank" rel="noopener noreferrer" className="hover:text-primary">
                               {company.website}
                           </a>
                       </TableCell>
-                      <TableCell>
-                          {new Date(company.lastActivity).toLocaleString([], { year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric', hour12: true, timeZoneName: 'short' })}
+                      <TableCell className="p-2">
+                          {formatDate(company.lastActivity)}
                       </TableCell>
-                      <TableCell className="text-right">
+                      <TableCell className="text-right p-2">
                          <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" className="h-8 w-8 p-0">
+                            <Button variant="ghost" className="h-8 w-8 p-0 hover:bg-primary hover:text-primary-foreground">
                               <span className="sr-only">Open menu</span>
                               <MoreHorizontal className="h-4 w-4" />
                             </Button>
@@ -391,7 +418,6 @@ export default function CompaniesPage() {
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
                               onClick={() => openDeleteDialog(company)}
-                              className="text-destructive"
                             >
                               Delete Company
                             </DropdownMenuItem>
