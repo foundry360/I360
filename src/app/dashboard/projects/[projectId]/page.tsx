@@ -627,7 +627,7 @@ export default function ProjectDetailsPage() {
         if (scheduleVariance >= -5 && overduePercent < 10) {
             return { status: 'On Track', icon: TrendingUp, color: 'text-success-foreground', tasksCompletedPercent: tasksCompletedPercent };
         } else if (scheduleVariance < -15 || overduePercent > 25) {
-            return { status: 'Needs Attention', icon: TrendingDown, color: 'text-danger-foreground', tasksCompletedPercent: tasksCompletedPercent };
+            return { status: 'Needs Attention', icon: TrendingDown, color: 'text-red-600', tasksCompletedPercent: tasksCompletedPercent };
         } else {
             return { status: 'At Risk', icon: AlertTriangle, color: 'text-warning-foreground', tasksCompletedPercent: tasksCompletedPercent };
         }
@@ -982,14 +982,14 @@ export default function ProjectDetailsPage() {
                                     <Card>
                                         <CardHeader className="flex flex-row items-center justify-between pb-2">
                                             <CardTitle className="text-sm font-medium text-muted-foreground">Overdue Tasks</CardTitle>
-                                            <Clock className="h-4 w-4 text-danger-foreground" />
+                                            <Clock className="h-4 w-4 text-red-600" />
                                         </CardHeader>
                                         <CardContent>
-                                            <p className="text-2xl font-bold text-danger-foreground">{overdueTasksCount}</p>
+                                            <p className="text-2xl font-bold text-red-600">{overdueTasksCount}</p>
                                         </CardContent>
                                         <CardFooter className="flex-col items-start gap-1 p-4 pt-0">
                                             <p className="text-xs text-muted-foreground">{Math.round(overduePercentage)}% of total</p>
-                                            <Progress value={overduePercentage} className="[&>div]:bg-danger" />
+                                            <Progress value={overduePercentage} className="[&>div]:bg-red-600" />
                                         </CardFooter>
                                     </Card>
                                     <Card>
@@ -1002,7 +1002,7 @@ export default function ProjectDetailsPage() {
                                         </CardContent>
                                         <CardFooter className="flex-col items-start gap-1 p-4 pt-0">
                                             <p className="text-xs text-muted-foreground">{Math.round(projectHealth.tasksCompletedPercent)}% complete</p>
-                                            <Progress value={projectHealth.tasksCompletedPercent} className={cn("[&>div]:bg-success", projectHealth.color === 'text-warning-foreground' && "[&>div]:bg-warning", projectHealth.color === 'text-danger-foreground' && "[&>div]:bg-danger")} />
+                                            <Progress value={projectHealth.tasksCompletedPercent} className={cn("[&>div]:bg-success", projectHealth.color === 'text-warning-foreground' && "[&>div]:bg-warning", projectHealth.color === 'text-red-600' && "[&>div]:bg-danger")} />
                                         </CardFooter>
                                     </Card>
                                 </div>
@@ -1024,7 +1024,7 @@ export default function ProjectDetailsPage() {
 
                                                 if (isOverdue) {
                                                     statusText = `Overdue by ${Math.abs(daysDiff)} day(s)`;
-                                                    statusColor = 'text-danger-foreground';
+                                                    statusColor = 'text-red-600';
                                                 } else {
                                                     statusText = `Due in ${daysDiff + 1} day(s)`;
                                                     statusColor = 'text-warning-foreground';
@@ -1092,7 +1092,7 @@ export default function ProjectDetailsPage() {
                                                         <p className="text-muted-foreground flex-1 pr-4">{epic.description}</p>
                                                         <DropdownMenu>
                                                             <DropdownMenuTrigger asChild>
-                                                                <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-primary hover:text-primary-foreground"><MoreVertical className="h-4 w-4" /></Button>
+                                                                <Button variant="ghost" size="icon" className="h-8 w-8"><MoreVertical className="h-4 w-4" /></Button>
                                                             </DropdownMenuTrigger>
                                                             <DropdownMenuContent align="end">
                                                                 <DropdownMenuItem onSelect={() => openEditEpicDialog(epic)}><Pencil className="mr-2 h-4 w-4" />Edit</DropdownMenuItem>
@@ -1136,7 +1136,7 @@ export default function ProjectDetailsPage() {
                                                                     </TooltipProvider>
                                                                     <DropdownMenu>
                                                                         <DropdownMenuTrigger asChild>
-                                                                            <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-primary hover:text-primary-foreground" onClick={(e) => e.stopPropagation()}><MoreVertical className="h-4 w-4" /></Button>
+                                                                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => e.stopPropagation()}><MoreVertical className="h-4 w-4" /></Button>
                                                                         </DropdownMenuTrigger>
                                                                         <DropdownMenuContent align="end">
                                                                             <DropdownMenuItem onSelect={(e) => { e.stopPropagation(); openEditBacklogItemDialog(item, epics, sprints, contacts); }}><Pencil className="mr-2 h-4 w-4" />Edit</DropdownMenuItem>
@@ -1210,7 +1210,7 @@ export default function ProjectDetailsPage() {
                                                             <div className="flex items-center gap-2 ml-auto shrink-0 pl-4">
                                                                 <DropdownMenu>
                                                                     <DropdownMenuTrigger asChild>
-                                                                        <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0 hover:bg-primary hover:text-primary-foreground"><MoreVertical className="h-4 w-4" /></Button>
+                                                                        <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0"><MoreVertical className="h-4 w-4" /></Button>
                                                                     </DropdownMenuTrigger>
                                                                     <DropdownMenuContent align="end">
                                                                         {sprint.status === 'Not Started' && (
@@ -1241,25 +1241,18 @@ export default function ProjectDetailsPage() {
                                                             <div className="border rounded-lg">
                                                                 {itemsInSprint.length > 0 ? itemsInSprint.map(item => {
                                                                     const epic = epics.find(e => e.id === item.epicId);
-                                                                    const epicConfig = epic ? (epicIcons[epic.title] || { icon: Layers, color: 'text-foreground' }) : { icon: Layers, color: 'text-foreground' };
-                                                                    const IconComponent = epicConfig.icon;
                                                                     return (
                                                                         <div key={item.id} className="flex justify-between items-center p-3 border-b last:border-b-0 hover:bg-muted/50 cursor-pointer"
                                                                             onClick={() => openEditBacklogItemDialog(item, epics, sprints, contacts)}
                                                                         >
-                                                                            <div className="flex items-center gap-3">
-                                                                                <TooltipProvider>
-                                                                                    <Tooltip>
-                                                                                        <TooltipTrigger>
-                                                                                            <IconComponent className={cn("h-4 w-4", epicConfig.color)} />
-                                                                                        </TooltipTrigger>
-                                                                                        <TooltipContent>
-                                                                                            <p>Epic: {epic?.title || 'Unknown'}</p>
-                                                                                        </TooltipContent>
-                                                                                    </Tooltip>
-                                                                                </TooltipProvider>
+                                                                            <div className="flex items-center gap-3 flex-wrap">
                                                                                 <span className="text-foreground text-sm">{projectPrefix}-{item.backlogId}</span>
-                                                                                <p>{item.title}</p>
+                                                                                <p className="font-medium">{item.title}</p>
+                                                                                {epic && (
+                                                                                    <Badge variant="secondary" className="cursor-pointer" onClick={(e) => { e.stopPropagation(); setActiveTab('backlog')}}>
+                                                                                        {epic.title}
+                                                                                    </Badge>
+                                                                                )}
                                                                             </div>
                                                                             <div className="flex items-center gap-4">
                                                                                 <Badge variant="outline" className={cn(statusColors[item.status])}>{item.status}</Badge>
