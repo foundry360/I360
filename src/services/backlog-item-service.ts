@@ -67,6 +67,8 @@ export async function createBacklogItem(itemData: Omit<BacklogItem, 'id' | 'back
         ...itemData, 
         id: docRef.id, 
         backlogId: nextId,
+        owner: itemData.owner || 'Unassigned',
+        ownerAvatarUrl: itemData.ownerAvatarUrl || '',
         dueDate: itemData.dueDate ? parseISO(itemData.dueDate).toISOString() : null
     };
     await setDoc(docRef, newItem);
