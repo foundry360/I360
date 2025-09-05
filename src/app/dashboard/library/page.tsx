@@ -339,10 +339,10 @@ export default function LibraryPage() {
                                     className="mr-2 ml-4"
                                 />
                             )}
-                            <AccordionTrigger className={cn(!projectId && "ml-4")}>
+                            <AccordionTrigger className={cn("flex-1", !projectId && "ml-4")}>
                                 <div className="flex items-center gap-2 flex-1">
                                     <Icon className={cn("h-5 w-5", color)} />
-                                    <h3 className="text-base font-semibold">{tag}</h3>
+                                    <span className="text-base font-semibold">{tag}</span>
                                     <Badge variant="secondary">{storiesByTag[tag].length}</Badge>
                                 </div>
                             </AccordionTrigger>
