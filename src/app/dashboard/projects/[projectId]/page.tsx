@@ -1024,7 +1024,7 @@ export default function ProjectDetailsPage() {
 
                                                 if (isOverdue) {
                                                     statusText = `Overdue by ${Math.abs(daysDiff)} day(s)`;
-                                                    statusColor = 'text-destructive';
+                                                    statusColor = 'text-red-600';
                                                 } else {
                                                     statusText = `Due in ${daysDiff + 1} day(s)`;
                                                     statusColor = 'text-yellow-500';
