@@ -37,6 +37,7 @@ import {
   TrendingDown,
   TrendingUp,
   AlertTriangle,
+  Calendar,
 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
@@ -62,6 +63,7 @@ import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
 import { Line, LineChart, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, CartesianGrid, Area, Dot, Legend } from 'recharts';
 import { ChartContainer, ChartTooltipContent, type ChartConfig, ChartLegend, ChartLegendContent } from '@/components/ui/chart';
+import { TimelineView } from '@/components/timeline-view';
 
 type TaskType = Task['type'];
 type BoardColumns = Record<TaskStatus, Task[]>;
@@ -75,7 +77,7 @@ const taskTypeIcons: Record<TaskType, React.ElementType> = {
     Review: SearchCheck,
 };
 
-const epicIcons: Record<string, { icon: React.ElementType, color: string }> = {
+export const epicIcons: Record<string, { icon: React.ElementType, color: string }> = {
     "Foundation & Strategic Alignment": { icon: BookCopy, color: 'text-chart-1' },
     "RevOps Foundation & Data Infrastructure": { icon: Database, color: 'text-chart-2' },
     "Sales Process Enhancement & Pipeline Optimization": { icon: Megaphone, color: 'text-chart-3' },
@@ -639,7 +641,7 @@ export default function ProjectDetailsPage() {
         return tasks.filter(task => {
             if (task.status === 'Complete' || !task.dueDate) return false;
             
-            const dueDate = parseISO(task.dueDate);
+            const dueDate = parseISO(task.dueDate!);
             const daysUntilDue = differenceInDays(dueDate, today);
 
             // Overdue or due within 3 days
@@ -647,6 +649,41 @@ export default function ProjectDetailsPage() {
         }).sort((a,b) => parseISO(a.dueDate!).getTime() - parseISO(b.dueDate!).getTime());
     }, [tasks]);
 
+    const timelineData = React.useMemo(() => {
+        if (!project || !epics.length || !sprints.length) return { items: [], projectStartDate: new Date(), projectEndDate: new Date() };
+
+        const epicItems = epics.map(epic => {
+            const itemsInEpic = backlogItems.filter(item => item.epicId === epic.id && item.sprintId);
+            const sprintIdsInEpic = [...new Set(itemsInEpic.map(item => item.sprintId))];
+            const sprintsInEpic = sprints.filter(sprint => sprintIdsInEpic.includes(sprint.id));
+
+            if (sprintsInEpic.length === 0) return null;
+
+            const epicStartDate = new Date(Math.min(...sprintsInEpic.map(s => parseISO(s.startDate).getTime())));
+            const epicEndDate = new Date(Math.max(...sprintsInEpic.map(s => parseISO(s.endDate).getTime())));
+
+            return {
+                id: epic.id,
+                title: epic.title,
+                startDate: epicStartDate,
+                endDate: epicEndDate,
+                type: 'epic' as const,
+                children: sprintsInEpic.map(sprint => ({
+                    id: sprint.id,
+                    title: sprint.name,
+                    startDate: parseISO(sprint.startDate),
+                    endDate: parseISO(sprint.endDate),
+                    type: 'sprint' as const,
+                })).sort((a, b) => a.startDate.getTime() - b.startDate.getTime()),
+            };
+        }).filter(Boolean);
+
+        const projectStartDate = new Date(Math.min(...sprints.map(s => parseISO(s.startDate).getTime())));
+        const projectEndDate = new Date(Math.max(...sprints.map(s => parseISO(s.endDate).getTime())));
+
+        return { items: epicItems, projectStartDate, projectEndDate };
+
+    }, [epics, sprints, backlogItems, project]);
 
     if (loading) {
         return (
@@ -724,6 +761,12 @@ export default function ProjectDetailsPage() {
                             className="pb-3 rounded-none data-[state=active]:shadow-none data-[state=active]:border-primary data-[state=active]:border-b-4 data-[state=active]:text-foreground data-[state=active]:font-bold"
                         >
                             Sprints
+                        </TabsTrigger>
+                         <TabsTrigger 
+                            value="timeline"
+                            className="pb-3 rounded-none data-[state=active]:shadow-none data-[state=active]:border-primary data-[state=active]:border-b-4 data-[state=active]:text-foreground data-[state=active]:font-bold"
+                        >
+                            Timeline
                         </TabsTrigger>
                         <TabsTrigger 
                             value="all-work"
@@ -1091,7 +1134,7 @@ export default function ProjectDetailsPage() {
                                     
                                     return (
                                         <AccordionItem key={epic.id} value={epic.id}>
-                                            <AccordionTrigger className="text-base">
+                                            <AccordionTrigger className="text-base font-normal">
                                                 <div className="flex items-center gap-3 flex-1">
                                                     <IconComponent className={cn("h-5 w-5", epicConfig.color)} />
                                                     <Badge variant={epic.status === 'Done' ? 'success' : 'secondary'} className="whitespace-nowrap">{epic.status}</Badge>
@@ -1211,7 +1254,7 @@ export default function ProjectDetailsPage() {
                                                 return (
                                                     <AccordionItem key={sprint.id} value={sprint.id} className="border rounded-lg bg-card">
                                                         <div className="flex items-center p-4">
-                                                            <AccordionTrigger className="p-0 hover:no-underline flex-1 text-sm" noChevron>
+                                                            <AccordionTrigger className="p-0 hover:no-underline flex-1 text-sm font-normal" noChevron>
                                                             <div className='flex items-center flex-1 gap-4'>
                                                                 <h3 className="font-semibold text-sm">{sprint.name}</h3>
                                                                 <p className="text-sm text-muted-foreground">
@@ -1298,6 +1341,13 @@ export default function ProjectDetailsPage() {
                                 )
                             })}
                         </div>
+                    </TabsContent>
+                    <TabsContent value="timeline">
+                        <TimelineView
+                            items={timelineData.items as any[]}
+                            projectStartDate={timelineData.projectStartDate}
+                            projectEndDate={timelineData.projectEndDate}
+                        />
                     </TabsContent>
                      <TabsContent value="all-work">
                         <div className="space-y-4">
