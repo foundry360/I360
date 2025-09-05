@@ -62,7 +62,7 @@ export function Sidebar() {
       links: [
         { href: `/dashboard/companies`, label: 'Companies', icon: Briefcase },
         { href: `/dashboard/contacts`, label: 'Contacts', icon: Users },
-        { href: `/dashboard/projects`, label: 'Projects', icon: FolderKanban },
+        { href: `/dashboard/projects`, label: 'Engagements', icon: FolderKanban },
       ],
     },
     {

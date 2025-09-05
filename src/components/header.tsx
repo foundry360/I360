@@ -233,7 +233,7 @@ export function Header() {
             </DropdownMenuItem>
             <DropdownMenuItem onSelect={openNewProjectDialog}>
               <FolderKanban className="mr-2 h-4 w-4" />
-              New Project
+              New Engagement
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

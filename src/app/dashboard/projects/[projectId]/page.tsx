@@ -664,7 +664,7 @@ export default function ProjectDetailsPage() {
     }
 
     if (!project) {
-        return <p>Project not found.</p>;
+        return <p>Engagement not found.</p>;
     }
     
     const totalTasks = tasks.length;
@@ -838,7 +838,7 @@ export default function ProjectDetailsPage() {
                                 </Card>
                                  <Card>
                                     <CardHeader>
-                                        <CardTitle>Project Burndown</CardTitle>
+                                        <CardTitle>Engagement Burndown</CardTitle>
                                         <CardDescription>Ideal vs actual work remaining</CardDescription>
                                     </CardHeader>
                                     <CardContent>
@@ -927,7 +927,7 @@ export default function ProjectDetailsPage() {
                                 <Card>
                                     <CardHeader>
                                         <CardTitle>Epic Progress</CardTitle>
-                                        <CardDescription>A summary of completion for each project epic</CardDescription>
+                                        <CardDescription>A summary of completion for each engagement epic</CardDescription>
                                     </CardHeader>
                                     <CardContent className="space-y-4">
                                         {epicProgressData.map((epic, index) => {
@@ -994,7 +994,7 @@ export default function ProjectDetailsPage() {
                                     </Card>
                                     <Card>
                                         <CardHeader className="flex flex-row items-center justify-between pb-2">
-                                            <CardTitle className="text-sm font-medium text-muted-foreground">Project Health</CardTitle>
+                                            <CardTitle className="text-sm font-medium text-muted-foreground">Engagement Health</CardTitle>
                                             <HealthIcon className={cn("h-4 w-4", projectHealth.color)} />
                                         </CardHeader>
                                         <CardContent>

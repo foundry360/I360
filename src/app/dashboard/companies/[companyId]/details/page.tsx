@@ -612,10 +612,10 @@ export default function CompanyDetailsPage() {
             </Card>
             <Card>
               <CardHeader className="flex flex-row items-center justify-between">
-                  <CardTitle className="text-xl">Company Projects</CardTitle>
+                  <CardTitle className="text-xl">Company Engagements</CardTitle>
                   <Button variant="outline" size="sm" onClick={openNewProjectDialog}>
                       <FolderKanban className="mr-2 h-4 w-4" />
-                      New Project
+                      New Engagement
                   </Button>
               </CardHeader>
               <CardContent className="space-y-3">
@@ -632,7 +632,7 @@ export default function CompanyDetailsPage() {
                           </div>
                       ))
                   ) : (
-                      <p className="text-sm text-muted-foreground text-center py-4">No projects found for this company.</p>
+                      <p className="text-sm text-muted-foreground text-center py-4">No engagements found for this company.</p>
                   )}
               </CardContent>
             </Card>

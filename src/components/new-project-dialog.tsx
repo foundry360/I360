@@ -95,7 +95,7 @@ export function NewProjectDialog() {
   const handleCreateProject = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newProject.name || !newProject.companyId) {
-      alert('Project name and company are required');
+      alert('Engagement name and company are required');
       return;
     }
     try {
@@ -120,7 +120,7 @@ export function NewProjectDialog() {
         onProjectCreated();
       }
     } catch (error) {
-      console.error('Failed to create project:', error);
+      console.error('Failed to create engagement:', error);
     }
   };
 
@@ -153,9 +153,9 @@ export function NewProjectDialog() {
       <DialogContent className="sm:max-w-[600px]">
         <form onSubmit={handleCreateProject}>
           <DialogHeader>
-            <DialogTitle>Create New Project</DialogTitle>
+            <DialogTitle>Create New Engagement</DialogTitle>
             <DialogDescription>
-              Fill in the details below to create a new project.
+              Fill in the details below to create a new engagement.
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4 max-h-[70vh] overflow-y-auto pr-4">
@@ -253,7 +253,7 @@ export function NewProjectDialog() {
             <Button type="button" variant="outline" onClick={() => handleOpenChange(false)}>
               Cancel
             </Button>
-            <Button type="submit">Create Project</Button>
+            <Button type="submit">Create Engagement</Button>
           </DialogFooter>
         </form>
       </DialogContent>

@@ -97,7 +97,7 @@ export function EditProjectDialog() {
         onProjectUpdated();
       }
     } catch (error) {
-      console.error('Failed to update project:', error);
+      console.error('Failed to update engagement:', error);
     }
   };
 
@@ -132,7 +132,7 @@ export function EditProjectDialog() {
       <DialogContent className="sm:max-w-[600px]">
         <form onSubmit={handleUpdateProject}>
           <DialogHeader>
-            <DialogTitle>Edit Project</DialogTitle>
+            <DialogTitle>Edit Engagement</DialogTitle>
             <DialogDescription>
               Update the details for "{formData.name}".
             </DialogDescription>

@@ -234,9 +234,9 @@ export default function ProjectsPage() {
     <>
       <div className="space-y-6">
         <div>
-            <h1 className="text-2xl font-bold">Projects</h1>
+            <h1 className="text-2xl font-bold">Engagements</h1>
             <p className="text-muted-foreground">
-                Manage and track all projects across your companies.
+                Manage and track all engagements across your companies.
             </p>
         </div>
         <Separator />
@@ -262,7 +262,7 @@ export default function ProjectsPage() {
                         <div className="relative">
                             <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                             <Input 
-                                placeholder="Search projects..." 
+                                placeholder="Search engagements..." 
                                 className="pl-8 w-48 md:w-64"
                                 value={globalSearchTerm}
                                 onChange={(e) => setGlobalSearchTerm(e.target.value)}
@@ -276,7 +276,7 @@ export default function ProjectsPage() {
                     </Button>
                     <Button size="icon" onClick={openNewProjectDialog}>
                         <Plus className="h-4 w-4" />
-                        <span className="sr-only">New Project</span>
+                        <span className="sr-only">New Engagement</span>
                     </Button>
                 </div>
             </div>
@@ -308,7 +308,7 @@ export default function ProjectsPage() {
                                     <TableHead className="border-t border-r border-b">
                                         <Button variant="ghost" onClick={() => requestSort('name')} className="group w-full p-0 hover:bg-transparent hover:text-muted-foreground">
                                             <div className="flex justify-between items-center w-full">
-                                                Project Name
+                                                Engagement Name
                                                 <ArrowUpDown className={cn("h-4 w-4", sortConfig?.key === 'name' ? 'opacity-100' : 'opacity-25')} />
                                             </div>
                                         </Button>
@@ -411,7 +411,7 @@ export default function ProjectsPage() {
                                                         <DropdownMenuItem asChild>
                                                             <Link href={`/dashboard/projects/${project.id}`}>View Details</Link>
                                                         </DropdownMenuItem>
-                                                        <DropdownMenuItem onSelect={() => openEditProjectDialog(project)}>Edit Project</DropdownMenuItem>
+                                                        <DropdownMenuItem onSelect={() => openEditProjectDialog(project)}>Edit Engagement</DropdownMenuItem>
                                                         <DropdownMenuSeparator />
                                                         <DropdownMenuItem
                                                         onClick={() => openDeleteDialog(project)}
@@ -427,7 +427,7 @@ export default function ProjectsPage() {
                                 ) : (
                                     <TableRow>
                                         <TableCell colSpan={8} className="h-24 text-center">
-                                            No projects found.
+                                            No engagements found.
                                         </TableCell>
                                     </TableRow>
                                 )}
@@ -458,7 +458,7 @@ export default function ProjectsPage() {
             <AlertDialogHeader>
               <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
               <AlertDialogDescription>
-                This action cannot be undone. This will permanently delete the selected projects.
+                This action cannot be undone. This will permanently delete the selected engagements.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
