@@ -211,10 +211,10 @@ export default function ProjectsPage() {
 
   const statusBadgeVariant = (status: ProjectStatus) => {
     switch(status) {
-        case 'Active': return 'default';
+        case 'Active': return 'success';
         case 'Completed': return 'secondary';
-        case 'On Hold': return 'outline';
-        case 'Inactive': return 'destructive';
+        case 'On Hold': return 'warning';
+        case 'Inactive': return 'danger';
         default: return 'secondary';
     }
   }
@@ -380,7 +380,7 @@ export default function ProjectsPage() {
                                                 </Link>
                                             </TableCell>
                                             <TableCell className="p-2">
-                                                <Badge variant={statusBadgeVariant(project.status)} className={project.status === 'Active' ? 'bg-green-500' : ''}>
+                                                <Badge variant={statusBadgeVariant(project.status)}>
                                                     {project.status}
                                                 </Badge>
                                             </TableCell>

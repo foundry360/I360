@@ -381,10 +381,7 @@ export default function CompaniesPage() {
                       <TableCell className="p-2">
                         <Badge
                           variant={
-                            company.status === 'Active' ? 'default' : 'secondary'
-                          }
-                          className={
-                            company.status === 'Active' ? 'bg-green-500' : ''
+                            company.status === 'Active' ? 'success' : 'secondary'
                           }
                         >
                           {company.status}

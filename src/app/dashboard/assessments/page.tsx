@@ -380,10 +380,7 @@ export default function AssessmentsPage() {
                         <TableCell className="p-2">
                           <Badge
                               variant={
-                                  assessment.status === 'Completed' ? 'default' : (assessment.status === 'In Progress' ? 'secondary' : 'outline')
-                              }
-                              className={
-                                  assessment.status === 'Completed' ? 'bg-green-500' : ''
+                                  assessment.status === 'Completed' ? 'success' : (assessment.status === 'In Progress' ? 'secondary' : 'outline')
                               }
                           >
                             {assessment.status}

@@ -125,9 +125,9 @@ const TaskTypeIcon = ({ type }: { type: TaskType }) => {
 
 
 const priorityContainerColors: Record<Task['priority'], string> = {
-    High: 'bg-red-500',
-    Medium: 'bg-yellow-500',
-    Low: 'bg-green-500',
+    High: 'bg-danger',
+    Medium: 'bg-warning',
+    Low: 'bg-success',
 }
 
 const PriorityIcon = ({ priority }: { priority: Task['priority'] }) => {
@@ -625,11 +625,11 @@ export default function ProjectDetailsPage() {
         const scheduleVariance = tasksCompletedPercent - timeElapsedPercent;
 
         if (scheduleVariance >= -5 && overduePercent < 10) {
-            return { status: 'On Track', icon: TrendingUp, color: 'text-green-500', tasksCompletedPercent: tasksCompletedPercent };
+            return { status: 'On Track', icon: TrendingUp, color: 'text-success-foreground', tasksCompletedPercent: tasksCompletedPercent };
         } else if (scheduleVariance < -15 || overduePercent > 25) {
-            return { status: 'Needs Attention', icon: TrendingDown, color: 'text-red-500', tasksCompletedPercent: tasksCompletedPercent };
+            return { status: 'Needs Attention', icon: TrendingDown, color: 'text-danger-foreground', tasksCompletedPercent: tasksCompletedPercent };
         } else {
-            return { status: 'At Risk', icon: AlertTriangle, color: 'text-yellow-500', tasksCompletedPercent: tasksCompletedPercent };
+            return { status: 'At Risk', icon: AlertTriangle, color: 'text-warning-foreground', tasksCompletedPercent: tasksCompletedPercent };
         }
 
     }, [project, tasks]);
@@ -982,14 +982,14 @@ export default function ProjectDetailsPage() {
                                     <Card>
                                         <CardHeader className="flex flex-row items-center justify-between pb-2">
                                             <CardTitle className="text-sm font-medium text-muted-foreground">Overdue Tasks</CardTitle>
-                                            <Clock className="h-4 w-4 text-red-600" />
+                                            <Clock className="h-4 w-4 text-danger-foreground" />
                                         </CardHeader>
                                         <CardContent>
-                                            <p className="text-2xl font-bold text-red-600">{overdueTasksCount}</p>
+                                            <p className="text-2xl font-bold text-danger-foreground">{overdueTasksCount}</p>
                                         </CardContent>
                                         <CardFooter className="flex-col items-start gap-1 p-4 pt-0">
                                             <p className="text-xs text-muted-foreground">{Math.round(overduePercentage)}% of total</p>
-                                            <Progress value={overduePercentage} className="[&>div]:bg-red-600" />
+                                            <Progress value={overduePercentage} className="[&>div]:bg-danger" />
                                         </CardFooter>
                                     </Card>
                                     <Card>
@@ -1002,7 +1002,7 @@ export default function ProjectDetailsPage() {
                                         </CardContent>
                                         <CardFooter className="flex-col items-start gap-1 p-4 pt-0">
                                             <p className="text-xs text-muted-foreground">{Math.round(projectHealth.tasksCompletedPercent)}% complete</p>
-                                            <Progress value={projectHealth.tasksCompletedPercent} className={cn("[&>div]:bg-green-500", projectHealth.color === 'text-yellow-500' && "[&>div]:bg-yellow-500", projectHealth.color === 'text-red-500' && "[&>div]:bg-red-500")} />
+                                            <Progress value={projectHealth.tasksCompletedPercent} className={cn("[&>div]:bg-success", projectHealth.color === 'text-warning-foreground' && "[&>div]:bg-warning", projectHealth.color === 'text-danger-foreground' && "[&>div]:bg-danger")} />
                                         </CardFooter>
                                     </Card>
                                 </div>
@@ -1024,10 +1024,10 @@ export default function ProjectDetailsPage() {
 
                                                 if (isOverdue) {
                                                     statusText = `Overdue by ${Math.abs(daysDiff)} day(s)`;
-                                                    statusColor = 'text-red-600';
+                                                    statusColor = 'text-danger-foreground';
                                                 } else {
                                                     statusText = `Due in ${daysDiff + 1} day(s)`;
-                                                    statusColor = 'text-yellow-500';
+                                                    statusColor = 'text-warning-foreground';
                                                 }
 
                                                 return (
@@ -1081,7 +1081,7 @@ export default function ProjectDetailsPage() {
                                             <AccordionTrigger>
                                                 <div className="flex items-center gap-3 flex-1">
                                                     <IconComponent className={cn("h-5 w-5", epicConfig.color)} />
-                                                    <Badge variant={epic.status === 'Done' ? 'default' : 'secondary'} className={cn("whitespace-nowrap", epic.status === 'Done' ? 'bg-green-500' : '')}>{epic.status}</Badge>
+                                                    <Badge variant={epic.status === 'Done' ? 'success' : 'secondary'} className="whitespace-nowrap">{epic.status}</Badge>
                                                     <span className="font-semibold">{epic.title}</span>
                                                     <span className="text-muted-foreground text-sm">{projectPrefix}-{epic.epicId}</span>
                                                 </div>
@@ -1204,7 +1204,7 @@ export default function ProjectDetailsPage() {
                                                                 <p className="text-sm text-muted-foreground">
                                                                     {format(parseISO(sprint.startDate), 'MMM d')} - {format(parseISO(sprint.endDate), 'MMM d, yyyy')}
                                                                 </p>
-                                                                <Badge variant={sprint.status === 'Active' ? 'default' : sprint.status === 'Completed' ? 'secondary' : 'outline'} className={sprint.status === 'Active' ? 'bg-green-500' : ''}>{sprint.status}</Badge>
+                                                                <Badge variant={sprint.status === 'Active' ? 'success' : sprint.status === 'Completed' ? 'secondary' : 'outline'}>{sprint.status}</Badge>
                                                             </div>
                                                             </AccordionTrigger>
                                                             <div className="flex items-center gap-2 ml-auto shrink-0 pl-4">
@@ -1328,7 +1328,7 @@ export default function ProjectDetailsPage() {
                                                 <p>{item.title}</p>
                                             </div>
                                             <div className="flex items-center gap-4">
-                                                {sprint && <Badge variant={sprint.status === 'Active' ? 'default' : sprint.status === 'Completed' ? 'secondary' : 'outline'} className={cn(sprint.status === 'Active' && 'bg-green-500')}>{sprint.name}</Badge>}
+                                                {sprint && <Badge variant={sprint.status === 'Active' ? 'success' : sprint.status === 'Completed' ? 'secondary' : 'outline'}>{sprint.name}</Badge>}
                                                 <Badge variant="outline" className={cn(statusColors[item.status])}>{item.status}</Badge>
                                                 <Badge variant="secondary">{item.points} Points</Badge>
                                                  <TooltipProvider>

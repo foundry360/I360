@@ -54,6 +54,15 @@ body {
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
     --radius: 0.5rem;
+    
+    /* Custom Status Colors */
+    --success: 142.1 76.2% 36.3%; /* Pastel Green */
+    --success-foreground: 142.1 76.2% 20.3%;
+    --warning: 47.9 95.8% 53.1%; /* Pastel Yellow */
+    --warning-foreground: 47.9 95.8% 33.1%;
+    --danger: 0 84.2% 60.2%; /* Pastel Red */
+    --danger-foreground: 0 84.2% 40.2%;
+
 
     --sidebar-background: 228 70% 10%; /* #090f2a */
     --sidebar-foreground: 210 40% 98%;
@@ -92,6 +101,14 @@ body {
     --chart-3: 30 80% 55%;
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
+
+    /* Custom Status Colors */
+    --success: 142.1 76.2% 46.3%; 
+    --success-foreground: 142.1 76.2% 86.3%;
+    --warning: 47.9 95.8% 63.1%;
+    --warning-foreground: 47.9 95.8% 93.1%;
+    --danger: 0 84.2% 70.2%; 
+    --danger-foreground: 0 84.2% 90.2%;
 
     --sidebar-background: 240 2% 12%; /* #1f1f21 */
     --sidebar-foreground: 210 40% 98%;

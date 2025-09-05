@@ -503,10 +503,9 @@ export default function CompanyDetailsPage() {
                             <Badge
                               variant={
                                 assessment.status === 'Completed'
-                                  ? 'default'
+                                  ? 'success'
                                   : 'outline'
                               }
-                              className={assessment.status === 'Completed' ? 'bg-green-500' : ''}
                             >
                               {assessment.status}
                             </Badge>
@@ -627,7 +626,7 @@ export default function CompanyDetailsPage() {
                                   <p className="font-medium text-sm">{project.name}</p>
                                   <p className="text-xs text-muted-foreground">{project.owner}</p>
                               </div>
-                              <Badge variant={project.status === 'Active' ? 'default' : 'secondary'} className={project.status === 'Active' ? 'bg-green-500' : ''}>
+                              <Badge variant={project.status === 'Active' ? 'success' : 'secondary'}>
                                   {project.status}
                               </Badge>
                           </div>
