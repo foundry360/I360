@@ -629,7 +629,7 @@ export default function ProjectDetailsPage() {
         } else if (scheduleVariance < -15 || overduePercent > 25) {
             return { status: 'Needs Attention', icon: TrendingDown, color: 'text-danger', tasksCompletedPercent: tasksCompletedPercent };
         } else {
-            return { status: 'At Risk', icon: AlertTriangle, color: 'text-warning-foreground', tasksCompletedPercent: tasksCompletedPercent };
+            return { status: 'At Risk', icon: AlertTriangle, color: 'text-warning', tasksCompletedPercent: tasksCompletedPercent };
         }
 
     }, [project, tasks]);
@@ -1002,7 +1002,7 @@ export default function ProjectDetailsPage() {
                                         </CardContent>
                                         <CardFooter className="flex-col items-start gap-1 p-4 pt-0">
                                             <p className="text-xs text-muted-foreground">{Math.round(projectHealth.tasksCompletedPercent)}% complete</p>
-                                            <Progress value={projectHealth.tasksCompletedPercent} className={cn("[&>div]:bg-success", projectHealth.color === 'text-warning-foreground' && "[&>div]:bg-warning", projectHealth.color === 'text-danger' && "[&>div]:bg-danger")} />
+                                            <Progress value={projectHealth.tasksCompletedPercent} className={cn("[&>div]:bg-success", projectHealth.color === 'text-warning' && "[&>div]:bg-warning", projectHealth.color === 'text-danger' && "[&>div]:bg-danger")} />
                                         </CardFooter>
                                     </Card>
                                 </div>
@@ -1027,7 +1027,7 @@ export default function ProjectDetailsPage() {
                                                     statusColor = 'text-danger';
                                                 } else {
                                                     statusText = `Due in ${daysDiff + 1} day(s)`;
-                                                    statusColor = 'text-warning-foreground';
+                                                    statusColor = 'text-warning';
                                                 }
 
                                                 return (
@@ -1096,7 +1096,7 @@ export default function ProjectDetailsPage() {
                                                             </DropdownMenuTrigger>
                                                             <DropdownMenuContent align="end">
                                                                 <DropdownMenuItem onSelect={() => openEditEpicDialog(epic)}><Pencil className="mr-2 h-4 w-4" />Edit</DropdownMenuItem>
-                                                                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setItemToDelete({type: 'epic', id: epic.id, name: epic.title}); setIsDeleteDialogOpen(true);}}><Trash2 className="mr-2 h-4 w-4" />Delete</DropdownMenuItem>
+                                                                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setItemToDelete({type: 'epic', id: epic.id, name: epic.title}); setIsDeleteDialogOpen(true);}}><Trash2 className="mr-2 h-4 w-4" /></DropdownMenuItem>
                                                             </DropdownMenuContent>
                                                         </DropdownMenu>
                                                     </div>
@@ -1157,7 +1157,7 @@ export default function ProjectDetailsPage() {
                                                                                 </DropdownMenuSubContent>
                                                                                 </DropdownMenuPortal>
                                                                             </DropdownMenuSub>
-                                                                            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setItemToDelete({type: 'backlogItem', id: item.id, name: item.title}); setIsDeleteDialogOpen(true);}}><Trash2 className="mr-2 h-4 w-4" />Delete</DropdownMenuItem>
+                                                                            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setItemToDelete({type: 'backlogItem', id: item.id, name: item.title}); setIsDeleteDialogOpen(true);}}><Trash2 className="mr-2 h-4 w-4" /></DropdownMenuItem>
                                                                         </DropdownMenuContent>
                                                                     </DropdownMenu>
                                                                 </div>
@@ -1229,7 +1229,7 @@ export default function ProjectDetailsPage() {
                                                                         </DropdownMenuItem>
                                                                         )}
                                                                         <DropdownMenuSeparator />
-                                                                        <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setItemToDelete({type: 'sprint', id: sprint.id, name: sprint.name}); setIsDeleteDialogOpen(true);}}><Trash2 className="mr-2 h-4 w-4" />Delete</DropdownMenuItem>
+                                                                        <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setItemToDelete({type: 'sprint', id: sprint.id, name: sprint.name}); setIsDeleteDialogOpen(true);}}><Trash2 className="mr-2 h-4 w-4" /></DropdownMenuItem>
                                                                     </DropdownMenuContent>
                                                                 </DropdownMenu>
                                                             </div>
