@@ -37,6 +37,10 @@ export function EditProjectDialog() {
   const [formData, setFormData] = React.useState<Project | null>(null);
   const [contacts, setContacts] = React.useState<Contact[]>([]);
   const { user } = useUser();
+  
+  const [engagementNamePrefix, setEngagementNamePrefix] = React.useState('');
+  const [engagementNameSuffix, setEngagementNameSuffix] = React.useState('');
+
 
   React.useEffect(() => {
     if (editProjectData) {
@@ -48,6 +52,15 @@ export function EditProjectDialog() {
           endDate: projectData.endDate ? new Date(projectData.endDate).toISOString().split('T')[0] : '',
       });
       
+      const nameParts = projectData.name.split('-');
+      if (nameParts.length > 1) {
+        setEngagementNamePrefix(`${nameParts[0]}-`);
+        setEngagementNameSuffix(nameParts.slice(1).join('-'));
+      } else {
+        setEngagementNamePrefix('');
+        setEngagementNameSuffix(projectData.name);
+      }
+
       const fetchContacts = async () => {
           if (projectData.companyId) {
               const companyContacts = await getContactsForCompany(projectData.companyId);
@@ -62,6 +75,10 @@ export function EditProjectDialog() {
     if (!formData) return;
     const { id, value } = e.target;
     setFormData((prev) => ({ ...prev!, [id]: value }));
+  };
+  
+  const handleNameSuffixChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setEngagementNameSuffix(e.target.value);
   };
 
   const handleSelectChange = (field: 'status' | 'category' | 'priority' | 'owner') => (value: string) => {
@@ -85,8 +102,10 @@ export function EditProjectDialog() {
     if (!formData) return;
     try {
       const { id, ...updateData } = formData;
+      const reconstructedName = `${engagementNamePrefix}${engagementNameSuffix}`;
       const dataToSave = {
           ...updateData,
+          name: reconstructedName,
           startDate: parseISO(updateData.startDate).toISOString(),
           endDate: updateData.endDate ? parseISO(updateData.endDate).toISOString() : undefined,
       };
@@ -104,6 +123,8 @@ export function EditProjectDialog() {
   const handleOpenChange = (isOpen: boolean) => {
     if (!isOpen) {
       setFormData(null);
+      setEngagementNamePrefix('');
+      setEngagementNameSuffix('');
       closeEditProjectDialog();
     }
   };
@@ -140,7 +161,16 @@ export function EditProjectDialog() {
           <div className="grid gap-4 py-4 max-h-[70vh] overflow-y-auto pr-4">
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="name" className="text-right">Name</Label>
-              <Input id="name" value={formData.name} onChange={handleInputChange} className="col-span-3" required />
+               <div className="col-span-3 flex items-center gap-1 rounded-md border border-input focus-within:ring-2 focus-within:ring-ring">
+                  <span className="pl-3 pr-1 text-muted-foreground">{engagementNamePrefix}</span>
+                  <Input 
+                    id="name" 
+                    value={engagementNameSuffix} 
+                    onChange={handleNameSuffixChange} 
+                    className="flex-1 border-0 focus-visible:ring-0 focus-visible:ring-offset-0" 
+                    required 
+                  />
+               </div>
             </div>
             <div className="grid grid-cols-4 items-start gap-4">
               <Label htmlFor="description" className="text-right pt-2">Description</Label>
