@@ -143,11 +143,13 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ items, projectStartD
                                       <div className="relative h-full w-full">
                                           <Progress 
                                             value={progress} 
-                                            className="h-full w-full bg-transparent"
+                                            className={cn(
+                                                "h-full w-full bg-transparent",
+                                                item.type === 'epic' && 'bg-[hsl(240,2%,12%)] dark:bg-muted'
+                                            )}
                                             style={{
                                                 backgroundColor: 
-                                                  item.type === 'epic' ? 'hsl(240, 2%, 12%)'
-                                                  : item.type === 'sprint' ? 'hsl(38, 92%, 55%, 0.3)' 
+                                                  item.type === 'sprint' ? 'hsl(38, 92%, 55%, 0.3)' 
                                                   : undefined
                                             }}
                                             indicatorClassName={
