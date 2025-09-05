@@ -106,7 +106,6 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ items, projectStartD
                                     <div
                                         className={cn(
                                             "h-6 rounded cursor-pointer relative",
-                                            item.type === 'epic' && 'bg-primary/70',
                                             item.type === 'sprint' && 'bg-secondary',
                                             item.type === 'item' && 'bg-muted'
                                         )}
@@ -114,6 +113,7 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ items, projectStartD
                                             position: 'absolute',
                                             left: `${getBarPosition(item.startDate)}%`,
                                             width: `${getBarWidth(item.startDate, item.endDate)}%`,
+                                            backgroundColor: item.type === 'epic' ? 'hsl(160, 55%, 52%)' : undefined
                                         }}
                                     >
                                       {item.type === 'item' && (
