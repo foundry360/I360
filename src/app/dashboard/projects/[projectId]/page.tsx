@@ -1031,7 +1031,16 @@ export default function ProjectDetailsPage() {
                                                 }
 
                                                 return (
-                                                <div key={task.id} className="flex justify-between items-center text-sm">
+                                                <div 
+                                                    key={task.id} 
+                                                    className="flex justify-between items-center text-sm p-2 -mx-2 rounded-md hover:bg-muted cursor-pointer"
+                                                    onClick={() => {
+                                                        const backlogItem = backlogItems.find(item => item.backlogId === task.backlogId);
+                                                        if (backlogItem) {
+                                                            openEditBacklogItemDialog(backlogItem, epics, sprints, contacts);
+                                                        }
+                                                    }}
+                                                >
                                                     <div className="flex items-center gap-3">
                                                         <Avatar className="h-6 w-6">
                                                             <AvatarImage src={task.ownerAvatarUrl} />
