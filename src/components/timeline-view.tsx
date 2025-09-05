@@ -108,7 +108,7 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ items, projectStartD
                                             "h-6 rounded cursor-pointer relative",
                                             item.type === 'epic' && 'bg-primary/70',
                                             item.type === 'sprint' && 'bg-secondary',
-                                            item.type === 'item' && 'bg-muted' // Use muted for the background of progress
+                                            item.type === 'item' && 'bg-muted'
                                         )}
                                         style={{
                                             position: 'absolute',
