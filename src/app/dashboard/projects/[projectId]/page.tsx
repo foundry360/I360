@@ -137,7 +137,7 @@ const PriorityIcon = ({ priority }: { priority: Task['priority'] }) => {
     const chevronCount = priority === 'High' ? 3 : priority === 'Medium' ? 2 : 1;
 
     return (
-        <div className={cn("flex items-center justify-center h-6 w-6 rounded-full bg-primary", colorClass)}>
+        <div className={cn("flex items-center justify-center h-6 w-6 rounded-full", colorClass)}>
             <div className="flex flex-col items-center justify-center -space-y-2">
                 {Array.from({ length: chevronCount }).map((_, i) => (
                     <ChevronUp key={i} className="h-3 w-3 text-primary-foreground" />
@@ -1541,5 +1541,7 @@ export default function ProjectDetailsPage() {
         </div>
     );
 }
+
+    
 
     
