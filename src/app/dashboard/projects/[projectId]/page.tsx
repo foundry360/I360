@@ -253,7 +253,7 @@ const chartConfig = {
   },
   ideal: {
     label: "Ideal",
-    color: "hsl(142 71% 45%)",
+    color: "hsl(var(--chart-1))",
   },
 } satisfies ChartConfig
 
@@ -708,8 +708,7 @@ export default function ProjectDetailsPage() {
             };
         }).filter(Boolean);
     
-        const allSprintsInTimeline = sprints.filter(s => s.status !== 'Not Started');
-        if (allSprintsInTimeline.length === 0) {
+        if (sprints.length === 0) {
            return { items: [], projectStartDate: new Date(), projectEndDate: new Date() };
         }
 
@@ -959,7 +958,7 @@ export default function ProjectDetailsPage() {
                                                      <Line
                                                         dataKey="ideal"
                                                         type="natural"
-                                                        stroke="var(--color-ideal)"
+                                                        stroke="hsl(142 71% 45%)"
                                                         strokeWidth={2}
                                                         strokeDasharray="3 3"
                                                         dot={false}
@@ -1137,16 +1136,14 @@ export default function ProjectDetailsPage() {
                                                         }
                                                     }}
                                                 >
-                                                    <div className="flex items-center gap-3">
-                                                        <Avatar className="h-6 w-6">
-                                                            <AvatarImage src={task.ownerAvatarUrl} />
-                                                            <AvatarFallback className="text-xs">{task.owner.split(' ').map(n => n[0]).join('')}</AvatarFallback>
-                                                        </Avatar>
-                                                        <span className="font-medium">{task.title}</span>
+                                                    <div>
+                                                        <p className="font-medium">{task.title}</p>
+                                                        <p className="text-xs text-muted-foreground">{task.owner}</p>
                                                     </div>
-                                                    <span className={cn("font-semibold", statusColor)}>
-                                                        {statusText}
-                                                    </span>
+                                                    <div className={cn("flex items-center gap-2 text-xs font-semibold", statusColor)}>
+                                                       <Calendar className="h-4 w-4" />
+                                                        <span>{statusText}</span>
+                                                    </div>
                                                 </div>
                                                 )
                                             })
@@ -1497,5 +1494,6 @@ export default function ProjectDetailsPage() {
 }
 
     
+
 
 
