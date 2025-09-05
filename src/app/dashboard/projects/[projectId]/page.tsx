@@ -1020,14 +1020,13 @@ export default function ProjectDetailsPage() {
                                                 const isOverdue = daysDiff < 0;
 
                                                 let statusText = '';
-                                                let statusColor = 'text-muted-foreground';
+                                                let statusColor = 'text-warning';
 
                                                 if (isOverdue) {
                                                     statusText = `Overdue by ${Math.abs(daysDiff)} day(s)`;
                                                     statusColor = 'text-danger';
                                                 } else {
                                                     statusText = `Due in ${daysDiff + 1} day(s)`;
-                                                    statusColor = 'text-warning';
                                                 }
 
                                                 return (
@@ -1071,7 +1070,12 @@ export default function ProjectDetailsPage() {
                                         title={status}
                                         tasks={tasks}
                                         projectPrefix={projectPrefix}
-                                        onTaskClick={(task) => openEditTaskDialog(task, contacts)}
+                                        onTaskClick={(task) => {
+                                            const backlogItem = backlogItems.find(item => item.backlogId === task.backlogId);
+                                            if (backlogItem) {
+                                                openEditBacklogItemDialog(backlogItem, epics, sprints, contacts);
+                                            }
+                                        }}
                                     />
                             ))}
                             </div>
