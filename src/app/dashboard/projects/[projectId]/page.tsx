@@ -735,6 +735,8 @@ export default function ProjectDetailsPage() {
     const completedPercentage = totalTasks > 0 ? (completedTasksCount / totalTasks) * 100 : 0;
     const overduePercentage = totalTasks > 0 ? (overdueTasksCount / totalTasks) * 100 : 0;
     
+    const HealthIcon = projectHealth.icon;
+
 
     return (
         <div className="flex flex-col h-full">
@@ -1043,7 +1045,7 @@ export default function ProjectDetailsPage() {
                                     <Card>
                                         <CardHeader className="flex flex-row items-center justify-between pb-2">
                                             <CardTitle className="text-sm font-medium text-muted-foreground">Overdue Tasks</CardTitle>
-                                            <Loader className="h-4 w-4 text-danger" />
+                                            <AlertTriangle className="h-4 w-4 text-muted-foreground" />
                                         </CardHeader>
                                         <CardContent>
                                             <p className="text-2xl font-bold text-danger">{overdueTasksCount}</p>
@@ -1056,7 +1058,7 @@ export default function ProjectDetailsPage() {
                                     <Card>
                                         <CardHeader className="flex flex-row items-center justify-between pb-2">
                                             <CardTitle className="text-sm font-medium text-muted-foreground">Engagement Health</CardTitle>
-                                            <CheckCircle2 className={cn("h-4 w-4", projectHealth.color)} />
+                                            <HealthIcon className="h-4 w-4 text-muted-foreground" />
                                         </CardHeader>
                                         <CardContent>
                                             <p className={cn("text-xl font-bold", projectHealth.color)}>{projectHealth.status}</p>
@@ -1170,7 +1172,7 @@ export default function ProjectDetailsPage() {
                                                             </DropdownMenuTrigger>
                                                             <DropdownMenuContent align="end">
                                                                 <DropdownMenuItem onSelect={() => openEditEpicDialog(epic)}><Pencil className="mr-2 h-4 w-4" />Edit</DropdownMenuItem>
-                                                                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setItemToDelete({type: 'epic', id: epic.id, name: epic.title}); setIsDeleteDialogOpen(true);}} className="text-destructive focus:bg-destructive focus:text-destructive-foreground">
+                                                                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setItemToDelete({type: 'epic', id: epic.id, name: epic.title}); setIsDeleteDialogOpen(true);}} className="text-destructive focus:bg-destructive/90 focus:text-destructive-foreground">
                                                                     <Trash2 className="mr-2 h-4 w-4" />
                                                                     Delete
                                                                 </DropdownMenuItem>
@@ -1234,7 +1236,7 @@ export default function ProjectDetailsPage() {
                                                                                 </DropdownMenuSubContent>
                                                                                 </DropdownMenuPortal>
                                                                             </DropdownMenuSub>
-                                                                            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setItemToDelete({type: 'backlogItem', id: item.id, name: item.title}); setIsDeleteDialogOpen(true);}} className="text-destructive focus:bg-destructive focus:text-destructive-foreground">
+                                                                            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setItemToDelete({type: 'backlogItem', id: item.id, name: item.title}); setIsDeleteDialogOpen(true);}} className="text-destructive focus:bg-destructive/90 focus:text-destructive-foreground">
                                                                                 <Trash2 className="mr-2 h-4 w-4" />
                                                                                 Delete
                                                                             </DropdownMenuItem>
@@ -1309,7 +1311,7 @@ export default function ProjectDetailsPage() {
                                                                         </DropdownMenuItem>
                                                                         )}
                                                                         <DropdownMenuSeparator />
-                                                                        <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setItemToDelete({type: 'sprint', id: sprint.id, name: sprint.name}); setIsDeleteDialogOpen(true);}} className="text-destructive focus:bg-destructive focus:text-destructive-foreground">
+                                                                        <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setItemToDelete({type: 'sprint', id: sprint.id, name: sprint.name}); setIsDeleteDialogOpen(true);}} className="text-destructive focus:bg-destructive/90 focus:text-destructive-foreground">
                                                                             <Trash2 className="mr-2 h-4 w-4" />
                                                                             Delete
                                                                         </DropdownMenuItem>
@@ -1459,3 +1461,5 @@ export default function ProjectDetailsPage() {
         </div>
     );
 }
+
+    
