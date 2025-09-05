@@ -119,14 +119,14 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ items, projectStartD
                                             value={progress} 
                                             className="h-full w-full bg-transparent"
                                             style={{
-                                                backgroundColor: item.type === 'epic' ? 'hsla(160, 55%, 52%, 0.3)' : item.type === 'sprint' ? 'hsla(38, 92%, 55%, 0.3)' : undefined
+                                                backgroundColor: item.type === 'epic' ? 'hsla(126, 68%, 40%, 0.3)' : item.type === 'sprint' ? 'hsla(38, 92%, 55%, 0.3)' : undefined
                                             }}
                                           >
                                              <ProgressPrimitive.Indicator
                                                 className="h-full w-full flex-1 transition-all"
                                                 style={{ 
                                                     transform: `translateX(-${100 - (progress || 0)}%)`,
-                                                    backgroundColor: item.type === 'epic' ? 'hsl(160, 55%, 52%)' : item.type === 'sprint' ? 'hsl(38, 92%, 55%)' : undefined
+                                                    backgroundColor: item.type === 'epic' ? 'hsl(126, 68%, 40%)' : item.type === 'sprint' ? 'hsl(38, 92%, 55%)' : undefined
                                                 }}
                                              />
                                           </Progress>
