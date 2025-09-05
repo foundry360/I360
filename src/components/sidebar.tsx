@@ -13,6 +13,7 @@ import {
   Users,
   ClipboardList,
   FolderKanban,
+  Library,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -69,6 +70,7 @@ export function Sidebar() {
       group: 'INSIGHTS',
       links: [
         { href: `/dashboard/assessments`, label: 'Assessments', icon: ClipboardList },
+        { href: `/dashboard/library`, label: 'Library', icon: Library },
       ],
     },
     {

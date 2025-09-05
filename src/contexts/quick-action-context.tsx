@@ -92,6 +92,12 @@ type QuickActionContextType = {
   setOnTaskUpdated: (callback: (() => void) | null) => (() => void) | void;
   editTaskData: { task: Task, contacts: Contact[] } | null;
 
+  isNewUserStoryDialogOpen: boolean;
+  openNewUserStoryDialog: () => void;
+  closeNewUserStoryDialog: () => void;
+  onUserStoryCreated: (() => void) | null;
+  setOnUserStoryCreated: (callback: (() => void) | null) => (() => void) | void;
+
   globalSearchTerm: string;
   setGlobalSearchTerm: (term: string) => void;
 };
@@ -163,6 +169,10 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
   const [isEditTaskDialogOpen, setIsEditTaskDialogOpen] = React.useState(false);
   const [onTaskUpdated, setOnTaskUpdated] = React.useState<(() => void) | null>(null);
   const [editTaskData, setEditTaskData] = React.useState<{ task: Task, contacts: Contact[] } | null>(null);
+
+  // New User Story Dialog State
+  const [isNewUserStoryDialogOpen, setIsNewUserStoryDialogOpen] = React.useState(false);
+  const [onUserStoryCreated, setOnUserStoryCreated] = React.useState<(() => void) | null>(null);
 
   // Global Search State
   const [globalSearchTerm, setGlobalSearchTerm] = React.useState('');
@@ -377,6 +387,22 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
     []
   );
 
+  const openNewUserStoryDialog = React.useCallback(() => {
+    setIsNewUserStoryDialogOpen(true);
+  }, []);
+
+  const closeNewUserStoryDialog = React.useCallback(() => {
+    setIsNewUserStoryDialogOpen(false);
+  }, []);
+
+  const handleSetOnUserStoryCreated = React.useCallback(
+    (callback: (() => void) | null) => {
+        setOnUserStoryCreated(() => callback);
+        return () => setOnUserStoryCreated(null);
+    },
+    []
+  );
+
 
   return (
     <QuickActionContext.Provider
@@ -461,6 +487,12 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
         onTaskUpdated,
         setOnTaskUpdated: handleSetOnTaskUpdated,
         editTaskData,
+        
+        isNewUserStoryDialogOpen,
+        openNewUserStoryDialog,
+        closeNewUserStoryDialog,
+        onUserStoryCreated,
+        setOnUserStoryCreated: handleSetOnUserStoryCreated,
 
         globalSearchTerm,
         setGlobalSearchTerm,
