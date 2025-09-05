@@ -33,6 +33,8 @@ import { Layers } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import * as AccordionPrimitive from "@radix-ui/react-accordion"
+
 
 type StoryWithDateAsString = Omit<UserStory, 'createdAt'> & { createdAt: string };
 
@@ -328,22 +330,23 @@ export default function LibraryPage() {
 
                   return (
                     <AccordionItem value={tag} key={tag}>
-                      <AccordionTrigger>
-                        <div className="flex items-center gap-2 flex-1">
-                          {projectId && (
-                            <Checkbox
-                                id={`select-all-${tag}`}
-                                checked={allInTagSelected}
-                                onCheckedChange={(checked) => handleSelectAllForTag(tag, checked as boolean)}
-                                onClick={e => e.stopPropagation()}
-                                className="mr-2"
-                            />
-                          )}
-                          <Icon className={cn("h-5 w-5", color)} />
-                          <h3 className="text-base font-semibold">{tag}</h3>
-                          <Badge variant="secondary">{storiesByTag[tag].length}</Badge>
-                        </div>
-                      </AccordionTrigger>
+                        <AccordionPrimitive.Header className="flex items-center">
+                            {projectId && (
+                                <Checkbox
+                                    id={`select-all-${tag}`}
+                                    checked={allInTagSelected}
+                                    onCheckedChange={(checked) => handleSelectAllForTag(tag, checked as boolean)}
+                                    className="mr-2 ml-4"
+                                />
+                            )}
+                            <AccordionTrigger className={cn(!projectId && "ml-4")}>
+                                <div className="flex items-center gap-2 flex-1">
+                                    <Icon className={cn("h-5 w-5", color)} />
+                                    <h3 className="text-base font-semibold">{tag}</h3>
+                                    <Badge variant="secondary">{storiesByTag[tag].length}</Badge>
+                                </div>
+                            </AccordionTrigger>
+                        </AccordionPrimitive.Header>
                       <AccordionContent>
                         <div className="space-y-2 pl-4">
                           {storiesByTag[tag].map(story => (
