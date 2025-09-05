@@ -19,13 +19,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { updateTask, type Task, TaskPriority, deleteTask } from '@/services/task-service';
+import { updateTask, type Task, TaskPriority, TaskStatus, deleteTask } from '@/services/task-service';
 import { useQuickAction } from '@/contexts/quick-action-context';
 import { useUser } from '@/contexts/user-context';
-import { getBacklogItemsForProject, updateBacklogItem } from '@/services/backlog-item-service';
-import { Archive } from 'lucide-react';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
 import { Contact } from '@/services/contact-service';
+import { Textarea } from './ui/textarea';
+import { format, parseISO } from 'date-fns';
 
 export function EditTaskDialog() {
   const {
@@ -41,19 +40,23 @@ export function EditTaskDialog() {
 
   React.useEffect(() => {
     if (editTaskData) {
-      setTask(editTaskData.task);
+      const { dueDate, ...restOfTask } = editTaskData.task;
+      setTask({
+        ...restOfTask,
+        dueDate: dueDate ? format(parseISO(dueDate), 'yyyy-MM-dd') : '',
+      });
       setProjectTeam(editTaskData.contacts);
     }
   }, [editTaskData]);
   
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     if (!task) return;
     const { id, value } = e.target;
     setTask((prev) => ({ ...prev!, [id]: value }));
   };
 
-  const handleSelectChange = (field: 'priority' | 'type' | 'owner') => (value: string) => {
+  const handleSelectChange = (field: 'priority' | 'type' | 'owner' | 'status') => (value: string) => {
      if (!task) return;
      if (field === 'owner') {
          const selectedUser = projectTeam.find(u => u.name === value) || { name: value, avatar: '' };
@@ -68,7 +71,11 @@ export function EditTaskDialog() {
     if (!task) return;
     try {
       const { id, ...updateData } = task;
-      await updateTask(id, updateData);
+       const dataToSave = {
+        ...updateData,
+        dueDate: task.dueDate || undefined,
+      };
+      await updateTask(id, dataToSave);
       handleOpenChange(false);
       if (onTaskUpdated) {
         onTaskUpdated();
@@ -103,6 +110,10 @@ export function EditTaskDialog() {
               <Input id="title" value={task.title} onChange={handleInputChange} className="col-span-3" required />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="description" className="text-right">Description</Label>
+                <Textarea id="description" value={(task as any).description || ''} onChange={handleInputChange} className="col-span-3" />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="owner" className="text-right">Owner</Label>
               <Select onValueChange={handleSelectChange('owner')} value={task.owner} required>
                 <SelectTrigger className="col-span-3">
@@ -117,6 +128,19 @@ export function EditTaskDialog() {
                   )}
                 </SelectContent>
               </Select>
+            </div>
+             <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="status" className="text-right">Status</Label>
+                <Select onValueChange={handleSelectChange('status')} value={task.status}>
+                    <SelectTrigger className="col-span-3">
+                        <SelectValue placeholder="Select a status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        {Object.values(TaskStatus).map(s => (
+                            <SelectItem key={s} value={s}>{s}</SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="priority" className="text-right">Priority</Label>
@@ -139,6 +163,10 @@ export function EditTaskDialog() {
                   {(['Assessment', 'Workshop', 'Enablement', 'Planning', 'Execution', 'Review'] as const).map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
                 </SelectContent>
               </Select>
+            </div>
+             <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="dueDate" className="text-right">Due Date</Label>
+              <Input id="dueDate" type="date" value={task.dueDate || ''} onChange={handleInputChange} className="col-span-3" />
             </div>
           </div>
           <DialogFooter className="pt-4 flex justify-between items-center w-full">

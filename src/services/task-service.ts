@@ -29,6 +29,7 @@ export interface Task {
   id: string;
   projectId: string;
   title: string;
+  description?: string;
   status: TaskStatus;
   order: number;
   owner: string;
@@ -63,15 +64,35 @@ export async function createTask(taskData: Omit<Task, 'id'>): Promise<string> {
 
 export async function updateTask(id: string, taskData: Partial<Omit<Task, 'id'>>): Promise<void> {
     const docRef = doc(db, 'tasks', id);
+    const taskDoc = await getDoc(docRef);
+    if (!taskDoc.exists()) {
+        throw new Error("Task not found");
+    }
+
+    const originalTask = taskDoc.data() as Task;
+    const projectId = taskData.projectId || originalTask.projectId;
+    
+    // Update the task itself
     await updateDoc(docRef, taskData);
-    if (taskData.projectId) {
-        await updateProjectLastActivity(taskData.projectId);
-    } else {
-        const taskDoc = await getDoc(docRef);
-        if (taskDoc.exists()) {
-            await updateProjectLastActivity(taskDoc.data().projectId);
+
+    // If the task is linked to a backlog item, update the backlog item too
+    if (originalTask.backlogId) {
+        const backlogQuery = query(collection(db, 'backlogItems'), where("projectId", "==", projectId), where("backlogId", "==", originalTask.backlogId));
+        const backlogSnapshot = await getDocs(backlogQuery);
+        if (!backlogSnapshot.empty) {
+            const backlogItemRef = backlogSnapshot.docs[0].ref;
+            const backlogUpdateData: Partial<BacklogItem> = {};
+            if (taskData.status) backlogUpdateData.status = taskData.status;
+            if (taskData.dueDate) backlogUpdateData.dueDate = taskData.dueDate;
+            if (taskData.description) backlogUpdateData.description = taskData.description;
+
+            if (Object.keys(backlogUpdateData).length > 0) {
+                 await updateDoc(backlogItemRef, backlogUpdateData);
+            }
         }
     }
+    
+    await updateProjectLastActivity(projectId);
 }
 
 export async function deleteTask(id: string): Promise<void> {
