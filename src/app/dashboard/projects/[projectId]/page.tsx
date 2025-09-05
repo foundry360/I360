@@ -1244,8 +1244,8 @@ export default function ProjectDetailsPage() {
                                 <Card className="border-dashed">
                                     <CardContent className="p-10 text-center">
                                         <div className="flex justify-center mb-4">
-                                            <div className="bg-primary-light rounded-full p-3">
-                                                <Library className="h-8 w-8 text-primary" />
+                                            <div className="bg-primary rounded-full p-3">
+                                                <Library className="h-8 w-8 text-primary-foreground" />
                                             </div>
                                         </div>
                                         <h3 className="text-lg font-semibold">The backlog is empty!</h3>
@@ -1583,6 +1583,7 @@ export default function ProjectDetailsPage() {
     
 
     
+
 
 
 
