@@ -3,13 +3,11 @@
 
 import * as React from 'react';
 import {
-  Table,
-  TableHeader,
-  TableRow,
-  TableHead,
-  TableBody,
-  TableCell,
-} from '@/components/ui/table';
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -24,12 +22,13 @@ import { Separator } from '@/components/ui/separator';
 import { useQuickAction } from '@/contexts/quick-action-context';
 import { getUserStories, deleteUserStory, UserStory, bulkCreateUserStories } from '@/services/user-story-service';
 import { Input } from '@/components/ui/input';
-import { format, parseISO } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import Papa from 'papaparse';
 
+type StoryWithDateAsString = Omit<UserStory, 'createdAt'> & { createdAt: string };
+
 export default function LibraryPage() {
-  const [stories, setStories] = React.useState<(Omit<UserStory, 'createdAt'> & { createdAt: string })[]>([]);
+  const [stories, setStories] = React.useState<StoryWithDateAsString[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [searchTerm, setSearchTerm] = React.useState('');
   const { openNewUserStoryDialog, setOnUserStoryCreated } = useQuickAction();
@@ -88,7 +87,7 @@ export default function LibraryPage() {
             tags: (row.tags || '').split(',').map((t: string) => t.trim()).filter(Boolean),
             points: Number(row.points) || 0,
           })).filter(story => story.title);
-
+          
           if (storiesToCreate.length === 0) {
             toast({
               variant: 'destructive',
@@ -129,11 +128,33 @@ export default function LibraryPage() {
     });
   };
 
-  const filteredStories = stories.filter(story =>
-    story.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    story.story.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    story.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
+  const storiesByTag = React.useMemo(() => {
+    const filtered = stories.filter(story =>
+      story.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      story.story.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      story.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))
+    );
+
+    const grouped: Record<string, StoryWithDateAsString[]> = {};
+    filtered.forEach(story => {
+      if (story.tags.length === 0) {
+        if (!grouped['Uncategorized']) {
+          grouped['Uncategorized'] = [];
+        }
+        grouped['Uncategorized'].push(story);
+      } else {
+        story.tags.forEach(tag => {
+          if (!grouped[tag]) {
+            grouped[tag] = [];
+          }
+          grouped[tag].push(story);
+        });
+      }
+    });
+    return grouped;
+  }, [stories, searchTerm]);
+  
+  const allTags = Object.keys(storiesByTag).sort();
 
   return (
     <div className="space-y-6">
@@ -172,71 +193,67 @@ export default function LibraryPage() {
           </Button>
         </div>
       </div>
-      <div className="border rounded-lg">
+      <div className="border rounded-lg p-2">
         {loading ? (
           <div className="space-y-4 p-4">
-            <Skeleton className="h-10 w-full" />
-            <Skeleton className="h-10 w-full" />
-            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-12 w-full" />
+            <Skeleton className="h-12 w-full" />
+            <Skeleton className="h-12 w-full" />
           </div>
         ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Title</TableHead>
-                <TableHead>Tags</TableHead>
-                <TableHead>Points</TableHead>
-                <TableHead>Created</TableHead>
-                <TableHead className="text-right"></TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredStories.length > 0 ? (
-                filteredStories.map((story) => (
-                  <TableRow key={story.id}>
-                    <TableCell className="font-medium max-w-sm">
-                      <p className="font-bold truncate">{story.title}</p>
-                      <p className="text-sm text-muted-foreground line-clamp-2">{story.story}</p>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex flex-wrap gap-1">
-                        {story.tags.map(tag => <Badge key={tag} variant="secondary">{tag}</Badge>)}
-                      </div>
-                    </TableCell>
-                    <TableCell>{story.points}</TableCell>
-                    <TableCell>{format(parseISO(story.createdAt), 'MMM dd, yyyy')}</TableCell>
-                    <TableCell className="text-right">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" className="h-8 w-8 p-0">
-                            <span className="sr-only">Open menu</span>
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem>View/Edit</DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={() => handleDelete(story.id)}
-                            className="text-destructive focus:text-destructive-foreground"
-                          >
-                            <Trash2 className="mr-2 h-4 w-4" /> Delete
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={5} className="h-24 text-center">
-                    No user stories found.
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
+          <Accordion type="multiple" className="w-full">
+            {allTags.length > 0 ? (
+              allTags.map(tag => (
+                <AccordionItem value={tag} key={tag}>
+                  <AccordionTrigger>
+                    <div className="flex items-center gap-2">
+                       <h3 className="text-base font-semibold">{tag}</h3>
+                       <Badge variant="secondary">{storiesByTag[tag].length}</Badge>
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent>
+                    <div className="space-y-2 pl-4">
+                      {storiesByTag[tag].map(story => (
+                        <div key={story.id} className="flex items-center justify-between p-3 rounded-md hover:bg-muted">
+                           <div className="flex-1">
+                                <p className="font-medium text-sm">{story.title}</p>
+                                <p className="text-xs text-muted-foreground line-clamp-1">{story.story}</p>
+                            </div>
+                           <div className="flex items-center gap-4 ml-4">
+                               <Badge variant="outline">{story.points || 0} Points</Badge>
+                               <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button variant="ghost" className="h-8 w-8 p-0">
+                                    <span className="sr-only">Open menu</span>
+                                    <MoreHorizontal className="h-4 w-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuItem>View/Edit</DropdownMenuItem>
+                                  <DropdownMenuItem
+                                    onClick={() => handleDelete(story.id)}
+                                    className="text-destructive focus:text-destructive-foreground"
+                                  >
+                                    <Trash2 className="mr-2 h-4 w-4" /> Delete
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                           </div>
+                        </div>
+                      ))}
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              ))
+            ) : (
+              <div className="h-24 text-center flex items-center justify-center text-muted-foreground">
+                No user stories found.
+              </div>
+            )}
+          </Accordion>
         )}
       </div>
     </div>
   );
 }
+
