@@ -41,6 +41,13 @@ const initialNewItemState: NewBacklogItemState = {
   dueDate: '',
 };
 
+// MOCK USER DATA - Replace with a service call to fetch actual users
+const mockUsers = [
+    { id: 'user-1', displayName: 'Alice Johnson', photoURL: 'https://i.pravatar.cc/150?u=alice' },
+    { id: 'user-2', displayName: 'Bob Williams', photoURL: 'https://i.pravatar.cc/150?u=bob' },
+];
+// END MOCK USER DATA
+
 export function NewBacklogItemDialog() {
   const {
     isNewBacklogItemDialogOpen,
@@ -51,15 +58,27 @@ export function NewBacklogItemDialog() {
   
   const [newItem, setNewItem] = React.useState<NewBacklogItemState>(initialNewItemState);
   const { user } = useUser();
+  const [systemUsers, setSystemUsers] = React.useState<any[]>([]);
 
   React.useEffect(() => {
     if (newBacklogItemData?.projectId && newBacklogItemData?.companyId) {
+      const defaultOwner = user?.displayName || user?.email || '';
+      const defaultAvatar = user?.photoURL || '';
       setNewItem(prev => ({ 
         ...prev, 
         projectId: newBacklogItemData.projectId,
-        owner: user?.displayName || '',
-        ownerAvatarUrl: user?.photoURL || ''
+        owner: defaultOwner,
+        ownerAvatarUrl: defaultAvatar
       }));
+    }
+    if (user) {
+        const allUsers = [
+            { id: user.uid, displayName: user.displayName || user.email, photoURL: user.photoURL },
+            ...mockUsers
+        ];
+        const uniqueUsers = Array.from(new Set(allUsers.map(u => u.id)))
+            .map(id => allUsers.find(u => u.id === id)!);
+        setSystemUsers(uniqueUsers);
     }
   }, [newBacklogItemData, user]);
   
@@ -69,8 +88,15 @@ export function NewBacklogItemDialog() {
     setNewItem((prev) => ({ ...prev, [id]: id === 'points' ? Number(value) : value }));
   };
 
-  const handleSelectChange = (field: 'epicId' | 'priority') => (value: string) => {
-    setNewItem((prev) => ({ ...prev, [field]: value }));
+  const handleSelectChange = (field: 'epicId' | 'priority' | 'owner') => (value: string) => {
+    if (field === 'owner') {
+        const selectedUser = systemUsers.find(u => u.displayName === value);
+        if (selectedUser) {
+            setNewItem(prev => ({...prev, owner: selectedUser.displayName!, ownerAvatarUrl: selectedUser.photoURL || '' }));
+        }
+    } else {
+        setNewItem((prev) => ({ ...prev, [field]: value }));
+    }
   };
 
   const handleCreateItem = async (e: React.FormEvent) => {
@@ -131,7 +157,16 @@ export function NewBacklogItemDialog() {
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="owner" className="text-right">Owner</Label>
-              <Input id="owner" value={newItem.owner} className="col-span-3" disabled />
+              <Select onValueChange={handleSelectChange('owner')} value={newItem.owner}>
+                  <SelectTrigger className="col-span-3">
+                    <SelectValue placeholder="Select an owner" />
+                  </SelectTrigger>
+                  <SelectContent>
+                      {systemUsers.map((u) => (
+                          <SelectItem key={u.id} value={u.displayName!}>{u.displayName}</SelectItem>
+                      ))}
+                  </SelectContent>
+              </Select>
             </div>
              <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="points" className="text-right">Story Points</Label>

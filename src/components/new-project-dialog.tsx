@@ -39,11 +39,20 @@ const initialNewProjectState = {
   endDate: '',
 };
 
+// MOCK USER DATA - Replace with a service call to fetch actual users
+const mockUsers = [
+    { id: 'user-1', displayName: 'Alice Johnson', photoURL: 'https://i.pravatar.cc/150?u=alice' },
+    { id: 'user-2', displayName: 'Bob Williams', photoURL: 'https://i.pravatar.cc/150?u=bob' },
+];
+// END MOCK USER DATA
+
+
 export function NewProjectDialog() {
   const { isNewProjectDialogOpen, closeNewProjectDialog, onProjectCreated } = useQuickAction();
   const [newProject, setNewProject] = React.useState(initialNewProjectState);
   const [companies, setCompanies] = React.useState<Company[]>([]);
   const { user } = useUser();
+  const [systemUsers, setSystemUsers] = React.useState<any[]>([]);
 
   React.useEffect(() => {
     if (isNewProjectDialogOpen) {
@@ -51,6 +60,16 @@ export function NewProjectDialog() {
       const defaultOwnerName = user?.displayName || user?.email || '';
       const defaultOwnerAvatar = user?.photoURL || '';
       setNewProject(prev => ({ ...prev, owner: defaultOwnerName, ownerAvatarUrl: defaultOwnerAvatar }));
+      
+       if (user) {
+        const allUsers = [
+            { id: user.uid, displayName: user.displayName || user.email, photoURL: user.photoURL },
+            ...mockUsers
+        ];
+        const uniqueUsers = Array.from(new Set(allUsers.map(u => u.id)))
+            .map(id => allUsers.find(u => u.id === id)!);
+        setSystemUsers(uniqueUsers);
+      }
     }
   }, [isNewProjectDialogOpen, user]);
 
@@ -59,8 +78,15 @@ export function NewProjectDialog() {
     setNewProject((prev) => ({ ...prev, [id]: value }));
   };
 
-  const handleSelectChange = (field: 'companyId' | 'status' | 'category' | 'priority') => (value: string) => {
-    setNewProject((prev) => ({ ...prev, [field]: value }));
+  const handleSelectChange = (field: 'companyId' | 'status' | 'category' | 'priority' | 'owner') => (value: string) => {
+    if (field === 'owner') {
+        const selectedUser = systemUsers.find(u => u.displayName === value);
+        if (selectedUser) {
+            setNewProject(prev => ({...prev, owner: selectedUser.displayName!, ownerAvatarUrl: selectedUser.photoURL || '' }));
+        }
+    } else {
+       setNewProject((prev) => ({ ...prev, [field]: value }));
+    }
   };
 
   const handleCreateProject = async (e: React.FormEvent) => {
@@ -136,7 +162,16 @@ export function NewProjectDialog() {
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="owner" className="text-right">Owner</Label>
-              <Input id="owner" value={newProject.owner} className="col-span-3" disabled />
+              <Select onValueChange={handleSelectChange('owner')} value={newProject.owner}>
+                  <SelectTrigger className="col-span-3">
+                    <SelectValue placeholder="Select an owner" />
+                  </SelectTrigger>
+                  <SelectContent>
+                      {systemUsers.map((u) => (
+                          <SelectItem key={u.id} value={u.displayName!}>{u.displayName}</SelectItem>
+                      ))}
+                  </SelectContent>
+              </Select>
             </div>
              <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="team" className="text-right">Team</Label>

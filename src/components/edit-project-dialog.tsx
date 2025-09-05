@@ -25,6 +25,13 @@ import { useQuickAction } from '@/contexts/quick-action-context';
 import { useUser } from '@/contexts/user-context';
 import { parseISO } from 'date-fns';
 
+// MOCK USER DATA - Replace with a service call to fetch actual users
+const mockUsers = [
+    { id: 'user-1', displayName: 'Alice Johnson', photoURL: 'https://i.pravatar.cc/150?u=alice' },
+    { id: 'user-2', displayName: 'Bob Williams', photoURL: 'https://i.pravatar.cc/150?u=bob' },
+];
+// END MOCK USER DATA
+
 export function EditProjectDialog() {
   const {
     isEditProjectDialogOpen,
@@ -35,6 +42,7 @@ export function EditProjectDialog() {
   
   const [formData, setFormData] = React.useState<Project | null>(null);
   const { user } = useUser();
+  const [systemUsers, setSystemUsers] = React.useState<any[]>([]);
   
   const [engagementNamePrefix, setEngagementNamePrefix] = React.useState('');
   const [engagementNameSuffix, setEngagementNameSuffix] = React.useState('');
@@ -59,7 +67,17 @@ export function EditProjectDialog() {
         setEngagementNameSuffix(projectData.name);
       }
     }
-  }, [editProjectData]);
+     if (user) {
+        const allUsers = [
+            { id: user.uid, displayName: user.displayName || user.email, photoURL: user.photoURL },
+            ...mockUsers
+        ];
+        // Remove duplicates
+        const uniqueUsers = Array.from(new Set(allUsers.map(u => u.id)))
+            .map(id => allUsers.find(u => u.id === id)!);
+        setSystemUsers(uniqueUsers);
+    }
+  }, [editProjectData, user]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     if (!formData) return;
@@ -71,9 +89,16 @@ export function EditProjectDialog() {
     setEngagementNameSuffix(e.target.value);
   };
 
-  const handleSelectChange = (field: 'status' | 'category' | 'priority') => (value: string) => {
+  const handleSelectChange = (field: 'status' | 'category' | 'priority' | 'owner') => (value: string) => {
     if (!formData) return;
-    setFormData((prev) => ({ ...prev!, [field]: value }));
+    if (field === 'owner') {
+        const selectedUser = systemUsers.find(u => u.displayName === value);
+        if (selectedUser) {
+            setFormData(prev => ({...prev!, owner: selectedUser.displayName!, ownerAvatarUrl: selectedUser.photoURL || '' }));
+        }
+    } else {
+        setFormData((prev) => ({ ...prev!, [field]: value }));
+    }
   };
 
   const handleUpdateProject = async (e: React.FormEvent) => {
@@ -140,7 +165,16 @@ export function EditProjectDialog() {
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="owner" className="text-right">Owner</Label>
-              <Input id="owner" value={formData.owner} className="col-span-3" disabled />
+              <Select onValueChange={handleSelectChange('owner')} value={formData.owner}>
+                  <SelectTrigger className="col-span-3">
+                    <SelectValue placeholder="Select an owner" />
+                  </SelectTrigger>
+                  <SelectContent>
+                      {systemUsers.map((u) => (
+                          <SelectItem key={u.id} value={u.displayName!}>{u.displayName}</SelectItem>
+                      ))}
+                  </SelectContent>
+              </Select>
             </div>
              <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="team" className="text-right">Team</Label>
