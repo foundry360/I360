@@ -66,7 +66,7 @@ export function Sidebar() {
       ],
     },
     {
-      group: 'ASSESSMENTS',
+      group: 'INSIGHTS',
       links: [
         { href: `/dashboard/assessments`, label: 'Assessments', icon: ClipboardList },
       ],
