@@ -283,6 +283,7 @@ export default function ProjectDetailsPage() {
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
     const [itemToDelete, setItemToDelete] = React.useState<{type: 'epic' | 'backlogItem' | 'sprint', id: string, name: string} | null>(null);
     const [allWorkSearchTerm, setAllWorkSearchTerm] = React.useState('');
+    const [activeBacklogAccordion, setActiveBacklogAccordion] = React.useState<string[]>([]);
 
     const fetchData = React.useCallback(async () => {
         if (!projectId) return;
@@ -501,6 +502,7 @@ export default function ProjectDetailsPage() {
             });
             const progress = itemsInEpic.length > 0 ? (completedItems.length / itemsInEpic.length) * 100 : 0;
             return {
+                id: epic.id,
                 name: epic.title,
                 progress: Math.round(progress),
             }
@@ -650,74 +652,74 @@ export default function ProjectDetailsPage() {
     }, [tasks]);
 
     const timelineData = React.useMemo(() => {
-        if (!project || !epics.length || !sprints.length) return { items: [], projectStartDate: new Date(), projectEndDate: new Date() };
-    
-        const epicItems = epics.map(epic => {
-            const itemsInEpic = backlogItems.filter(item => item.epicId === epic.id);
-            const sprintIdsInEpic = [...new Set(itemsInEpic.map(item => item.sprintId).filter(Boolean))];
-            const sprintsInEpic = sprints.filter(sprint => sprintIdsInEpic.includes(sprint.id));
-    
-            if (sprintsInEpic.length === 0) return null;
-    
-            const epicStartDate = new Date(Math.min(...sprintsInEpic.map(s => parseISO(s.startDate).getTime())));
-            const epicEndDate = new Date(Math.max(...sprintsInEpic.map(s => parseISO(s.endDate).getTime())));
+    if (!project || !epics.length || !sprints.length) return { items: [], projectStartDate: new Date(), projectEndDate: new Date() };
+
+    const epicItems = epics.map(epic => {
+        const itemsInEpic = backlogItems.filter(item => item.epicId === epic.id);
+        const sprintIdsInEpic = [...new Set(itemsInEpic.map(item => item.sprintId).filter(Boolean))];
+        const sprintsInEpic = sprints.filter(sprint => sprintIdsInEpic.includes(sprint.id));
+
+        if (sprintsInEpic.length === 0) return null;
+
+        const epicStartDate = new Date(Math.min(...sprintsInEpic.map(s => parseISO(s.startDate).getTime())));
+        const epicEndDate = new Date(Math.max(...sprintsInEpic.map(s => parseISO(s.endDate).getTime())));
+        
+        const epicChildren = sprintsInEpic.map(sprint => {
+            const itemsInSprint = backlogItems.filter(item => item.sprintId === sprint.id && item.epicId === epic.id);
             
-            const epicChildren = sprintsInEpic.map(sprint => {
-                const itemsInSprint = backlogItems.filter(item => item.sprintId === sprint.id && item.epicId === epic.id);
-                
-                const sprintIsUnstarted = sprint.status === 'Not Started';
-                
-                const completedItemsInSprint = itemsInSprint.filter(item => {
-                    const task = tasks.find(t => t.backlogId === item.backlogId);
-                    return task?.status === 'Complete';
-                });
-                
-                let sprintProgress = sprintIsUnstarted ? 0 : (itemsInSprint.length > 0 ? (completedItemsInSprint.length / itemsInSprint.length) * 100 : 0);
-    
-                return {
-                    id: sprint.id,
-                    title: sprint.name,
+            const sprintIsUnstarted = sprint.status === 'Not Started';
+            
+            const completedItemsInSprint = itemsInSprint.filter(item => {
+                const task = tasks.find(t => t.backlogId === item.backlogId);
+                return task?.status === 'Complete';
+            });
+            
+            let sprintProgress = sprintIsUnstarted ? 0 : (itemsInSprint.length > 0 ? (completedItemsInSprint.length / itemsInSprint.length) * 100 : 0);
+
+            return {
+                id: sprint.id,
+                title: sprint.name,
+                startDate: parseISO(sprint.startDate),
+                endDate: parseISO(sprint.endDate),
+                type: 'sprint' as const,
+                progress: sprintProgress,
+                children: itemsInSprint.map(item => ({
+                    id: item.id,
+                    title: item.title,
                     startDate: parseISO(sprint.startDate),
                     endDate: parseISO(sprint.endDate),
-                    type: 'sprint' as const,
-                    progress: sprintProgress,
-                    children: itemsInSprint.map(item => ({
-                        id: item.id,
-                        title: item.title,
-                        startDate: parseISO(sprint.startDate),
-                        endDate: parseISO(sprint.endDate),
-                        status: item.status,
-                        type: 'item' as const,
-                        dueDate: item.dueDate,
-                        progress: sprintIsUnstarted ? 0 : undefined,
-                    }))
-                };
-            }).sort((a, b) => a.startDate.getTime() - b.startDate.getTime());
-            
-            const totalSprintProgress = epicChildren.reduce((acc, child) => acc + child.progress, 0);
-            const epicProgress = epicChildren.length > 0 ? totalSprintProgress / epicChildren.length : 0;
-    
-            return {
-                id: epic.id,
-                title: epic.title,
-                startDate: epicStartDate,
-                endDate: epicEndDate,
-                type: 'epic' as const,
-                progress: epicProgress,
-                children: epicChildren,
+                    status: item.status,
+                    type: 'item' as const,
+                    dueDate: item.dueDate,
+                    progress: sprintIsUnstarted ? 0 : undefined,
+                }))
             };
-        }).filter(Boolean);
-    
-        if (sprints.length === 0) {
-           return { items: [], projectStartDate: new Date(), projectEndDate: new Date() };
-        }
+        }).sort((a, b) => a.startDate.getTime() - b.startDate.getTime());
+        
+        const totalSprintProgress = epicChildren.reduce((acc, child) => acc + child.progress, 0);
+        const epicProgress = epicChildren.length > 0 ? totalSprintProgress / epicChildren.length : 0;
 
-        const projectStartDate = new Date(Math.min(...sprints.map(s => parseISO(s.startDate).getTime())));
-        const projectEndDate = new Date(Math.max(...sprints.map(s => parseISO(s.endDate).getTime())));
-    
-        return { items: epicItems as any[], projectStartDate, projectEndDate };
-    
-    }, [epics, sprints, backlogItems, project, tasks]);
+        return {
+            id: epic.id,
+            title: epic.title,
+            startDate: epicStartDate,
+            endDate: epicEndDate,
+            type: 'epic' as const,
+            progress: epicProgress,
+            children: epicChildren,
+        };
+    }).filter(Boolean);
+
+    if (sprints.length === 0) {
+        return { items: [], projectStartDate: new Date(), projectEndDate: new Date() };
+    }
+
+    const projectStartDate = new Date(Math.min(...sprints.map(s => parseISO(s.startDate).getTime())));
+    const projectEndDate = new Date(Math.max(...sprints.map(s => parseISO(s.endDate).getTime())));
+
+    return { items: epicItems as any[], projectStartDate, projectEndDate };
+
+}, [epics, sprints, backlogItems, project, tasks]);
 
     const getInitials = (name: string) => {
       if (!name) return '';
@@ -1025,23 +1027,34 @@ export default function ProjectDetailsPage() {
                                         <CardDescription>A summary of completion for each engagement epic</CardDescription>
                                     </CardHeader>
                                     <CardContent className="space-y-4">
-                                        {epicProgressData.length > 0 ? (
-                                            epicProgressData.map((epic, index) => {
-                                                const epicConfig = epicIcons[epic.name] || { icon: Layers, color: 'text-foreground' };
-                                                const IconComponent = epicConfig.icon;
-                                                return (
-                                                    <div key={index} className="space-y-2">
-                                                        <div className="flex justify-between items-baseline">
-                                                            <div className="flex items-center gap-2">
-                                                                <IconComponent className={cn("h-4 w-4", epicConfig.color)} />
-                                                                <p className="text-sm font-medium">{epic.name}</p>
+                                         {epicProgressData.length > 0 ? (
+                                            <Accordion type="multiple" value={activeBacklogAccordion} onValueChange={setActiveBacklogAccordion}>
+                                                {epicProgressData.map((epic, index) => {
+                                                    const epicConfig = epicIcons[epic.name] || { icon: Layers, color: 'text-foreground' };
+                                                    const IconComponent = epicConfig.icon;
+                                                    return (
+                                                        <div
+                                                            key={index}
+                                                            className="space-y-2 p-2 -m-2 rounded-md hover:bg-muted cursor-pointer"
+                                                            onClick={() => {
+                                                                setActiveTab('backlog');
+                                                                setActiveBacklogAccordion(prev => 
+                                                                    prev.includes(epic.id) ? prev.filter(id => id !== epic.id) : [...prev, epic.id]
+                                                                );
+                                                            }}
+                                                        >
+                                                            <div className="flex justify-between items-baseline">
+                                                                <div className="flex items-center gap-2">
+                                                                    <IconComponent className={cn("h-4 w-4", epicConfig.color)} />
+                                                                    <p className="text-sm font-medium">{epic.name}</p>
+                                                                </div>
+                                                                <p className="text-sm text-muted-foreground">{epic.progress}% complete</p>
                                                             </div>
-                                                            <p className="text-sm text-muted-foreground">{epic.progress}% complete</p>
+                                                            <Progress value={epic.progress} />
                                                         </div>
-                                                        <Progress value={epic.progress} />
-                                                    </div>
-                                                )
-                                            })
+                                                    )
+                                                })}
+                                            </Accordion>
                                         ) : (
                                             <div className="h-[150px] flex items-center justify-center text-center text-muted-foreground text-sm p-4">
                                                No epic progress to display. Add items with points to epics.
@@ -1190,7 +1203,7 @@ export default function ProjectDetailsPage() {
                     </TabsContent>
                     <TabsContent value="backlog">
                        <div className="space-y-6">
-                            <Accordion type="multiple" className="w-full">
+                            <Accordion type="multiple" className="w-full" value={activeBacklogAccordion} onValueChange={setActiveBacklogAccordion}>
                                 {epics.map(epic => {
                                     const epicConfig = epicIcons[epic.title] || { icon: Layers, color: 'text-foreground' };
                                     const IconComponent = epicConfig.icon;
