@@ -74,7 +74,7 @@ export function NewProjectDialog() {
         setSystemUsers(uniqueUsers);
       }
     }
-  }, [isNewProjectDialogOpen, user]);
+  }, [isNewProjectDialogOpen, user?.uid, user?.displayName, user?.email, user?.photoURL]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { id, value } = e.target;
