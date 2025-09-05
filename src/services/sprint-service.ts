@@ -68,8 +68,13 @@ export async function startSprint(sprintId: string, projectId: string, sprintIte
             priority: item.priority,
             type: 'Execution', // Default type, can be adjusted
             backlogId: item.backlogId,
-            ...(item.dueDate && { dueDate: item.dueDate })
+            dueDate: item.dueDate,
         };
+        
+        if (newTask.dueDate === undefined) {
+            (newTask as any).dueDate = null;
+        }
+
         batch.set(taskRef, newTask);
     });
 
