@@ -614,7 +614,7 @@ export default function CompanyDetailsPage() {
               <CardHeader className="flex flex-row items-center justify-between">
                   <CardTitle className="text-xl">Company Engagements</CardTitle>
                   <Button variant="outline" size="icon" onClick={openNewProjectDialog}>
-                      <FolderKanban className="h-4 w-4" />
+                      <Plus className="h-4 w-4" />
                       <span className="sr-only">New Engagement</span>
                   </Button>
               </CardHeader>
