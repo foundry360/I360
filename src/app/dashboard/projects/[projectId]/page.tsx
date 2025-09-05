@@ -298,13 +298,22 @@ export default function ProjectDetailsPage() {
             ]);
             setProject(projectData);
             setTasks(tasksData);
+            setEpics(epicsData);
+            setBacklogItems(backlogItemsData);
+            setSprints(sprintsData);
             
             if (projectData?.companyId) {
                 const companyContacts = await getContactsForCompany(projectData.companyId);
                 setContacts(companyContacts);
             }
+
+            const startedSprintIds = sprintsData.filter(s => s.status !== 'Not Started').map(s => s.id);
+            const backlogItemsInStartedSprints = backlogItemsData.filter(item => item.sprintId && startedSprintIds.includes(item.sprintId));
+            const backlogIdsInStartedSprints = new Set(backlogItemsInStartedSprints.map(item => item.backlogId));
             
-            const sortedTasks = tasksData.sort((a, b) => a.order - b.order);
+            const tasksForBoard = tasksData.filter(task => task.backlogId && backlogIdsInStartedSprints.has(task.backlogId));
+
+            const sortedTasks = tasksForBoard.sort((a, b) => a.order - b.order);
             
             const newColumns = sortedTasks.reduce((acc, task) => {
                 const status = task.status;
@@ -324,9 +333,6 @@ export default function ProjectDetailsPage() {
 
             setColumns(newColumns);
 
-            setEpics(epicsData);
-            setBacklogItems(backlogItemsData);
-            setSprints(sprintsData);
         } catch (error) {
             console.error("Failed to fetch project data:", error);
         } finally {
@@ -1030,12 +1036,12 @@ export default function ProjectDetailsPage() {
                                     </CardHeader>
                                     <CardContent>
                                          {epicProgressData.length > 0 ? (
-                                            <Accordion type="multiple" value={activeBacklogAccordion} onValueChange={setActiveBacklogAccordion} className="w-full space-y-2">
+                                            <Accordion type="multiple" value={activeBacklogAccordion} onValueChange={setActiveBacklogAccordion} className="w-full">
                                                 {epicProgressData.map((epic, index) => {
                                                     const epicConfig = epicIcons[epic.name] || { icon: Layers, color: 'text-foreground' };
                                                     const IconComponent = epicConfig.icon;
                                                     return (
-                                                        <AccordionItem value={epic.id} key={epic.id} className="border-none">
+                                                        <AccordionItem value={epic.id} key={epic.id} className="border-none space-y-2">
                                                             <AccordionTrigger 
                                                                 className="space-y-2 p-2 -m-2 rounded-md hover:bg-muted no-underline"
                                                                 onClick={(e) => {
