@@ -2,7 +2,7 @@
 'use client';
 
 import * as React from 'react';
-import { addMonths, differenceInDays, differenceInMonths, format, startOfMonth, endOfMonth, eachDayOfInterval } from 'date-fns';
+import { addMonths, differenceInDays, differenceInMonths, format, startOfMonth, endOfMonth, eachDayOfInterval, parseISO } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { epicIcons } from '@/app/dashboard/projects/[projectId]/page';
 import { Layers, GripVertical } from 'lucide-react';
@@ -20,6 +20,7 @@ interface TimelineItem {
     status?: TaskStatus;
     progress?: number;
     children?: TimelineItem[];
+    dueDate?: string | null;
 }
 
 interface TimelineViewProps {
@@ -94,7 +95,7 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ items, projectStartD
 
         return (
             <React.Fragment key={item.id}>
-                <div className="grid grid-cols-[300px_120px_1fr] border-b border-border/50">
+                <div className="grid grid-cols-[300px_120px_120px_1fr] border-b border-border/50">
                     {/* Work Item Column */}
                     <div
                         className={cn(
@@ -118,6 +119,11 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ items, projectStartD
                              </Badge>
                         )}
                     </div>
+                    
+                    {/* Due Date Column */}
+                    <div className="py-2 px-2 border-r border-border/50 flex items-center text-xs text-muted-foreground">
+                        {item.type === 'item' && item.dueDate && format(parseISO(item.dueDate), 'MMM dd, yyyy')}
+                    </div>
 
                     {/* Timeline Bar Column */}
                     <div className="relative py-2 px-2">
@@ -139,7 +145,7 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ items, projectStartD
                                             value={progress} 
                                             className="h-full w-full bg-transparent"
                                             style={{
-                                                backgroundColor: item.type === 'epic' ? 'hsla(126, 68%, 40%, 0.3)' : item.type === 'sprint' ? 'hsla(38, 92%, 55%, 0.3)' : undefined
+                                                backgroundColor: item.type === 'epic' ? 'hsl(126, 68%, 40%, 0.3)' : item.type === 'sprint' ? 'hsl(38, 92%, 55%, 0.3)' : undefined
                                             }}
                                           >
                                              <ProgressPrimitive.Indicator
@@ -175,9 +181,10 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ items, projectStartD
         <div className="w-full overflow-x-auto border rounded-lg bg-card">
             <div className="min-w-max">
                 {/* Header */}
-                <div className="grid grid-cols-[300px_120px_1fr] sticky top-0 bg-muted z-10 border-b">
+                <div className="grid grid-cols-[300px_120px_120px_1fr] sticky top-0 bg-muted z-10 border-b">
                     <div className="p-2 font-semibold border-r">Work Item</div>
                     <div className="p-2 font-semibold border-r">Status</div>
+                    <div className="p-2 font-semibold border-r">Due Date</div>
                     <div className="relative flex">
                         {monthHeaders.map((month, index) => {
                              const monthWidth = (month.days / totalDays) * 100;
@@ -193,7 +200,8 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ items, projectStartD
                 {/* Body */}
                  <div className="relative">
                     {/* Grid lines */}
-                    <div className="absolute top-0 left-0 h-full w-full grid grid-cols-[300px_120px_1fr]">
+                    <div className="absolute top-0 left-0 h-full w-full grid grid-cols-[300px_120px_120px_1fr]">
+                        <div className="border-r border-border/50"></div>
                         <div className="border-r border-border/50"></div>
                         <div className="border-r border-border/50"></div>
                         <div className="relative flex">
@@ -210,7 +218,7 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ items, projectStartD
                     {today >= startOfMonth(projectStartDate) && today <= endOfMonth(projectEndDate) && (
                          <div
                             className="absolute top-0 h-full border-l-2 border-destructive"
-                            style={{ left: `calc(300px + 120px + ${todayPosition}%)` }}
+                            style={{ left: `calc(300px + 120px + 120px + ${todayPosition}%)` }}
                         >
                              <div className="absolute -top-5 -left-2.5 text-xs font-semibold text-destructive">Today</div>
                         </div>

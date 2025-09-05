@@ -690,6 +690,7 @@ export default function ProjectDetailsPage() {
                             endDate: parseISO(sprint.endDate),
                             status: item.status,
                             type: 'item' as const,
+                            dueDate: item.dueDate,
                         }))
                     };
                 }).sort((a, b) => a.startDate.getTime() - b.startDate.getTime()),
