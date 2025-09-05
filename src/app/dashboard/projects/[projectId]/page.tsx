@@ -697,8 +697,8 @@ export default function ProjectDetailsPage() {
             };
         }).filter(Boolean);
 
-        const projectStartDate = new Date(Math.min(...sprints.filter(s => s.status !== 'Not Started').map(s => parseISO(s.startDate).getTime())));
-        const projectEndDate = new Date(Math.max(...sprints.filter(s => s.status !== 'Not Started').map(s => parseISO(s.endDate).getTime())));
+        const projectStartDate = new Date(Math.min(...sprints.map(s => parseISO(s.startDate).getTime())));
+        const projectEndDate = new Date(Math.max(...sprints.map(s => parseISO(s.endDate).getTime())));
 
         return { items: epicItems as any[], projectStartDate, projectEndDate };
 
