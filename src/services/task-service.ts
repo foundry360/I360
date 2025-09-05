@@ -55,7 +55,11 @@ export async function getTasksForProject(projectId: string): Promise<Task[]> {
 
 export async function createTask(taskData: Omit<Task, 'id'>): Promise<string> {
   const docRef = await addDoc(tasksCollection, {});
-  const newTask: Task = { ...taskData, id: docRef.id };
+  const newTask: Task = { 
+    ...taskData, 
+    id: docRef.id,
+    dueDate: taskData.dueDate || undefined
+  };
   await setDoc(docRef, newTask);
   await updateProjectLastActivity(taskData.projectId);
   return docRef.id;
