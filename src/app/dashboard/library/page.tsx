@@ -119,15 +119,15 @@ export default function LibraryPage() {
             toast({
               variant: 'destructive',
               title: 'Upload Failed',
-              description: 'CSV file is empty or does not have the required "title" column.',
+              description: 'CSV file is empty or does not have a "title" column.',
             });
             return;
           }
 
-          await bulkCreateUserStories(storiesToCreate);
+          const { importedCount, skippedCount } = await bulkCreateUserStories(storiesToCreate);
           toast({
-            title: 'Upload Successful',
-            description: `${storiesToCreate.length} user stories have been imported.`,
+            title: 'Upload Complete',
+            description: `${importedCount} stories imported. ${skippedCount} duplicates skipped.`,
           });
           fetchStories();
         } catch (error) {

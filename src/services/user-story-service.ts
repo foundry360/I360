@@ -13,6 +13,7 @@ import {
   serverTimestamp,
   FieldValue,
   writeBatch,
+  query,
 } from 'firebase/firestore';
 
 export interface UserStory {
@@ -63,10 +64,22 @@ export async function createUserStory(storyData: Omit<UserStory, 'id' | 'created
   return docRef.id;
 }
 
-export async function bulkCreateUserStories(storiesData: Omit<UserStory, 'id' | 'createdAt'>[]): Promise<void> {
-  const batch = writeBatch(db);
+export async function bulkCreateUserStories(storiesData: Omit<UserStory, 'id' | 'createdAt'>[]): Promise<{ importedCount: number, skippedCount: number }> {
+  const q = query(userStoriesCollection);
+  const snapshot = await getDocs(q);
+  const existingTitles = new Set(snapshot.docs.map(doc => (doc.data() as UserStory).title.toLowerCase().trim()));
 
-  storiesData.forEach(storyData => {
+  const batch = writeBatch(db);
+  let importedCount = 0;
+  
+  const storiesToCreate = storiesData.filter(story => {
+    const normalizedTitle = story.title.toLowerCase().trim();
+    return !existingTitles.has(normalizedTitle);
+  });
+  
+  const skippedCount = storiesData.length - storiesToCreate.length;
+
+  storiesToCreate.forEach(storyData => {
     const docRef = doc(userStoriesCollection);
     const storyWithTimestamp = {
       ...storyData,
@@ -75,9 +88,14 @@ export async function bulkCreateUserStories(storiesData: Omit<UserStory, 'id' | 
       createdAt: serverTimestamp(),
     };
     batch.set(docRef, storyWithTimestamp);
+    importedCount++;
   });
 
-  await batch.commit();
+  if (importedCount > 0) {
+      await batch.commit();
+  }
+  
+  return { importedCount, skippedCount };
 }
 
 
