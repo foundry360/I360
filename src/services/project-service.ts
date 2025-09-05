@@ -86,7 +86,19 @@ export async function getProjectsForCompany(companyId: string): Promise<Project[
 
 export async function createProject(projectData: Omit<Project, 'id' | 'companyName'>): Promise<string> {
   const projectDocRef = doc(collection(db, 'projects'));
-  const newProject = { ...projectData, id: projectDocRef.id, lastActivity: new Date().toISOString() };
+  const companyDoc = await getDoc(doc(db, 'companies', projectData.companyId));
+  if (!companyDoc.exists()) {
+    throw new Error('Company not found');
+  }
+  const companyName = companyDoc.data().name;
+  const prefix = `${companyName.substring(0, 4).toUpperCase()}-`;
+  
+  const newProject = { 
+      ...projectData,
+      name: projectData.name.startsWith(prefix) ? projectData.name : `${prefix}${projectData.name}`,
+      id: projectDocRef.id, 
+      lastActivity: new Date().toISOString() 
+  };
   await setDoc(projectDocRef, newProject);
   return projectDocRef.id;
 }

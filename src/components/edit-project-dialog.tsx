@@ -63,7 +63,9 @@ export function EditProjectDialog() {
         setEngagementNamePrefix(`${nameParts[0]}-`);
         setEngagementNameSuffix(nameParts.slice(1).join('-'));
       } else {
-        setEngagementNamePrefix('');
+        // Fallback for names that might not have a prefix
+        const prefix = companyName ? `${companyName.substring(0,4).toUpperCase()}-` : '';
+        setEngagementNamePrefix(prefix);
         setEngagementNameSuffix(projectData.name);
       }
     }
