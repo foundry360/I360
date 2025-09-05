@@ -54,38 +54,39 @@ const getMonthHeaders = (startDate: Date, endDate: Date) => {
     let currentDate = startOfMonth(startDate);
     const finalDate = endOfMonth(endDate);
 
+    // 1. Generate all individual months in the range
     while (currentDate <= finalDate) {
         months.push({
             name: format(currentDate, 'MMM yyyy'),
             days: differenceInDays(endOfMonth(currentDate), startOfMonth(currentDate)) + 1,
-            startDate: currentDate
+            date: currentDate
         });
         currentDate = addMonths(currentDate, 1);
     }
     
+    // 2. Group months into pairs
     const twoMonthGroups = [];
     for (let i = 0; i < months.length; i += 2) {
         if (i + 1 < months.length) {
             const month1 = months[i];
             const month2 = months[i+1];
-            const month1Date = month1.startDate;
-            const month2Date = month2.startDate;
+            
+            let combinedName;
+            const year1 = format(month1.date, 'yyyy');
+            const year2 = format(month2.date, 'yyyy');
 
-            let name = '';
-            if (isSameMonth(month1Date, month2Date)) {
-                 name = format(month1Date, 'MMM yyyy');
-            } else if (format(month1Date, 'yyyy') !== format(month2Date, 'yyyy')) {
-                 name = `${format(month1Date, 'MMM yyyy')} - ${format(month2Date, 'MMM yyyy')}`;
-            }
-            else {
-                name = `${format(month1Date, 'MMM')} - ${format(month2Date, 'MMM')} ${format(month1Date, 'yyyy')}`;
+            if (year1 === year2) {
+                combinedName = `${format(month1.date, 'MMM')} - ${format(month2.date, 'MMM')} ${year1}`;
+            } else {
+                combinedName = `${format(month1.date, 'MMM yyyy')} - ${format(month2.date, 'MMM yyyy')}`;
             }
 
             twoMonthGroups.push({
-                name: name,
+                name: combinedName,
                 days: month1.days + month2.days,
             });
         } else {
+            // Handle the last single month if the total number of months is odd
             twoMonthGroups.push(months[i]);
         }
     }
@@ -200,7 +201,7 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ items, projectStartD
                                                 })
                                             }
                                           />
-                                          <span className="absolute inset-0 flex items-center justify-center text-xs font-semibold text-primary-foreground">
+                                          <span className="absolute inset-0 flex items-center justify-center text-xs font-semibold text-primary-foreground mix-blend-difference">
                                               {Math.round(progress)}%
                                           </span>
                                       </div>
