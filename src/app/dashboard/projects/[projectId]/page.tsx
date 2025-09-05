@@ -714,8 +714,10 @@ export default function ProjectDetailsPage() {
         return { items: [], projectStartDate: new Date(), projectEndDate: new Date() };
     }
 
-    const projectStartDate = new Date(Math.min(...sprints.map(s => parseISO(s.startDate).getTime())));
-    const projectEndDate = new Date(Math.max(...sprints.map(s => parseISO(s.endDate).getTime())));
+    const allSprints = sprints;
+    const projectStartDate = new Date(Math.min(...allSprints.map(s => parseISO(s.startDate).getTime())));
+    const projectEndDate = new Date(Math.max(...allSprints.map(s => parseISO(s.endDate).getTime())));
+
 
     return { items: epicItems as any[], projectStartDate, projectEndDate };
 
@@ -1033,25 +1035,28 @@ export default function ProjectDetailsPage() {
                                                     const epicConfig = epicIcons[epic.name] || { icon: Layers, color: 'text-foreground' };
                                                     const IconComponent = epicConfig.icon;
                                                     return (
-                                                        <div
-                                                            key={index}
-                                                            className="space-y-2 p-2 -m-2 rounded-md hover:bg-muted cursor-pointer"
-                                                            onClick={() => {
-                                                                setActiveTab('backlog');
-                                                                setActiveBacklogAccordion(prev => 
-                                                                    prev.includes(epic.id) ? prev.filter(id => id !== epic.id) : [...prev, epic.id]
-                                                                );
-                                                            }}
-                                                        >
-                                                            <div className="flex justify-between items-baseline">
-                                                                <div className="flex items-center gap-2">
-                                                                    <IconComponent className={cn("h-4 w-4", epicConfig.color)} />
-                                                                    <p className="text-sm font-medium">{epic.name}</p>
+                                                        <AccordionItem value={epic.id} key={epic.id} className="border-none">
+                                                            <AccordionTrigger 
+                                                                className="space-y-2 p-2 -m-2 rounded-md hover:bg-muted no-underline"
+                                                                onClick={(e) => {
+                                                                    e.preventDefault();
+                                                                    setActiveTab('backlog');
+                                                                    setActiveBacklogAccordion(prev => 
+                                                                        prev.includes(epic.id) ? prev.filter(id => id !== epic.id) : [...prev, epic.id]
+                                                                    );
+                                                                }}
+                                                                noChevron
+                                                            >
+                                                                <div className="flex justify-between items-baseline w-full">
+                                                                    <div className="flex items-center gap-2">
+                                                                        <IconComponent className={cn("h-4 w-4", epicConfig.color)} />
+                                                                        <p className="text-sm font-medium">{epic.name}</p>
+                                                                    </div>
+                                                                    <p className="text-sm text-muted-foreground">{epic.progress}% complete</p>
                                                                 </div>
-                                                                <p className="text-sm text-muted-foreground">{epic.progress}% complete</p>
-                                                            </div>
-                                                            <Progress value={epic.progress} />
-                                                        </div>
+                                                                <Progress value={epic.progress} />
+                                                            </AccordionTrigger>
+                                                        </AccordionItem>
                                                     )
                                                 })}
                                             </Accordion>
@@ -1163,6 +1168,9 @@ export default function ProjectDetailsPage() {
                                                             <p className="font-medium">
                                                                 <span className="text-muted-foreground mr-2">{projectPrefix}-{task.backlogId}</span>
                                                                 {task.title}
+                                                            </p>
+                                                            <p className="text-xs text-muted-foreground">
+                                                                Due: {format(dueDate, 'MMM dd, yyyy')}
                                                             </p>
                                                         </div>
                                                     </div>
