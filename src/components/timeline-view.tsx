@@ -55,13 +55,54 @@ const getMonthHeaders = (startDate: Date, endDate: Date) => {
     const finalDate = endOfMonth(endDate);
 
     while (currentDate <= finalDate) {
+        const groupStartDate = currentDate;
+        let groupEndDate = addMonths(groupStartDate, 1);
+        groupEndDate = endOfMonth(groupEndDate);
+
+        if (groupEndDate > finalDate) {
+            groupEndDate = finalDate;
+        }
+        
+        const firstMonthName = format(groupStartDate, 'MMM');
+        const firstMonthYear = format(groupStartDate, 'yyyy');
+        const lastMonthName = format(groupEndDate, 'MMM');
+        const lastMonthYear = format(groupEndDate, 'yyyy');
+
+        let name = '';
+        if (firstMonthYear !== lastMonthYear) {
+            name = `${firstMonthName} ${firstMonthYear} - ${lastMonthName} ${lastMonthYear}`;
+        } else if (firstMonthName !== lastMonthName) {
+            name = `${firstMonthName} - ${lastMonthName} ${firstMonthYear}`;
+        } else {
+            name = `${firstMonthName} ${firstMonthYear}`;
+        }
+
+        const daysInGroup = differenceInDays(groupEndDate, groupStartDate) + 1;
+        
         months.push({
-            name: format(currentDate, 'MMM yyyy'),
-            days: differenceInDays(endOfMonth(currentDate), startOfMonth(currentDate)) + 1
+            name: name,
+            days: daysInGroup,
+            startDate: groupStartDate
         });
-        currentDate = addMonths(currentDate, 1);
+
+        currentDate = addMonths(startOfMonth(groupEndDate), 1);
     }
-    return months;
+
+    const twoMonthGroups = [];
+    for (let i = 0; i < months.length; i += 2) {
+        if (i + 1 < months.length) {
+            const month1 = months[i];
+            const month2 = months[i+1];
+            twoMonthGroups.push({
+                name: `${format(month1.startDate, 'MMM')} - ${format(month2.startDate, 'MMM')} ${format(month1.startDate, 'yyyy')}`,
+                days: month1.days + month2.days,
+            });
+        } else {
+            twoMonthGroups.push(months[i]);
+        }
+    }
+
+    return twoMonthGroups;
 };
 
 export const TimelineView: React.FC<TimelineViewProps> = ({ items, projectStartDate, projectEndDate }) => {
@@ -171,7 +212,7 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ items, projectStartD
                                                 })
                                             }
                                           />
-                                          <span className="absolute inset-0 flex items-center justify-center text-xs font-semibold text-white">
+                                          <span className="absolute inset-0 flex items-center justify-center text-xs font-semibold text-primary-foreground">
                                               {Math.round(progress)}%
                                           </span>
                                       </div>
