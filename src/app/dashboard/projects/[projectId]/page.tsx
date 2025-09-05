@@ -1242,15 +1242,24 @@ export default function ProjectDetailsPage() {
                        <div className="space-y-6">
                             {backlogItems.length === 0 ? (
                                 <Card className="border-dashed">
-                                    <CardContent className="p-6 text-center text-muted-foreground">
-                                        <p>This engagement has no backlog items yet.</p>
-                                        <Button
-                                            variant="link"
-                                            className="mt-2"
-                                            onClick={() => openNewBacklogItemDialog(projectId, project.companyId, epics)}
-                                        >
-                                            Add the first item
-                                        </Button>
+                                    <CardContent className="p-10 text-center">
+                                        <div className="flex justify-center mb-4">
+                                            <div className="bg-primary-light rounded-full p-3">
+                                                <Library className="h-8 w-8 text-primary" />
+                                            </div>
+                                        </div>
+                                        <h3 className="text-lg font-semibold">The backlog is empty!</h3>
+                                        <p className="text-muted-foreground mt-2 mb-4">
+                                            Start building your engagement by adding items from your library or creating them from scratch.
+                                        </p>
+                                        <div className="flex justify-center gap-4">
+                                            <Button onClick={() => openAddFromLibraryDialog(projectId, epics)}>
+                                                <Plus className="h-4 w-4 mr-2" /> Add from Library
+                                            </Button>
+                                            <Button variant="secondary" onClick={() => openNewBacklogItemDialog(projectId, project.companyId, epics)}>
+                                                Create New Item
+                                            </Button>
+                                        </div>
                                     </CardContent>
                                 </Card>
                             ) : (
@@ -1574,5 +1583,6 @@ export default function ProjectDetailsPage() {
     
 
     
+
 
 
