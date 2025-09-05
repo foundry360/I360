@@ -22,7 +22,6 @@ import { MoreHorizontal, Plus, Trash2, Search, Upload, FilePlus } from 'lucide-r
 import { Separator } from '@/components/ui/separator';
 import { useQuickAction } from '@/contexts/quick-action-context';
 import { getUserStories, deleteUserStory, UserStory, bulkCreateUserStories as bulkCreateLibraryStories } from '@/services/user-story-service';
-import { getEpicsForProject, Epic } from '@/services/epic-service';
 import { bulkCreateBacklogItems } from '@/services/backlog-item-service';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
@@ -32,8 +31,6 @@ import { cn } from '@/lib/utils';
 import { Layers } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import * as AccordionPrimitive from "@radix-ui/react-accordion"
 
 
 type StoryWithDateAsString = Omit<UserStory, 'createdAt'> & { createdAt: string };
@@ -71,9 +68,7 @@ export default function LibraryPage() {
   const [loading, setLoading] = React.useState(true);
   const [searchTerm, setSearchTerm] = React.useState('');
   const [selectedStories, setSelectedStories] = React.useState<string[]>([]);
-  const [epics, setEpics] = React.useState<Epic[]>([]);
-  const [targetEpicId, setTargetEpicId] = React.useState<string>('');
-
+  
   const { openNewUserStoryDialog, setOnUserStoryCreated } = useQuickAction();
   const { toast } = useToast();
   const fileInputRef = React.useRef<HTMLInputElement>(null);
@@ -85,20 +80,12 @@ export default function LibraryPage() {
       setLoading(true);
       const storiesFromDb = await getUserStories();
       setStories(storiesFromDb);
-      
-      if (projectId) {
-        const projectEpics = await getEpicsForProject(projectId);
-        setEpics(projectEpics);
-        if (projectEpics.length > 0) {
-          setTargetEpicId(projectEpics[0].id);
-        }
-      }
     } catch (error) {
       console.error('Failed to fetch library data:', error);
     } finally {
       setLoading(false);
     }
-  }, [projectId]);
+  }, []);
 
   React.useEffect(() => {
     fetchLibraryData();
@@ -122,11 +109,11 @@ export default function LibraryPage() {
   };
   
   const handleAddToBacklog = async () => {
-    if (!projectId || !targetEpicId || selectedStories.length === 0) {
+    if (!projectId || selectedStories.length === 0) {
       toast({
         variant: 'destructive',
         title: 'Selection Required',
-        description: 'Please select an epic and at least one user story to add.',
+        description: 'Please select at least one user story to add.',
       });
       return;
     }
@@ -134,10 +121,10 @@ export default function LibraryPage() {
     try {
         setLoading(true);
         const storiesToAdd = stories.filter(story => selectedStories.includes(story.id));
-        await bulkCreateBacklogItems(projectId, targetEpicId, storiesToAdd);
+        await bulkCreateBacklogItems(projectId, null, storiesToAdd);
         toast({
             title: 'Success!',
-            description: `${storiesToAdd.length} user stor${storiesToAdd.length > 1 ? 'ies' : 'y'} added to the engagement backlog.`,
+            description: `${storiesToAdd.length} user stor${storiesToAdd.length > 1 ? 'ies' : 'y'} added to the project backlog.`,
         });
         router.push(`/dashboard/projects/${projectId}`);
     } catch (error) {
@@ -268,7 +255,7 @@ export default function LibraryPage() {
           <h1 className="text-2xl font-bold">User Story Library</h1>
           <p className="text-muted-foreground">
             {projectId 
-                ? "Select stories to add to your engagement's backlog."
+                ? "Select stories to add to your project's backlog."
                 : "Browse and manage reusable user stories for your projects."
             }
           </p>
@@ -287,19 +274,9 @@ export default function LibraryPage() {
           <div className="flex items-center gap-2">
             {projectId && (
                 <>
-                 <Select value={targetEpicId} onValueChange={setTargetEpicId}>
-                    <SelectTrigger className="w-[250px]">
-                      <SelectValue placeholder="Select an Epic to add to" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {epics.map(epic => (
-                        <SelectItem key={epic.id} value={epic.id}>{epic.title}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
                   <Button onClick={handleAddToBacklog} disabled={selectedStories.length === 0 || loading}>
                     <FilePlus className="mr-2 h-4 w-4" />
-                    Add to Engagement ({selectedStories.length})
+                    Add to Backlog ({selectedStories.length})
                   </Button>
                 </>
             )}
@@ -330,16 +307,17 @@ export default function LibraryPage() {
 
                   return (
                     <AccordionItem value={tag} key={tag}>
-                        <div className="flex items-center">
+                        <div className="flex items-center hover:bg-muted/50 rounded-md">
                              {projectId && (
-                                <Checkbox
-                                    id={`select-all-${tag}`}
-                                    checked={allInTagSelected}
-                                    onCheckedChange={(checked) => handleSelectAllForTag(tag, checked as boolean)}
-                                    className="mr-2 ml-4"
-                                />
+                                <div className="p-4 pl-4 pr-2">
+                                    <Checkbox
+                                        id={`select-all-${tag}`}
+                                        checked={allInTagSelected}
+                                        onCheckedChange={(checked) => handleSelectAllForTag(tag, checked as boolean)}
+                                    />
+                                </div>
                             )}
-                            <AccordionTrigger className={cn("flex-1", !projectId && "ml-4")}>
+                            <AccordionTrigger className={cn("flex-1 p-4", !projectId && "pl-4")}>
                                 <div className="flex items-center gap-2 flex-1">
                                     <Icon className={cn("h-5 w-5", color)} />
                                     <span className="text-base font-semibold">{tag}</span>

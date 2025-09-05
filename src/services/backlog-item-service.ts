@@ -12,7 +12,7 @@ import { getProject } from './project-service';
 export interface BacklogItem {
   id: string;
   projectId: string;
-  epicId: string;
+  epicId: string | null;
   sprintId?: string | null;
   backlogId: number;
   title: string;
@@ -27,28 +27,16 @@ export interface BacklogItem {
 
 const backlogItemsCollection = collection(db, 'backlogItems');
 
-async function getNextBacklogId(projectId: string, epicId: string): Promise<number> {
-    const epicDocRef = doc(db, 'epics', epicId);
-    const epicDoc = await getDoc(epicDocRef);
-    if (!epicDoc.exists()) {
-        throw new Error("Epic not found");
-    }
-    const epicData = epicDoc.data();
-    const epicNumber = epicData.epicId;
-
-    const q = query(backlogItemsCollection, where("projectId", "==", projectId), where("epicId", "==", epicId));
+async function getNextBacklogId(projectId: string): Promise<number> {
+    const q = query(backlogItemsCollection, where("projectId", "==", projectId));
     const snapshot = await getDocs(q);
     
     if (snapshot.empty) {
-        return parseFloat(`${epicNumber}.1`);
+        return 1;
     }
 
     const existingIds = snapshot.docs.map(d => (d.data() as BacklogItem).backlogId);
-    const maxId = Math.max(...existingIds);
-    const fractionalPart = maxId.toString().split('.')[1] || '0';
-    const nextFractional = parseInt(fractionalPart, 10) + 1;
-    
-    return parseFloat(`${epicNumber}.${nextFractional}`);
+    return Math.max(...existingIds) + 1;
 }
 
 export async function getBacklogItemsForProject(projectId: string): Promise<BacklogItem[]> {
@@ -64,11 +52,12 @@ export async function getBacklogItemsForProject(projectId: string): Promise<Back
 
 export async function createBacklogItem(itemData: Omit<BacklogItem, 'id' | 'backlogId'>): Promise<string> {
     const docRef = await addDoc(backlogItemsCollection, {});
-    const nextId = await getNextBacklogId(itemData.projectId, itemData.epicId);
+    const nextId = await getNextBacklogId(itemData.projectId);
     const newItem = { 
         ...itemData, 
         id: docRef.id, 
         backlogId: nextId,
+        epicId: itemData.epicId || null,
         owner: itemData.owner || 'Unassigned',
         ownerAvatarUrl: itemData.ownerAvatarUrl || '',
         dueDate: itemData.dueDate ? parseISO(itemData.dueDate).toISOString() : null
@@ -78,21 +67,20 @@ export async function createBacklogItem(itemData: Omit<BacklogItem, 'id' | 'back
     return docRef.id;
 }
 
-export async function bulkCreateBacklogItems(projectId: string, epicId: string, stories: (Omit<UserStory, 'createdAt'> & { createdAt: string })[]): Promise<void> {
+export async function bulkCreateBacklogItems(projectId: string, epicId: string | null, stories: (Omit<UserStory, 'createdAt'> & { createdAt: string })[]): Promise<void> {
     const project = await getProject(projectId);
     if (!project) throw new Error("Project not found");
 
     const batch = writeBatch(db);
-    let lastBacklogId = await getNextBacklogId(projectId, epicId) - 0.1; // Start before the first available ID
+    let lastBacklogId = await getNextBacklogId(projectId);
 
     for (const story of stories) {
         const docRef = doc(backlogItemsCollection);
-        lastBacklogId = parseFloat((lastBacklogId + 0.1).toFixed(1));
         const newItem: BacklogItem = {
             id: docRef.id,
             projectId,
-            epicId,
-            backlogId: lastBacklogId,
+            epicId: epicId, // This will be null for general backlog items
+            backlogId: lastBacklogId++,
             title: story.title,
             description: story.story,
             status: 'To Do',

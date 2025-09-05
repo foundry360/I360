@@ -39,6 +39,7 @@ import {
   AlertTriangle,
   Calendar,
   Library,
+  Inbox,
 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
@@ -742,6 +743,8 @@ export default function ProjectDetailsPage() {
       if (!name) return '';
       return name.split(' ').map(n => n[0]).join('').toUpperCase();
     }
+    
+    const unassignedBacklogItems = backlogItems.filter(item => !item.epicId);
 
     if (loading) {
         return (
@@ -1264,7 +1267,80 @@ export default function ProjectDetailsPage() {
                                     </CardContent>
                                 </Card>
                             ) : (
+                                <>
                                 <Accordion type="multiple" className="w-full" value={activeBacklogAccordion} onValueChange={setActiveBacklogAccordion}>
+                                    {unassignedBacklogItems.length > 0 && (
+                                         <AccordionItem value="unassigned" className="mb-4 border-none">
+                                            <AccordionTrigger className="text-base font-normal bg-muted p-2 rounded-md hover:no-underline">
+                                                <div className="flex items-center gap-3 flex-1">
+                                                    <Inbox className="h-5 w-5 text-muted-foreground" />
+                                                    <span className="font-semibold text-sm">Unassigned Backlog Items</span>
+                                                    <Badge variant="secondary">{unassignedBacklogItems.length}</Badge>
+                                                </div>
+                                            </AccordionTrigger>
+                                             <AccordionContent>
+                                                <div className="pl-8 pr-4 space-y-4 pt-4">
+                                                    <div className="border rounded-lg">
+                                                        {unassignedBacklogItems.map(item => (
+                                                            <div 
+                                                                key={item.id} 
+                                                                className="flex justify-between items-center p-3 border-b last:border-b-0 hover:bg-muted/50 cursor-pointer"
+                                                                onClick={() => openEditBacklogItemDialog(item, epics, sprints, contacts)}
+                                                            >
+                                                                <div className="flex items-center gap-3">
+                                                                    <span className="text-foreground text-sm">{projectPrefix}-{item.backlogId}</span>
+                                                                    <p className="text-sm font-medium">{item.title}</p>
+                                                                </div>
+                                                                <div className="flex items-center gap-4">
+                                                                    <Badge variant="outline">{item.status}</Badge>
+                                                                    <Badge variant="secondary">{item.points} Points</Badge>
+                                                                    <TooltipProvider>
+                                                                        <Tooltip>
+                                                                            <TooltipTrigger>
+                                                                                <PriorityIcon priority={item.priority} />
+                                                                            </TooltipTrigger>
+                                                                            <TooltipContent>
+                                                                                <p>Priority: {item.priority}</p>
+                                                                            </TooltipContent>
+                                                                        </Tooltip>
+                                                                    </TooltipProvider>
+                                                                    <DropdownMenu>
+                                                                        <DropdownMenuTrigger asChild>
+                                                                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => e.stopPropagation()}><MoreVertical className="h-4 w-4" /></Button>
+                                                                        </DropdownMenuTrigger>
+                                                                        <DropdownMenuContent align="end">
+                                                                            <DropdownMenuItem onSelect={(e) => { e.stopPropagation(); openEditBacklogItemDialog(item, epics, sprints, contacts); }}><Pencil className="mr-2 h-4 w-4" />Edit</DropdownMenuItem>
+                                                                            <DropdownMenuSub>
+                                                                                <DropdownMenuSubTrigger>
+                                                                                    <Rocket className="mr-2 h-4 w-4" />
+                                                                                    <span>Move to Sprint</span>
+                                                                                </DropdownMenuSubTrigger>
+                                                                                <DropdownMenuPortal>
+                                                                                <DropdownMenuSubContent>
+                                                                                    <DropdownMenuItem onSelect={() => handleMoveToSprint(item.id, null)}>Backlog</DropdownMenuItem>
+                                                                                    <Separator />
+                                                                                    {upcomingSprints.map(sprint => (
+                                                                                        <DropdownMenuItem key={sprint.id} onSelect={() => handleMoveToSprint(item.id, sprint.id)}>
+                                                                                            {sprint.name}
+                                                                                        </DropdownMenuItem>
+                                                                                    ))}
+                                                                                </DropdownMenuSubContent>
+                                                                                </DropdownMenuPortal>
+                                                                            </DropdownMenuSub>
+                                                                            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setItemToDelete({type: 'backlogItem', id: item.id, name: item.title}); setIsDeleteDialogOpen(true);}} className="text-destructive focus:bg-destructive/90 focus:text-destructive-foreground">
+                                                                                <Trash2 className="mr-2 h-4 w-4" />
+                                                                                Delete
+                                                                            </DropdownMenuItem>
+                                                                        </DropdownMenuContent>
+                                                                    </DropdownMenu>
+                                                                </div>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            </AccordionContent>
+                                        </AccordionItem>
+                                    )}
                                     {epics.map(epic => {
                                         const epicConfig = epicIcons[epic.title] || { icon: Layers, color: 'text-foreground' };
                                         const IconComponent = epicConfig.icon;
@@ -1372,6 +1448,7 @@ export default function ProjectDetailsPage() {
                                         )
                                     })}
                                 </Accordion>
+                                </>
                             )}
                        </div>
                     </TabsContent>
