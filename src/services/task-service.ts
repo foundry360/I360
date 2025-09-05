@@ -87,6 +87,10 @@ export async function updateTask(id: string, taskData: Partial<Omit<Task, 'id'>>
             if (taskData.description) backlogUpdateData.description = taskData.description;
             if (taskData.owner) backlogUpdateData.owner = taskData.owner;
             if (taskData.ownerAvatarUrl) backlogUpdateData.ownerAvatarUrl = taskData.ownerAvatarUrl;
+            
+            // Ensure owner fields are present even if not changed, to prevent undefined errors
+            backlogUpdateData.owner = taskData.owner || originalTask.owner;
+            backlogUpdateData.ownerAvatarUrl = taskData.ownerAvatarUrl || originalTask.ownerAvatarUrl;
 
 
             if (Object.keys(backlogUpdateData).length > 0) {
