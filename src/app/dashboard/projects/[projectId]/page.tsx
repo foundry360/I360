@@ -601,7 +601,7 @@ export default function ProjectDetailsPage() {
     
     const projectHealth = React.useMemo(() => {
         if (!project || !tasks.length) {
-            return { status: 'Unknown', icon: HelpCircle, color: 'text-muted-foreground', description: 'Not enough data to determine health.', progress: 0 };
+            return { status: 'Unknown', icon: HelpCircle, color: 'text-muted-foreground', tasksCompletedPercent: 0 };
         }
 
         const today = new Date();
@@ -609,7 +609,7 @@ export default function ProjectDetailsPage() {
         const endDate = project.endDate ? parseISO(project.endDate) : add(startDate, { months: 6 }); // Default to 6 months if no end date
         
         if (isPast(endDate)) {
-            return { status: 'Archived', icon: CheckCircle2, color: 'text-muted-foreground', description: 'Project has passed its end date.', progress: 100 };
+            return { status: 'Archived', icon: CheckCircle2, color: 'text-muted-foreground', tasksCompletedPercent: 100 };
         }
 
         const totalDuration = differenceInDays(endDate, startDate);
@@ -625,11 +625,11 @@ export default function ProjectDetailsPage() {
         const scheduleVariance = tasksCompletedPercent - timeElapsedPercent;
 
         if (scheduleVariance >= -5 && overduePercent < 10) {
-            return { status: 'On Track', icon: TrendingUp, color: 'text-green-500', description: 'Project is on or ahead of schedule.', progress: 85 };
+            return { status: 'On Track', icon: TrendingUp, color: 'text-green-500', tasksCompletedPercent: tasksCompletedPercent };
         } else if (scheduleVariance < -15 || overduePercent > 25) {
-            return { status: 'Needs Attention', icon: TrendingDown, color: 'text-red-500', description: 'Significantly behind or has many overdue tasks.', progress: 25 };
+            return { status: 'Needs Attention', icon: TrendingDown, color: 'text-red-500', tasksCompletedPercent: tasksCompletedPercent };
         } else {
-            return { status: 'At Risk', icon: AlertTriangle, color: 'text-yellow-500', description: 'Slightly behind schedule or has some overdue tasks.', progress: 50 };
+            return { status: 'At Risk', icon: AlertTriangle, color: 'text-yellow-500', tasksCompletedPercent: tasksCompletedPercent };
         }
 
     }, [project, tasks]);
@@ -663,7 +663,7 @@ export default function ProjectDetailsPage() {
     ).length;
 
     const inProgressPercentage = totalTasks > 0 ? (inProgressTasks / totalTasks) * 100 : 0;
-    const completedPercentage = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
+    const completedPercentage = totalTasks > 0 ? (completedTasks / tasks.length) * 100 : 0;
     const overduePercentage = totalTasks > 0 ? (overdueTasks / tasks.length) * 100 : 0;
     
     const HealthIcon = projectHealth.icon;
@@ -988,8 +988,8 @@ export default function ProjectDetailsPage() {
                                             <p className={cn("text-2xl font-bold", projectHealth.color)}>{projectHealth.status}</p>
                                         </CardContent>
                                         <CardFooter className="flex-col items-start gap-1 p-4 pt-0">
-                                            <p className="text-xs text-muted-foreground">{projectHealth.description}</p>
-                                            <Progress value={projectHealth.progress} className={cn("[&>div]:bg-green-500", projectHealth.color === 'text-yellow-500' && "[&>div]:bg-yellow-500", projectHealth.color === 'text-red-500' && "[&>div]:bg-red-500")} />
+                                            <p className="text-xs text-muted-foreground">{Math.round(projectHealth.tasksCompletedPercent)}% complete</p>
+                                            <Progress value={projectHealth.tasksCompletedPercent} className={cn("[&>div]:bg-green-500", projectHealth.color === 'text-yellow-500' && "[&>div]:bg-yellow-500", projectHealth.color === 'text-red-500' && "[&>div]:bg-red-500")} />
                                         </CardFooter>
                                     </Card>
                                 </div>
