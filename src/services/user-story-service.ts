@@ -27,6 +27,13 @@ export interface UserStory {
 
 const userStoriesCollection = collection(db, 'userStories');
 
+export async function getUniqueTags(): Promise<string[]> {
+    const snapshot = await getDocs(userStoriesCollection);
+    const allTags = snapshot.docs.flatMap(doc => (doc.data() as UserStory).tags || []);
+    return [...new Set(allTags)].sort();
+}
+
+
 export async function getUserStories(): Promise<(Omit<UserStory, 'createdAt'> & { createdAt: string })[]> {
   try {
     const snapshot = await getDocs(userStoriesCollection);
@@ -47,6 +54,8 @@ export async function getUserStories(): Promise<(Omit<UserStory, 'createdAt'> & 
 export async function createUserStory(storyData: Omit<UserStory, 'id' | 'createdAt'>): Promise<string> {
   const docRef = await addDoc(userStoriesCollection, {
     ...storyData,
+    title: storyData.title || '',
+    story: storyData.story || '',
     points: storyData.points || 0,
     createdAt: serverTimestamp(),
   });

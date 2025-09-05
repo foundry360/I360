@@ -13,10 +13,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from './ui/textarea';
-import { createUserStory } from '@/services/user-story-service';
+import { createUserStory, getUniqueTags } from '@/services/user-story-service';
 import { useQuickAction } from '@/contexts/quick-action-context';
 import { Badge } from './ui/badge';
 import { X } from 'lucide-react';
+import { ScrollArea } from './ui/scroll-area';
 
 const initialNewStoryState = {
   title: '',
@@ -32,6 +33,17 @@ export function NewUserStoryDialog() {
   const [newStory, setNewStory] = React.useState(initialNewStoryState);
   const [currentCriterion, setCurrentCriterion] = React.useState('');
   const [currentTag, setCurrentTag] = React.useState('');
+  const [availableTags, setAvailableTags] = React.useState<string[]>([]);
+
+  React.useEffect(() => {
+    if (isNewUserStoryDialogOpen) {
+      const fetchTags = async () => {
+        const tags = await getUniqueTags();
+        setAvailableTags(tags);
+      };
+      fetchTags();
+    }
+  }, [isNewUserStoryDialogOpen]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { id, value } = e.target;
@@ -55,11 +67,12 @@ export function NewUserStoryDialog() {
     }));
   };
 
-  const handleAddTag = () => {
-    if (currentTag.trim() && !newStory.tags.includes(currentTag.trim())) {
+  const handleAddTag = (tagToAdd?: string) => {
+    const tag = (tagToAdd || currentTag).trim();
+    if (tag && !newStory.tags.includes(tag)) {
       setNewStory(prev => ({
         ...prev,
-        tags: [...prev.tags, currentTag.trim()]
+        tags: [...prev.tags, tag]
       }));
       setCurrentTag('');
     }
@@ -136,16 +149,18 @@ export function NewUserStoryDialog() {
                   />
                   <Button type="button" variant="outline" onClick={handleAddCriterion}>Add</Button>
                 </div>
-                <ul className="space-y-1 list-disc pl-5">
-                  {newStory.acceptanceCriteria.map((c, i) => (
-                    <li key={i} className="text-sm flex justify-between items-center">
-                      <span>{c}</span>
-                      <Button type="button" variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleRemoveCriterion(i)}>
-                        <X className="h-3 w-3" />
-                      </Button>
-                    </li>
-                  ))}
-                </ul>
+                <ScrollArea className="h-24">
+                  <ul className="space-y-1 list-disc pl-5">
+                    {newStory.acceptanceCriteria.map((c, i) => (
+                      <li key={i} className="text-sm flex justify-between items-center">
+                        <span>{c}</span>
+                        <Button type="button" variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleRemoveCriterion(i)}>
+                          <X className="h-3 w-3" />
+                        </Button>
+                      </li>
+                    ))}
+                  </ul>
+                </ScrollArea>
               </div>
             </div>
             <div className="grid grid-cols-4 items-start gap-4">
@@ -157,17 +172,30 @@ export function NewUserStoryDialog() {
                     value={currentTag}
                     onChange={(e) => setCurrentTag(e.target.value)}
                     onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddTag(); } }}
-                    placeholder="Add a tag"
+                    placeholder="Add a new tag"
                   />
-                  <Button type="button" variant="outline" onClick={handleAddTag}>Add</Button>
+                  <Button type="button" variant="outline" onClick={() => handleAddTag()}>Add</Button>
                 </div>
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-1">
                     {newStory.tags.map((tag) => (
-                        <Badge key={tag} variant="secondary">
+                        <Badge key={tag} variant="secondary" className="flex items-center gap-1">
                             {tag}
-                            <button type="button" className="ml-1" onClick={() => handleRemoveTag(tag)}>
+                            <button type="button" className="rounded-full hover:bg-muted-foreground/20" onClick={() => handleRemoveTag(tag)}>
                                 <X className="h-3 w-3" />
                             </button>
+                        </Badge>
+                    ))}
+                </div>
+                <Label className="text-xs text-muted-foreground">Or select from existing tags:</Label>
+                <div className="flex flex-wrap gap-1">
+                    {availableTags.filter(t => !newStory.tags.includes(t)).map((tag) => (
+                        <Badge
+                          key={tag}
+                          variant="outline"
+                          className="cursor-pointer"
+                          onClick={() => handleAddTag(tag)}
+                        >
+                          {tag}
                         </Badge>
                     ))}
                 </div>
