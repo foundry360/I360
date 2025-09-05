@@ -10,7 +10,7 @@ export const TaskStatus = {
   ToDo: 'To Do',
   InProgress: 'In Progress',
   InReview: 'In Review',
-  NeedsRevisions: 'Needs Revisions',
+  NeedsRevision: 'Needs Revision',
   FinalApproval: 'Final Approval',
   Complete: 'Complete'
 } as const;

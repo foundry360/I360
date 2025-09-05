@@ -100,7 +100,7 @@ const statusColors: Record<TaskStatus, string> = {
     'To Do': 'bg-muted-foreground/20 text-muted-foreground',
     'In Progress': 'bg-blue-500/20 text-blue-600 dark:text-blue-400',
     'In Review': 'bg-purple-500/20 text-purple-600 dark:text-purple-400',
-    'Needs Revisions': 'bg-orange-500/20 text-orange-600 dark:text-orange-400',
+    'Needs Revision': 'bg-orange-500/20 text-orange-600 dark:text-orange-400',
     'Final Approval': 'bg-yellow-500/20 text-yellow-600 dark:text-yellow-400',
     'Complete': 'bg-green-500/20 text-green-600 dark:text-green-400',
 };
@@ -109,7 +109,7 @@ const statusHexColors: Record<TaskStatus, string> = {
     'To Do': '#a1a1aa', // zinc-400
     'In Progress': '#3b82f6', // blue-500
     'In Review': '#a855f7', // purple-500
-    'Needs Revisions': '#f97316', // orange-500
+    'Needs Revision': '#f97316', // orange-500
     'Final Approval': '#eab308', // yellow-500
     'Complete': '#22c55e', // green-500
 };
@@ -237,7 +237,7 @@ const initialColumns: BoardColumns = {
     'To Do': [],
     'In Progress': [],
     'In Review': [],
-    'Needs Revisions': [],
+    'Needs Revision': [],
     'Final Approval': [],
     'Complete': [],
 };
