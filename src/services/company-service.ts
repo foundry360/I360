@@ -1,7 +1,8 @@
 
 'use client';
 import { db } from '@/lib/firebase';
-import { collection, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, writeBatch } from 'firebase/firestore';
+import { collection, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, writeBatch, query, where } from 'firebase/firestore';
+import { getProjectsForCompany, updateProject } from './project-service';
 
 export interface Company {
   id: string;
@@ -78,8 +79,34 @@ export async function createCompany(companyData: Omit<Company, 'id' | 'contact' 
 }
 
 export async function updateCompany(id: string, companyData: Partial<Company>): Promise<void> {
-    const docRef = doc(db, 'companies', id);
-    await updateDoc(docRef, companyData);
+    const companyDocRef = doc(db, 'companies', id);
+    const batch = writeBatch(db);
+
+    const currentCompanyDoc = await getDoc(companyDocRef);
+    if (!currentCompanyDoc.exists()) {
+        throw new Error("Company not found");
+    }
+    const oldCompanyData = currentCompanyDoc.data() as Company;
+
+    // Update the company document itself
+    batch.update(companyDocRef, companyData);
+
+    // If company name is being changed, update associated projects
+    if (companyData.name && companyData.name !== oldCompanyData.name) {
+        const projects = await getProjectsForCompany(id);
+        const newPrefix = companyData.name.substring(0, 4).toUpperCase();
+        
+        projects.forEach(project => {
+            const nameParts = project.name.split('-');
+            const oldSuffix = nameParts.length > 1 ? nameParts.slice(1).join('-') : project.name;
+            const newProjectName = `${newPrefix}-${oldSuffix}`;
+            
+            const projectDocRef = doc(db, 'projects', project.id);
+            batch.update(projectDocRef, { name: newProjectName });
+        });
+    }
+
+    await batch.commit();
 }
 
 export async function deleteCompany(id: string): Promise<void> {

@@ -37,6 +37,7 @@ import {
   TrendingDown,
   TrendingUp,
   AlertTriangle,
+  Calendar,
 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
@@ -54,7 +55,7 @@ import { Badge } from '@/components/ui/badge';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Separator } from '@/components/ui/separator';
 import { useQuickAction } from '@/contexts/quick-action-context';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuPortal, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuPortal, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { add, format, formatDistanceToNow, isPast, differenceInDays, parseISO } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
@@ -62,6 +63,7 @@ import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
 import { Line, LineChart, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, CartesianGrid, Area, Dot, Legend } from 'recharts';
 import { ChartContainer, ChartTooltipContent, type ChartConfig, ChartLegend, ChartLegendContent } from '@/components/ui/chart';
+import { TimelineView } from '@/components/timeline-view';
 
 type TaskType = Task['type'];
 type BoardColumns = Record<TaskStatus, Task[]>;
@@ -75,7 +77,7 @@ const taskTypeIcons: Record<TaskType, React.ElementType> = {
     Review: SearchCheck,
 };
 
-const epicIcons: Record<string, { icon: React.ElementType, color: string }> = {
+export const epicIcons: Record<string, { icon: React.ElementType, color: string }> = {
     "Foundation & Strategic Alignment": { icon: BookCopy, color: 'text-chart-1' },
     "RevOps Foundation & Data Infrastructure": { icon: Database, color: 'text-chart-2' },
     "Sales Process Enhancement & Pipeline Optimization": { icon: Megaphone, color: 'text-chart-3' },
@@ -98,7 +100,7 @@ const statusColors: Record<TaskStatus, string> = {
     'To Do': 'bg-muted-foreground/20 text-muted-foreground',
     'In Progress': 'bg-blue-500/20 text-blue-600 dark:text-blue-400',
     'In Review': 'bg-purple-500/20 text-purple-600 dark:text-purple-400',
-    'Needs Revisions': 'bg-orange-500/20 text-orange-600 dark:text-orange-400',
+    'Needs Revision': 'bg-orange-500/20 text-orange-600 dark:text-orange-400',
     'Final Approval': 'bg-yellow-500/20 text-yellow-600 dark:text-yellow-400',
     'Complete': 'bg-green-500/20 text-green-600 dark:text-green-400',
 };
@@ -107,7 +109,7 @@ const statusHexColors: Record<TaskStatus, string> = {
     'To Do': '#a1a1aa', // zinc-400
     'In Progress': '#3b82f6', // blue-500
     'In Review': '#a855f7', // purple-500
-    'Needs Revisions': '#f97316', // orange-500
+    'Needs Revision': '#f97316', // orange-500
     'Final Approval': '#eab308', // yellow-500
     'Complete': '#22c55e', // green-500
 };
@@ -138,7 +140,7 @@ const PriorityIcon = ({ priority }: { priority: Task['priority'] }) => {
         <div className={cn("flex items-center justify-center h-6 w-6 rounded-full", colorClass)}>
             <div className="flex flex-col items-center justify-center -space-y-2">
                 {Array.from({ length: chevronCount }).map((_, i) => (
-                    <ChevronUp key={i} className="h-3 w-3 text-white" />
+                    <ChevronUp key={i} className="h-3 w-3 text-primary" />
                 ))}
             </div>
         </div>
@@ -235,7 +237,7 @@ const initialColumns: BoardColumns = {
     'To Do': [],
     'In Progress': [],
     'In Review': [],
-    'Needs Revisions': [],
+    'Needs Revision': [],
     'Final Approval': [],
     'Complete': [],
 };
@@ -251,7 +253,7 @@ const chartConfig = {
   },
   ideal: {
     label: "Ideal",
-    color: "hsl(var(--chart-2))",
+    color: "hsl(var(--chart-1))",
   },
 } satisfies ChartConfig
 
@@ -281,6 +283,7 @@ export default function ProjectDetailsPage() {
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
     const [itemToDelete, setItemToDelete] = React.useState<{type: 'epic' | 'backlogItem' | 'sprint', id: string, name: string} | null>(null);
     const [allWorkSearchTerm, setAllWorkSearchTerm] = React.useState('');
+    const [activeBacklogAccordion, setActiveBacklogAccordion] = React.useState<string[]>([]);
 
     const fetchData = React.useCallback(async () => {
         if (!projectId) return;
@@ -295,13 +298,29 @@ export default function ProjectDetailsPage() {
             ]);
             setProject(projectData);
             setTasks(tasksData);
+            setEpics(epicsData);
+            setBacklogItems(backlogItemsData);
+            setSprints(sprintsData);
             
             if (projectData?.companyId) {
                 const companyContacts = await getContactsForCompany(projectData.companyId);
                 setContacts(companyContacts);
             }
+
+            const activeOrCompletedSprintIds = sprintsData
+                .filter(s => s.status === 'Active' || s.status === 'Completed')
+                .map(s => s.id);
             
-            const sortedTasks = tasksData.sort((a, b) => a.order - b.order);
+            const backlogItemsForBoard = backlogItemsData.filter(item => 
+                item.sprintId && activeOrCompletedSprintIds.includes(item.sprintId)
+            );
+            const backlogIdsForBoard = new Set(backlogItemsForBoard.map(item => item.backlogId));
+            
+            const tasksForBoard = tasksData.filter(task => 
+                task.backlogId && backlogIdsForBoard.has(task.backlogId)
+            );
+            
+            const sortedTasks = tasksForBoard.sort((a, b) => a.order - b.order);
             
             const newColumns = sortedTasks.reduce((acc, task) => {
                 const status = task.status;
@@ -321,9 +340,6 @@ export default function ProjectDetailsPage() {
 
             setColumns(newColumns);
 
-            setEpics(epicsData);
-            setBacklogItems(backlogItemsData);
-            setSprints(sprintsData);
         } catch (error) {
             console.error("Failed to fetch project data:", error);
         } finally {
@@ -499,6 +515,7 @@ export default function ProjectDetailsPage() {
             });
             const progress = itemsInEpic.length > 0 ? (completedItems.length / itemsInEpic.length) * 100 : 0;
             return {
+                id: epic.id,
                 name: epic.title,
                 progress: Math.round(progress),
             }
@@ -625,7 +642,7 @@ export default function ProjectDetailsPage() {
         const scheduleVariance = tasksCompletedPercent - timeElapsedPercent;
 
         if (scheduleVariance >= -5 && overduePercent < 10) {
-            return { status: 'On Track', icon: TrendingUp, color: 'text-success-foreground', tasksCompletedPercent: tasksCompletedPercent };
+            return { status: 'On Track', icon: TrendingUp, color: 'text-success', tasksCompletedPercent: tasksCompletedPercent };
         } else if (scheduleVariance < -15 || overduePercent > 25) {
             return { status: 'Needs Attention', icon: TrendingDown, color: 'text-danger', tasksCompletedPercent: tasksCompletedPercent };
         } else {
@@ -639,7 +656,7 @@ export default function ProjectDetailsPage() {
         return tasks.filter(task => {
             if (task.status === 'Complete' || !task.dueDate) return false;
             
-            const dueDate = parseISO(task.dueDate);
+            const dueDate = parseISO(task.dueDate!);
             const daysUntilDue = differenceInDays(dueDate, today);
 
             // Overdue or due within 3 days
@@ -647,6 +664,82 @@ export default function ProjectDetailsPage() {
         }).sort((a,b) => parseISO(a.dueDate!).getTime() - parseISO(b.dueDate!).getTime());
     }, [tasks]);
 
+    const timelineData = React.useMemo(() => {
+    if (!project || !epics.length || !sprints.length) return { items: [], projectStartDate: new Date(), projectEndDate: new Date() };
+
+    const epicItems = epics.map(epic => {
+        const itemsInEpic = backlogItems.filter(item => item.epicId === epic.id);
+        const sprintIdsInEpic = [...new Set(itemsInEpic.map(item => item.sprintId).filter(Boolean))];
+        const sprintsInEpic = sprints.filter(sprint => sprintIdsInEpic.includes(sprint.id));
+
+        if (sprintsInEpic.length === 0) return null;
+
+        const epicStartDate = new Date(Math.min(...sprintsInEpic.map(s => parseISO(s.startDate).getTime())));
+        const epicEndDate = new Date(Math.max(...sprintsInEpic.map(s => parseISO(s.endDate).getTime())));
+        
+        const epicChildren = sprintsInEpic.map(sprint => {
+            const itemsInSprint = backlogItems.filter(item => item.sprintId === sprint.id && item.epicId === epic.id);
+            
+            const sprintIsUnstarted = sprint.status === 'Not Started';
+            
+            const completedItemsInSprint = itemsInSprint.filter(item => {
+                const task = tasks.find(t => t.backlogId === item.backlogId);
+                return task?.status === 'Complete';
+            });
+            
+            let sprintProgress = sprintIsUnstarted ? 0 : (itemsInSprint.length > 0 ? (completedItemsInSprint.length / itemsInSprint.length) * 100 : 0);
+
+            return {
+                id: sprint.id,
+                title: sprint.name,
+                startDate: parseISO(sprint.startDate),
+                endDate: parseISO(sprint.endDate),
+                type: 'sprint' as const,
+                progress: sprintProgress,
+                children: itemsInSprint.map(item => ({
+                    id: item.id,
+                    title: item.title,
+                    startDate: parseISO(sprint.startDate),
+                    endDate: parseISO(sprint.endDate),
+                    status: item.status,
+                    type: 'item' as const,
+                    dueDate: item.dueDate,
+                    progress: sprintIsUnstarted ? 0 : undefined,
+                }))
+            };
+        }).sort((a, b) => a.startDate.getTime() - b.startDate.getTime());
+        
+        const totalSprintProgress = epicChildren.reduce((acc, child) => acc + child.progress, 0);
+        const epicProgress = epicChildren.length > 0 ? totalSprintProgress / epicChildren.length : 0;
+
+        return {
+            id: epic.id,
+            title: epic.title,
+            startDate: epicStartDate,
+            endDate: epicEndDate,
+            type: 'epic' as const,
+            progress: epicProgress,
+            children: epicChildren,
+        };
+    }).filter(Boolean);
+
+    const allSprints = sprints;
+    if (allSprints.length === 0) {
+        return { items: [], projectStartDate: new Date(), projectEndDate: new Date() };
+    }
+
+    const projectStartDate = new Date(Math.min(...allSprints.map(s => parseISO(s.startDate).getTime())));
+    const projectEndDate = new Date(Math.max(...allSprints.map(s => parseISO(s.endDate).getTime())));
+
+
+    return { items: epicItems as any[], projectStartDate, projectEndDate };
+
+}, [epics, sprints, backlogItems, project, tasks]);
+
+    const getInitials = (name: string) => {
+      if (!name) return '';
+      return name.split(' ').map(n => n[0]).join('').toUpperCase();
+    }
 
     if (loading) {
         return (
@@ -680,6 +773,7 @@ export default function ProjectDetailsPage() {
     const overduePercentage = totalTasks > 0 ? (overdueTasksCount / totalTasks) * 100 : 0;
     
     const HealthIcon = projectHealth.icon;
+
 
     return (
         <div className="flex flex-col h-full">
@@ -724,6 +818,12 @@ export default function ProjectDetailsPage() {
                             className="pb-3 rounded-none data-[state=active]:shadow-none data-[state=active]:border-primary data-[state=active]:border-b-4 data-[state=active]:text-foreground data-[state=active]:font-bold"
                         >
                             Sprints
+                        </TabsTrigger>
+                         <TabsTrigger 
+                            value="timeline"
+                            className="pb-3 rounded-none data-[state=active]:shadow-none data-[state=active]:border-primary data-[state=active]:border-b-4 data-[state=active]:text-foreground data-[state=active]:font-bold"
+                        >
+                            Timeline
                         </TabsTrigger>
                         <TabsTrigger 
                             value="all-work"
@@ -784,102 +884,114 @@ export default function ProjectDetailsPage() {
                                         <CardDescription>Story points completed per sprint</CardDescription>
                                     </CardHeader>
                                     <CardContent>
-                                        <ChartContainer config={chartConfig} className="h-[150px] w-full">
-                                            <LineChart
-                                                data={velocityData}
-                                                margin={{ top: 5, right: 20, left: 0, bottom: 5 }}
-                                            >
-                                                <CartesianGrid vertical={false} />
-                                                <XAxis
-                                                    dataKey="name"
-                                                    tickLine={false}
-                                                    axisLine={false}
-                                                    tickMargin={8}
-                                                    tickFormatter={() => ""}
-                                                />
-                                                <YAxis
-                                                    tickLine={false}
-                                                    axisLine={false}
-                                                    tickMargin={8}
-                                                    width={30}
-                                                />
-                                                <RechartsTooltip cursor={false} content={<ChartTooltipContent indicator="line" />} />
-                                                <defs>
-                                                    <linearGradient id="fillVelocity" x1="0" y1="0" x2="0" y2="1">
-                                                        <stop offset="5%" stopColor="var(--color-velocity)" stopOpacity={0.8} />
-                                                        <stop offset="95%" stopColor="var(--color-velocity)" stopOpacity={0.1} />
-                                                    </linearGradient>
-                                                </defs>
-                                                <Area
-                                                    dataKey="velocity"
-                                                    type="natural"
-                                                    fill="url(#fillVelocity)"
-                                                    fillOpacity={0.4}
-                                                    stroke="var(--color-velocity)"
-                                                    stackId="a"
-                                                />
-                                                <Line
-                                                    dataKey="velocity"
-                                                    type="natural"
-                                                    stroke="var(--color-velocity)"
-                                                    strokeWidth={2}
-                                                    dot={
-                                                        <Dot
-                                                            r={4}
-                                                            fill="var(--background)"
-                                                            stroke="var(--color-velocity)"
-                                                            strokeWidth={2}
-                                                        />
-                                                    }
-                                                />
-                                            </LineChart>
-                                        </ChartContainer>
+                                        {velocityData.length > 0 ? (
+                                            <ChartContainer config={chartConfig} className="h-[150px] w-full">
+                                                <LineChart
+                                                    data={velocityData}
+                                                    margin={{ top: 5, right: 20, left: 0, bottom: 5 }}
+                                                >
+                                                    <CartesianGrid vertical={false} />
+                                                    <XAxis
+                                                        dataKey="name"
+                                                        tickLine={false}
+                                                        axisLine={false}
+                                                        tickMargin={8}
+                                                        tickFormatter={() => ""}
+                                                    />
+                                                    <YAxis
+                                                        tickLine={false}
+                                                        axisLine={false}
+                                                        tickMargin={8}
+                                                        width={30}
+                                                    />
+                                                    <RechartsTooltip cursor={false} content={<ChartTooltipContent indicator="line" />} />
+                                                    <defs>
+                                                        <linearGradient id="fillVelocity" x1="0" y1="0" x2="0" y2="1">
+                                                            <stop offset="5%" stopColor="var(--color-velocity)" stopOpacity={0.8} />
+                                                            <stop offset="95%" stopColor="var(--color-velocity)" stopOpacity={0.1} />
+                                                        </linearGradient>
+                                                    </defs>
+                                                    <Area
+                                                        dataKey="velocity"
+                                                        type="natural"
+                                                        fill="url(#fillVelocity)"
+                                                        fillOpacity={0.4}
+                                                        stroke="var(--color-velocity)"
+                                                        stackId="a"
+                                                    />
+                                                    <Line
+                                                        dataKey="velocity"
+                                                        type="natural"
+                                                        stroke="var(--color-velocity)"
+                                                        strokeWidth={2}
+                                                        dot={
+                                                            <Dot
+                                                                r={4}
+                                                                fill="var(--background)"
+                                                                stroke="var(--color-velocity)"
+                                                                strokeWidth={2}
+                                                            />
+                                                        }
+                                                    />
+                                                </LineChart>
+                                            </ChartContainer>
+                                        ) : (
+                                            <div className="h-[150px] flex items-center justify-center text-center text-muted-foreground text-sm">
+                                                Complete a sprint to see your team's velocity.
+                                            </div>
+                                        )}
                                     </CardContent>
                                 </Card>
                                  <Card>
                                     <CardHeader>
-                                        <CardTitle>Engagement Burndown</CardTitle>
+                                        <CardTitle>Burndown</CardTitle>
                                         <CardDescription>Ideal vs actual work remaining</CardDescription>
                                     </CardHeader>
                                     <CardContent>
-                                        <ChartContainer config={chartConfig} className="h-[150px] w-full">
-                                            <LineChart
-                                                data={burndownData}
-                                                margin={{ top: 5, right: 10, left: 0, bottom: 5 }}
-                                            >
-                                                <CartesianGrid vertical={false} />
-                                                <XAxis
-                                                    dataKey="name"
-                                                    tickLine={false}
-                                                    axisLine={false}
-                                                    tickMargin={8}
-                                                    tickFormatter={() => ""}
-                                                />
-                                                <YAxis
-                                                    tickLine={false}
-                                                    axisLine={false}
-                                                    tickMargin={8}
-                                                    width={30}
-                                                />
-                                                 <ChartLegend content={<ChartLegendContent />} />
-                                                <RechartsTooltip cursor={false} content={<ChartTooltipContent hideIndicator />} />
-                                                <Line
-                                                    dataKey="actual"
-                                                    type="natural"
-                                                    stroke="var(--color-actual)"
-                                                    strokeWidth={2}
-                                                    dot
-                                                />
-                                                 <Line
-                                                    dataKey="ideal"
-                                                    type="natural"
-                                                    stroke="var(--color-ideal)"
-                                                    strokeWidth={2}
-                                                    strokeDasharray="3 3"
-                                                    dot={false}
-                                                />
-                                            </LineChart>
-                                        </ChartContainer>
+                                        {burndownData.length > 0 ? (
+                                            <ChartContainer config={chartConfig} className="h-[150px] w-full">
+                                                <LineChart
+                                                    data={burndownData}
+                                                    margin={{ top: 5, right: 10, left: 0, bottom: 5 }}
+                                                >
+                                                    <CartesianGrid vertical={false} />
+                                                    <XAxis
+                                                        dataKey="name"
+                                                        tickLine={false}
+                                                        axisLine={false}
+                                                        tickMargin={8}
+                                                        tickFormatter={() => ""}
+                                                    />
+                                                    <YAxis
+                                                        tickLine={false}
+                                                        axisLine={false}
+                                                        tickMargin={8}
+                                                        width={30}
+                                                    />
+                                                     <ChartLegend content={<ChartLegendContent />} />
+                                                    <RechartsTooltip cursor={false} content={<ChartTooltipContent hideIndicator />} />
+                                                    <Line
+                                                        dataKey="actual"
+                                                        type="natural"
+                                                        stroke="var(--color-actual)"
+                                                        strokeWidth={2}
+                                                        dot
+                                                    />
+                                                     <Line
+                                                        dataKey="ideal"
+                                                        type="natural"
+                                                        stroke="hsl(142 71% 45%)"
+                                                        strokeWidth={2}
+                                                        strokeDasharray="3 3"
+                                                        dot={false}
+                                                    />
+                                                </LineChart>
+                                            </ChartContainer>
+                                        ) : (
+                                             <div className="h-[150px] flex items-center justify-center text-center text-muted-foreground text-sm p-4">
+                                                Complete a sprint with estimated story points to generate a burndown chart.
+                                            </div>
+                                        )}
                                     </CardContent>
                                 </Card>
                             </div>
@@ -929,23 +1041,45 @@ export default function ProjectDetailsPage() {
                                         <CardTitle>Epic Progress</CardTitle>
                                         <CardDescription>A summary of completion for each engagement epic</CardDescription>
                                     </CardHeader>
-                                    <CardContent className="space-y-4">
-                                        {epicProgressData.map((epic, index) => {
-                                            const epicConfig = epicIcons[epic.name] || { icon: Layers, color: 'text-foreground' };
-                                            const IconComponent = epicConfig.icon;
-                                            return (
-                                                <div key={index} className="space-y-2">
-                                                    <div className="flex justify-between items-baseline">
-                                                        <div className="flex items-center gap-2">
-                                                            <IconComponent className={cn("h-4 w-4", epicConfig.color)} />
-                                                            <p className="text-sm font-medium">{epic.name}</p>
-                                                        </div>
-                                                        <p className="text-sm text-muted-foreground">{epic.progress}% complete</p>
-                                                    </div>
-                                                    <Progress value={epic.progress} />
-                                                </div>
-                                            )
-                                        })}
+                                    <CardContent>
+                                         {epicProgressData.length > 0 ? (
+                                            <Accordion type="multiple" value={activeBacklogAccordion} onValueChange={setActiveBacklogAccordion} className="w-full">
+                                                {epicProgressData.map((epic, index) => {
+                                                    const epicConfig = epicIcons[epic.name] || { icon: Layers, color: 'text-foreground' };
+                                                    const IconComponent = epicConfig.icon;
+                                                    return (
+                                                        <AccordionItem value={epic.id} key={epic.id} className="border-none mb-2">
+                                                            <AccordionTrigger 
+                                                                className="space-y-2 p-2 -m-2 rounded-md hover:bg-muted no-underline cursor-pointer"
+                                                                onClick={(e) => {
+                                                                    e.preventDefault();
+                                                                    setActiveTab('backlog');
+                                                                    setActiveBacklogAccordion(prev => 
+                                                                        prev.includes(epic.id) ? prev.filter(id => id !== epic.id) : [...prev, epic.id]
+                                                                    );
+                                                                }}
+                                                                noChevron
+                                                            >
+                                                                <div className="flex flex-col w-full gap-2">
+                                                                    <div className="flex justify-between items-baseline w-full">
+                                                                        <div className="flex items-center gap-2">
+                                                                            <IconComponent className={cn("h-4 w-4", epicConfig.color)} />
+                                                                            <p className="text-sm font-medium">{epic.name}</p>
+                                                                        </div>
+                                                                        <p className="text-sm text-muted-foreground">{epic.progress}% complete</p>
+                                                                    </div>
+                                                                    <Progress value={epic.progress} />
+                                                                </div>
+                                                            </AccordionTrigger>
+                                                        </AccordionItem>
+                                                    )
+                                                })}
+                                            </Accordion>
+                                        ) : (
+                                            <div className="h-[150px] flex items-center justify-center text-center text-muted-foreground text-sm p-4">
+                                               No epic progress to display. Add items with points to epics.
+                                            </div>
+                                        )}
                                     </CardContent>
                                 </Card>
                             </div>
@@ -982,7 +1116,7 @@ export default function ProjectDetailsPage() {
                                     <Card>
                                         <CardHeader className="flex flex-row items-center justify-between pb-2">
                                             <CardTitle className="text-sm font-medium text-muted-foreground">Overdue Tasks</CardTitle>
-                                            <Clock className="h-4 w-4 text-danger" />
+                                            <AlertTriangle className="h-4 w-4 text-muted-foreground" />
                                         </CardHeader>
                                         <CardContent>
                                             <p className="text-2xl font-bold text-danger">{overdueTasksCount}</p>
@@ -995,14 +1129,14 @@ export default function ProjectDetailsPage() {
                                     <Card>
                                         <CardHeader className="flex flex-row items-center justify-between pb-2">
                                             <CardTitle className="text-sm font-medium text-muted-foreground">Engagement Health</CardTitle>
-                                            <HealthIcon className={cn("h-4 w-4", projectHealth.color)} />
+                                            <HealthIcon className="h-4 w-4 text-muted-foreground" />
                                         </CardHeader>
                                         <CardContent>
-                                            <p className={cn("text-2xl font-bold", projectHealth.color)}>{projectHealth.status}</p>
+                                            <p className={cn("text-xl font-bold", projectHealth.color)}>{projectHealth.status}</p>
                                         </CardContent>
                                         <CardFooter className="flex-col items-start gap-1 p-4 pt-0">
                                             <p className="text-xs text-muted-foreground">{Math.round(projectHealth.tasksCompletedPercent)}% complete</p>
-                                            <Progress value={projectHealth.tasksCompletedPercent} className={cn("[&>div]:bg-success", projectHealth.color === 'text-warning' && "[&>div]:bg-warning", projectHealth.color === 'text-danger' && "[&>div]:bg-danger")} />
+                                            <Progress value={projectHealth.tasksCompletedPercent} className={cn("[&>div]:bg-success", projectHealth.status === 'At Risk' && "[&>div]:bg-warning", projectHealth.status === 'Needs Attention' && "[&>div]:bg-danger")} />
                                         </CardFooter>
                                     </Card>
                                 </div>
@@ -1040,16 +1174,25 @@ export default function ProjectDetailsPage() {
                                                         }
                                                     }}
                                                 >
-                                                    <div className="flex items-center gap-3">
+                                                    <div className="flex items-center gap-2">
                                                         <Avatar className="h-6 w-6">
-                                                            <AvatarImage src={task.ownerAvatarUrl} />
-                                                            <AvatarFallback className="text-xs">{task.owner.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                                                          <AvatarImage src={task.ownerAvatarUrl} />
+                                                          <AvatarFallback className="text-xs">{getInitials(task.owner)}</AvatarFallback>
                                                         </Avatar>
-                                                        <span className="font-medium">{task.title}</span>
+                                                        <div>
+                                                            <p className="font-medium">
+                                                                <span className="text-muted-foreground mr-2">{projectPrefix}-{task.backlogId}</span>
+                                                                {task.title}
+                                                            </p>
+                                                            <p className="text-xs text-muted-foreground">
+                                                                Due on {format(dueDate, 'MMM dd, yyyy')}
+                                                            </p>
+                                                        </div>
                                                     </div>
-                                                    <span className={cn("font-semibold", statusColor)}>
-                                                        {statusText}
-                                                    </span>
+                                                    <div className={cn("flex items-center gap-2 text-xs font-semibold", statusColor)}>
+                                                       <Calendar className="h-4 w-4" />
+                                                        <span>{statusText}</span>
+                                                    </div>
                                                 </div>
                                                 )
                                             })
@@ -1083,7 +1226,7 @@ export default function ProjectDetailsPage() {
                     </TabsContent>
                     <TabsContent value="backlog">
                        <div className="space-y-6">
-                            <Accordion type="multiple" className="w-full">
+                            <Accordion type="multiple" className="w-full" value={activeBacklogAccordion} onValueChange={setActiveBacklogAccordion}>
                                 {epics.map(epic => {
                                     const epicConfig = epicIcons[epic.title] || { icon: Layers, color: 'text-foreground' };
                                     const IconComponent = epicConfig.icon;
@@ -1091,11 +1234,11 @@ export default function ProjectDetailsPage() {
                                     
                                     return (
                                         <AccordionItem key={epic.id} value={epic.id}>
-                                            <AccordionTrigger>
+                                            <AccordionTrigger className="text-base font-normal">
                                                 <div className="flex items-center gap-3 flex-1">
                                                     <IconComponent className={cn("h-5 w-5", epicConfig.color)} />
                                                     <Badge variant={epic.status === 'Done' ? 'success' : 'secondary'} className="whitespace-nowrap">{epic.status}</Badge>
-                                                    <span className="font-semibold">{epic.title}</span>
+                                                    <span className="font-semibold text-sm">{epic.title}</span>
                                                     <span className="text-muted-foreground text-sm">{projectPrefix}-{epic.epicId}</span>
                                                 </div>
                                             </AccordionTrigger>
@@ -1109,7 +1252,10 @@ export default function ProjectDetailsPage() {
                                                             </DropdownMenuTrigger>
                                                             <DropdownMenuContent align="end">
                                                                 <DropdownMenuItem onSelect={() => openEditEpicDialog(epic)}><Pencil className="mr-2 h-4 w-4" />Edit</DropdownMenuItem>
-                                                                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setItemToDelete({type: 'epic', id: epic.id, name: epic.title}); setIsDeleteDialogOpen(true);}}><Trash2 className="mr-2 h-4 w-4" /></DropdownMenuItem>
+                                                                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setItemToDelete({type: 'epic', id: epic.id, name: epic.title}); setIsDeleteDialogOpen(true);}} className="text-destructive focus:bg-destructive/90 focus:text-destructive-foreground">
+                                                                    <Trash2 className="mr-2 h-4 w-4" />
+                                                                    Delete
+                                                                </DropdownMenuItem>
                                                             </DropdownMenuContent>
                                                         </DropdownMenu>
                                                     </div>
@@ -1132,7 +1278,7 @@ export default function ProjectDetailsPage() {
                                                                         </Tooltip>
                                                                     </TooltipProvider>
                                                                     <span className="text-foreground text-sm">{projectPrefix}-{item.backlogId}</span>
-                                                                    <p>{item.title}</p>
+                                                                    <p className="text-sm font-medium">{item.title}</p>
                                                                 </div>
                                                                 <div className="flex items-center gap-4">
                                                                     <Badge variant="outline">{item.status}</Badge>
@@ -1170,7 +1316,10 @@ export default function ProjectDetailsPage() {
                                                                                 </DropdownMenuSubContent>
                                                                                 </DropdownMenuPortal>
                                                                             </DropdownMenuSub>
-                                                                            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setItemToDelete({type: 'backlogItem', id: item.id, name: item.title}); setIsDeleteDialogOpen(true);}}><Trash2 className="mr-2 h-4 w-4" /></DropdownMenuItem>
+                                                                            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setItemToDelete({type: 'backlogItem', id: item.id, name: item.title}); setIsDeleteDialogOpen(true);}} className="text-destructive focus:bg-destructive/90 focus:text-destructive-foreground">
+                                                                                <Trash2 className="mr-2 h-4 w-4" />
+                                                                                Delete
+                                                                            </DropdownMenuItem>
                                                                         </DropdownMenuContent>
                                                                     </DropdownMenu>
                                                                 </div>
@@ -1211,9 +1360,9 @@ export default function ProjectDetailsPage() {
                                                 return (
                                                     <AccordionItem key={sprint.id} value={sprint.id} className="border rounded-lg bg-card">
                                                         <div className="flex items-center p-4">
-                                                            <AccordionTrigger className="p-0 hover:no-underline flex-1" noChevron>
+                                                            <AccordionTrigger className="p-0 hover:no-underline flex-1 text-sm font-normal" noChevron>
                                                             <div className='flex items-center flex-1 gap-4'>
-                                                                <h3 className="font-semibold text-base">{sprint.name}</h3>
+                                                                <h3 className="font-semibold text-sm">{sprint.name}</h3>
                                                                 <p className="text-sm text-muted-foreground">
                                                                     {format(parseISO(sprint.startDate), 'MMM d')} - {format(parseISO(sprint.endDate), 'MMM d, yyyy')}
                                                                 </p>
@@ -1242,7 +1391,10 @@ export default function ProjectDetailsPage() {
                                                                         </DropdownMenuItem>
                                                                         )}
                                                                         <DropdownMenuSeparator />
-                                                                        <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setItemToDelete({type: 'sprint', id: sprint.id, name: sprint.name}); setIsDeleteDialogOpen(true);}}><Trash2 className="mr-2 h-4 w-4" /></DropdownMenuItem>
+                                                                        <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setItemToDelete({type: 'sprint', id: sprint.id, name: sprint.name}); setIsDeleteDialogOpen(true);}} className="text-destructive focus:bg-destructive/90 focus:text-destructive-foreground">
+                                                                            <Trash2 className="mr-2 h-4 w-4" />
+                                                                            Delete
+                                                                        </DropdownMenuItem>
                                                                     </DropdownMenuContent>
                                                                 </DropdownMenu>
                                                             </div>
@@ -1260,7 +1412,7 @@ export default function ProjectDetailsPage() {
                                                                         >
                                                                             <div className="flex items-center gap-3 flex-wrap">
                                                                                 <span className="text-foreground text-sm">{projectPrefix}-{item.backlogId}</span>
-                                                                                <p className="font-medium">{item.title}</p>
+                                                                                <p className="text-sm font-medium">{item.title}</p>
                                                                                 {epic && (
                                                                                     <Badge variant="secondary" className="cursor-pointer" onClick={(e) => { e.stopPropagation(); setActiveTab('backlog')}}>
                                                                                         <IconComponent className={cn("h-3 w-3 mr-1", epicConfig.color)} />
@@ -1299,6 +1451,13 @@ export default function ProjectDetailsPage() {
                             })}
                         </div>
                     </TabsContent>
+                    <TabsContent value="timeline">
+                        <TimelineView
+                            items={timelineData.items}
+                            projectStartDate={timelineData.projectStartDate}
+                            projectEndDate={timelineData.projectEndDate}
+                        />
+                    </TabsContent>
                      <TabsContent value="all-work">
                         <div className="space-y-4">
                             <div className="relative">
@@ -1332,7 +1491,7 @@ export default function ProjectDetailsPage() {
                                                     </Tooltip>
                                                 </TooltipProvider>
                                                 <span className="text-foreground text-sm">{projectPrefix}-{item.backlogId}</span>
-                                                <p>{item.title}</p>
+                                                <p className="text-sm font-medium">{item.title}</p>
                                             </div>
                                             <div className="flex items-center gap-4">
                                                 {sprint && <Badge variant={sprint.status === 'Active' ? 'success' : sprint.status === 'Completed' ? 'secondary' : 'outline'}>{sprint.name}</Badge>}
@@ -1382,3 +1541,7 @@ export default function ProjectDetailsPage() {
         </div>
     );
 }
+
+    
+
+    

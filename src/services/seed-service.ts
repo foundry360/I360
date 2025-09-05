@@ -19,7 +19,7 @@ const initialTasks: {
     { id: 'task-2', title: 'Design database schema', status: 'Complete', owner: 'Jane Smith', ownerAvatarUrl: 'https://i.pravatar.cc/150?u=a042581f4e29026704d', priority: 'High', type: 'Planning', order: 1, projectId: 'acme-inc-project' },
     { id: 'task-3', title: 'Develop authentication flow', status: 'Final Approval', owner: 'John Doe', ownerAvatarUrl: 'https://i.pravatar.cc/150?u=a042581f4e29026024d', priority: 'Medium', type: 'Execution', order: 0, projectId: 'acme-inc-project' },
     { id: 'task-4', title: 'Build main dashboard UI', status: 'In Progress', owner: 'Mike Johnson', ownerAvatarUrl: 'https://i.pravatar.cc/150?u=a04258114e29026702d', priority: 'High', type: 'Execution', order: 0, projectId: 'acme-inc-project' },
-    { id: 'task-8', title: 'Fix login button style', status: 'Needs Revisions', owner: 'Jane Smith', ownerAvatarUrl: 'https://i.pravatar.cc/150?u=a042581f4e29026704d', priority: 'Low', type: 'Review', order: 0, projectId: 'acme-inc-project' },
+    { id: 'task-8', title: 'Fix login button style', status: 'Needs Revision', owner: 'Jane Smith', ownerAvatarUrl: 'https://i.pravatar.cc/150?u=a042581f4e29026704d', priority: 'Low', type: 'Review', order: 0, projectId: 'acme-inc-project' },
     { id: 'task-5', title: 'Implement assessment generation logic', status: 'To Do', owner: 'Mike Johnson', ownerAvatarUrl: 'https://i.pravatar.cc/150?u=a04258114e29026702d', priority: 'High', type: 'Assessment', order: 0, projectId: 'acme-inc-project' },
     { id: 'task-6', title: 'Write unit tests for services', status: 'To Do', owner: 'John Doe', ownerAvatarUrl: 'https://i.pravatar.cc/150?u=a042581f4e29026024d', priority: 'Medium', type: 'Execution', order: 1, projectId: 'acme-inc-project' },
     { id: 'task-7', title: 'Configure deployment pipeline', status: 'To Do', owner: 'Emily White', ownerAvatarUrl: 'https://i.pravatar.cc/150?u=a042581f4e29026704e', priority: 'Low', type: 'Enablement', order: 2, projectId: 'acme-inc-project' },
@@ -35,8 +35,8 @@ const initialEpics: Omit<Epic, 'id'>[] = [
 
 const initialBacklogItems: Omit<BacklogItem, 'id'>[] = [
     // Epic 1
-    { projectId: 'acme-inc-project', epicId: 'acme-inc-project-epic-1', backlogId: 101, title: "User sign-up page", description: "Create the UI and logic for user registration.", status: "Done", points: 5, priority: 'High' },
-    { projectId: 'acme-inc-project', epicId: 'acme-inc-project-epic-1', backlogId: 102, title: "User login page", description: "Create the UI and logic for user authentication.", status: "Done", points: 3, priority: 'High' },
+    { projectId: 'acme-inc-project', epicId: 'acme-inc-project-epic-1', backlogId: 101, title: "User sign-up page", description: "Create the UI and logic for user registration.", status: "Complete", points: 5, priority: 'High' },
+    { projectId: 'acme-inc-project', epicId: 'acme-inc-project-epic-1', backlogId: 102, title: "User login page", description: "Create the UI and logic for user authentication.", status: "Complete", points: 3, priority: 'High' },
     { projectId: 'acme-inc-project', epicId: 'acme-inc-project-epic-1', backlogId: 103, title: "User profile page", description: "Allow users to view and update their display name and avatar.", status: "To Do", points: 5, priority: 'Medium' },
     // Epic 2
     { projectId: 'acme-inc-project', epicId: 'acme-inc-project-epic-2', backlogId: 104, title: "Assessment form creation", description: "Build the multi-step form for the GTM assessment.", status: "To Do", points: 8, priority: 'High' },
