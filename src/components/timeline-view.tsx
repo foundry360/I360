@@ -2,7 +2,7 @@
 'use client';
 
 import * as React from 'react';
-import { addMonths, differenceInDays, differenceInMonths, format, startOfMonth, endOfMonth, eachDayOfInterval, parseISO } from 'date-fns';
+import { addMonths, differenceInDays, differenceInMonths, format, startOfMonth, endOfMonth, eachDayOfInterval, parseISO, isSameMonth } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { epicIcons } from '@/app/dashboard/projects/[projectId]/page';
 import { Layers, GripVertical, ChevronDown, ChevronRight } from 'lucide-react';
@@ -55,53 +55,41 @@ const getMonthHeaders = (startDate: Date, endDate: Date) => {
     const finalDate = endOfMonth(endDate);
 
     while (currentDate <= finalDate) {
-        const groupStartDate = currentDate;
-        let groupEndDate = addMonths(groupStartDate, 1);
-        groupEndDate = endOfMonth(groupEndDate);
-
-        if (groupEndDate > finalDate) {
-            groupEndDate = finalDate;
-        }
-        
-        const firstMonthName = format(groupStartDate, 'MMM');
-        const firstMonthYear = format(groupStartDate, 'yyyy');
-        const lastMonthName = format(groupEndDate, 'MMM');
-        const lastMonthYear = format(groupEndDate, 'yyyy');
-
-        let name = '';
-        if (firstMonthYear !== lastMonthYear) {
-            name = `${firstMonthName} ${firstMonthYear} - ${lastMonthName} ${lastMonthYear}`;
-        } else if (firstMonthName !== lastMonthName) {
-            name = `${firstMonthName} - ${lastMonthName} ${firstMonthYear}`;
-        } else {
-            name = `${firstMonthName} ${firstMonthYear}`;
-        }
-
-        const daysInGroup = differenceInDays(groupEndDate, groupStartDate) + 1;
-        
         months.push({
-            name: name,
-            days: daysInGroup,
-            startDate: groupStartDate
+            name: format(currentDate, 'MMM yyyy'),
+            days: differenceInDays(endOfMonth(currentDate), startOfMonth(currentDate)) + 1,
+            startDate: currentDate
         });
-
-        currentDate = addMonths(startOfMonth(groupEndDate), 1);
+        currentDate = addMonths(currentDate, 1);
     }
-
+    
     const twoMonthGroups = [];
     for (let i = 0; i < months.length; i += 2) {
         if (i + 1 < months.length) {
             const month1 = months[i];
             const month2 = months[i+1];
+            const month1Date = month1.startDate;
+            const month2Date = month2.startDate;
+
+            let name = '';
+            if (isSameMonth(month1Date, month2Date)) {
+                 name = format(month1Date, 'MMM yyyy');
+            } else if (format(month1Date, 'yyyy') !== format(month2Date, 'yyyy')) {
+                 name = `${format(month1Date, 'MMM yyyy')} - ${format(month2Date, 'MMM yyyy')}`;
+            }
+            else {
+                name = `${format(month1Date, 'MMM')} - ${format(month2Date, 'MMM')} ${format(month1Date, 'yyyy')}`;
+            }
+
             twoMonthGroups.push({
-                name: `${format(month1.startDate, 'MMM')} - ${format(month2.startDate, 'MMM')} ${format(month1.startDate, 'yyyy')}`,
+                name: name,
                 days: month1.days + month2.days,
             });
         } else {
             twoMonthGroups.push(months[i]);
         }
     }
-
+    
     return twoMonthGroups;
 };
 
