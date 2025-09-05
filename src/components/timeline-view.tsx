@@ -108,7 +108,7 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ items, projectStartD
                     {/* Work Item Column */}
                     <div
                         className={cn(
-                            "py-2 px-2 border-r border-border/50 whitespace-nowrap overflow-hidden text-ellipsis flex items-center gap-2",
+                            "sticky left-0 z-10 py-2 px-2 border-r border-border/50 whitespace-nowrap overflow-hidden text-ellipsis flex items-center gap-2 bg-card",
                             item.type === 'epic' && 'font-semibold',
                             item.type === 'sprint' && 'text-sm font-medium',
                             item.type === 'item' && 'text-xs text-muted-foreground'
@@ -195,8 +195,8 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ items, projectStartD
         <div className="w-full overflow-x-auto border rounded-lg bg-card">
             <div className="min-w-max">
                 {/* Header */}
-                <div className="grid grid-cols-[300px_120px_120px_1fr] sticky top-0 bg-muted z-10 border-b">
-                    <div className="p-2 font-semibold border-r">Work Item</div>
+                <div className="grid grid-cols-[300px_120px_120px_1fr] sticky top-0 bg-muted z-20 border-b">
+                    <div className="p-2 font-semibold border-r sticky left-0 z-10 bg-muted">Work Item</div>
                     <div className="p-2 font-semibold border-r">Status</div>
                     <div className="p-2 font-semibold border-r">Due Date</div>
                     <div className="relative flex">
@@ -231,7 +231,7 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ items, projectStartD
                     {/* Today line */}
                     {today >= startOfMonth(projectStartDate) && today <= endOfMonth(projectEndDate) && (
                          <div
-                            className="absolute top-0 h-full border-l-2 border-destructive"
+                            className="absolute top-0 h-full border-l-2 border-destructive z-10"
                             style={{ left: `calc(300px + 120px + 120px + ${todayPosition}%)` }}
                         >
                              <div className="absolute -top-5 -left-2.5 text-xs font-semibold text-destructive">Today</div>
