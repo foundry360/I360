@@ -621,7 +621,8 @@ export default function CompanyDetailsPage() {
               <CardContent className="space-y-3">
                   {projects.length > 0 ? (
                       projects.map(project => (
-                          <div key={project.id} className="flex justify-between items-center p-2 rounded-md hover:bg-muted">
+                        <Link href={`/dashboard/projects/${project.id}`} key={project.id}>
+                          <div className="flex justify-between items-center p-2 rounded-md hover:bg-muted cursor-pointer">
                               <div>
                                   <p className="font-medium text-sm">{project.name}</p>
                                   <p className="text-xs text-muted-foreground">{project.owner}</p>
@@ -630,6 +631,7 @@ export default function CompanyDetailsPage() {
                                   {project.status}
                               </Badge>
                           </div>
+                        </Link>
                       ))
                   ) : (
                       <p className="text-sm text-muted-foreground text-center py-4">No engagements found for this company.</p>
