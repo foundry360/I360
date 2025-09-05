@@ -627,7 +627,7 @@ export default function ProjectDetailsPage() {
         const scheduleVariance = tasksCompletedPercent - timeElapsedPercent;
 
         if (scheduleVariance >= -5 && overduePercent < 10) {
-            return { status: 'On Track', icon: TrendingUp, color: 'text-success-foreground', tasksCompletedPercent: tasksCompletedPercent };
+            return { status: 'On Track', icon: TrendingUp, color: 'text-success', tasksCompletedPercent: tasksCompletedPercent };
         } else if (scheduleVariance < -15 || overduePercent > 25) {
             return { status: 'Needs Attention', icon: TrendingDown, color: 'text-danger', tasksCompletedPercent: tasksCompletedPercent };
         } else {
@@ -668,13 +668,23 @@ export default function ProjectDetailsPage() {
                 startDate: epicStartDate,
                 endDate: epicEndDate,
                 type: 'epic' as const,
-                children: sprintsInEpic.map(sprint => ({
-                    id: sprint.id,
-                    title: sprint.name,
-                    startDate: parseISO(sprint.startDate),
-                    endDate: parseISO(sprint.endDate),
-                    type: 'sprint' as const,
-                })).sort((a, b) => a.startDate.getTime() - b.startDate.getTime()),
+                children: sprintsInEpic.map(sprint => {
+                    const itemsInSprint = backlogItems.filter(item => item.sprintId === sprint.id && item.epicId === epic.id);
+                    return {
+                        id: sprint.id,
+                        title: sprint.name,
+                        startDate: parseISO(sprint.startDate),
+                        endDate: parseISO(sprint.endDate),
+                        type: 'sprint' as const,
+                        children: itemsInSprint.map(item => ({
+                            id: item.id,
+                            title: item.title,
+                            startDate: parseISO(sprint.startDate),
+                            endDate: parseISO(sprint.endDate),
+                            type: 'item' as const,
+                        }))
+                    };
+                }).sort((a, b) => a.startDate.getTime() - b.startDate.getTime()),
             };
         }).filter(Boolean);
 
@@ -1045,7 +1055,7 @@ export default function ProjectDetailsPage() {
                                         </CardContent>
                                         <CardFooter className="flex-col items-start gap-1 p-4 pt-0">
                                             <p className="text-xs text-muted-foreground">{Math.round(projectHealth.tasksCompletedPercent)}% complete</p>
-                                            <Progress value={projectHealth.tasksCompletedPercent} className={cn("[&>div]:bg-success", projectHealth.color === 'text-warning' && "[&>div]:bg-warning", projectHealth.color === 'text-danger' && "[&>div]:bg-danger")} />
+                                            <Progress value={projectHealth.tasksCompletedPercent} className={cn("[&>div]:bg-success", projectHealth.status === 'At Risk' && "[&>div]:bg-warning", projectHealth.status === 'Needs Attention' && "[&>div]:bg-danger")} />
                                         </CardFooter>
                                     </Card>
                                 </div>

@@ -5,7 +5,7 @@ import * as React from 'react';
 import { addMonths, differenceInDays, differenceInMonths, format, startOfMonth, endOfMonth, eachDayOfInterval } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { epicIcons } from '@/app/dashboard/projects/[projectId]/page';
-import { Layers } from 'lucide-react';
+import { Layers, GripVertical } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
 
 interface TimelineItem {
@@ -13,7 +13,7 @@ interface TimelineItem {
     title: string;
     startDate: Date;
     endDate: Date;
-    type: 'epic' | 'sprint';
+    type: 'epic' | 'sprint' | 'item';
     children?: TimelineItem[];
 }
 
@@ -74,11 +74,14 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ items, projectStartD
                     <div
                         className={cn(
                             "py-2 px-2 border-r border-border/50 whitespace-nowrap overflow-hidden text-ellipsis flex items-center gap-2",
-                            item.type === 'epic' ? 'font-semibold' : 'text-sm text-muted-foreground'
+                            item.type === 'epic' && 'font-semibold',
+                            item.type === 'sprint' && 'text-sm font-medium',
+                            item.type === 'item' && 'text-xs text-muted-foreground'
                         )}
                         style={{ paddingLeft: `${level * 20 + 8}px` }}
                     >
                          {item.type === 'epic' && <IconComponent className={cn("h-4 w-4 shrink-0", epicConfig.color)} />}
+                         {item.type === 'item' && <GripVertical className="h-4 w-4 shrink-0 text-muted-foreground/50" />}
                         {item.title}
                     </div>
 
@@ -90,7 +93,9 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ items, projectStartD
                                     <div
                                         className={cn(
                                             "h-6 rounded cursor-pointer",
-                                            item.type === 'epic' ? 'bg-primary/70' : 'bg-secondary'
+                                            item.type === 'epic' && 'bg-primary/70',
+                                            item.type === 'sprint' && 'bg-secondary',
+                                            item.type === 'item' && 'bg-muted-foreground/30'
                                         )}
                                         style={{
                                             position: 'absolute',
