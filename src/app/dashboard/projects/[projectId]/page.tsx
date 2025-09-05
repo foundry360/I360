@@ -627,7 +627,7 @@ export default function ProjectDetailsPage() {
         if (scheduleVariance >= -5 && overduePercent < 10) {
             return { status: 'On Track', icon: TrendingUp, color: 'text-success-foreground', tasksCompletedPercent: tasksCompletedPercent };
         } else if (scheduleVariance < -15 || overduePercent > 25) {
-            return { status: 'Needs Attention', icon: TrendingDown, color: 'text-red-600', tasksCompletedPercent: tasksCompletedPercent };
+            return { status: 'Needs Attention', icon: TrendingDown, color: 'text-danger', tasksCompletedPercent: tasksCompletedPercent };
         } else {
             return { status: 'At Risk', icon: AlertTriangle, color: 'text-warning-foreground', tasksCompletedPercent: tasksCompletedPercent };
         }
@@ -982,14 +982,14 @@ export default function ProjectDetailsPage() {
                                     <Card>
                                         <CardHeader className="flex flex-row items-center justify-between pb-2">
                                             <CardTitle className="text-sm font-medium text-muted-foreground">Overdue Tasks</CardTitle>
-                                            <Clock className="h-4 w-4 text-red-600" />
+                                            <Clock className="h-4 w-4 text-danger" />
                                         </CardHeader>
                                         <CardContent>
-                                            <p className="text-2xl font-bold text-red-600">{overdueTasksCount}</p>
+                                            <p className="text-2xl font-bold text-danger">{overdueTasksCount}</p>
                                         </CardContent>
                                         <CardFooter className="flex-col items-start gap-1 p-4 pt-0">
                                             <p className="text-xs text-muted-foreground">{Math.round(overduePercentage)}% of total</p>
-                                            <Progress value={overduePercentage} className="[&>div]:bg-red-600" />
+                                            <Progress value={overduePercentage} className="[&>div]:bg-danger" />
                                         </CardFooter>
                                     </Card>
                                     <Card>
@@ -1002,7 +1002,7 @@ export default function ProjectDetailsPage() {
                                         </CardContent>
                                         <CardFooter className="flex-col items-start gap-1 p-4 pt-0">
                                             <p className="text-xs text-muted-foreground">{Math.round(projectHealth.tasksCompletedPercent)}% complete</p>
-                                            <Progress value={projectHealth.tasksCompletedPercent} className={cn("[&>div]:bg-success", projectHealth.color === 'text-warning-foreground' && "[&>div]:bg-warning", projectHealth.color === 'text-red-600' && "[&>div]:bg-danger")} />
+                                            <Progress value={projectHealth.tasksCompletedPercent} className={cn("[&>div]:bg-success", projectHealth.color === 'text-warning-foreground' && "[&>div]:bg-warning", projectHealth.color === 'text-danger' && "[&>div]:bg-danger")} />
                                         </CardFooter>
                                     </Card>
                                 </div>
@@ -1024,7 +1024,7 @@ export default function ProjectDetailsPage() {
 
                                                 if (isOverdue) {
                                                     statusText = `Overdue by ${Math.abs(daysDiff)} day(s)`;
-                                                    statusColor = 'text-red-600';
+                                                    statusColor = 'text-danger';
                                                 } else {
                                                     statusText = `Due in ${daysDiff + 1} day(s)`;
                                                     statusColor = 'text-warning-foreground';
@@ -1229,9 +1229,7 @@ export default function ProjectDetailsPage() {
                                                                         </DropdownMenuItem>
                                                                         )}
                                                                         <DropdownMenuSeparator />
-                                                                        <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setItemToDelete({type: 'sprint', id: sprint.id, name: sprint.name}); setIsDeleteDialogOpen(true);}}>
-                                                                            <Trash2 className="mr-2 h-4 w-4" /> Delete
-                                                                        </DropdownMenuItem>
+                                                                        <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setItemToDelete({type: 'sprint', id: sprint.id, name: sprint.name}); setIsDeleteDialogOpen(true);}}><Trash2 className="mr-2 h-4 w-4" />Delete</DropdownMenuItem>
                                                                     </DropdownMenuContent>
                                                                 </DropdownMenu>
                                                             </div>
