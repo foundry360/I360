@@ -982,14 +982,14 @@ export default function ProjectDetailsPage() {
                                     <Card>
                                         <CardHeader className="flex flex-row items-center justify-between pb-2">
                                             <CardTitle className="text-sm font-medium text-muted-foreground">Overdue Tasks</CardTitle>
-                                            <Clock className="h-4 w-4 text-destructive" />
+                                            <Clock className="h-4 w-4 text-red-600" />
                                         </CardHeader>
                                         <CardContent>
-                                            <p className="text-2xl font-bold text-destructive">{overdueTasksCount}</p>
+                                            <p className="text-2xl font-bold text-red-600">{overdueTasksCount}</p>
                                         </CardContent>
                                         <CardFooter className="flex-col items-start gap-1 p-4 pt-0">
                                             <p className="text-xs text-muted-foreground">{Math.round(overduePercentage)}% of total</p>
-                                            <Progress value={overduePercentage} className="[&>div]:bg-destructive" />
+                                            <Progress value={overduePercentage} className="[&>div]:bg-red-600" />
                                         </CardFooter>
                                     </Card>
                                     <Card>
