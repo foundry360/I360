@@ -25,7 +25,6 @@ import { useQuickAction } from '@/contexts/quick-action-context';
 import type { Epic } from '@/services/epic-service';
 import { TaskPriority } from '@/services/task-service';
 import { useUser } from '@/contexts/user-context';
-import { getContactsForCompany, type Contact } from '@/services/contact-service';
 
 type NewBacklogItemState = Omit<BacklogItem, 'id' | 'backlogId'>;
 
@@ -51,7 +50,6 @@ export function NewBacklogItemDialog() {
   } = useQuickAction();
   
   const [newItem, setNewItem] = React.useState<NewBacklogItemState>(initialNewItemState);
-  const [contacts, setContacts] = React.useState<Contact[]>([]);
   const { user } = useUser();
 
   React.useEffect(() => {
@@ -62,12 +60,6 @@ export function NewBacklogItemDialog() {
         owner: user?.displayName || '',
         ownerAvatarUrl: user?.photoURL || ''
       }));
-
-      const fetchContacts = async () => {
-        const companyContacts = await getContactsForCompany(newBacklogItemData.companyId);
-        setContacts(companyContacts);
-      };
-      fetchContacts();
     }
   }, [newBacklogItemData, user]);
   
@@ -77,17 +69,8 @@ export function NewBacklogItemDialog() {
     setNewItem((prev) => ({ ...prev, [id]: id === 'points' ? Number(value) : value }));
   };
 
-  const handleSelectChange = (field: 'epicId' | 'priority' | 'owner') => (value: string) => {
-    if (field === 'owner') {
-        const selectedContact = contacts.find(c => c.name === value);
-        setNewItem(prev => ({
-            ...prev,
-            owner: value,
-            ownerAvatarUrl: selectedContact?.avatar || '',
-        }));
-    } else {
-        setNewItem((prev) => ({ ...prev, [field]: value }));
-    }
+  const handleSelectChange = (field: 'epicId' | 'priority') => (value: string) => {
+    setNewItem((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleCreateItem = async (e: React.FormEvent) => {
@@ -148,16 +131,7 @@ export function NewBacklogItemDialog() {
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="owner" className="text-right">Owner</Label>
-              <Select onValueChange={handleSelectChange('owner')} value={newItem.owner} required>
-                <SelectTrigger className="col-span-3">
-                    <SelectValue placeholder="Select an owner" />
-                </SelectTrigger>
-                <SelectContent>
-                    {contacts.map(contact => (
-                        <SelectItem key={contact.id} value={contact.name}>{contact.name}</SelectItem>
-                    ))}
-                </SelectContent>
-              </Select>
+              <Input id="owner" value={newItem.owner} className="col-span-3" disabled />
             </div>
              <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="points" className="text-right">Story Points</Label>

@@ -36,7 +36,6 @@ export function EditTaskDialog() {
   const { user } = useUser();
   
   const [task, setTask] = React.useState<Task | null>(null);
-  const [projectTeam, setProjectTeam] = React.useState<Contact[]>([]);
 
   React.useEffect(() => {
     if (editTaskData) {
@@ -45,7 +44,6 @@ export function EditTaskDialog() {
         ...restOfTask,
         dueDate: dueDate ? format(parseISO(dueDate), 'yyyy-MM-dd') : '',
       });
-      setProjectTeam(editTaskData.contacts);
     }
   }, [editTaskData]);
   
@@ -56,14 +54,9 @@ export function EditTaskDialog() {
     setTask((prev) => ({ ...prev!, [id]: value }));
   };
 
-  const handleSelectChange = (field: 'priority' | 'type' | 'owner' | 'status') => (value: string) => {
+  const handleSelectChange = (field: 'priority' | 'type' | 'status') => (value: string) => {
      if (!task) return;
-     if (field === 'owner') {
-         const selectedUser = projectTeam.find(u => u.name === value) || { name: value, avatar: '' };
-         setTask((prev) => ({ ...prev!, owner: selectedUser.name, ownerAvatarUrl: selectedUser.avatar || '' }));
-     } else {
-        setTask((prev) => ({ ...prev!, [field]: value }));
-     }
+     setTask((prev) => ({ ...prev!, [field]: value }));
   };
 
   const handleUpdateItem = async (e: React.FormEvent) => {
@@ -115,19 +108,7 @@ export function EditTaskDialog() {
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="owner" className="text-right">Owner</Label>
-              <Select onValueChange={handleSelectChange('owner')} value={task.owner} required>
-                <SelectTrigger className="col-span-3">
-                  <SelectValue placeholder="Select an owner" />
-                </SelectTrigger>
-                <SelectContent>
-                  {projectTeam.map(contact => (
-                    <SelectItem key={contact.id} value={contact.name}>{contact.name}</SelectItem>
-                  ))}
-                  {user && !projectTeam.some(c => c.name === user.displayName) && (
-                    <SelectItem value={user.displayName!}>{user.displayName}</SelectItem>
-                  )}
-                </SelectContent>
-              </Select>
+              <Input id="owner" value={task.owner} className="col-span-3" disabled />
             </div>
              <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="status" className="text-right">Status</Label>

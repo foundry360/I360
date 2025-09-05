@@ -22,7 +22,6 @@ import {
 import { Textarea } from './ui/textarea';
 import { updateProject, type Project } from '@/services/project-service';
 import { useQuickAction } from '@/contexts/quick-action-context';
-import { getContactsForCompany, type Contact } from '@/services/contact-service';
 import { useUser } from '@/contexts/user-context';
 import { parseISO } from 'date-fns';
 
@@ -35,7 +34,6 @@ export function EditProjectDialog() {
   } = useQuickAction();
   
   const [formData, setFormData] = React.useState<Project | null>(null);
-  const [contacts, setContacts] = React.useState<Contact[]>([]);
   const { user } = useUser();
   
   const [engagementNamePrefix, setEngagementNamePrefix] = React.useState('');
@@ -60,14 +58,6 @@ export function EditProjectDialog() {
         setEngagementNamePrefix('');
         setEngagementNameSuffix(projectData.name);
       }
-
-      const fetchContacts = async () => {
-          if (projectData.companyId) {
-              const companyContacts = await getContactsForCompany(projectData.companyId);
-              setContacts(companyContacts);
-          }
-      };
-      fetchContacts();
     }
   }, [editProjectData]);
 
@@ -81,20 +71,9 @@ export function EditProjectDialog() {
     setEngagementNameSuffix(e.target.value);
   };
 
-  const handleSelectChange = (field: 'status' | 'category' | 'priority' | 'owner') => (value: string) => {
+  const handleSelectChange = (field: 'status' | 'category' | 'priority') => (value: string) => {
     if (!formData) return;
-    if (field === 'owner') {
-        const selectedContact = contacts.find(c => c.name === value);
-        const isCurrentUser = user && user.displayName === value;
-        
-        setFormData(prev => ({ 
-            ...prev!, 
-            owner: value, 
-            ownerAvatarUrl: isCurrentUser ? user.photoURL || '' : selectedContact?.avatar || '' 
-        }));
-    } else {
-        setFormData((prev) => ({ ...prev!, [field]: value }));
-    }
+    setFormData((prev) => ({ ...prev!, [field]: value }));
   };
 
   const handleUpdateProject = async (e: React.FormEvent) => {
@@ -129,23 +108,6 @@ export function EditProjectDialog() {
     }
   };
 
-  const ownerOptions = React.useMemo(() => {
-    const allOwners = [...contacts];
-    if (user && user.displayName && !contacts.some(c => c.name === user.displayName)) {
-      allOwners.push({ 
-        id: user.uid, 
-        name: user.displayName, 
-        avatar: user.photoURL || '',
-        email: user.email || '',
-        phone: '',
-        title: 'Current User',
-        companyId: '',
-        lastActivity: '',
-      });
-    }
-    return allOwners;
-  }, [contacts, user]);
-
   if (!formData) return null;
 
   return (
@@ -178,16 +140,7 @@ export function EditProjectDialog() {
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="owner" className="text-right">Owner</Label>
-              <Select onValueChange={handleSelectChange('owner')} value={formData.owner} required>
-                <SelectTrigger className="col-span-3">
-                  <SelectValue placeholder="Select an owner" />
-                </SelectTrigger>
-                <SelectContent>
-                  {ownerOptions.map((owner) => (
-                    <SelectItem key={owner.id} value={owner.name}>{owner.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Input id="owner" value={formData.owner} className="col-span-3" disabled />
             </div>
              <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="team" className="text-right">Team</Label>

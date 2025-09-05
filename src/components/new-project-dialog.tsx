@@ -22,7 +22,6 @@ import {
 import { Textarea } from './ui/textarea';
 import { createProject } from '@/services/project-service';
 import { getCompanies, type Company } from '@/services/company-service';
-import { getContactsForCompany, type Contact } from '@/services/contact-service';
 import { useQuickAction } from '@/contexts/quick-action-context';
 import { useUser } from '@/contexts/user-context';
 
@@ -44,7 +43,6 @@ export function NewProjectDialog() {
   const { isNewProjectDialogOpen, closeNewProjectDialog, onProjectCreated } = useQuickAction();
   const [newProject, setNewProject] = React.useState(initialNewProjectState);
   const [companies, setCompanies] = React.useState<Company[]>([]);
-  const [contacts, setContacts] = React.useState<Contact[]>([]);
   const { user } = useUser();
 
   React.useEffect(() => {
@@ -55,41 +53,14 @@ export function NewProjectDialog() {
       setNewProject(prev => ({ ...prev, owner: defaultOwnerName, ownerAvatarUrl: defaultOwnerAvatar }));
     }
   }, [isNewProjectDialogOpen, user]);
-  
-  React.useEffect(() => {
-      if (newProject.companyId) {
-          getContactsForCompany(newProject.companyId).then(setContacts);
-      } else {
-          setContacts([]);
-      }
-  }, [newProject.companyId]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { id, value } = e.target;
     setNewProject((prev) => ({ ...prev, [id]: value }));
   };
 
-  const handleSelectChange = (field: 'companyId' | 'status' | 'category' | 'priority' | 'owner') => (value: string) => {
-    if (field === 'companyId') {
-        const defaultOwnerName = user?.displayName || '';
-        const defaultOwnerAvatar = user?.photoURL || '';
-        setNewProject((prev) => ({ 
-            ...prev, 
-            [field]: value, 
-            owner: defaultOwnerName, 
-            ownerAvatarUrl: defaultOwnerAvatar 
-        }));
-    } else if (field === 'owner') {
-        const selectedContact = contacts.find(c => c.name === value);
-        const isCurrentUser = user && user.displayName === value;
-        setNewProject(prev => ({ 
-            ...prev, 
-            owner: value, 
-            ownerAvatarUrl: isCurrentUser ? user.photoURL || '' : selectedContact?.avatar || '' 
-        }));
-    } else {
-        setNewProject((prev) => ({ ...prev, [field]: value }));
-    }
+  const handleSelectChange = (field: 'companyId' | 'status' | 'category' | 'priority') => (value: string) => {
+    setNewProject((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleCreateProject = async (e: React.FormEvent) => {
@@ -131,23 +102,6 @@ export function NewProjectDialog() {
     }
   };
 
-  const ownerOptions = React.useMemo(() => {
-    const allOwners = [...contacts];
-    if (user && user.displayName && !contacts.some(c => c.name === user.displayName)) {
-      allOwners.push({ 
-        id: user.uid, 
-        name: user.displayName, 
-        avatar: user.photoURL || '',
-        email: user.email || '',
-        phone: '',
-        title: 'Current User',
-        companyId: newProject.companyId,
-        lastActivity: '',
-      });
-    }
-    return allOwners;
-  }, [contacts, user, newProject.companyId]);
-
   return (
     <Dialog open={isNewProjectDialogOpen} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-[600px]">
@@ -182,16 +136,7 @@ export function NewProjectDialog() {
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="owner" className="text-right">Owner</Label>
-              <Select onValueChange={handleSelectChange('owner')} value={newProject.owner} required>
-                  <SelectTrigger className="col-span-3">
-                    <SelectValue placeholder="Select an owner" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {ownerOptions.map((owner) => (
-                        <SelectItem key={owner.id} value={owner.name}>{owner.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-              </Select>
+              <Input id="owner" value={newProject.owner} className="col-span-3" disabled />
             </div>
              <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="team" className="text-right">Team</Label>
