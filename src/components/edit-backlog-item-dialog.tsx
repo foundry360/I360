@@ -29,6 +29,13 @@ import { Contact } from '@/services/contact-service';
 import { useUser } from '@/contexts/user-context';
 import { format, parseISO } from 'date-fns';
 
+// MOCK USER DATA - Replace with a service call to fetch actual users
+const mockUsers = [
+    { id: 'user-1', displayName: 'Alice Johnson', photoURL: 'https://i.pravatar.cc/150?u=alice' },
+    { id: 'user-2', displayName: 'Bob Williams', photoURL: 'https://i.pravatar.cc/150?u=bob' },
+];
+// END MOCK USER DATA
+
 export function EditBacklogItemDialog() {
   const {
     isEditBacklogItemDialogOpen,
@@ -38,8 +45,8 @@ export function EditBacklogItemDialog() {
   } = useQuickAction();
   
   const [item, setItem] = React.useState<BacklogItem | null>(null);
-  const [projectTeam, setProjectTeam] = React.useState<Contact[]>([]);
   const { user } = useUser();
+  const [systemUsers, setSystemUsers] = React.useState<any[]>([]);
 
   React.useEffect(() => {
     if (editBacklogItemData) {
@@ -48,9 +55,20 @@ export function EditBacklogItemDialog() {
         ...restOfItem,
         dueDate: dueDate ? format(parseISO(dueDate), 'yyyy-MM-dd') : '',
       });
-      setProjectTeam(editBacklogItemData.contacts || []);
     }
-  }, [editBacklogItemData]);
+    // In a real app, this would be a fetch to your user service.
+    // For now, we combine the current logged-in user with our mock data.
+    if (user) {
+        const allUsers = [
+            { id: user.uid, displayName: user.displayName || user.email, photoURL: user.photoURL },
+            ...mockUsers
+        ];
+        // Remove duplicates
+        const uniqueUsers = Array.from(new Set(allUsers.map(u => u.id)))
+            .map(id => allUsers.find(u => u.id === id)!);
+        setSystemUsers(uniqueUsers);
+    }
+  }, [editBacklogItemData, user]);
   
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -62,8 +80,10 @@ export function EditBacklogItemDialog() {
   const handleSelectChange = (field: 'epicId' | 'priority' | 'status' | 'sprintId' | 'owner') => (value: string) => {
      if (!item) return;
      if (field === 'owner') {
-         const selectedUser = projectTeam.find(u => u.name === value) || { name: value, avatar: '' };
-         setItem((prev) => ({ ...prev!, owner: selectedUser.name, ownerAvatarUrl: selectedUser.avatar || '' }));
+        const selectedUser = systemUsers.find(u => u.displayName === value);
+        if (selectedUser) {
+            setItem(prev => ({...prev!, owner: selectedUser.displayName!, ownerAvatarUrl: selectedUser.photoURL || '' }));
+        }
      } else {
         setItem((prev) => ({ ...prev!, [field]: value === 'null' ? null : value }));
      }
@@ -135,17 +155,14 @@ export function EditBacklogItemDialog() {
              <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="owner" className="text-right">Owner</Label>
               <Select onValueChange={handleSelectChange('owner')} value={item.owner} required>
-                <SelectTrigger className="col-span-3">
-                  <SelectValue placeholder="Select an owner" />
-                </SelectTrigger>
-                <SelectContent>
-                  {projectTeam.map(contact => (
-                    <SelectItem key={contact.id} value={contact.name}>{contact.name}</SelectItem>
-                  ))}
-                   {user && !projectTeam.some(c => c.name === user.displayName) && (
-                    <SelectItem value={user.displayName!}>{user.displayName}</SelectItem>
-                  )}
-                </SelectContent>
+                  <SelectTrigger className="col-span-3">
+                    <SelectValue placeholder="Select an owner" />
+                  </SelectTrigger>
+                  <SelectContent>
+                      {systemUsers.map((u) => (
+                          <SelectItem key={u.id} value={u.displayName!}>{u.displayName}</SelectItem>
+                      ))}
+                  </SelectContent>
               </Select>
             </div>
             <div className="grid grid-cols-4 items-center gap-4">

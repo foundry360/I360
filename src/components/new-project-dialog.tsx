@@ -22,7 +22,6 @@ import {
 import { Textarea } from './ui/textarea';
 import { createProject } from '@/services/project-service';
 import { getCompanies, type Company } from '@/services/company-service';
-import { getContactsForCompany, type Contact } from '@/services/contact-service';
 import { useQuickAction } from '@/contexts/quick-action-context';
 import { useUser } from '@/contexts/user-context';
 
@@ -40,12 +39,20 @@ const initialNewProjectState = {
   endDate: '',
 };
 
+// MOCK USER DATA - Replace with a service call to fetch actual users
+const mockUsers = [
+    { id: 'user-1', displayName: 'Alice Johnson', photoURL: 'https://i.pravatar.cc/150?u=alice' },
+    { id: 'user-2', displayName: 'Bob Williams', photoURL: 'https://i.pravatar.cc/150?u=bob' },
+];
+// END MOCK USER DATA
+
+
 export function NewProjectDialog() {
   const { isNewProjectDialogOpen, closeNewProjectDialog, onProjectCreated } = useQuickAction();
   const [newProject, setNewProject] = React.useState(initialNewProjectState);
   const [companies, setCompanies] = React.useState<Company[]>([]);
-  const [contacts, setContacts] = React.useState<Contact[]>([]);
   const { user } = useUser();
+  const [systemUsers, setSystemUsers] = React.useState<any[]>([]);
 
   React.useEffect(() => {
     if (isNewProjectDialogOpen) {
@@ -53,16 +60,18 @@ export function NewProjectDialog() {
       const defaultOwnerName = user?.displayName || user?.email || '';
       const defaultOwnerAvatar = user?.photoURL || '';
       setNewProject(prev => ({ ...prev, owner: defaultOwnerName, ownerAvatarUrl: defaultOwnerAvatar }));
+      
+       if (user) {
+        const allUsers = [
+            { id: user.uid, displayName: user.displayName || user.email, photoURL: user.photoURL },
+            ...mockUsers
+        ];
+        const uniqueUsers = Array.from(new Set(allUsers.map(u => u.id)))
+            .map(id => allUsers.find(u => u.id === id)!);
+        setSystemUsers(uniqueUsers);
+      }
     }
   }, [isNewProjectDialogOpen, user]);
-  
-  React.useEffect(() => {
-      if (newProject.companyId) {
-          getContactsForCompany(newProject.companyId).then(setContacts);
-      } else {
-          setContacts([]);
-      }
-  }, [newProject.companyId]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { id, value } = e.target;
@@ -70,25 +79,13 @@ export function NewProjectDialog() {
   };
 
   const handleSelectChange = (field: 'companyId' | 'status' | 'category' | 'priority' | 'owner') => (value: string) => {
-    if (field === 'companyId') {
-        const defaultOwnerName = user?.displayName || '';
-        const defaultOwnerAvatar = user?.photoURL || '';
-        setNewProject((prev) => ({ 
-            ...prev, 
-            [field]: value, 
-            owner: defaultOwnerName, 
-            ownerAvatarUrl: defaultOwnerAvatar 
-        }));
-    } else if (field === 'owner') {
-        const selectedContact = contacts.find(c => c.name === value);
-        const isCurrentUser = user && user.displayName === value;
-        setNewProject(prev => ({ 
-            ...prev, 
-            owner: value, 
-            ownerAvatarUrl: isCurrentUser ? user.photoURL || '' : selectedContact?.avatar || '' 
-        }));
+    if (field === 'owner') {
+        const selectedUser = systemUsers.find(u => u.displayName === value);
+        if (selectedUser) {
+            setNewProject(prev => ({...prev, owner: selectedUser.displayName!, ownerAvatarUrl: selectedUser.photoURL || '' }));
+        }
     } else {
-        setNewProject((prev) => ({ ...prev, [field]: value }));
+       setNewProject((prev) => ({ ...prev, [field]: value }));
     }
   };
 
@@ -131,23 +128,6 @@ export function NewProjectDialog() {
     }
   };
 
-  const ownerOptions = React.useMemo(() => {
-    const allOwners = [...contacts];
-    if (user && user.displayName && !contacts.some(c => c.name === user.displayName)) {
-      allOwners.push({ 
-        id: user.uid, 
-        name: user.displayName, 
-        avatar: user.photoURL || '',
-        email: user.email || '',
-        phone: '',
-        title: 'Current User',
-        companyId: newProject.companyId,
-        lastActivity: '',
-      });
-    }
-    return allOwners;
-  }, [contacts, user, newProject.companyId]);
-
   return (
     <Dialog open={isNewProjectDialogOpen} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-[600px]">
@@ -182,14 +162,14 @@ export function NewProjectDialog() {
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="owner" className="text-right">Owner</Label>
-              <Select onValueChange={handleSelectChange('owner')} value={newProject.owner} required>
+              <Select onValueChange={handleSelectChange('owner')} value={newProject.owner}>
                   <SelectTrigger className="col-span-3">
                     <SelectValue placeholder="Select an owner" />
                   </SelectTrigger>
                   <SelectContent>
-                    {ownerOptions.map((owner) => (
-                        <SelectItem key={owner.id} value={owner.name}>{owner.name}</SelectItem>
-                    ))}
+                      {systemUsers.map((u) => (
+                          <SelectItem key={u.id} value={u.displayName!}>{u.displayName}</SelectItem>
+                      ))}
                   </SelectContent>
               </Select>
             </div>

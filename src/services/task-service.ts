@@ -2,7 +2,7 @@
 'use client';
 
 import { db } from '@/lib/firebase';
-import { collection, doc, getDocs, setDoc, updateDoc, query, where, writeBatch, runTransaction, DocumentReference, WriteBatch, addDoc, deleteDoc, getDoc } from 'firebase/firestore';
+import { collection, doc, getDocs, setDoc, updateDoc, query, where, writeBatch, runTransaction, DocumentReference, WriteBatch, addDoc, deleteDoc, getDoc, deleteField } from 'firebase/firestore';
 import type { BacklogItem } from './backlog-item-service';
 import { updateProjectLastActivity } from './project-service';
 
@@ -37,7 +37,7 @@ export interface Task {
   priority: TaskPriority;
   type: TaskType;
   backlogId?: number;
-  dueDate?: string;
+  dueDate?: string | null;
 };
 
 const tasksCollection = collection(db, 'tasks');
@@ -55,7 +55,15 @@ export async function getTasksForProject(projectId: string): Promise<Task[]> {
 
 export async function createTask(taskData: Omit<Task, 'id'>): Promise<string> {
   const docRef = await addDoc(tasksCollection, {});
-  const newTask: Task = { ...taskData, id: docRef.id };
+  const newTask: Task = { 
+    ...taskData, 
+    id: docRef.id
+  };
+
+  if (newTask.dueDate === undefined) {
+    newTask.dueDate = null;
+  }
+  
   await setDoc(docRef, newTask);
   await updateProjectLastActivity(taskData.projectId);
   return docRef.id;
@@ -81,10 +89,18 @@ export async function updateTask(id: string, taskData: Partial<Omit<Task, 'id'>>
         const backlogSnapshot = await getDocs(backlogQuery);
         if (!backlogSnapshot.empty) {
             const backlogItemRef = backlogSnapshot.docs[0].ref;
-            const backlogUpdateData: Partial<BacklogItem> = {};
+            const backlogUpdateData: Partial<Omit<BacklogItem, 'id'>> = {};
             if (taskData.status) backlogUpdateData.status = taskData.status;
-            if (taskData.dueDate) backlogUpdateData.dueDate = taskData.dueDate;
+
+            if (taskData.hasOwnProperty('dueDate')) {
+                backlogUpdateData.dueDate = taskData.dueDate || null;
+            }
+
             if (taskData.description) backlogUpdateData.description = taskData.description;
+            
+            backlogUpdateData.owner = taskData.owner || originalTask.owner;
+            backlogUpdateData.ownerAvatarUrl = taskData.ownerAvatarUrl || originalTask.ownerAvatarUrl;
+
 
             if (Object.keys(backlogUpdateData).length > 0) {
                  await updateDoc(backlogItemRef, backlogUpdateData);

@@ -121,6 +121,8 @@ export async function createProject(projectData: Omit<Project, 'id' | 'companyNa
             status: 'To Do' as const,
             points: 0,
             priority: 'Medium' as const,
+            owner: newProject.owner,
+            ownerAvatarUrl: newProject.ownerAvatarUrl || '',
         };
         batch.set(itemDocRef, newBacklogItem);
     });

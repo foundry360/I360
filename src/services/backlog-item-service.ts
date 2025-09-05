@@ -67,6 +67,8 @@ export async function createBacklogItem(itemData: Omit<BacklogItem, 'id' | 'back
         ...itemData, 
         id: docRef.id, 
         backlogId: nextId,
+        owner: itemData.owner || 'Unassigned',
+        ownerAvatarUrl: itemData.ownerAvatarUrl || '',
         dueDate: itemData.dueDate ? parseISO(itemData.dueDate).toISOString() : null
     };
     await setDoc(docRef, newItem);
@@ -112,8 +114,8 @@ export async function updateBacklogItem(id: string, data: Partial<BacklogItem>):
     
     if (dueDate) {
         finalData.dueDate = parseISO(dueDate).toISOString();
-    } else if (dueDate === null) {
-        finalData.dueDate = deleteField();
+    } else if (dueDate === null || dueDate === '') {
+        finalData.dueDate = null;
     }
 
     await updateDoc(docRef, finalData);

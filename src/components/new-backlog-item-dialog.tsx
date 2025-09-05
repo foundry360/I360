@@ -24,8 +24,7 @@ import { createBacklogItem, type BacklogItem } from '@/services/backlog-item-ser
 import { useQuickAction } from '@/contexts/quick-action-context';
 import type { Epic } from '@/services/epic-service';
 import { TaskPriority } from '@/services/task-service';
-import { useUser } from '@/contexts/user-context';
-import { getContactsForCompany, type Contact } from '@/services/contact-service';
+import { getProject } from '@/services/project-service';
 
 type NewBacklogItemState = Omit<BacklogItem, 'id' | 'backlogId'>;
 
@@ -51,25 +50,25 @@ export function NewBacklogItemDialog() {
   } = useQuickAction();
   
   const [newItem, setNewItem] = React.useState<NewBacklogItemState>(initialNewItemState);
-  const [contacts, setContacts] = React.useState<Contact[]>([]);
-  const { user } = useUser();
 
   React.useEffect(() => {
-    if (newBacklogItemData?.projectId && newBacklogItemData?.companyId) {
-      setNewItem(prev => ({ 
-        ...prev, 
-        projectId: newBacklogItemData.projectId,
-        owner: user?.displayName || '',
-        ownerAvatarUrl: user?.photoURL || ''
-      }));
-
-      const fetchContacts = async () => {
-        const companyContacts = await getContactsForCompany(newBacklogItemData.companyId);
-        setContacts(companyContacts);
-      };
-      fetchContacts();
+    const setInitialOwner = async () => {
+        if (newBacklogItemData?.projectId) {
+            const project = await getProject(newBacklogItemData.projectId);
+            if (project) {
+                 setNewItem(prev => ({ 
+                    ...prev, 
+                    projectId: newBacklogItemData.projectId,
+                    owner: project.owner,
+                    ownerAvatarUrl: project.ownerAvatarUrl || '',
+                }));
+            }
+        }
     }
-  }, [newBacklogItemData, user]);
+    if(isNewBacklogItemDialogOpen) {
+        setInitialOwner();
+    }
+  }, [newBacklogItemData, isNewBacklogItemDialogOpen]);
   
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -77,23 +76,14 @@ export function NewBacklogItemDialog() {
     setNewItem((prev) => ({ ...prev, [id]: id === 'points' ? Number(value) : value }));
   };
 
-  const handleSelectChange = (field: 'epicId' | 'priority' | 'owner') => (value: string) => {
-    if (field === 'owner') {
-        const selectedContact = contacts.find(c => c.name === value);
-        setNewItem(prev => ({
-            ...prev,
-            owner: value,
-            ownerAvatarUrl: selectedContact?.avatar || '',
-        }));
-    } else {
-        setNewItem((prev) => ({ ...prev, [field]: value }));
-    }
+  const handleSelectChange = (field: 'epicId' | 'priority') => (value: string) => {
+    setNewItem((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleCreateItem = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newItem.title || !newItem.epicId) {
-      alert('Title and Epic are required');
+    if (!newItem.title || !newItem.epicId || !newItem.owner) {
+      alert('Title and Epic are required, and an owner must be set on the project.');
       return;
     }
     try {
@@ -121,7 +111,7 @@ export function NewBacklogItemDialog() {
           <DialogHeader>
             <DialogTitle>Create New Backlog Item</DialogTitle>
             <DialogDescription>
-              Fill in the details below to add an item to the project backlog.
+              Fill in the details below to add an item to the project backlog. The owner will be automatically assigned from the project.
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4 max-h-[70vh] overflow-y-auto pr-4">
@@ -143,19 +133,6 @@ export function NewBacklogItemDialog() {
                   {newBacklogItemData?.epics.map((epic) => (
                     <SelectItem key={epic.id} value={epic.id}>{epic.title}</SelectItem>
                   ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="owner" className="text-right">Owner</Label>
-              <Select onValueChange={handleSelectChange('owner')} value={newItem.owner} required>
-                <SelectTrigger className="col-span-3">
-                    <SelectValue placeholder="Select an owner" />
-                </SelectTrigger>
-                <SelectContent>
-                    {contacts.map(contact => (
-                        <SelectItem key={contact.id} value={contact.name}>{contact.name}</SelectItem>
-                    ))}
                 </SelectContent>
               </Select>
             </div>

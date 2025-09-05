@@ -22,9 +22,15 @@ import {
 import { Textarea } from './ui/textarea';
 import { updateProject, type Project } from '@/services/project-service';
 import { useQuickAction } from '@/contexts/quick-action-context';
-import { getContactsForCompany, type Contact } from '@/services/contact-service';
 import { useUser } from '@/contexts/user-context';
 import { parseISO } from 'date-fns';
+
+// MOCK USER DATA - Replace with a service call to fetch actual users
+const mockUsers = [
+    { id: 'user-1', displayName: 'Alice Johnson', photoURL: 'https://i.pravatar.cc/150?u=alice' },
+    { id: 'user-2', displayName: 'Bob Williams', photoURL: 'https://i.pravatar.cc/150?u=bob' },
+];
+// END MOCK USER DATA
 
 export function EditProjectDialog() {
   const {
@@ -35,8 +41,8 @@ export function EditProjectDialog() {
   } = useQuickAction();
   
   const [formData, setFormData] = React.useState<Project | null>(null);
-  const [contacts, setContacts] = React.useState<Contact[]>([]);
   const { user } = useUser();
+  const [systemUsers, setSystemUsers] = React.useState<any[]>([]);
   
   const [engagementNamePrefix, setEngagementNamePrefix] = React.useState('');
   const [engagementNameSuffix, setEngagementNameSuffix] = React.useState('');
@@ -60,16 +66,18 @@ export function EditProjectDialog() {
         setEngagementNamePrefix('');
         setEngagementNameSuffix(projectData.name);
       }
-
-      const fetchContacts = async () => {
-          if (projectData.companyId) {
-              const companyContacts = await getContactsForCompany(projectData.companyId);
-              setContacts(companyContacts);
-          }
-      };
-      fetchContacts();
     }
-  }, [editProjectData]);
+     if (user) {
+        const allUsers = [
+            { id: user.uid, displayName: user.displayName || user.email, photoURL: user.photoURL },
+            ...mockUsers
+        ];
+        // Remove duplicates
+        const uniqueUsers = Array.from(new Set(allUsers.map(u => u.id)))
+            .map(id => allUsers.find(u => u.id === id)!);
+        setSystemUsers(uniqueUsers);
+    }
+  }, [editProjectData, user]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     if (!formData) return;
@@ -84,14 +92,10 @@ export function EditProjectDialog() {
   const handleSelectChange = (field: 'status' | 'category' | 'priority' | 'owner') => (value: string) => {
     if (!formData) return;
     if (field === 'owner') {
-        const selectedContact = contacts.find(c => c.name === value);
-        const isCurrentUser = user && user.displayName === value;
-        
-        setFormData(prev => ({ 
-            ...prev!, 
-            owner: value, 
-            ownerAvatarUrl: isCurrentUser ? user.photoURL || '' : selectedContact?.avatar || '' 
-        }));
+        const selectedUser = systemUsers.find(u => u.displayName === value);
+        if (selectedUser) {
+            setFormData(prev => ({...prev!, owner: selectedUser.displayName!, ownerAvatarUrl: selectedUser.photoURL || '' }));
+        }
     } else {
         setFormData((prev) => ({ ...prev!, [field]: value }));
     }
@@ -129,23 +133,6 @@ export function EditProjectDialog() {
     }
   };
 
-  const ownerOptions = React.useMemo(() => {
-    const allOwners = [...contacts];
-    if (user && user.displayName && !contacts.some(c => c.name === user.displayName)) {
-      allOwners.push({ 
-        id: user.uid, 
-        name: user.displayName, 
-        avatar: user.photoURL || '',
-        email: user.email || '',
-        phone: '',
-        title: 'Current User',
-        companyId: '',
-        lastActivity: '',
-      });
-    }
-    return allOwners;
-  }, [contacts, user]);
-
   if (!formData) return null;
 
   return (
@@ -178,15 +165,15 @@ export function EditProjectDialog() {
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="owner" className="text-right">Owner</Label>
-              <Select onValueChange={handleSelectChange('owner')} value={formData.owner} required>
-                <SelectTrigger className="col-span-3">
-                  <SelectValue placeholder="Select an owner" />
-                </SelectTrigger>
-                <SelectContent>
-                  {ownerOptions.map((owner) => (
-                    <SelectItem key={owner.id} value={owner.name}>{owner.name}</SelectItem>
-                  ))}
-                </SelectContent>
+              <Select onValueChange={handleSelectChange('owner')} value={formData.owner}>
+                  <SelectTrigger className="col-span-3">
+                    <SelectValue placeholder="Select an owner" />
+                  </SelectTrigger>
+                  <SelectContent>
+                      {systemUsers.map((u) => (
+                          <SelectItem key={u.id} value={u.displayName!}>{u.displayName}</SelectItem>
+                      ))}
+                  </SelectContent>
               </Select>
             </div>
              <div className="grid grid-cols-4 items-center gap-4">
