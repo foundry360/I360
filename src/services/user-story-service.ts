@@ -12,6 +12,7 @@ import {
   deleteDoc,
   serverTimestamp,
   FieldValue,
+  writeBatch,
 } from 'firebase/firestore';
 
 export interface UserStory {
@@ -50,6 +51,23 @@ export async function createUserStory(storyData: Omit<UserStory, 'id' | 'created
   await updateDoc(docRef, { id: docRef.id });
   return docRef.id;
 }
+
+export async function bulkCreateUserStories(storiesData: Omit<UserStory, 'id' | 'createdAt'>[]): Promise<void> {
+  const batch = writeBatch(db);
+
+  storiesData.forEach(storyData => {
+    const docRef = doc(userStoriesCollection);
+    const storyWithTimestamp = {
+      ...storyData,
+      id: docRef.id,
+      createdAt: serverTimestamp(),
+    };
+    batch.set(docRef, storyWithTimestamp);
+  });
+
+  await batch.commit();
+}
+
 
 export async function updateUserStory(id: string, storyData: Partial<UserStory>): Promise<void> {
   const docRef = doc(db, 'userStories', id);

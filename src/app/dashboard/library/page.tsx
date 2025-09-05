@@ -19,18 +19,22 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Skeleton } from '@/components/ui/skeleton';
-import { MoreHorizontal, Plus, Trash2, Search } from 'lucide-react';
+import { MoreHorizontal, Plus, Trash2, Search, Upload } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { useQuickAction } from '@/contexts/quick-action-context';
-import { getUserStories, deleteUserStory, UserStory } from '@/services/user-story-service';
+import { getUserStories, deleteUserStory, UserStory, bulkCreateUserStories } from '@/services/user-story-service';
 import { Input } from '@/components/ui/input';
 import { format, parseISO } from 'date-fns';
+import { useToast } from '@/hooks/use-toast';
+import Papa from 'papaparse';
 
 export default function LibraryPage() {
   const [stories, setStories] = React.useState<(Omit<UserStory, 'createdAt'> & { createdAt: string })[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [searchTerm, setSearchTerm] = React.useState('');
   const { openNewUserStoryDialog, setOnUserStoryCreated } = useQuickAction();
+  const { toast } = useToast();
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   const fetchStories = React.useCallback(async () => {
     try {
@@ -61,6 +65,68 @@ export default function LibraryPage() {
     }
   };
 
+  const handleUploadClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) {
+      return;
+    }
+
+    Papa.parse(file, {
+      header: true,
+      skipEmptyLines: true,
+      complete: async (results) => {
+        try {
+          const storiesToCreate = results.data.map((row: any) => ({
+            title: row.title || '',
+            story: row.story || '',
+            acceptanceCriteria: (row.acceptanceCriteria || '').split('\n').filter(Boolean),
+            tags: (row.tags || '').split(',').map((t: string) => t.trim()).filter(Boolean),
+          })).filter(story => story.title && story.story);
+
+          if (storiesToCreate.length === 0) {
+            toast({
+              variant: 'destructive',
+              title: 'Upload Failed',
+              description: 'CSV file is empty or does not have the required "title" and "story" columns.',
+            });
+            return;
+          }
+
+          await bulkCreateUserStories(storiesToCreate);
+          toast({
+            title: 'Upload Successful',
+            description: `${storiesToCreate.length} user stories have been imported.`,
+          });
+          fetchStories();
+        } catch (error) {
+          console.error("Failed to upload stories:", error);
+          toast({
+            variant: "destructive",
+            title: "Upload Failed",
+            description: "There was a problem importing your user stories.",
+          });
+        } finally {
+          // Reset file input
+          if(fileInputRef.current) {
+              fileInputRef.current.value = "";
+          }
+        }
+      },
+      error: (error: any) => {
+         console.error("CSV Parsing Error:", error);
+          toast({
+            variant: "destructive",
+            title: "Parsing Failed",
+            description: "Could not parse the CSV file. Please check its format.",
+          });
+      }
+    });
+  };
+
   const filteredStories = stories.filter(story =>
     story.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
     story.story.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -69,6 +135,13 @@ export default function LibraryPage() {
 
   return (
     <div className="space-y-6">
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handleFileChange}
+        className="hidden"
+        accept=".csv"
+      />
       <div>
         <h1 className="text-2xl font-bold">User Story Library</h1>
         <p className="text-muted-foreground">
@@ -86,10 +159,16 @@ export default function LibraryPage() {
             className="pl-8 w-64"
           />
         </div>
-        <Button size="icon" onClick={openNewUserStoryDialog}>
-          <Plus className="h-4 w-4" />
-          <span className="sr-only">New User Story</span>
-        </Button>
+        <div className="flex items-center gap-2">
+           <Button variant="outline" size="icon" onClick={handleUploadClick}>
+            <Upload className="h-4 w-4" />
+            <span className="sr-only">Upload CSV</span>
+          </Button>
+          <Button size="icon" onClick={openNewUserStoryDialog}>
+            <Plus className="h-4 w-4" />
+            <span className="sr-only">New User Story</span>
+          </Button>
+        </div>
       </div>
       <div className="border rounded-lg">
         {loading ? (
