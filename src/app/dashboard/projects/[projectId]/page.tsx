@@ -55,7 +55,7 @@ import { Badge } from '@/components/ui/badge';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Separator } from '@/components/ui/separator';
 import { useQuickAction } from '@/contexts/quick-action-context';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuPortal, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuPortal, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { add, format, formatDistanceToNow, isPast, differenceInDays, parseISO } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
@@ -719,6 +719,11 @@ export default function ProjectDetailsPage() {
     
     }, [epics, sprints, backlogItems, project, tasks]);
 
+    const getInitials = (name: string) => {
+      if (!name) return '';
+      return name.split(' ').map((n) => n[0]).join('').toUpperCase();
+    }
+
     if (loading) {
         return (
              <div className="space-y-4">
@@ -1136,9 +1141,17 @@ export default function ProjectDetailsPage() {
                                                         }
                                                     }}
                                                 >
-                                                    <div>
-                                                        <p className="font-medium">{task.title}</p>
-                                                        <p className="text-xs text-muted-foreground">{task.owner}</p>
+                                                    <div className="flex items-center gap-2">
+                                                        <Avatar className="h-6 w-6">
+                                                          <AvatarImage src={task.ownerAvatarUrl} />
+                                                          <AvatarFallback className="text-xs">{getInitials(task.owner)}</AvatarFallback>
+                                                        </Avatar>
+                                                        <div>
+                                                            <p className="font-medium">
+                                                                <span className="text-muted-foreground mr-2">{projectPrefix}-{task.backlogId}</span>
+                                                                {task.title}
+                                                            </p>
+                                                        </div>
                                                     </div>
                                                     <div className={cn("flex items-center gap-2 text-xs font-semibold", statusColor)}>
                                                        <Calendar className="h-4 w-4" />
@@ -1492,8 +1505,3 @@ export default function ProjectDetailsPage() {
         </div>
     );
 }
-
-    
-
-
-
