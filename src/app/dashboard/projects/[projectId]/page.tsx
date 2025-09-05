@@ -1239,6 +1239,8 @@ export default function ProjectDetailsPage() {
                                                             <div className="border rounded-lg">
                                                                 {itemsInSprint.length > 0 ? itemsInSprint.map(item => {
                                                                     const epic = epics.find(e => e.id === item.epicId);
+                                                                    const epicConfig = epic ? (epicIcons[epic.title] || { icon: Layers, color: 'text-foreground' }) : { icon: Layers, color: 'text-foreground' };
+                                                                    const IconComponent = epicConfig.icon;
                                                                     return (
                                                                         <div key={item.id} className="flex justify-between items-center p-3 border-b last:border-b-0 hover:bg-muted/50 cursor-pointer"
                                                                             onClick={() => openEditBacklogItemDialog(item, epics, sprints, contacts)}
@@ -1248,6 +1250,7 @@ export default function ProjectDetailsPage() {
                                                                                 <p className="font-medium">{item.title}</p>
                                                                                 {epic && (
                                                                                     <Badge variant="secondary" className="cursor-pointer" onClick={(e) => { e.stopPropagation(); setActiveTab('backlog')}}>
+                                                                                        <IconComponent className={cn("h-3 w-3 mr-1", epicConfig.color)} />
                                                                                         {epic.title}
                                                                                     </Badge>
                                                                                 )}
