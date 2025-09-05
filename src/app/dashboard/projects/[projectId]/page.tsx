@@ -307,12 +307,19 @@ export default function ProjectDetailsPage() {
                 setContacts(companyContacts);
             }
 
-            const startedSprintIds = sprintsData.filter(s => s.status !== 'Not Started').map(s => s.id);
-            const backlogItemsInStartedSprints = backlogItemsData.filter(item => item.sprintId && startedSprintIds.includes(item.sprintId));
-            const backlogIdsInStartedSprints = new Set(backlogItemsInStartedSprints.map(item => item.backlogId));
+            const activeOrCompletedSprintIds = sprintsData
+                .filter(s => s.status === 'Active' || s.status === 'Completed')
+                .map(s => s.id);
             
-            const tasksForBoard = tasksData.filter(task => task.backlogId && backlogIdsInStartedSprints.has(task.backlogId));
-
+            const backlogItemsForBoard = backlogItemsData.filter(item => 
+                item.sprintId && activeOrCompletedSprintIds.includes(item.sprintId)
+            );
+            const backlogIdsForBoard = new Set(backlogItemsForBoard.map(item => item.backlogId));
+            
+            const tasksForBoard = tasksData.filter(task => 
+                task.backlogId && backlogIdsForBoard.has(task.backlogId)
+            );
+            
             const sortedTasks = tasksForBoard.sort((a, b) => a.order - b.order);
             
             const newColumns = sortedTasks.reduce((acc, task) => {
@@ -1043,7 +1050,7 @@ export default function ProjectDetailsPage() {
                                                     return (
                                                         <AccordionItem value={epic.id} key={epic.id} className="border-none space-y-2">
                                                             <AccordionTrigger 
-                                                                className="space-y-2 p-2 -m-2 rounded-md hover:bg-muted no-underline"
+                                                                className="space-y-2 p-2 -m-2 rounded-md hover:bg-muted no-underline cursor-pointer"
                                                                 onClick={(e) => {
                                                                     e.preventDefault();
                                                                     setActiveTab('backlog');
