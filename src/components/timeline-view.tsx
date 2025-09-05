@@ -55,40 +55,12 @@ const getMonthHeaders = (startDate: Date, endDate: Date) => {
 
     while (currentDate <= endOfMonth(endDate)) {
         months.push({
-            date: currentDate,
             name: format(currentDate, 'MMM yyyy'),
             days: differenceInDays(endOfMonth(currentDate), startOfMonth(currentDate)) + 1,
         });
         currentDate = addMonths(currentDate, 1);
     }
-    
-    const twoMonthGroups = [];
-    for (let i = 0; i < months.length; i += 2) {
-        if (i + 1 < months.length) {
-            const month1 = months[i];
-            const month2 = months[i+1];
-            
-            let combinedName;
-            const year1 = format(month1.date, 'yyyy');
-            const year2 = format(month2.date, 'yyyy');
-
-            if (year1 === year2) {
-                combinedName = `${format(month1.date, 'MMM')} - ${format(month2.date, 'MMM')} ${year1}`;
-            } else {
-                combinedName = `${format(month1.date, 'MMM yyyy')} - ${format(month2.date, 'MMM yyyy')}`;
-            }
-
-            twoMonthGroups.push({
-                name: combinedName,
-                days: month1.days + month2.days,
-            });
-        } else {
-            // Handle the last single month if the total number of months is odd
-            twoMonthGroups.push(months[i]);
-        }
-    }
-    
-    return twoMonthGroups;
+    return months;
 };
 
 export const TimelineView: React.FC<TimelineViewProps> = ({ items, projectStartDate, projectEndDate }) => {
