@@ -635,9 +635,16 @@ export default function ProjectDetailsPage() {
     }, [project, tasks]);
     
     const atRiskTasks = React.useMemo(() => {
-        return tasks.filter(task => 
-            task.dueDate && isPast(parseISO(task.dueDate)) && task.status !== 'Complete'
-        ).sort((a,b) => parseISO(a.dueDate!).getTime() - parseISO(b.dueDate!).getTime());
+        const today = new Date();
+        return tasks.filter(task => {
+            if (task.status === 'Complete' || !task.dueDate) return false;
+            
+            const dueDate = parseISO(task.dueDate);
+            const daysUntilDue = differenceInDays(dueDate, today);
+
+            // Overdue or due within 3 days
+            return daysUntilDue < 3;
+        }).sort((a,b) => parseISO(a.dueDate!).getTime() - parseISO(b.dueDate!).getTime());
     }, [tasks]);
 
 
@@ -669,8 +676,8 @@ export default function ProjectDetailsPage() {
     ).length;
 
     const inProgressPercentage = totalTasks > 0 ? (inProgressTasks / totalTasks) * 100 : 0;
-    const completedPercentage = totalTasks > 0 ? (completedTasksCount / tasks.length) * 100 : 0;
-    const overduePercentage = totalTasks > 0 ? (overdueTasksCount / tasks.length) * 100 : 0;
+    const completedPercentage = totalTasks > 0 ? (completedTasksCount / totalTasks) * 100 : 0;
+    const overduePercentage = totalTasks > 0 ? (overdueTasksCount / totalTasks) * 100 : 0;
     
     const HealthIcon = projectHealth.icon;
 
@@ -1002,11 +1009,28 @@ export default function ProjectDetailsPage() {
                                 <Card>
                                     <CardHeader>
                                         <CardTitle>At-Risk Tasks</CardTitle>
-                                        <CardDescription>Tasks that are overdue and not yet completed.</CardDescription>
+                                        <CardDescription>Tasks that are overdue or due within 3 days.</CardDescription>
                                     </CardHeader>
                                     <CardContent className="space-y-3">
                                         {atRiskTasks.length > 0 ? (
-                                            atRiskTasks.map(task => (
+                                            atRiskTasks.map(task => {
+                                                const dueDate = parseISO(task.dueDate!);
+                                                const now = new Date();
+                                                const daysDiff = differenceInDays(dueDate, now);
+                                                const isOverdue = daysDiff < 0;
+
+                                                let statusText = '';
+                                                let statusColor = 'text-muted-foreground';
+
+                                                if (isOverdue) {
+                                                    statusText = `Overdue by ${Math.abs(daysDiff)} day(s)`;
+                                                    statusColor = 'text-destructive';
+                                                } else {
+                                                    statusText = `Due in ${daysDiff + 1} day(s)`;
+                                                    statusColor = 'text-yellow-500';
+                                                }
+
+                                                return (
                                                 <div key={task.id} className="flex justify-between items-center text-sm">
                                                     <div className="flex items-center gap-3">
                                                         <Avatar className="h-6 w-6">
@@ -1015,11 +1039,12 @@ export default function ProjectDetailsPage() {
                                                         </Avatar>
                                                         <span className="font-medium">{task.title}</span>
                                                     </div>
-                                                    <span className="text-destructive font-semibold">
-                                                        {formatDistanceToNow(parseISO(task.dueDate!), { addSuffix: true })}
+                                                    <span className={cn("font-semibold", statusColor)}>
+                                                        {statusText}
                                                     </span>
                                                 </div>
-                                            ))
+                                                )
+                                            })
                                         ) : (
                                             <p className="text-sm text-muted-foreground text-center py-4">No at-risk tasks. Great job!</p>
                                         )}
