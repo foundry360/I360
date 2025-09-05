@@ -7,6 +7,8 @@ import { cn } from '@/lib/utils';
 import { epicIcons } from '@/app/dashboard/projects/[projectId]/page';
 import { Layers, GripVertical } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
+import { Progress } from './ui/progress';
+import type { TaskStatus } from '@/services/task-service';
 
 interface TimelineItem {
     id: string;
@@ -14,6 +16,7 @@ interface TimelineItem {
     startDate: Date;
     endDate: Date;
     type: 'epic' | 'sprint' | 'item';
+    status?: TaskStatus;
     children?: TimelineItem[];
 }
 
@@ -22,6 +25,15 @@ interface TimelineViewProps {
     projectStartDate: Date;
     projectEndDate: Date;
 }
+
+const statusToProgress: Record<TaskStatus, number> = {
+    'To Do': 0,
+    'In Progress': 25,
+    'In Review': 50,
+    'Needs Revisions': 65,
+    'Final Approval': 80,
+    'Complete': 100,
+};
 
 const getMonthHeaders = (startDate: Date, endDate: Date) => {
     const months = [];
@@ -66,6 +78,7 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ items, projectStartD
     const renderItemRow = (item: TimelineItem, level: number) => {
         const epicConfig = epicIcons[item.title] || { icon: Layers, color: 'text-foreground' };
         const IconComponent = epicConfig.icon;
+        const progress = item.status ? statusToProgress[item.status] : 0;
 
         return (
             <React.Fragment key={item.id}>
@@ -95,18 +108,23 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ items, projectStartD
                                             "h-6 rounded cursor-pointer",
                                             item.type === 'epic' && 'bg-primary/70',
                                             item.type === 'sprint' && 'bg-secondary',
-                                            item.type === 'item' && 'bg-muted-foreground/30'
+                                            item.type === 'item' && 'bg-muted' // Use muted for the background of progress
                                         )}
                                         style={{
                                             position: 'absolute',
                                             left: `${getBarPosition(item.startDate)}%`,
                                             width: `${getBarWidth(item.startDate, item.endDate)}%`,
                                         }}
-                                    />
+                                    >
+                                      {item.type === 'item' && (
+                                        <Progress value={progress} className="h-full w-full bg-transparent" />
+                                      )}
+                                    </div>
                                 </TooltipTrigger>
                                 <TooltipContent>
                                     <p className="font-bold">{item.title}</p>
                                     <p>{format(item.startDate, 'MMM d, yyyy')} - {format(item.endDate, 'MMM d, yyyy')}</p>
+                                    {item.type === 'item' && item.status && <p>Status: {item.status} ({progress}%)</p>}
                                 </TooltipContent>
                             </Tooltip>
                         </TooltipProvider>

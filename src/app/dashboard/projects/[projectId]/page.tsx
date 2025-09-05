@@ -681,6 +681,7 @@ export default function ProjectDetailsPage() {
                             title: item.title,
                             startDate: parseISO(sprint.startDate),
                             endDate: parseISO(sprint.endDate),
+                            status: item.status,
                             type: 'item' as const,
                         }))
                     };
@@ -691,7 +692,7 @@ export default function ProjectDetailsPage() {
         const projectStartDate = new Date(Math.min(...sprints.map(s => parseISO(s.startDate).getTime())));
         const projectEndDate = new Date(Math.max(...sprints.map(s => parseISO(s.endDate).getTime())));
 
-        return { items: epicItems, projectStartDate, projectEndDate };
+        return { items: epicItems as any[], projectStartDate, projectEndDate };
 
     }, [epics, sprints, backlogItems, project]);
 
@@ -1354,7 +1355,7 @@ export default function ProjectDetailsPage() {
                     </TabsContent>
                     <TabsContent value="timeline">
                         <TimelineView
-                            items={timelineData.items as any[]}
+                            items={timelineData.items}
                             projectStartDate={timelineData.projectStartDate}
                             projectEndDate={timelineData.projectEndDate}
                         />
