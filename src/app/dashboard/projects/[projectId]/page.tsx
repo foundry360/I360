@@ -35,6 +35,8 @@ import {
   CheckCircle2,
   HelpCircle,
   TrendingDown,
+  TrendingUp,
+  AlertTriangle,
 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
@@ -596,6 +598,41 @@ export default function ProjectDetailsPage() {
         return { segments, daysLeft: Math.max(0, daysLeft) };
 
     }, [activeSprint, backlogItems, tasks]);
+    
+    const projectHealth = React.useMemo(() => {
+        if (!project || !tasks.length) {
+            return { status: 'Unknown', icon: HelpCircle, color: 'text-muted-foreground', description: 'Not enough data to determine health.', progress: 0 };
+        }
+
+        const today = new Date();
+        const startDate = parseISO(project.startDate);
+        const endDate = project.endDate ? parseISO(project.endDate) : add(startDate, { months: 6 }); // Default to 6 months if no end date
+        
+        if (isPast(endDate)) {
+            return { status: 'Archived', icon: CheckCircle2, color: 'text-muted-foreground', description: 'Project has passed its end date.', progress: 100 };
+        }
+
+        const totalDuration = differenceInDays(endDate, startDate);
+        const timeElapsed = differenceInDays(today, startDate);
+        const timeElapsedPercent = totalDuration > 0 ? Math.min(100, Math.max(0, (timeElapsed / totalDuration) * 100)) : 0;
+        
+        const completedTasks = tasks.filter(t => t.status === 'Complete').length;
+        const tasksCompletedPercent = (completedTasks / tasks.length) * 100;
+        
+        const overdueTasks = tasks.filter(t => t.dueDate && isPast(parseISO(t.dueDate)) && t.status !== 'Complete').length;
+        const overduePercent = (overdueTasks / tasks.length) * 100;
+
+        const scheduleVariance = tasksCompletedPercent - timeElapsedPercent;
+
+        if (scheduleVariance >= -5 && overduePercent < 10) {
+            return { status: 'On Track', icon: TrendingUp, color: 'text-green-500', description: 'Project is on or ahead of schedule.', progress: 85 };
+        } else if (scheduleVariance < -15 || overduePercent > 25) {
+            return { status: 'Needs Attention', icon: TrendingDown, color: 'text-red-500', description: 'Significantly behind or has many overdue tasks.', progress: 25 };
+        } else {
+            return { status: 'At Risk', icon: AlertTriangle, color: 'text-yellow-500', description: 'Slightly behind schedule or has some overdue tasks.', progress: 50 };
+        }
+
+    }, [project, tasks]);
 
 
     if (loading) {
@@ -628,6 +665,8 @@ export default function ProjectDetailsPage() {
     const inProgressPercentage = totalTasks > 0 ? (inProgressTasks / totalTasks) * 100 : 0;
     const completedPercentage = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
     const overduePercentage = totalTasks > 0 ? (overdueTasks / totalTasks) * 100 : 0;
+    
+    const HealthIcon = projectHealth.icon;
 
     return (
         <div className="flex flex-col h-full">
@@ -943,14 +982,14 @@ export default function ProjectDetailsPage() {
                                     <Card>
                                         <CardHeader className="flex flex-row items-center justify-between pb-2">
                                             <CardTitle className="text-sm font-medium text-muted-foreground">Project Health</CardTitle>
-                                            <TrendingDown className="h-4 w-4 text-muted-foreground" />
+                                            <HealthIcon className={cn("h-4 w-4", projectHealth.color)} />
                                         </CardHeader>
                                         <CardContent>
-                                            <p className="text-2xl font-bold">-</p>
+                                            <p className={cn("text-2xl font-bold", projectHealth.color)}>{projectHealth.status}</p>
                                         </CardContent>
                                         <CardFooter className="flex-col items-start gap-1 p-4 pt-0">
-                                            <p className="text-xs text-muted-foreground">No data yet</p>
-                                            <Progress value={0} />
+                                            <p className="text-xs text-muted-foreground">{projectHealth.description}</p>
+                                            <Progress value={projectHealth.progress} className={cn("[&>div]:bg-green-500", projectHealth.color === 'text-yellow-500' && "[&>div]:bg-yellow-500", projectHealth.color === 'text-red-500' && "[&>div]:bg-red-500")} />
                                         </CardFooter>
                                     </Card>
                                 </div>
