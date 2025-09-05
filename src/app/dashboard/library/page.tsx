@@ -87,13 +87,13 @@ export default function LibraryPage() {
             acceptanceCriteria: (row['acceptance criteria'] || row.acceptancecriteria || '').split('\n').filter(Boolean),
             tags: (row.tags || '').split(',').map((t: string) => t.trim()).filter(Boolean),
             points: Number(row.points) || 0,
-          })).filter(story => story.title && story.story);
+          })).filter(story => story.title);
 
           if (storiesToCreate.length === 0) {
             toast({
               variant: 'destructive',
               title: 'Upload Failed',
-              description: 'CSV file is empty or does not have the required "title" and "story" columns.',
+              description: 'CSV file is empty or does not have the required "title" column.',
             });
             return;
           }

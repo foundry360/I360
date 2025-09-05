@@ -74,8 +74,8 @@ export function NewUserStoryDialog() {
 
   const handleCreateStory = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newStory.title || !newStory.story) {
-      alert('Title and Story are required');
+    if (!newStory.title) {
+      alert('Title is required');
       return;
     }
     try {
@@ -121,7 +121,6 @@ export function NewUserStoryDialog() {
                 onChange={handleInputChange}
                 className="col-span-3"
                 placeholder="As a [type of user], I want [an action] so that [a benefit]."
-                required
               />
             </div>
              <div className="grid grid-cols-4 items-start gap-4">
