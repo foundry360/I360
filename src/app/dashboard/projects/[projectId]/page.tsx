@@ -56,7 +56,7 @@ import { Separator } from '@/components/ui/separator';
 import { useQuickAction } from '@/contexts/quick-action-context';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuPortal, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-import { format, parseISO, isPast, differenceInDays, add } from 'date-fns';
+import { add, format, formatDistanceToNow, isPast, differenceInDays, parseISO } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
@@ -606,7 +606,7 @@ export default function ProjectDetailsPage() {
 
         const today = new Date();
         const startDate = parseISO(project.startDate);
-        const endDate = project.endDate ? parseISO(project.endDate) : add(startDate, { months: 6 }); // Default to 6 months if no end date
+        const endDate = project.endDate ? parseISO(project.endDate) : add(startDate, { months: 6 });
         
         if (isPast(endDate)) {
             return { status: 'Archived', icon: CheckCircle2, color: 'text-muted-foreground', tasksCompletedPercent: 100 };
@@ -616,11 +616,11 @@ export default function ProjectDetailsPage() {
         const timeElapsed = differenceInDays(today, startDate);
         const timeElapsedPercent = totalDuration > 0 ? Math.min(100, Math.max(0, (timeElapsed / totalDuration) * 100)) : 0;
         
-        const completedTasks = tasks.filter(t => t.status === 'Complete').length;
-        const tasksCompletedPercent = (completedTasks / tasks.length) * 100;
+        const completedTasksCount = tasks.filter(t => t.status === 'Complete').length;
+        const tasksCompletedPercent = (completedTasksCount / tasks.length) * 100;
         
-        const overdueTasks = tasks.filter(t => t.dueDate && isPast(parseISO(t.dueDate)) && t.status !== 'Complete').length;
-        const overduePercent = (overdueTasks / tasks.length) * 100;
+        const overdueTasksCount = tasks.filter(t => t.dueDate && isPast(parseISO(t.dueDate)) && t.status !== 'Complete').length;
+        const overduePercent = (overdueTasksCount / tasks.length) * 100;
 
         const scheduleVariance = tasksCompletedPercent - timeElapsedPercent;
 
@@ -633,6 +633,12 @@ export default function ProjectDetailsPage() {
         }
 
     }, [project, tasks]);
+    
+    const atRiskTasks = React.useMemo(() => {
+        return tasks.filter(task => 
+            task.dueDate && isPast(parseISO(task.dueDate)) && task.status !== 'Complete'
+        ).sort((a,b) => parseISO(a.dueDate!).getTime() - parseISO(b.dueDate!).getTime());
+    }, [tasks]);
 
 
     if (loading) {
@@ -656,15 +662,15 @@ export default function ProjectDetailsPage() {
     
     const totalTasks = tasks.length;
     const inProgressTasks = columns['In Progress'].length;
-    const completedTasks = tasks.filter(task => task.status === 'Complete').length;
+    const completedTasksCount = tasks.filter(task => task.status === 'Complete').length;
     
-    const overdueTasks = tasks.filter(task => 
+    const overdueTasksCount = tasks.filter(task => 
         task.dueDate && isPast(parseISO(task.dueDate)) && task.status !== 'Complete'
     ).length;
 
     const inProgressPercentage = totalTasks > 0 ? (inProgressTasks / totalTasks) * 100 : 0;
-    const completedPercentage = totalTasks > 0 ? (completedTasks / tasks.length) * 100 : 0;
-    const overduePercentage = totalTasks > 0 ? (overdueTasks / tasks.length) * 100 : 0;
+    const completedPercentage = totalTasks > 0 ? (completedTasksCount / tasks.length) * 100 : 0;
+    const overduePercentage = totalTasks > 0 ? (overdueTasksCount / tasks.length) * 100 : 0;
     
     const HealthIcon = projectHealth.icon;
 
@@ -957,7 +963,7 @@ export default function ProjectDetailsPage() {
                                             <CheckCircle2 className="h-4 w-4 text-muted-foreground" />
                                         </CardHeader>
                                         <CardContent>
-                                            <p className="text-2xl font-bold">{completedTasks}</p>
+                                            <p className="text-2xl font-bold">{completedTasksCount}</p>
                                         </CardContent>
                                          <CardFooter className="flex-col items-start gap-1 p-4 pt-0">
                                             <p className="text-xs text-muted-foreground">{Math.round(completedPercentage)}% of total</p>
@@ -972,7 +978,7 @@ export default function ProjectDetailsPage() {
                                             <Clock className="h-4 w-4 text-destructive" />
                                         </CardHeader>
                                         <CardContent>
-                                            <p className="text-2xl font-bold text-destructive">{overdueTasks}</p>
+                                            <p className="text-2xl font-bold text-destructive">{overdueTasksCount}</p>
                                         </CardContent>
                                         <CardFooter className="flex-col items-start gap-1 p-4 pt-0">
                                             <p className="text-xs text-muted-foreground">{Math.round(overduePercentage)}% of total</p>
@@ -993,6 +999,32 @@ export default function ProjectDetailsPage() {
                                         </CardFooter>
                                     </Card>
                                 </div>
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle>At-Risk Tasks</CardTitle>
+                                        <CardDescription>Tasks that are overdue and not yet completed.</CardDescription>
+                                    </CardHeader>
+                                    <CardContent className="space-y-3">
+                                        {atRiskTasks.length > 0 ? (
+                                            atRiskTasks.map(task => (
+                                                <div key={task.id} className="flex justify-between items-center text-sm">
+                                                    <div className="flex items-center gap-3">
+                                                        <Avatar className="h-6 w-6">
+                                                            <AvatarImage src={task.ownerAvatarUrl} />
+                                                            <AvatarFallback className="text-xs">{task.owner.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                                                        </Avatar>
+                                                        <span className="font-medium">{task.title}</span>
+                                                    </div>
+                                                    <span className="text-destructive font-semibold">
+                                                        {formatDistanceToNow(parseISO(task.dueDate!), { addSuffix: true })}
+                                                    </span>
+                                                </div>
+                                            ))
+                                        ) : (
+                                            <p className="text-sm text-muted-foreground text-center py-4">No at-risk tasks. Great job!</p>
+                                        )}
+                                    </CardContent>
+                                </Card>
                             </div>
                        </div>
                     </TabsContent>
