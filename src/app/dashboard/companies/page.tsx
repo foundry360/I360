@@ -421,7 +421,6 @@ export default function CompaniesPage() {
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
                               onClick={() => openDeleteDialog(company)}
-                              
                             >
                               Delete Company
                             </DropdownMenuItem>

@@ -355,7 +355,6 @@ export default function ContactsPage() {
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
                               onClick={() => openDeleteDialog(contact)}
-                              
                             >
                               Delete Contact
                             </DropdownMenuItem>

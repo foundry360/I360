@@ -1229,7 +1229,7 @@ export default function ProjectDetailsPage() {
                                                                         </DropdownMenuItem>
                                                                         )}
                                                                         <DropdownMenuSeparator />
-                                                                        <DropdownMenuItem className="text-destructive focus:bg-destructive focus:text-destructive-foreground" onClick={(e) => { e.stopPropagation(); setItemToDelete({type: 'sprint', id: sprint.id, name: sprint.name}); setIsDeleteDialogOpen(true);}}>
+                                                                        <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setItemToDelete({type: 'sprint', id: sprint.id, name: sprint.name}); setIsDeleteDialogOpen(true);}}>
                                                                             <Trash2 className="mr-2 h-4 w-4" /> Delete
                                                                         </DropdownMenuItem>
                                                                     </DropdownMenuContent>
