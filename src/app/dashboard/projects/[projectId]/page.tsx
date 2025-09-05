@@ -667,7 +667,10 @@ export default function ProjectDetailsPage() {
                 
                 const sprintIsUnstarted = sprint.status === 'Not Started';
                 
-                const completedItemsInSprint = itemsInSprint.filter(item => item.status === 'Complete');
+                const completedItemsInSprint = itemsInSprint.filter(item => {
+                    const task = tasks.find(t => t.backlogId === item.backlogId);
+                    return task?.status === 'Complete';
+                });
                 
                 let sprintProgress = sprintIsUnstarted ? 0 : (itemsInSprint.length > 0 ? (completedItemsInSprint.length / itemsInSprint.length) * 100 : 0);
     
@@ -705,6 +708,11 @@ export default function ProjectDetailsPage() {
             };
         }).filter(Boolean);
     
+        const allSprintsInTimeline = sprints.filter(s => s.status !== 'Not Started');
+        if (allSprintsInTimeline.length === 0) {
+           return { items: [], projectStartDate: new Date(), projectEndDate: new Date() };
+        }
+
         const projectStartDate = new Date(Math.min(...sprints.map(s => parseISO(s.startDate).getTime())));
         const projectEndDate = new Date(Math.max(...sprints.map(s => parseISO(s.endDate).getTime())));
     
@@ -855,56 +863,62 @@ export default function ProjectDetailsPage() {
                                         <CardDescription>Story points completed per sprint</CardDescription>
                                     </CardHeader>
                                     <CardContent>
-                                        <ChartContainer config={chartConfig} className="h-[150px] w-full">
-                                            <LineChart
-                                                data={velocityData}
-                                                margin={{ top: 5, right: 20, left: 0, bottom: 5 }}
-                                            >
-                                                <CartesianGrid vertical={false} />
-                                                <XAxis
-                                                    dataKey="name"
-                                                    tickLine={false}
-                                                    axisLine={false}
-                                                    tickMargin={8}
-                                                    tickFormatter={() => ""}
-                                                />
-                                                <YAxis
-                                                    tickLine={false}
-                                                    axisLine={false}
-                                                    tickMargin={8}
-                                                    width={30}
-                                                />
-                                                <RechartsTooltip cursor={false} content={<ChartTooltipContent indicator="line" />} />
-                                                <defs>
-                                                    <linearGradient id="fillVelocity" x1="0" y1="0" x2="0" y2="1">
-                                                        <stop offset="5%" stopColor="var(--color-velocity)" stopOpacity={0.8} />
-                                                        <stop offset="95%" stopColor="var(--color-velocity)" stopOpacity={0.1} />
-                                                    </linearGradient>
-                                                </defs>
-                                                <Area
-                                                    dataKey="velocity"
-                                                    type="natural"
-                                                    fill="url(#fillVelocity)"
-                                                    fillOpacity={0.4}
-                                                    stroke="var(--color-velocity)"
-                                                    stackId="a"
-                                                />
-                                                <Line
-                                                    dataKey="velocity"
-                                                    type="natural"
-                                                    stroke="var(--color-velocity)"
-                                                    strokeWidth={2}
-                                                    dot={
-                                                        <Dot
-                                                            r={4}
-                                                            fill="var(--background)"
-                                                            stroke="var(--color-velocity)"
-                                                            strokeWidth={2}
-                                                        />
-                                                    }
-                                                />
-                                            </LineChart>
-                                        </ChartContainer>
+                                        {velocityData.length > 0 ? (
+                                            <ChartContainer config={chartConfig} className="h-[150px] w-full">
+                                                <LineChart
+                                                    data={velocityData}
+                                                    margin={{ top: 5, right: 20, left: 0, bottom: 5 }}
+                                                >
+                                                    <CartesianGrid vertical={false} />
+                                                    <XAxis
+                                                        dataKey="name"
+                                                        tickLine={false}
+                                                        axisLine={false}
+                                                        tickMargin={8}
+                                                        tickFormatter={() => ""}
+                                                    />
+                                                    <YAxis
+                                                        tickLine={false}
+                                                        axisLine={false}
+                                                        tickMargin={8}
+                                                        width={30}
+                                                    />
+                                                    <RechartsTooltip cursor={false} content={<ChartTooltipContent indicator="line" />} />
+                                                    <defs>
+                                                        <linearGradient id="fillVelocity" x1="0" y1="0" x2="0" y2="1">
+                                                            <stop offset="5%" stopColor="var(--color-velocity)" stopOpacity={0.8} />
+                                                            <stop offset="95%" stopColor="var(--color-velocity)" stopOpacity={0.1} />
+                                                        </linearGradient>
+                                                    </defs>
+                                                    <Area
+                                                        dataKey="velocity"
+                                                        type="natural"
+                                                        fill="url(#fillVelocity)"
+                                                        fillOpacity={0.4}
+                                                        stroke="var(--color-velocity)"
+                                                        stackId="a"
+                                                    />
+                                                    <Line
+                                                        dataKey="velocity"
+                                                        type="natural"
+                                                        stroke="var(--color-velocity)"
+                                                        strokeWidth={2}
+                                                        dot={
+                                                            <Dot
+                                                                r={4}
+                                                                fill="var(--background)"
+                                                                stroke="var(--color-velocity)"
+                                                                strokeWidth={2}
+                                                            />
+                                                        }
+                                                    />
+                                                </LineChart>
+                                            </ChartContainer>
+                                        ) : (
+                                            <div className="h-[150px] flex items-center justify-center text-center text-muted-foreground text-sm">
+                                                Complete a sprint to see your team's velocity.
+                                            </div>
+                                        )}
                                     </CardContent>
                                 </Card>
                                  <Card>
@@ -913,44 +927,50 @@ export default function ProjectDetailsPage() {
                                         <CardDescription>Ideal vs actual work remaining</CardDescription>
                                     </CardHeader>
                                     <CardContent>
-                                        <ChartContainer config={chartConfig} className="h-[150px] w-full">
-                                            <LineChart
-                                                data={burndownData}
-                                                margin={{ top: 5, right: 10, left: 0, bottom: 5 }}
-                                            >
-                                                <CartesianGrid vertical={false} />
-                                                <XAxis
-                                                    dataKey="name"
-                                                    tickLine={false}
-                                                    axisLine={false}
-                                                    tickMargin={8}
-                                                    tickFormatter={() => ""}
-                                                />
-                                                <YAxis
-                                                    tickLine={false}
-                                                    axisLine={false}
-                                                    tickMargin={8}
-                                                    width={30}
-                                                />
-                                                 <ChartLegend content={<ChartLegendContent />} />
-                                                <RechartsTooltip cursor={false} content={<ChartTooltipContent hideIndicator />} />
-                                                <Line
-                                                    dataKey="actual"
-                                                    type="natural"
-                                                    stroke="var(--color-actual)"
-                                                    strokeWidth={2}
-                                                    dot
-                                                />
-                                                 <Line
-                                                    dataKey="ideal"
-                                                    type="natural"
-                                                    stroke="var(--color-ideal)"
-                                                    strokeWidth={2}
-                                                    strokeDasharray="3 3"
-                                                    dot={false}
-                                                />
-                                            </LineChart>
-                                        </ChartContainer>
+                                        {burndownData.length > 0 ? (
+                                            <ChartContainer config={chartConfig} className="h-[150px] w-full">
+                                                <LineChart
+                                                    data={burndownData}
+                                                    margin={{ top: 5, right: 10, left: 0, bottom: 5 }}
+                                                >
+                                                    <CartesianGrid vertical={false} />
+                                                    <XAxis
+                                                        dataKey="name"
+                                                        tickLine={false}
+                                                        axisLine={false}
+                                                        tickMargin={8}
+                                                        tickFormatter={() => ""}
+                                                    />
+                                                    <YAxis
+                                                        tickLine={false}
+                                                        axisLine={false}
+                                                        tickMargin={8}
+                                                        width={30}
+                                                    />
+                                                     <ChartLegend content={<ChartLegendContent />} />
+                                                    <RechartsTooltip cursor={false} content={<ChartTooltipContent hideIndicator />} />
+                                                    <Line
+                                                        dataKey="actual"
+                                                        type="natural"
+                                                        stroke="var(--color-actual)"
+                                                        strokeWidth={2}
+                                                        dot
+                                                    />
+                                                     <Line
+                                                        dataKey="ideal"
+                                                        type="natural"
+                                                        stroke="var(--color-ideal)"
+                                                        strokeWidth={2}
+                                                        strokeDasharray="3 3"
+                                                        dot={false}
+                                                    />
+                                                </LineChart>
+                                            </ChartContainer>
+                                        ) : (
+                                             <div className="h-[150px] flex items-center justify-center text-center text-muted-foreground text-sm p-4">
+                                                Complete a sprint with estimated story points to generate a burndown chart.
+                                            </div>
+                                        )}
                                     </CardContent>
                                 </Card>
                             </div>
@@ -1001,22 +1021,28 @@ export default function ProjectDetailsPage() {
                                         <CardDescription>A summary of completion for each engagement epic</CardDescription>
                                     </CardHeader>
                                     <CardContent className="space-y-4">
-                                        {epicProgressData.map((epic, index) => {
-                                            const epicConfig = epicIcons[epic.name] || { icon: Layers, color: 'text-foreground' };
-                                            const IconComponent = epicConfig.icon;
-                                            return (
-                                                <div key={index} className="space-y-2">
-                                                    <div className="flex justify-between items-baseline">
-                                                        <div className="flex items-center gap-2">
-                                                            <IconComponent className={cn("h-4 w-4", epicConfig.color)} />
-                                                            <p className="text-sm font-medium">{epic.name}</p>
+                                        {epicProgressData.length > 0 ? (
+                                            epicProgressData.map((epic, index) => {
+                                                const epicConfig = epicIcons[epic.name] || { icon: Layers, color: 'text-foreground' };
+                                                const IconComponent = epicConfig.icon;
+                                                return (
+                                                    <div key={index} className="space-y-2">
+                                                        <div className="flex justify-between items-baseline">
+                                                            <div className="flex items-center gap-2">
+                                                                <IconComponent className={cn("h-4 w-4", epicConfig.color)} />
+                                                                <p className="text-sm font-medium">{epic.name}</p>
+                                                            </div>
+                                                            <p className="text-sm text-muted-foreground">{epic.progress}% complete</p>
                                                         </div>
-                                                        <p className="text-sm text-muted-foreground">{epic.progress}% complete</p>
+                                                        <Progress value={epic.progress} />
                                                     </div>
-                                                    <Progress value={epic.progress} />
-                                                </div>
-                                            )
-                                        })}
+                                                )
+                                            })
+                                        ) : (
+                                            <div className="h-[150px] flex items-center justify-center text-center text-muted-foreground text-sm p-4">
+                                               No epic progress to display. Add items with points to epics.
+                                            </div>
+                                        )}
                                     </CardContent>
                                 </Card>
                             </div>
@@ -1471,4 +1497,5 @@ export default function ProjectDetailsPage() {
 }
 
     
+
 
