@@ -84,7 +84,7 @@ export default function LibraryPage() {
           const storiesToCreate = results.data.map((row: any) => ({
             title: row.title || '',
             story: row.story || '',
-            acceptanceCriteria: (row.acceptancecriteria || '').split('\n').filter(Boolean),
+            acceptanceCriteria: (row['acceptance criteria'] || row.acceptancecriteria || '').split('\n').filter(Boolean),
             tags: (row.tags || '').split(',').map((t: string) => t.trim()).filter(Boolean),
             points: Number(row.points) || 0,
           })).filter(story => story.title && story.story);
