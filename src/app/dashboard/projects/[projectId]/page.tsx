@@ -710,11 +710,11 @@ export default function ProjectDetailsPage() {
         };
     }).filter(Boolean);
 
-    if (sprints.length === 0) {
+    const allSprints = sprints;
+    if (allSprints.length === 0) {
         return { items: [], projectStartDate: new Date(), projectEndDate: new Date() };
     }
 
-    const allSprints = sprints;
     const projectStartDate = new Date(Math.min(...allSprints.map(s => parseISO(s.startDate).getTime())));
     const projectEndDate = new Date(Math.max(...allSprints.map(s => parseISO(s.endDate).getTime())));
 
@@ -725,7 +725,7 @@ export default function ProjectDetailsPage() {
 
     const getInitials = (name: string) => {
       if (!name) return '';
-      return name.split(' ').map((n) => n[0]).join('').toUpperCase();
+      return name.split(' ').map(n => n[0]).join('').toUpperCase();
     }
 
     if (loading) {
@@ -1030,7 +1030,7 @@ export default function ProjectDetailsPage() {
                                     </CardHeader>
                                     <CardContent className="space-y-4">
                                          {epicProgressData.length > 0 ? (
-                                            <Accordion type="multiple" value={activeBacklogAccordion} onValueChange={setActiveBacklogAccordion}>
+                                            <Accordion type="multiple" value={activeBacklogAccordion} onValueChange={setActiveBacklogAccordion} className="w-full">
                                                 {epicProgressData.map((epic, index) => {
                                                     const epicConfig = epicIcons[epic.name] || { icon: Layers, color: 'text-foreground' };
                                                     const IconComponent = epicConfig.icon;
@@ -1172,7 +1172,7 @@ export default function ProjectDetailsPage() {
                                                                 {task.title}
                                                             </p>
                                                             <p className="text-xs text-muted-foreground">
-                                                                Due: {format(dueDate, 'MMM dd, yyyy')}
+                                                                Due on {format(dueDate, 'MMM dd, yyyy')}
                                                             </p>
                                                         </div>
                                                     </div>
