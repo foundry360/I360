@@ -17,6 +17,7 @@ interface TimelineItem {
     endDate: Date;
     type: 'epic' | 'sprint' | 'item';
     status?: TaskStatus;
+    progress?: number;
     children?: TimelineItem[];
 }
 
@@ -51,7 +52,7 @@ const getMonthHeaders = (startDate: Date, endDate: Date) => {
 };
 
 export const TimelineView: React.FC<TimelineViewProps> = ({ items, projectStartDate, projectEndDate }) => {
-    if (items.length === 0 || !projectStartDate || !projectEndDate) {
+    if (items.length === 0 || !projectStartDate || !projectEndDate || isNaN(projectStartDate.getTime()) || isNaN(projectEndDate.getTime())) {
         return (
             <div className="flex items-center justify-center h-64 text-muted-foreground">
                 No sprints planned yet. Add items to sprints to see the timeline.
@@ -78,7 +79,7 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ items, projectStartD
     const renderItemRow = (item: TimelineItem, level: number) => {
         const epicConfig = epicIcons[item.title] || { icon: Layers, color: 'text-foreground' };
         const IconComponent = epicConfig.icon;
-        const progress = item.status ? statusToProgress[item.status] : 0;
+        const progress = item.progress ?? (item.status ? statusToProgress[item.status] : 0);
 
         return (
             <React.Fragment key={item.id}>
@@ -105,30 +106,41 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ items, projectStartD
                                 <TooltipTrigger asChild>
                                     <div
                                         className={cn(
-                                            "h-6 rounded cursor-pointer relative",
-                                            item.type === 'item' && 'bg-muted'
+                                            "h-6 rounded cursor-pointer relative bg-muted",
                                         )}
                                         style={{
                                             position: 'absolute',
                                             left: `${getBarPosition(item.startDate)}%`,
                                             width: `${getBarWidth(item.startDate, item.endDate)}%`,
-                                            backgroundColor: item.type === 'epic' ? 'hsl(160, 55%, 52%)' : item.type === 'sprint' ? 'hsl(38, 92%, 55%)' : undefined
                                         }}
                                     >
-                                      {item.type === 'item' && (
-                                        <div className="relative h-full w-full">
-                                            <Progress value={progress} className="h-full w-full bg-transparent" />
-                                            <span className="absolute inset-0 flex items-center justify-center text-xs font-semibold text-primary-foreground mix-blend-difference">
-                                                {progress}%
-                                            </span>
-                                        </div>
-                                      )}
+                                      <div className="relative h-full w-full">
+                                          <Progress 
+                                            value={progress} 
+                                            className="h-full w-full bg-transparent"
+                                            style={{
+                                                backgroundColor: item.type === 'epic' ? 'hsla(160, 55%, 52%, 0.3)' : item.type === 'sprint' ? 'hsla(38, 92%, 55%, 0.3)' : undefined
+                                            }}
+                                          >
+                                             <ProgressPrimitive.Indicator
+                                                className="h-full w-full flex-1 transition-all"
+                                                style={{ 
+                                                    transform: `translateX(-${100 - (progress || 0)}%)`,
+                                                    backgroundColor: item.type === 'epic' ? 'hsl(160, 55%, 52%)' : item.type === 'sprint' ? 'hsl(38, 92%, 55%)' : undefined
+                                                }}
+                                             />
+                                          </Progress>
+                                          <span className="absolute inset-0 flex items-center justify-center text-xs font-semibold text-primary-foreground mix-blend-difference">
+                                              {Math.round(progress)}%
+                                          </span>
+                                      </div>
                                     </div>
                                 </TooltipTrigger>
                                 <TooltipContent>
                                     <p className="font-bold">{item.title}</p>
                                     <p>{format(item.startDate, 'MMM d, yyyy')} - {format(item.endDate, 'MMM d, yyyy')}</p>
-                                    {item.type === 'item' && item.status && <p>Status: {item.status} ({progress}%)</p>}
+                                    <p>Progress: {Math.round(progress)}%</p>
+                                    {item.type === 'item' && item.status && <p>Status: {item.status}</p>}
                                 </TooltipContent>
                             </Tooltip>
                         </TooltipProvider>
@@ -190,3 +202,14 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ items, projectStartD
         </div>
     );
 };
+
+// Add this to your component to use the custom progress indicator styling
+const ProgressPrimitive = {
+    Indicator: React.forwardRef<
+        HTMLDivElement,
+        { style: React.CSSProperties, className?: string }
+    >(({ className, style }, ref) => (
+        <div ref={ref} style={style} className={cn("h-full w-full flex-1 bg-primary transition-all", className)} />
+    ))
+};
+ProgressPrimitive.Indicator.displayName = "ProgressIndicator";

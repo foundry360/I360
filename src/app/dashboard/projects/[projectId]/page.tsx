@@ -653,8 +653,11 @@ export default function ProjectDetailsPage() {
         if (!project || !epics.length || !sprints.length) return { items: [], projectStartDate: new Date(), projectEndDate: new Date() };
 
         const epicItems = epics.map(epic => {
-            const itemsInEpic = backlogItems.filter(item => item.epicId === epic.id && item.sprintId);
-            const sprintIdsInEpic = [...new Set(itemsInEpic.map(item => item.sprintId))];
+            const itemsInEpic = backlogItems.filter(item => item.epicId === epic.id);
+            const completedItemsInEpic = itemsInEpic.filter(item => item.status === 'Complete');
+            const epicProgress = itemsInEpic.length > 0 ? (completedItemsInEpic.length / itemsInEpic.length) * 100 : 0;
+
+            const sprintIdsInEpic = [...new Set(itemsInEpic.map(item => item.sprintId).filter(Boolean))];
             const sprintsInEpic = sprints.filter(sprint => sprintIdsInEpic.includes(sprint.id));
 
             if (sprintsInEpic.length === 0) return null;
@@ -668,14 +671,18 @@ export default function ProjectDetailsPage() {
                 startDate: epicStartDate,
                 endDate: epicEndDate,
                 type: 'epic' as const,
+                progress: epicProgress,
                 children: sprintsInEpic.map(sprint => {
                     const itemsInSprint = backlogItems.filter(item => item.sprintId === sprint.id && item.epicId === epic.id);
+                    const completedItemsInSprint = itemsInSprint.filter(item => item.status === 'Complete');
+                    const sprintProgress = itemsInSprint.length > 0 ? (completedItemsInSprint.length / itemsInSprint.length) * 100 : 0;
                     return {
                         id: sprint.id,
                         title: sprint.name,
                         startDate: parseISO(sprint.startDate),
                         endDate: parseISO(sprint.endDate),
                         type: 'sprint' as const,
+                        progress: sprintProgress,
                         children: itemsInSprint.map(item => ({
                             id: item.id,
                             title: item.title,
@@ -689,8 +696,8 @@ export default function ProjectDetailsPage() {
             };
         }).filter(Boolean);
 
-        const projectStartDate = new Date(Math.min(...sprints.map(s => parseISO(s.startDate).getTime())));
-        const projectEndDate = new Date(Math.max(...sprints.map(s => parseISO(s.endDate).getTime())));
+        const projectStartDate = new Date(Math.min(...sprints.filter(s => s.status !== 'Not Started').map(s => parseISO(s.startDate).getTime())));
+        const projectEndDate = new Date(Math.max(...sprints.filter(s => s.status !== 'Not Started').map(s => parseISO(s.endDate).getTime())));
 
         return { items: epicItems as any[], projectStartDate, projectEndDate };
 
