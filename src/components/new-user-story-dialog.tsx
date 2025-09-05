@@ -16,8 +16,12 @@ import { Textarea } from './ui/textarea';
 import { createUserStory, getUniqueTags } from '@/services/user-story-service';
 import { useQuickAction } from '@/contexts/quick-action-context';
 import { Badge } from './ui/badge';
-import { X } from 'lucide-react';
+import { Check, ChevronsUpDown, PlusCircle, X } from 'lucide-react';
 import { ScrollArea } from './ui/scroll-area';
+import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from './ui/command';
+import { cn } from '@/lib/utils';
+
 
 const initialNewStoryState = {
   title: '',
@@ -32,8 +36,10 @@ export function NewUserStoryDialog() {
     useQuickAction();
   const [newStory, setNewStory] = React.useState(initialNewStoryState);
   const [currentCriterion, setCurrentCriterion] = React.useState('');
-  const [currentTag, setCurrentTag] = React.useState('');
+  
   const [availableTags, setAvailableTags] = React.useState<string[]>([]);
+  const [open, setOpen] = React.useState(false)
+  const [inputValue, setInputValue] = React.useState("")
 
   React.useEffect(() => {
     if (isNewUserStoryDialogOpen) {
@@ -67,16 +73,22 @@ export function NewUserStoryDialog() {
     }));
   };
 
-  const handleAddTag = (tagToAdd?: string) => {
-    const tag = (tagToAdd || currentTag).trim();
+  const handleTagSelect = (tag: string) => {
     if (tag && !newStory.tags.includes(tag)) {
-      setNewStory(prev => ({
-        ...prev,
-        tags: [...prev.tags, tag]
-      }));
-      setCurrentTag('');
+        setNewStory(prev => ({ ...prev, tags: [...prev.tags, tag] }));
     }
+    setInputValue("");
+    setOpen(false);
   };
+
+  const handleCreateNewTag = () => {
+    if (inputValue && !newStory.tags.includes(inputValue)) {
+      setNewStory(prev => ({ ...prev, tags: [...prev.tags, inputValue] }));
+      setAvailableTags(prev => [...prev, inputValue]);
+    }
+    setInputValue("");
+    setOpen(false);
+  }
 
   const handleRemoveTag = (tagToRemove: string) => {
     setNewStory(prev => ({
@@ -106,10 +118,12 @@ export function NewUserStoryDialog() {
     if (!isOpen) {
       setNewStory(initialNewStoryState);
       setCurrentCriterion('');
-      setCurrentTag('');
       closeNewUserStoryDialog();
     }
   };
+
+  const filteredTags = availableTags.filter(tag => !newStory.tags.includes(tag));
+  const showCreateOption = inputValue && !availableTags.includes(inputValue) && !newStory.tags.includes(inputValue);
 
   return (
     <Dialog open={isNewUserStoryDialogOpen} onOpenChange={handleOpenChange}>
@@ -166,16 +180,51 @@ export function NewUserStoryDialog() {
             <div className="grid grid-cols-4 items-start gap-4">
               <Label htmlFor="tags" className="text-right pt-2">Tags</Label>
               <div className="col-span-3 space-y-2">
-                <div className="flex gap-2">
-                   <Input
-                    id="new-tag"
-                    value={currentTag}
-                    onChange={(e) => setCurrentTag(e.target.value)}
-                    onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddTag(); } }}
-                    placeholder="Add a new tag"
-                  />
-                  <Button type="button" variant="outline" onClick={() => handleAddTag()}>Add</Button>
-                </div>
+                 <Popover open={open} onOpenChange={setOpen}>
+                    <PopoverTrigger asChild>
+                        <Button
+                        variant="outline"
+                        role="combobox"
+                        aria-expanded={open}
+                        className="w-full justify-between"
+                        >
+                        Add a tag...
+                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-[375px] p-0">
+                        <Command>
+                           <CommandInput 
+                                placeholder="Search or create tag..."
+                                value={inputValue}
+                                onValueChange={setInputValue}
+                           />
+                           <CommandList>
+                                <CommandEmpty>
+                                    {showCreateOption ? ' ' : 'No tags found.'}
+                                </CommandEmpty>
+                                <CommandGroup>
+                                    {filteredTags.map((tag) => (
+                                        <CommandItem
+                                            key={tag}
+                                            value={tag}
+                                            onSelect={handleTagSelect}
+                                        >
+                                           <Check className={cn("mr-2 h-4 w-4", newStory.tags.includes(tag) ? "opacity-100" : "opacity-0")} />
+                                            {tag}
+                                        </CommandItem>
+                                    ))}
+                                    {showCreateOption && (
+                                        <CommandItem onSelect={handleCreateNewTag} value={inputValue}>
+                                            <PlusCircle className="mr-2 h-4 w-4" />
+                                            Create "{inputValue}"
+                                        </CommandItem>
+                                    )}
+                                </CommandGroup>
+                           </CommandList>
+                        </Command>
+                    </PopoverContent>
+                </Popover>
                 <div className="flex flex-wrap gap-1">
                     {newStory.tags.map((tag) => (
                         <Badge key={tag} variant="secondary" className="flex items-center gap-1">
@@ -183,19 +232,6 @@ export function NewUserStoryDialog() {
                             <button type="button" className="rounded-full hover:bg-muted-foreground/20" onClick={() => handleRemoveTag(tag)}>
                                 <X className="h-3 w-3" />
                             </button>
-                        </Badge>
-                    ))}
-                </div>
-                <Label className="text-xs text-muted-foreground">Or select from existing tags:</Label>
-                <div className="flex flex-wrap gap-1">
-                    {availableTags.filter(t => !newStory.tags.includes(t)).map((tag) => (
-                        <Badge
-                          key={tag}
-                          variant="outline"
-                          className="cursor-pointer"
-                          onClick={() => handleAddTag(tag)}
-                        >
-                          {tag}
                         </Badge>
                     ))}
                 </div>
