@@ -57,6 +57,7 @@ export async function startSprint(sprintId: string, projectId: string, sprintIte
     // 2. Create a fresh task for every item in the sprint
     sprintItems.forEach((item, index) => {
         const taskRef = doc(collection(db, 'tasks')); // Create new ref
+        
         const newTask: Task = {
             id: taskRef.id,
             projectId: projectId,
@@ -68,12 +69,8 @@ export async function startSprint(sprintId: string, projectId: string, sprintIte
             priority: item.priority,
             type: 'Execution', // Default type, can be adjusted
             backlogId: item.backlogId,
-            dueDate: item.dueDate,
+            ...(item.dueDate && { dueDate: item.dueDate }),
         };
-        
-        if (newTask.dueDate === undefined) {
-            (newTask as any).dueDate = null;
-        }
 
         batch.set(taskRef, newTask);
     });
