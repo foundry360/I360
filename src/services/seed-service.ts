@@ -240,7 +240,7 @@ export const seedInitialData = async () => {
         
         const acmeProject = {
             id: 'acme-inc-project',
-            name: 'ACME-01012024-Default Project',
+            name: 'ACME-Default Project',
             description: 'Default seed project for Acme Inc.',
             companyId: ACME_INC_ID,
             status: 'Active' as const,
@@ -289,7 +289,7 @@ export const seedInitialData = async () => {
             
             await batch.commit();
 
-            console.log("Successfully seeded 'Acme Inc', contacts, project, tasks, epics, and backlog items.");
+            console.log("Successfully seeded 'Acme Inc', contacts, project, tasks, and user stories.");
         } catch (error) {
             console.error("Error seeding data: ", error);
         }
