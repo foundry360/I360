@@ -5,11 +5,12 @@ import * as React from 'react';
 import { addMonths, differenceInDays, differenceInMonths, format, startOfMonth, endOfMonth, eachDayOfInterval, parseISO } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { epicIcons } from '@/app/dashboard/projects/[projectId]/page';
-import { Layers, GripVertical } from 'lucide-react';
+import { Layers, GripVertical, ChevronDown, ChevronRight } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
 import { Progress } from './ui/progress';
 import type { TaskStatus } from '@/services/task-service';
 import { Badge } from './ui/badge';
+import { Button } from './ui/button';
 
 interface TimelineItem {
     id: string;
@@ -64,6 +65,12 @@ const getMonthHeaders = (startDate: Date, endDate: Date) => {
 };
 
 export const TimelineView: React.FC<TimelineViewProps> = ({ items, projectStartDate, projectEndDate }) => {
+    const [collapsedItems, setCollapsedItems] = React.useState<Record<string, boolean>>({});
+
+    const toggleCollapse = (itemId: string) => {
+        setCollapsedItems(prev => ({ ...prev, [itemId]: !prev[itemId] }));
+    };
+
     if (items.length === 0 || !projectStartDate || !projectEndDate || isNaN(projectStartDate.getTime()) || isNaN(projectEndDate.getTime())) {
         return (
             <div className="flex items-center justify-center h-64 text-muted-foreground">
@@ -89,6 +96,9 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ items, projectStartD
     const todayPosition = getBarPosition(today);
 
     const renderItemRow = (item: TimelineItem, level: number) => {
+        const isCollapsed = collapsedItems[item.id];
+        const canCollapse = item.type !== 'item' && item.children && item.children.length > 0;
+        
         const epicConfig = epicIcons[item.title] || { icon: Layers, color: 'text-foreground' };
         const IconComponent = epicConfig.icon;
         const progress = item.progress ?? (item.status ? statusToProgress[item.status] : 0);
@@ -106,6 +116,13 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ items, projectStartD
                         )}
                         style={{ paddingLeft: `${level * 20 + 8}px` }}
                     >
+                         {canCollapse ? (
+                            <Button variant="ghost" size="icon" className="h-6 w-6 shrink-0" onClick={() => toggleCollapse(item.id)}>
+                                {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                            </Button>
+                         ) : (
+                            <div className="w-6 h-6 shrink-0" />
+                         )}
                          {item.type === 'epic' && <IconComponent className={cn("h-4 w-4 shrink-0", epicConfig.color)} />}
                          {item.type === 'item' && <GripVertical className="h-4 w-4 shrink-0 text-muted-foreground/50" />}
                         {item.title}
@@ -145,16 +162,16 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ items, projectStartD
                                             value={progress} 
                                             className={cn(
                                                 "h-full w-full bg-transparent",
-                                                item.type === 'epic' && 'bg-[hsl(220,20%,97%)] dark:bg-[hsl(240,2%,12%)]'
+                                                item.type === 'epic' && 'bg-[hsl(220,20%,97%)] dark:bg-[hsl(240,2%,18%)]'
                                             )}
                                             indicatorClassName={
                                                 cn({
-                                                    'bg-[hsl(126,68%,40%)]': item.type === 'epic',
-                                                    'bg-[hsl(38,92%,55%)]': item.type === 'sprint'
+                                                    'bg-green-500': item.type === 'epic',
+                                                    'bg-yellow-500': item.type === 'sprint'
                                                 })
                                             }
                                           />
-                                          <span className="absolute inset-0 flex items-center justify-center text-xs font-semibold text-primary-foreground">
+                                          <span className="absolute inset-0 flex items-center justify-center text-xs font-semibold text-white">
                                               {Math.round(progress)}%
                                           </span>
                                       </div>
@@ -170,7 +187,7 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ items, projectStartD
                         </TooltipProvider>
                     </div>
                 </div>
-                {item.children && item.children.map(child => renderItemRow(child, level + 1))}
+                {!isCollapsed && item.children && item.children.map(child => renderItemRow(child, level + 1))}
             </React.Fragment>
         );
     };
