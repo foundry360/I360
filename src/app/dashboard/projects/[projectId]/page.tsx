@@ -271,7 +271,7 @@ export default function ProjectDetailsPage() {
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
     const [itemToDelete, setItemToDelete] = React.useState<{type: 'epic' | 'backlogItem' | 'sprint', id: string, name: string} | null>(null);
     const [allWorkSearchTerm, setAllWorkSearchTerm] = React.useState('');
-    const [activeBacklogAccordion, setActiveBacklogAccordion] = React.useState<string[]>([]);
+    const [activeEpicAccordion, setActiveEpicAccordion] = React.useState<string[]>([]);
 
     const fetchData = React.useCallback(async () => {
         if (!projectId) return;
@@ -798,6 +798,12 @@ export default function ProjectDetailsPage() {
                         >
                             Board
                         </TabsTrigger>
+                        <TabsTrigger 
+                            value="epics"
+                            className="pb-3 rounded-none data-[state=active]:shadow-none data-[state=active]:border-primary data-[state=active]:border-b-4 data-[state=active]:text-foreground data-[state=active]:font-bold"
+                        >
+                            Epics
+                        </TabsTrigger>
                          <TabsTrigger 
                             value="backlog"
                             className="pb-3 rounded-none data-[state=active]:shadow-none data-[state=active]:border-primary data-[state=active]:border-b-4 data-[state=active]:text-foreground data-[state=active]:font-bold"
@@ -824,7 +830,7 @@ export default function ProjectDetailsPage() {
                         </TabsTrigger>
                     </TabsList>
                      <div className="flex items-center gap-2">
-                        {activeTab === 'backlog' && (
+                        {(activeTab === 'backlog' || activeTab === 'epics') && (
                              <div className="flex items-center gap-2">
                                 <TooltipProvider>
                                     <Tooltip>
@@ -840,16 +846,18 @@ export default function ProjectDetailsPage() {
                                         </TooltipContent>
                                     </Tooltip>
                                 </TooltipProvider>
-                                <TooltipProvider>
-                                    <Tooltip>
-                                        <TooltipTrigger asChild>
-                                            <Button variant="outline" size="icon" onClick={() => openNewEpicDialog(projectId)}><Layers className="h-4 w-4" /></Button>
-                                        </TooltipTrigger>
-                                        <TooltipContent>
-                                            <p>Add Epic</p>
-                                        </TooltipContent>
-                                    </Tooltip>
-                                </TooltipProvider>
+                                {activeTab === 'epics' && (
+                                    <TooltipProvider>
+                                        <Tooltip>
+                                            <TooltipTrigger asChild>
+                                                <Button variant="outline" size="icon" onClick={() => openNewEpicDialog(projectId)}><Layers className="h-4 w-4" /></Button>
+                                            </TooltipTrigger>
+                                            <TooltipContent>
+                                                <p>Add Epic</p>
+                                            </TooltipContent>
+                                        </Tooltip>
+                                    </TooltipProvider>
+                                )}
                                 <TooltipProvider>
                                     <Tooltip>
                                         <TooltipTrigger asChild>
@@ -1059,7 +1067,7 @@ export default function ProjectDetailsPage() {
                                                                 onClick={(e) => {
                                                                     e.preventDefault();
                                                                     setActiveTab('backlog');
-                                                                    setActiveBacklogAccordion(prev => 
+                                                                    setActiveEpicAccordion(prev => 
                                                                         prev.includes(epic.id) ? prev.filter(id => id !== epic.id) : [...prev, epic.id]
                                                                     );
                                                                 }}
@@ -1228,109 +1236,31 @@ export default function ProjectDetailsPage() {
                             </div>
                         </DragDropContext>
                     </TabsContent>
-                    <TabsContent value="backlog">
-                       <div className="space-y-6">
-                            {backlogItems.length === 0 ? (
-                                <Card className="border-dashed">
+                    <TabsContent value="epics">
+                        <div className="space-y-6">
+                            {epics.length === 0 ? (
+                                 <Card className="border-dashed">
                                     <CardContent className="p-10 text-center">
                                         <div className="flex justify-center mb-4">
                                             <div className="bg-primary rounded-full p-3">
-                                                <Library className="h-8 w-8 text-primary-foreground" />
+                                                <Layers className="h-8 w-8 text-primary-foreground" />
                                             </div>
                                         </div>
-                                        <h3 className="text-lg font-semibold">The backlog is empty!</h3>
+                                        <h3 className="text-lg font-semibold">No Epics Yet!</h3>
                                         <p className="text-muted-foreground mt-2 mb-4">
-                                            Start building your engagement by adding items from your library or creating them from scratch.
+                                            Epics are large bodies of work that can be broken down into smaller stories. Get started by creating your first one.
                                         </p>
                                         <div className="flex justify-center gap-4">
-                                            <Button asChild>
-                                                <Link href={`/dashboard/library?projectId=${projectId}`}><Plus className="h-4 w-4 mr-2" /> Add from Library</Link>
-                                            </Button>
-                                            <Button variant="secondary" onClick={() => openNewBacklogItemDialog(projectId, project.companyId, epics)}>
-                                                Create New Item
-                                            </Button>
+                                            <Button onClick={() => openNewEpicDialog(projectId)}><Plus className="h-4 w-4 mr-2" /> Create Epic</Button>
                                         </div>
                                     </CardContent>
                                 </Card>
                             ) : (
-                                <>
-                                <Accordion type="multiple" className="w-full" value={activeBacklogAccordion} onValueChange={setActiveBacklogAccordion}>
-                                    {unassignedBacklogItems.length > 0 && (
-                                         <AccordionItem value="unassigned" className="mb-4 border-none">
-                                            <AccordionTrigger className="text-base font-normal bg-muted p-2 rounded-md hover:no-underline">
-                                                <div className="flex items-center gap-3 flex-1">
-                                                    <Inbox className="h-5 w-5 text-muted-foreground" />
-                                                    <span className="font-semibold text-sm">Unassigned Backlog Items</span>
-                                                    <Badge variant="secondary">{unassignedBacklogItems.length}</Badge>
-                                                </div>
-                                            </AccordionTrigger>
-                                             <AccordionContent>
-                                                <div className="pl-8 pr-4 space-y-4 pt-4">
-                                                    <div className="border rounded-lg">
-                                                        {unassignedBacklogItems.map(item => (
-                                                            <div 
-                                                                key={item.id} 
-                                                                className="flex justify-between items-center p-3 border-b last:border-b-0 hover:bg-muted/50 cursor-pointer"
-                                                                onClick={() => openEditBacklogItemDialog(item, epics, sprints, contacts)}
-                                                            >
-                                                                <div className="flex items-center gap-3">
-                                                                    <span className="text-foreground text-sm">{projectPrefix}-{item.backlogId}</span>
-                                                                    <p className="text-sm font-medium">{item.title}</p>
-                                                                </div>
-                                                                <div className="flex items-center gap-4">
-                                                                    <Badge variant="outline">{item.status}</Badge>
-                                                                    <Badge variant="secondary">{item.points} Points</Badge>
-                                                                    <TooltipProvider>
-                                                                        <Tooltip>
-                                                                            <TooltipTrigger>
-                                                                                <PriorityIcon priority={item.priority} />
-                                                                            </TooltipTrigger>
-                                                                            <TooltipContent>
-                                                                                <p>Priority: {item.priority}</p>
-                                                                            </TooltipContent>
-                                                                        </Tooltip>
-                                                                    </TooltipProvider>
-                                                                    <DropdownMenu>
-                                                                        <DropdownMenuTrigger asChild>
-                                                                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => e.stopPropagation()}><MoreVertical className="h-4 w-4" /></Button>
-                                                                        </DropdownMenuTrigger>
-                                                                        <DropdownMenuContent align="end">
-                                                                            <DropdownMenuItem onSelect={(e) => { e.stopPropagation(); openEditBacklogItemDialog(item, epics, sprints, contacts); }}><Pencil className="mr-2 h-4 w-4" />Edit</DropdownMenuItem>
-                                                                            <DropdownMenuSub>
-                                                                                <DropdownMenuSubTrigger>
-                                                                                    <Rocket className="mr-2 h-4 w-4" />
-                                                                                    <span>Move to Sprint</span>
-                                                                                </DropdownMenuSubTrigger>
-                                                                                <DropdownMenuPortal>
-                                                                                <DropdownMenuSubContent>
-                                                                                    <DropdownMenuItem onSelect={() => handleMoveToSprint(item.id, null)}>Backlog</DropdownMenuItem>
-                                                                                    <Separator />
-                                                                                    {upcomingSprints.map(sprint => (
-                                                                                        <DropdownMenuItem key={sprint.id} onSelect={() => handleMoveToSprint(item.id, sprint.id)}>
-                                                                                            {sprint.name}
-                                                                                        </DropdownMenuItem>
-                                                                                    ))}
-                                                                                </DropdownMenuSubContent>
-                                                                                </DropdownMenuPortal>
-                                                                            </DropdownMenuSub>
-                                                                            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setItemToDelete({type: 'backlogItem', id: item.id, name: item.title}); setIsDeleteDialogOpen(true);}} className="text-destructive focus:bg-destructive/90 focus:text-destructive-foreground">
-                                                                                <Trash2 className="mr-2 h-4 w-4" />
-                                                                                Delete
-                                                                            </DropdownMenuItem>
-                                                                        </DropdownMenuContent>
-                                                                    </DropdownMenu>
-                                                                </div>
-                                                            </div>
-                                                        ))}
-                                                    </div>
-                                                </div>
-                                            </AccordionContent>
-                                        </AccordionItem>
-                                    )}
+                                <Accordion type="multiple" className="w-full" value={activeEpicAccordion} onValueChange={setActiveEpicAccordion}>
                                     {epics.map(epic => {
                                         const epicConfig = epicCategories[epic.category] || epicCategories['Uncategorized'];
                                         const IconComponent = epicConfig.icon;
-                                        const itemsInEpic = backlogItems.filter(item => item.epicId === epic.id && !item.sprintId);
+                                        const itemsInEpic = backlogItems.filter(item => item.epicId === epic.id);
                                         
                                         return (
                                             <AccordionItem key={epic.id} value={epic.id}>
@@ -1425,7 +1355,7 @@ export default function ProjectDetailsPage() {
                                                                     </div>
                                                                 </div>
                                                             )) : (
-                                                                <p className="text-sm text-muted-foreground text-center p-4">No unassigned backlog items for this epic.</p>
+                                                                <p className="text-sm text-muted-foreground text-center p-4">No backlog items for this epic.</p>
                                                             )}
                                                         </div>
                                                     </div>
@@ -1434,7 +1364,99 @@ export default function ProjectDetailsPage() {
                                         )
                                     })}
                                 </Accordion>
-                                </>
+                            )}
+                       </div>
+                    </TabsContent>
+                    <TabsContent value="backlog">
+                       <div className="space-y-6">
+                            {unassignedBacklogItems.length === 0 ? (
+                                <Card className="border-dashed">
+                                    <CardContent className="p-10 text-center">
+                                        <div className="flex justify-center mb-4">
+                                            <div className="bg-primary rounded-full p-3">
+                                                <Inbox className="h-8 w-8 text-primary-foreground" />
+                                            </div>
+                                        </div>
+                                        <h3 className="text-lg font-semibold">The backlog is empty!</h3>
+                                        <p className="text-muted-foreground mt-2 mb-4">
+                                            This space is for user stories that haven't been assigned to an epic yet.
+                                        </p>
+                                        <div className="flex justify-center gap-4">
+                                            <Button asChild>
+                                                <Link href={`/dashboard/library?projectId=${projectId}`}><Plus className="h-4 w-4 mr-2" /> Add from Library</Link>
+                                            </Button>
+                                            <Button variant="secondary" onClick={() => openNewBacklogItemDialog(projectId, project.companyId, epics)}>
+                                                Create New Item
+                                            </Button>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            ) : (
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle>Unassigned Backlog Items</CardTitle>
+                                        <CardDescription>Items that are not yet assigned to an epic.</CardDescription>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <div className="border rounded-lg">
+                                            {unassignedBacklogItems.map(item => (
+                                                <div 
+                                                    key={item.id} 
+                                                    className="flex justify-between items-center p-3 border-b last:border-b-0 hover:bg-muted/50 cursor-pointer"
+                                                    onClick={() => openEditBacklogItemDialog(item, epics, sprints, contacts)}
+                                                >
+                                                    <div className="flex items-center gap-3">
+                                                        <span className="text-foreground text-sm">{projectPrefix}-{item.backlogId}</span>
+                                                        <p className="text-sm font-medium">{item.title}</p>
+                                                    </div>
+                                                    <div className="flex items-center gap-4">
+                                                        <Badge variant="outline">{item.status}</Badge>
+                                                        <Badge variant="secondary">{item.points} Points</Badge>
+                                                        <TooltipProvider>
+                                                            <Tooltip>
+                                                                <TooltipTrigger>
+                                                                    <PriorityIcon priority={item.priority} />
+                                                                </TooltipTrigger>
+                                                                <TooltipContent>
+                                                                    <p>Priority: {item.priority}</p>
+                                                                </TooltipContent>
+                                                            </Tooltip>
+                                                        </TooltipProvider>
+                                                        <DropdownMenu>
+                                                            <DropdownMenuTrigger asChild>
+                                                                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => e.stopPropagation()}><MoreVertical className="h-4 w-4" /></Button>
+                                                            </DropdownMenuTrigger>
+                                                            <DropdownMenuContent align="end">
+                                                                <DropdownMenuItem onSelect={(e) => { e.stopPropagation(); openEditBacklogItemDialog(item, epics, sprints, contacts); }}><Pencil className="mr-2 h-4 w-4" />Edit</DropdownMenuItem>
+                                                                <DropdownMenuSub>
+                                                                    <DropdownMenuSubTrigger>
+                                                                        <Rocket className="mr-2 h-4 w-4" />
+                                                                        <span>Move to Sprint</span>
+                                                                    </DropdownMenuSubTrigger>
+                                                                    <DropdownMenuPortal>
+                                                                    <DropdownMenuSubContent>
+                                                                        <DropdownMenuItem onSelect={() => handleMoveToSprint(item.id, null)}>Backlog</DropdownMenuItem>
+                                                                        <Separator />
+                                                                        {upcomingSprints.map(sprint => (
+                                                                            <DropdownMenuItem key={sprint.id} onSelect={() => handleMoveToSprint(item.id, sprint.id)}>
+                                                                                {sprint.name}
+                                                                            </DropdownMenuItem>
+                                                                        ))}
+                                                                    </DropdownMenuSubContent>
+                                                                    </DropdownMenuPortal>
+                                                                </DropdownMenuSub>
+                                                                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setItemToDelete({type: 'backlogItem', id: item.id, name: item.title}); setIsDeleteDialogOpen(true);}} className="text-destructive focus:bg-destructive/90 focus:text-destructive-foreground">
+                                                                    <Trash2 className="mr-2 h-4 w-4" />
+                                                                    Delete
+                                                                </DropdownMenuItem>
+                                                            </DropdownMenuContent>
+                                                        </DropdownMenu>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </CardContent>
+                                </Card>
                             )}
                        </div>
                     </TabsContent>
@@ -1643,3 +1665,4 @@ export default function ProjectDetailsPage() {
         </div>
     );
 }
+
