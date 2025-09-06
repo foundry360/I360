@@ -194,7 +194,7 @@ export function NewCollectionDialog() {
                                     />
                                 </div>
                             </CardHeader>
-                            <CardContent className="flex-1 overflow-hidden">
+                            <CardContent className="flex-1 overflow-auto">
                                 <ScrollArea className="h-full">
                                     <Droppable droppableId="library">
                                         {(provided, snapshot) => (
@@ -217,7 +217,7 @@ export function NewCollectionDialog() {
                             <CardHeader>
                                 <CardTitle>New Collection ({collectionStories.length})</CardTitle>
                             </CardHeader>
-                            <CardContent className="flex-1 overflow-hidden">
+                            <CardContent className="flex-1 overflow-auto">
                                <ScrollArea className="h-full">
                                     <Droppable droppableId="collection">
                                         {(provided, snapshot) => (
@@ -251,3 +251,4 @@ export function NewCollectionDialog() {
         </Dialog>
     );
 }
+
