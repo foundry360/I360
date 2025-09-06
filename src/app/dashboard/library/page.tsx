@@ -12,7 +12,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Skeleton } from '@/components/ui/skeleton';
-import { MoreHorizontal, Plus, Trash2, Search, Upload, FilePlus, BookText } from 'lucide-react';
+import { MoreHorizontal, Plus, Trash2, Search, Upload, FilePlus, BookText, Layers } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { useQuickAction } from '@/contexts/quick-action-context';
 import { getUserStories, deleteUserStory, UserStory, bulkCreateUserStories as bulkCreateLibraryStories, getUniqueTags } from '@/services/user-story-service';
@@ -21,11 +21,12 @@ import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import Papa from 'papaparse';
 import { cn } from '@/lib/utils';
-import { Layers } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { epicCategories } from '@/lib/epic-categories';
+
 
 type StoryWithDateAsString = Omit<UserStory, 'createdAt'> & { createdAt: string };
 
@@ -56,7 +57,13 @@ export default function LibraryPage() {
         getUniqueTags()
       ]);
       setStories(storiesFromDb);
-      setAllTags(['All', ...tagsFromDb]);
+      // Ensure "Uncategorized" is an option if there are stories without tags.
+      const hasUncategorized = storiesFromDb.some(s => s.tags.length === 0);
+      const uniqueTags = ['All', ...tagsFromDb];
+      if(hasUncategorized && !uniqueTags.includes('Uncategorized')) {
+        uniqueTags.push('Uncategorized');
+      }
+      setAllTags(uniqueTags);
       setSelectedTag('All');
     } catch (error) {
       console.error('Failed to fetch library data:', error);
@@ -177,7 +184,15 @@ export default function LibraryPage() {
 
   const filteredStories = React.useMemo(() => {
     return stories.filter(story => {
-      const tagMatch = selectedTag === 'All' || story.tags.includes(selectedTag!);
+      let tagMatch = false;
+      if (selectedTag === 'All') {
+        tagMatch = true;
+      } else if (selectedTag === 'Uncategorized') {
+        tagMatch = story.tags.length === 0;
+      } else {
+        tagMatch = story.tags.includes(selectedTag!);
+      }
+
       const searchMatch = 
           story.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
           story.story.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -256,19 +271,24 @@ export default function LibraryPage() {
                             {loading ? (
                                 Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-8 w-full" />)
                             ) : (
-                                allTags.map(tag => (
-                                    <Button 
-                                        key={tag} 
-                                        variant="ghost" 
-                                        className={cn(
-                                            "w-full justify-start",
-                                            selectedTag === tag && "bg-muted font-bold"
-                                        )}
-                                        onClick={() => setSelectedTag(tag)}
-                                    >
-                                        {tag}
-                                    </Button>
-                                ))
+                                allTags.map(tag => {
+                                    const categoryConfig = epicCategories[tag as keyof typeof epicCategories] || epicCategories['Uncategorized'];
+                                    const Icon = categoryConfig.icon;
+                                    return (
+                                        <Button 
+                                            key={tag} 
+                                            variant="ghost" 
+                                            className={cn(
+                                                "w-full justify-start",
+                                                selectedTag === tag && "bg-muted font-bold"
+                                            )}
+                                            onClick={() => setSelectedTag(tag)}
+                                        >
+                                          <Icon className={cn("h-4 w-4 mr-2", tag !== 'All' && categoryConfig.color)} />
+                                          {tag}
+                                        </Button>
+                                    )
+                                })
                             )}
                         </div>
                     </ScrollArea>
@@ -286,7 +306,11 @@ export default function LibraryPage() {
                            </Card>
                         ))
                     ) : filteredStories.length > 0 ? (
-                        filteredStories.map(story => (
+                        filteredStories.map(story => {
+                           const primaryTag = story.tags[0] as keyof typeof epicCategories;
+                           const categoryConfig = epicCategories[primaryTag] || epicCategories['Uncategorized'];
+                           const Icon = categoryConfig.icon;
+                           return (
                            <Card key={story.id} className="flex">
                              {projectId && (
                                 <div className="p-4 flex items-center justify-center border-r">
@@ -301,7 +325,7 @@ export default function LibraryPage() {
                                 <CardHeader>
                                     <div className="flex justify-between items-start">
                                         <CardTitle className="flex items-center gap-2">
-                                            <BookText className="h-4 w-4" />
+                                            <Icon className={cn("h-4 w-4", categoryConfig.color)} />
                                             {story.title}
                                         </CardTitle>
                                         <DropdownMenu>
@@ -332,7 +356,8 @@ export default function LibraryPage() {
                                 </CardContent>
                              </div>
                            </Card>
-                        ))
+                           )
+                        })
                     ) : (
                          <div className="h-64 text-center flex items-center justify-center text-muted-foreground">
                             No user stories found.
