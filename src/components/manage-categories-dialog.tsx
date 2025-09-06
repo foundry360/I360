@@ -110,7 +110,7 @@ export function ManageCategoriesDialog({ isOpen, onOpenChange, onCategoriesUpdat
                     <PlusCircle className="h-4 w-4" />
                 </Button>
             </div>
-            <Label>Existing Categories</Label>
+            <Label className="pt-4">Existing Categories</Label>
             <ScrollArea className="h-64 border rounded-md p-2">
                 {tags.map(tag => (
                     <div key={tag} className="flex items-center gap-2 p-1 rounded-md hover:bg-muted">
