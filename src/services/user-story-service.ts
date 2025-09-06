@@ -15,6 +15,7 @@ import {
   writeBatch,
   query,
 } from 'firebase/firestore';
+import { tagConfig, type TagConfig } from '@/lib/tag-config';
 
 export interface UserStory {
   id: string;
@@ -26,12 +27,40 @@ export interface UserStory {
   createdAt: FieldValue;
 }
 
-const userStoriesCollection = collection(db, 'userStories');
+export interface Tag {
+  id: string;
+  name: string;
+  icon: TagConfig['iconName'];
+}
 
-export async function getUniqueTags(): Promise<string[]> {
-    const snapshot = await getDocs(userStoriesCollection);
-    const allTags = snapshot.docs.flatMap(doc => (doc.data() as UserStory).tags || []);
-    return [...new Set(allTags)].sort();
+const userStoriesCollection = collection(db, 'userStories');
+const tagsCollection = collection(db, 'tags');
+
+export async function getTags(): Promise<Tag[]> {
+    const snapshot = await getDocs(tagsCollection);
+    if (snapshot.empty) {
+        // Seed default tags if none exist
+        const batch = writeBatch(db);
+        const defaultTags: Omit<Tag, 'id'>[] = [
+            { name: "Foundation & Strategic Alignment", icon: 'BookCopy' },
+            { name: "RevOps Foundation & Data Infrastructure", icon: 'Database' },
+            { name: "Sales Process Enhancement & Pipeline Optimization", icon: 'Megaphone' },
+            { name: "Customer Experience & Lifecycle Management", icon: 'HeartHandshake' },
+            { name: "Performance Measurement & Continuous Optimization", icon: 'BarChart3' },
+            { name: "Advanced Capabilities & Scaling", icon: 'Scaling' },
+            { name: "Uncategorized", icon: 'Layers' },
+        ];
+        const createdTags: Tag[] = [];
+        defaultTags.forEach(tag => {
+            const docRef = doc(tagsCollection);
+            const newTag = { ...tag, id: docRef.id };
+            batch.set(docRef, newTag);
+            createdTags.push(newTag);
+        });
+        await batch.commit();
+        return createdTags.sort((a, b) => a.name.localeCompare(b.name));
+    }
+    return snapshot.docs.map(doc => doc.data() as Tag).sort((a,b) => a.name.localeCompare(b.name));
 }
 
 
@@ -110,39 +139,31 @@ export async function deleteUserStory(id: string): Promise<void> {
 }
 
 // Functions for tag management
-export async function createTag(newTag: string): Promise<void> {
-    // Tags are not stored in a separate collection, they exist within stories.
-    // This function is a placeholder for if we decide to create a separate collection.
-    // For now, adding a tag happens when creating/updating a story.
-    // To "create" a tag, we can add a dummy story with that tag, or just let it be created organically.
-    // Let's just log a message for now.
-    console.log(`A new tag "${newTag}" will be available for use.`);
+export async function createTag(tagData: Omit<Tag, 'id'>): Promise<string> {
+    const docRef = await addDoc(tagsCollection, {});
+    await updateDoc(docRef, { ...tagData, id: docRef.id });
+    return docRef.id;
 }
 
 
-export async function updateTag(oldTag: string, newTag: string): Promise<void> {
-  const snapshot = await getDocs(userStoriesCollection);
-  const batch = writeBatch(db);
-
-  snapshot.docs.forEach(docSnapshot => {
-    const story = docSnapshot.data() as UserStory;
-    if (story.tags && story.tags.includes(oldTag)) {
-      const newTags = story.tags.map(t => (t === oldTag ? newTag : t));
-      batch.update(docSnapshot.ref, { tags: newTags });
-    }
-  });
-
-  await batch.commit();
+export async function updateTag(id: string, data: Partial<Omit<Tag, 'id'>>): Promise<void> {
+    const docRef = doc(db, 'tags', id);
+    await updateDoc(docRef, data);
 }
 
-export async function deleteTag(tagToDelete: string): Promise<void> {
-    const snapshot = await getDocs(userStoriesCollection);
+export async function deleteTag(id: string, tagName: string): Promise<void> {
     const batch = writeBatch(db);
+    
+    // Delete the tag document
+    const tagRef = doc(db, 'tags', id);
+    batch.delete(tagRef);
 
-    snapshot.docs.forEach(docSnapshot => {
+    // Remove the tag from all stories that use it
+    const storiesSnapshot = await getDocs(userStoriesCollection);
+    storiesSnapshot.docs.forEach(docSnapshot => {
         const story = docSnapshot.data() as UserStory;
-        if(story.tags && story.tags.includes(tagToDelete)) {
-            const newTags = story.tags.filter(t => t !== tagToDelete);
+        if(story.tags && story.tags.includes(tagName)) {
+            const newTags = story.tags.filter(t => t !== tagName);
             batch.update(docSnapshot.ref, { tags: newTags });
         }
     });

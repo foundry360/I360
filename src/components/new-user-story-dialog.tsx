@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from './ui/textarea';
-import { createUserStory, getUniqueTags } from '@/services/user-story-service';
+import { createUserStory, getTags } from '@/services/user-story-service';
 import { useQuickAction } from '@/contexts/quick-action-context';
 import { Badge } from './ui/badge';
 import { Check, ChevronsUpDown, PlusCircle, X } from 'lucide-react';
@@ -44,8 +44,8 @@ export function NewUserStoryDialog() {
   React.useEffect(() => {
     if (isNewUserStoryDialogOpen) {
       const fetchTags = async () => {
-        const tags = await getUniqueTags();
-        setAvailableTags(tags);
+        const tags = await getTags();
+        setAvailableTags(tags.map(t => t.name));
       };
       fetchTags();
     }

@@ -16,7 +16,7 @@ import { Textarea } from './ui/textarea';
 import { createEpic, type Epic } from '@/services/epic-service';
 import { useQuickAction } from '@/contexts/quick-action-context';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import { epicCategories, type EpicCategory } from '@/lib/epic-categories';
+import { getTags, type Tag } from '@/services/user-story-service';
 
 type NewEpicState = Omit<Epic, 'id' | 'epicId'>;
 
@@ -37,12 +37,16 @@ export function NewEpicDialog() {
   } = useQuickAction();
   
   const [newItem, setNewItem] = React.useState<NewEpicState>(initialNewEpicState);
+  const [availableTags, setAvailableTags] = React.useState<Tag[]>([]);
 
   React.useEffect(() => {
     if (newEpicData) {
       setNewItem(prev => ({ ...prev, projectId: newEpicData.projectId }));
     }
-  }, [newEpicData]);
+    if (isNewEpicDialogOpen) {
+      getTags().then(setAvailableTags);
+    }
+  }, [newEpicData, isNewEpicDialogOpen]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { id, value } = e.target;
@@ -50,7 +54,7 @@ export function NewEpicDialog() {
   };
 
   const handleSelectChange = (value: string) => {
-    setNewItem((prev) => ({ ...prev, category: value as EpicCategory }));
+    setNewItem((prev) => ({ ...prev, category: value }));
   };
 
   const handleCreateItem = async (e: React.FormEvent) => {
@@ -103,8 +107,8 @@ export function NewEpicDialog() {
                         <SelectValue placeholder="Select a category" />
                     </SelectTrigger>
                     <SelectContent>
-                        {Object.keys(epicCategories).map(cat => (
-                            <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                        {availableTags.map(tag => (
+                            <SelectItem key={tag.id} value={tag.name}>{tag.name}</SelectItem>
                         ))}
                     </SelectContent>
                 </Select>

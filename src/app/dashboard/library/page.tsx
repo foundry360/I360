@@ -9,7 +9,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuTrigger,
   DropdownMenuSub,
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
@@ -19,7 +18,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { MoreHorizontal, Plus, Trash2, Search, Upload, FilePlus, Layers, Library, Pencil, BookCopy } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { useQuickAction } from '@/contexts/quick-action-context';
-import { getUserStories, deleteUserStory, UserStory, bulkCreateUserStories as bulkCreateLibraryStories, getUniqueTags } from '@/services/user-story-service';
+import { getUserStories, deleteUserStory, UserStory, bulkCreateUserStories as bulkCreateLibraryStories, getTags, Tag } from '@/services/user-story-service';
 import { getCollections, addStoriesToCollection, type StoryCollection } from '@/services/collection-service';
 import { bulkCreateBacklogItems } from '@/services/backlog-item-service';
 import { Input } from '@/components/ui/input';
@@ -30,7 +29,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { epicCategories } from '@/lib/epic-categories';
+import { tagConfig } from '@/lib/tag-config';
 import { ManageTagsDialog } from '@/components/manage-tags-dialog';
 import Link from 'next/link';
 
@@ -44,13 +43,13 @@ export default function LibraryPage() {
   const projectId = searchParams.get('projectId');
   
   const [stories, setStories] = React.useState<StoryWithDateAsString[]>([]);
-  const [allTags, setAllTags] = React.useState<string[]>([]);
+  const [allTags, setAllTags] = React.useState<Tag[]>([]);
   const [collections, setCollections] = React.useState<StoryCollection[]>([]);
   const [selectedTag, setSelectedTag] = React.useState<string | null>(null);
   const [loading, setLoading] = React.useState(true);
   const [searchTerm, setSearchTerm] = React.useState('');
   const [selectedStories, setSelectedStories] = React.useState<string[]>([]);
-  const [isManageCategoriesOpen, setIsManageCategoriesOpen] = React.useState(false);
+  const [isManageTagsOpen, setIsManageTagsOpen] = React.useState(false);
   
   const { openNewUserStoryDialog, setOnUserStoryCreated } = useQuickAction();
   const { toast } = useToast();
@@ -63,19 +62,24 @@ export default function LibraryPage() {
       setLoading(true);
       const [storiesFromDb, tagsFromDb, collectionsFromDb] = await Promise.all([
         getUserStories(),
-        getUniqueTags(),
+        getTags(),
         getCollections(),
       ]);
       setStories(storiesFromDb);
       setCollections(collectionsFromDb);
 
       const hasUncategorized = storiesFromDb.some(s => s.tags.length === 0);
-      const uniqueTags = ['All', ...tagsFromDb];
-      if(hasUncategorized && !uniqueTags.includes('Uncategorized')) {
-        uniqueTags.push('Uncategorized');
+      let tagsWithOptions: (Tag | {id: string, name: string})[] = [{id: 'All', name: 'All'}, ...tagsFromDb];
+      
+      if(hasUncategorized) {
+        tagsWithOptions.push({id: 'Uncategorized', name: 'Uncategorized'});
       }
-      setAllTags(uniqueTags);
-      setSelectedTag(prev => prev && uniqueTags.includes(prev) ? prev : 'All');
+      setAllTags(tagsWithOptions as Tag[]);
+      setSelectedTag(prev => {
+        const tagExists = tagsWithOptions.some(t => t.name === prev);
+        return prev && tagExists ? prev : 'All';
+      });
+
     } catch (error) {
       console.error('Failed to fetch library data:', error);
     } finally {
@@ -323,7 +327,7 @@ export default function LibraryPage() {
                             <Layers className="h-4 w-4" />
                             Tags
                         </CardTitle>
-                        <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setIsManageCategoriesOpen(true)}>
+                        <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setIsManageTagsOpen(true)}>
                             <Pencil className="h-3 w-3" />
                         </Button>
                     </div>
@@ -335,20 +339,21 @@ export default function LibraryPage() {
                                 Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-8 w-full" />)
                             ) : (
                                 allTags.map(tag => {
-                                    const categoryConfig = epicCategories[tag as keyof typeof epicCategories] || epicCategories['Uncategorized'];
-                                    const Icon = categoryConfig.icon;
+                                    const config = tagConfig.find(c => c.iconName === tag.icon) || tagConfig.find(t => t.iconName === 'Layers');
+                                    const Icon = config?.icon || Layers;
+                                    const color = config?.color || 'text-foreground';
                                     return (
                                         <Button 
-                                            key={tag} 
+                                            key={tag.id} 
                                             variant="ghost" 
                                             className={cn(
                                                 "w-full justify-start",
-                                                selectedTag === tag && "bg-muted font-bold"
+                                                selectedTag === tag.name && "bg-muted font-bold"
                                             )}
-                                            onClick={() => setSelectedTag(tag)}
+                                            onClick={() => setSelectedTag(tag.name)}
                                         >
-                                          <Icon className={cn("h-4 w-4 mr-2", tag !== 'All' && categoryConfig.color)} />
-                                          {tag}
+                                          <Icon className={cn("h-4 w-4 mr-2", color)} />
+                                          {tag.name}
                                         </Button>
                                     )
                                 })
@@ -396,9 +401,10 @@ export default function LibraryPage() {
                         ))
                     ) : filteredStories.length > 0 ? (
                         filteredStories.map(story => {
-                           const primaryTag = story.tags[0] as keyof typeof epicCategories || 'Uncategorized';
-                           const categoryConfig = epicCategories[primaryTag] || epicCategories['Uncategorized'];
-                           const Icon = categoryConfig.icon;
+                           const primaryTag = allTags.find(t => t.name === story.tags[0]);
+                           const config = tagConfig.find(c => c.iconName === primaryTag?.icon) || tagConfig.find(t => t.iconName === 'Layers');
+                           const Icon = config?.icon || Layers;
+                           const color = config?.color || 'text-foreground';
                            return (
                            <label htmlFor={`select-${story.id}`} key={story.id} className="block cursor-pointer">
                              <Card className={cn("flex hover:border-primary", selectedStories.includes(story.id) && "border-primary ring-2 ring-primary")}>
@@ -416,7 +422,7 @@ export default function LibraryPage() {
                                   <CardHeader className="py-3">
                                       <div className="flex justify-between items-start">
                                           <CardTitle className="flex items-center gap-2">
-                                              <Icon className={cn("h-4 w-4", categoryConfig.color)} />
+                                              <Icon className={cn("h-4 w-4", color)} />
                                               {story.title}
                                           </CardTitle>
                                           <DropdownMenu>
@@ -478,9 +484,9 @@ export default function LibraryPage() {
         </AlertDialogContent>
       </AlertDialog>
       <ManageTagsDialog
-        isOpen={isManageCategoriesOpen}
-        onOpenChange={setIsManageCategoriesOpen}
-        onCategoriesUpdated={fetchLibraryData}
+        isOpen={isManageTagsOpen}
+        onOpenChange={setIsManageTagsOpen}
+        onTagsUpdated={fetchLibraryData}
       />
     </>
   );

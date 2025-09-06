@@ -4,14 +4,13 @@
 import * as React from 'react';
 import { addMonths, differenceInDays, differenceInMonths, format, startOfMonth, endOfMonth, eachDayOfInterval, parseISO, isSameMonth } from 'date-fns';
 import { cn } from '@/lib/utils';
-import { epicCategories } from '@/lib/epic-categories';
+import { tagConfig } from '@/lib/tag-config';
 import { Layers, GripVertical, ChevronDown, ChevronRight } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
 import { Progress } from './ui/progress';
 import type { TaskStatus } from '@/services/task-service';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
-import type { EpicCategory } from '@/lib/epic-categories';
 
 interface TimelineItem {
     id: string;
@@ -23,7 +22,7 @@ interface TimelineItem {
     progress?: number;
     children?: TimelineItem[];
     dueDate?: string | null;
-    category?: EpicCategory;
+    category?: string;
 }
 
 interface TimelineViewProps {
@@ -100,8 +99,9 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ items, projectStartD
         const isCollapsed = collapsedItems[item.id];
         const canCollapse = item.type !== 'item' && item.children && item.children.length > 0;
         
-        const epicConfig = item.category ? epicCategories[item.category] : epicCategories['Uncategorized'];
-        const IconComponent = epicConfig.icon;
+        const config = tagConfig.find(c => c.iconName === item.category) || tagConfig.find(c => c.iconName === 'Layers');
+        const IconComponent = config?.icon || Layers;
+        const color = config?.color || 'text-foreground';
         
         let progress: number;
         if (item.progress !== undefined) {
@@ -131,7 +131,7 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ items, projectStartD
                          ) : (
                             <div className="w-6 h-6 shrink-0" />
                          )}
-                         {item.type === 'epic' && <IconComponent className={cn("h-4 w-4 shrink-0", epicConfig.color)} />}
+                         {item.type === 'epic' && <IconComponent className={cn("h-4 w-4 shrink-0", color)} />}
                          {item.type === 'item' && <GripVertical className="h-4 w-4 shrink-0 text-muted-foreground/50" />}
                         {item.title}
                     </div>

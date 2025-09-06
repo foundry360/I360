@@ -22,7 +22,7 @@ import {
 } from '@/components/ui/select';
 import { updateEpic, type Epic } from '@/services/epic-service';
 import { useQuickAction } from '@/contexts/quick-action-context';
-import { epicCategories, type EpicCategory } from '@/lib/epic-categories';
+import { getTags, type Tag } from '@/services/user-story-service';
 
 export function EditEpicDialog() {
   const {
@@ -33,12 +33,16 @@ export function EditEpicDialog() {
   } = useQuickAction();
   
   const [item, setItem] = React.useState<Epic | null>(null);
+  const [availableTags, setAvailableTags] = React.useState<Tag[]>([]);
 
   React.useEffect(() => {
     if (editEpicData) {
       setItem(editEpicData);
     }
-  }, [editEpicData]);
+    if (isEditEpicDialogOpen) {
+      getTags().then(setAvailableTags);
+    }
+  }, [editEpicData, isEditEpicDialogOpen]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     if (!item) return;
@@ -100,8 +104,8 @@ export function EditEpicDialog() {
                         <SelectValue placeholder="Select a category" />
                     </SelectTrigger>
                     <SelectContent>
-                        {Object.keys(epicCategories).map(cat => (
-                            <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                        {availableTags.map(tag => (
+                            <SelectItem key={tag.id} value={tag.name}>{tag.name}</SelectItem>
                         ))}
                     </SelectContent>
                 </Select>

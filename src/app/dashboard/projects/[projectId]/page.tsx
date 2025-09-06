@@ -61,7 +61,8 @@ import { Line, LineChart, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveCo
 import { ChartContainer, ChartTooltipContent, type ChartConfig, ChartLegend, ChartLegendContent } from '@/components/ui/chart';
 import { TimelineView } from '@/components/timeline-view';
 import Link from 'next/link';
-import { epicCategories } from '@/lib/epic-categories';
+import { getTags, type Tag } from '@/services/user-story-service';
+import { tagConfig } from '@/lib/tag-config';
 
 type TaskType = Task['type'];
 type BoardColumns = Record<TaskStatus, Task[]>;
@@ -256,6 +257,7 @@ export default function ProjectDetailsPage() {
     const [backlogItems, setBacklogItems] = React.useState<BacklogItem[]>([]);
     const [sprints, setSprints] = React.useState<Sprint[]>([]);
     const [contacts, setContacts] = React.useState<Contact[]>([]);
+    const [allTags, setAllTags] = React.useState<Tag[]>([]);
     const [loading, setLoading] = React.useState(true);
     const [activeTab, setActiveTab] = React.useState('summary');
     const { 
@@ -277,18 +279,20 @@ export default function ProjectDetailsPage() {
         if (!projectId) return;
         setLoading(true);
         try {
-            const [projectData, tasksData, epicsData, backlogItemsData, sprintsData] = await Promise.all([
+            const [projectData, tasksData, epicsData, backlogItemsData, sprintsData, tagsData] = await Promise.all([
                 getProject(projectId),
                 getTasksForProject(projectId),
                 getEpicsForProject(projectId),
                 getBacklogItemsForProject(projectId),
                 getSprintsForProject(projectId),
+                getTags(),
             ]);
             setProject(projectData);
             setTasks(tasksData);
             setEpics(epicsData);
             setBacklogItems(backlogItemsData);
             setSprints(sprintsData);
+            setAllTags(tagsData);
             
             if (projectData?.companyId) {
                 const companyContacts = await getContactsForCompany(projectData.companyId);
@@ -709,6 +713,7 @@ export default function ProjectDetailsPage() {
             type: 'epic' as const,
             progress: epicProgress,
             children: epicChildren,
+            category: epic.category,
         };
     }).filter(Boolean);
 
@@ -1058,15 +1063,17 @@ export default function ProjectDetailsPage() {
                                          {epicProgressData.length > 0 ? (
                                             <Accordion type="multiple" className="w-full">
                                                 {epicProgressData.map((epic, index) => {
-                                                    const epicConfig = epicCategories[epic.category] || epicCategories['Uncategorized'];
-                                                    const IconComponent = epicConfig.icon;
+                                                    const tag = allTags.find(t => t.name === epic.category);
+                                                    const config = tag ? (tagConfig.find(c => c.iconName === tag.icon) || tagConfig.find(t => t.iconName === 'Layers')) : tagConfig.find(t => t.iconName === 'Layers');
+                                                    const IconComponent = config?.icon || Layers;
+                                                    const color = config?.color || 'text-foreground';
                                                     return (
                                                         <AccordionItem value={epic.id} key={epic.id} className="border-none mb-2">
                                                             <AccordionTrigger className="text-base font-normal no-underline hover:no-underline p-2 -m-2 rounded-md hover:bg-muted" noChevron>
                                                                 <div className="space-y-2 w-full">
                                                                     <div className="flex justify-between items-baseline w-full">
                                                                         <div className="flex items-center gap-2">
-                                                                            <IconComponent className={cn("h-4 w-4", epicConfig.color)} />
+                                                                            <IconComponent className={cn("h-4 w-4", color)} />
                                                                             <p className="text-sm font-medium">{epic.name}</p>
                                                                         </div>
                                                                         <p className="text-sm text-muted-foreground">{epic.progress}% complete</p>
@@ -1249,15 +1256,17 @@ export default function ProjectDetailsPage() {
                             ) : (
                                 <Accordion type="multiple" className="w-full" value={activeEpicAccordion} onValueChange={setActiveEpicAccordion}>
                                     {epics.map(epic => {
-                                        const epicConfig = epicCategories[epic.category] || epicCategories['Uncategorized'];
-                                        const IconComponent = epicConfig.icon;
+                                        const tag = allTags.find(t => t.name === epic.category);
+                                        const config = tag ? (tagConfig.find(c => c.iconName === tag.icon) || tagConfig.find(t => t.iconName === 'Layers')) : tagConfig.find(t => t.iconName === 'Layers');
+                                        const IconComponent = config?.icon || Layers;
+                                        const color = config?.color || 'text-foreground';
                                         const itemsInEpic = backlogItems.filter(item => item.epicId === epic.id);
                                         
                                         return (
                                             <AccordionItem key={epic.id} value={epic.id}>
                                                 <AccordionTrigger className="text-base font-normal">
                                                     <div className="flex items-center gap-3 flex-1">
-                                                        <IconComponent className={cn("h-5 w-5", epicConfig.color)} />
+                                                        <IconComponent className={cn("h-5 w-5", color)} />
                                                         <span className="font-semibold text-sm">{epic.title}</span>
                                                         <span className="text-muted-foreground text-sm">{projectPrefix}-{epic.epicId}</span>
                                                     </div>
@@ -1290,7 +1299,7 @@ export default function ProjectDetailsPage() {
                                                                         <TooltipProvider>
                                                                             <Tooltip>
                                                                                 <TooltipTrigger>
-                                                                                    <IconComponent className={cn("h-4 w-4", epicConfig.color)} />
+                                                                                    <IconComponent className={cn("h-4 w-4", color)} />
                                                                                 </TooltipTrigger>
                                                                                 <TooltipContent>
                                                                                     <p>Epic: {epic.title}</p>
@@ -1518,8 +1527,9 @@ export default function ProjectDetailsPage() {
                                                             <div className="border rounded-lg">
                                                                 {itemsInSprint.length > 0 ? itemsInSprint.map(item => {
                                                                     const epic = epics.find(e => e.id === item.epicId);
-                                                                    const epicConfig = epic ? (epicCategories[epic.category] || epicCategories['Uncategorized']) : epicCategories['Uncategorized'];
-                                                                    const IconComponent = epicConfig.icon;
+                                                                    const tag = epic ? allTags.find(t => t.name === epic.category) : undefined;
+                                                                    const config = tag ? (tagConfig.find(c => c.iconName === tag.icon) || tagConfig.find(t => t.iconName === 'Layers')) : tagConfig.find(t => t.iconName === 'Layers');
+                                                                    const IconComponent = config?.icon || Layers;
                                                                     return (
                                                                         <div key={item.id} className="flex justify-between items-center p-3 border-b last:border-b-0 hover:bg-muted/50 cursor-pointer"
                                                                             onClick={() => openEditBacklogItemDialog(item, epics, sprints, contacts)}
@@ -1529,7 +1539,7 @@ export default function ProjectDetailsPage() {
                                                                                 <p className="text-sm font-medium">{item.title}</p>
                                                                                 {epic && (
                                                                                     <Badge variant="secondary" className="cursor-pointer" onClick={(e) => { e.stopPropagation(); setActiveTab('backlog')}}>
-                                                                                        <IconComponent className={cn("h-3 w-3 mr-1", epicConfig.color)} />
+                                                                                        <IconComponent className={cn("h-3 w-3 mr-1", config?.color)} />
                                                                                         {epic.title}
                                                                                     </Badge>
                                                                                 )}
@@ -1587,8 +1597,9 @@ export default function ProjectDetailsPage() {
                                 {allSprintItems.length > 0 ? allSprintItems.map(item => {
                                     const epic = epics.find(e => e.id === item.epicId);
                                     const sprint = sprints.find(s => s.id === item.sprintId);
-                                    const epicConfig = epic ? (epicCategories[epic.category] || epicCategories['Uncategorized']) : epicCategories['Uncategorized'];
-                                    const IconComponent = epicConfig.icon;
+                                    const tag = epic ? allTags.find(t => t.name === epic.category) : undefined;
+                                    const config = tag ? (tagConfig.find(c => c.iconName === tag.icon) || tagConfig.find(t => t.iconName === 'Layers')) : tagConfig.find(t => t.iconName === 'Layers');
+                                    const IconComponent = config?.icon || Layers;
                                     return (
                                         <div key={item.id} className="flex justify-between items-center p-3 border-b last:border-b-0 hover:bg-muted/50 cursor-pointer"
                                             onClick={() => openEditBacklogItemDialog(item, epics, sprints, contacts)}
@@ -1597,7 +1608,7 @@ export default function ProjectDetailsPage() {
                                                 <TooltipProvider>
                                                     <Tooltip>
                                                         <TooltipTrigger>
-                                                            <IconComponent className={cn("h-4 w-4", epicConfig.color)} />
+                                                            <IconComponent className={cn("h-4 w-4", config?.color)} />
                                                         </TooltipTrigger>
                                                         <TooltipContent>
                                                             <p>Epic: {epic?.title || 'Unknown'}</p>
@@ -1655,4 +1666,3 @@ export default function ProjectDetailsPage() {
         </div>
     );
 }
-
