@@ -26,7 +26,7 @@ import { bulkCreateBacklogItems } from '@/services/backlog-item-service';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import Papa from 'papaparse';
-import { epicIcons } from '@/app/dashboard/projects/[projectId]/page';
+import { epicCategories } from '@/lib/epic-categories';
 import { cn } from '@/lib/utils';
 import { Layers } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
@@ -38,22 +38,22 @@ type StoryWithDateAsString = Omit<UserStory, 'createdAt'> & { createdAt: string 
 const getIconForTag = (tag: string) => {
     const lowerCaseTag = tag.toLowerCase();
     if (lowerCaseTag.includes('foundation') || lowerCaseTag.includes('strategy')) {
-      return epicIcons['Foundation & Strategic Alignment'];
+      return epicCategories['Foundation & Strategic Alignment'];
     }
     if (lowerCaseTag.includes('data') || lowerCaseTag.includes('revops')) {
-      return epicIcons['RevOps Foundation & Data Infrastructure'];
+      return epicCategories['RevOps Foundation & Data Infrastructure'];
     }
     if (lowerCaseTag.includes('sales') || lowerCaseTag.includes('pipeline')) {
-      return epicIcons['Sales Process Enhancement & Pipeline Optimization'];
+      return epicCategories['Sales Process Enhancement & Pipeline Optimization'];
     }
     if (lowerCaseTag.includes('customer') || lowerCaseTag.includes('cx')) {
-      return epicIcons['Customer Experience & Lifecycle Management'];
+      return epicCategories['Customer Experience & Lifecycle Management'];
     }
     if (lowerCaseTag.includes('performance') || lowerCaseTag.includes('optimization')) {
-      return epicIcons['Performance Measurement & Continuous Optimization'];
+      return epicCategories['Performance Measurement & Continuous Optimization'];
     }
     if (lowerCaseTag.includes('scaling') || lowerCaseTag.includes('advanced')) {
-      return epicIcons['Advanced Capabilities & Scaling'];
+      return epicCategories['Advanced Capabilities & Scaling'];
     }
     return { icon: Layers, color: 'text-foreground' };
 }
