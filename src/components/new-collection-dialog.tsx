@@ -168,10 +168,10 @@ export function NewCollectionDialog() {
     return (
         <Dialog open={isNewCollectionDialogOpen} onOpenChange={handleClose}>
             <DialogContent className="max-w-4xl h-[90vh] flex flex-col p-0">
-                <DialogHeader className="p-6 pb-0">
+                <DialogHeader className="p-6 pb-4">
                     <DialogTitle>Create New Collection</DialogTitle>
                     <DialogDescription>
-                        Give your collection a name and description, then drag stories from the library to add them
+                        Give your collection a name and description, then drag stories from the library to add them.
                     </DialogDescription>
                 </DialogHeader>
                 <div className="grid grid-cols-2 gap-4 px-6">
@@ -184,9 +184,9 @@ export function NewCollectionDialog() {
                         <Textarea id="description" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="A short description of this collection's purpose" />
                     </div>
                 </div>
-                <div className="flex-1 grid grid-cols-2 gap-6 overflow-hidden px-6 pb-2">
+                <div className="flex-1 grid grid-cols-2 gap-6 overflow-hidden px-6 pt-4 pb-2">
                     <DragDropContext onDragEnd={onDragEnd}>
-                        <Card className="flex flex-col">
+                        <Card className="flex flex-col h-full">
                             <CardHeader>
                                 <CardTitle>Story Library ({filteredLibraryStories.length})</CardTitle>
                                 <div className="relative mt-2">
@@ -199,7 +199,7 @@ export function NewCollectionDialog() {
                                     />
                                 </div>
                             </CardHeader>
-                            <CardContent className="flex-1 overflow-y-auto">
+                            <CardContent className="flex-1 overflow-hidden">
                                 <ScrollArea className="h-full">
                                     <Droppable droppableId="library">
                                         {(provided, snapshot) => (
@@ -218,11 +218,11 @@ export function NewCollectionDialog() {
                                 </ScrollArea>
                             </CardContent>
                         </Card>
-                         <Card className="flex flex-col">
+                         <Card className="flex flex-col h-full">
                             <CardHeader>
                                 <CardTitle>New Collection ({collectionStories.length})</CardTitle>
                             </CardHeader>
-                            <CardContent className="flex-1 overflow-y-auto">
+                            <CardContent className="flex-1 overflow-hidden">
                                <ScrollArea className="h-full">
                                     <Droppable droppableId="collection">
                                         {(provided, snapshot) => (
@@ -248,7 +248,7 @@ export function NewCollectionDialog() {
                         </Card>
                     </DragDropContext>
                 </div>
-                <DialogFooter className="p-6 pt-2">
+                <DialogFooter className="p-6 pt-4">
                     <Button variant="outline" onClick={handleClose}>Cancel</Button>
                     <Button onClick={handleSave}>Save Collection</Button>
                 </DialogFooter>
@@ -256,3 +256,4 @@ export function NewCollectionDialog() {
         </Dialog>
     );
 }
+
