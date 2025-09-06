@@ -22,6 +22,7 @@ export interface Assessment {
   companyName?: string;
   documentUrl?: string;
   isStarred?: boolean;
+  lastActivity?: string;
 }
 
 const assessmentsCollection = collection(db, 'assessments');
@@ -67,7 +68,14 @@ export async function getAssessmentsForCompany(companyId: string): Promise<Asses
 
 export async function createAssessment(assessmentData: Omit<Assessment, 'id'>, isPublicSubmission: boolean = false): Promise<string> {
     const docRef = await addDoc(assessmentsCollection, {});
-    const finalData = { ...assessmentData, id: docRef.id, isStarred: false };
+    const now = new Date().toISOString();
+    const finalData = { 
+        ...assessmentData, 
+        id: docRef.id, 
+        isStarred: false,
+        startDate: assessmentData.startDate || now,
+        lastActivity: now,
+    };
     await setDoc(docRef, finalData);
 
     if (isPublicSubmission) {
@@ -84,7 +92,11 @@ export async function createAssessment(assessmentData: Omit<Assessment, 'id'>, i
 
 export async function updateAssessment(id: string, assessmentData: Partial<Omit<Assessment, 'id'>>): Promise<void> {
     const docRef = doc(db, 'assessments', id);
-    await updateDoc(docRef, assessmentData);
+    const dataWithTimestamp = {
+        ...assessmentData,
+        lastActivity: new Date().toISOString(),
+    };
+    await updateDoc(docRef, dataWithTimestamp);
 }
 
 export async function deleteAssessments(ids: string[]): Promise<void> {
@@ -108,7 +120,8 @@ export async function uploadAssessmentDocument(assessmentId: string, file: File)
 
     const assessmentDocRef = doc(db, 'assessments', assessmentId);
     await updateDoc(assessmentDocRef, {
-        documentUrl: downloadURL
+        documentUrl: downloadURL,
+        lastActivity: new Date().toISOString()
     });
 
     return downloadURL;

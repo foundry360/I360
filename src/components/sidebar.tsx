@@ -17,6 +17,7 @@ import {
   BookCopy,
   Star,
   Search,
+  History,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -27,7 +28,6 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { Separator } from './ui/separator';
-import { useQuickAction } from '@/contexts/quick-action-context';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { Input } from './ui/input';
 import { ScrollArea } from './ui/scroll-area';
@@ -57,10 +57,10 @@ const NavGroup = ({
     )
 }
 
-type StarredItem = (Project | Assessment) & { itemType: 'Engagement' | 'Assessment' };
+type CombinedItem = (Project | Assessment) & { itemType: 'Engagement' | 'Assessment' };
 
 function StarredItemsPopoverContent() {
-    const [items, setItems] = React.useState<StarredItem[]>([]);
+    const [items, setItems] = React.useState<CombinedItem[]>([]);
     const [loading, setLoading] = React.useState(false);
     const [searchTerm, setSearchTerm] = React.useState('');
     const router = useRouter();
@@ -89,7 +89,7 @@ function StarredItemsPopoverContent() {
         item.itemType.toLowerCase().includes(searchTerm.toLowerCase())
     );
     
-    const handleItemClick = (item: StarredItem) => {
+    const handleItemClick = (item: CombinedItem) => {
         if (item.itemType === 'Engagement') {
             router.push(`/dashboard/projects/${item.id}`);
         } else {
@@ -139,6 +139,89 @@ function StarredItemsPopoverContent() {
     )
 }
 
+function RecentItemsPopoverContent() {
+    const [items, setItems] = React.useState<CombinedItem[]>([]);
+    const [loading, setLoading] = React.useState(false);
+    const [searchTerm, setSearchTerm] = React.useState('');
+    const router = useRouter();
+
+    React.useEffect(() => {
+        const fetchRecentItems = async () => {
+            setLoading(true);
+            const [projects, assessments] = await Promise.all([getProjects(), getAssessments()]);
+            
+            const engagementItems = projects.map(p => ({ ...p, itemType: 'Engagement' as const }));
+            const assessmentItems = assessments.map(a => ({ ...a, itemType: 'Assessment' as const }));
+
+            const allItems = [...engagementItems, ...assessmentItems];
+            
+            const sortedItems = allItems.sort((a,b) => {
+                const dateA = new Date(a.lastActivity || a.startDate).getTime();
+                const dateB = new Date(b.lastActivity || b.startDate).getTime();
+                return dateB - dateA;
+            });
+
+            setItems(sortedItems.slice(0, 20)); // Get top 20 recent items
+            setLoading(false);
+        };
+        fetchRecentItems();
+    }, []);
+
+    const filteredItems = items.filter(item => 
+        item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        item.itemType.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    
+    const handleItemClick = (item: CombinedItem) => {
+        if (item.itemType === 'Engagement') {
+            router.push(`/dashboard/projects/${item.id}`);
+        } else {
+            router.push(`/assessment/${item.id}/report`);
+        }
+    };
+
+    return (
+        <PopoverContent className="w-80" side="right" align="start">
+            <h4 className="font-medium text-sm mb-2">Recent Items</h4>
+            <div className="relative mb-4">
+                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input 
+                    placeholder="Search recent items..."
+                    className="pl-8"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                />
+            </div>
+            <ScrollArea className="h-72">
+                <div className="space-y-2 pr-4">
+                    {loading ? (
+                        Array.from({length: 3}).map((_, i) => <Skeleton key={i} className="h-12 w-full" />)
+                    ) : filteredItems.length > 0 ? (
+                        filteredItems.map(item => (
+                            <div 
+                                key={`${item.itemType}-${item.id}`} 
+                                className="flex items-center gap-3 p-2 rounded-md hover:bg-muted cursor-pointer"
+                                onClick={() => handleItemClick(item)}
+                            >
+                                {item.itemType === 'Engagement' ? 
+                                    <FolderKanban className="h-5 w-5 text-primary" /> : 
+                                    <ClipboardList className="h-5 w-5 text-primary" />
+                                }
+                                <div className="flex-1">
+                                    <p className="text-sm font-medium">{item.name}</p>
+                                    <p className="text-xs text-muted-foreground">{item.itemType}</p>
+                                </div>
+                            </div>
+                        ))
+                    ) : (
+                        <p className="text-sm text-muted-foreground text-center py-10">No recent items found.</p>
+                    )}
+                </div>
+            </ScrollArea>
+        </PopoverContent>
+    )
+}
+
 export function Sidebar() {
   const pathname = usePathname();
   const [isCollapsed, setIsCollapsed] = React.useState(false);
@@ -148,7 +231,8 @@ export function Sidebar() {
         group: 'HOME',
         links: [
             { href: `/dashboard`, label: 'Dashboard', icon: Home },
-            { id: 'starred', label: 'Starred', icon: Star }
+            { id: 'starred', label: 'Starred', icon: Star },
+            { id: 'recent', label: 'Recent', icon: History }
         ]
     },
     {
@@ -185,7 +269,7 @@ export function Sidebar() {
 
     if (item.id === 'starred') {
         return (
-             <Popover>
+             <Popover key={item.id}>
                 <Tooltip>
                     <TooltipTrigger asChild>
                         <PopoverTrigger asChild>
@@ -213,8 +297,38 @@ export function Sidebar() {
         )
     }
 
+    if (item.id === 'recent') {
+        return (
+             <Popover key={item.id}>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <PopoverTrigger asChild>
+                             <Button
+                                variant="sidebar"
+                                className='w-full justify-start relative'
+                                >
+                                <Icon
+                                className={cn('h-5 w-5', {
+                                    'mr-2': !isCollapsed,
+                                })}
+                                />
+                                {!isCollapsed && item.label}
+                            </Button>
+                        </PopoverTrigger>
+                    </TooltipTrigger>
+                    {isCollapsed && (
+                        <TooltipContent side="right">
+                        {item.label}
+                        </TooltipContent>
+                    )}
+                </Tooltip>
+                <RecentItemsPopoverContent />
+            </Popover>
+        )
+    }
+
     return (
-        <Tooltip>
+        <Tooltip key={item.href}>
             <TooltipTrigger asChild>
                 <Button
                 asChild
