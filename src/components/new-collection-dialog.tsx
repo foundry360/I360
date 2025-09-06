@@ -17,38 +17,29 @@ import { Textarea } from './ui/textarea';
 import { useQuickAction } from '@/contexts/quick-action-context';
 import { getUserStories, UserStory } from '@/services/user-story-service';
 import { createCollection } from '@/services/collection-service';
-import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 import { ScrollArea } from './ui/scroll-area';
 import { Card, CardHeader, CardTitle, CardContent } from './ui/card';
-import { GripVertical, Search } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Search } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 
 type StoryWithDateAsString = Omit<UserStory, 'createdAt'> & { createdAt: string };
 
-const StoryCard = ({ story, index }: { story: StoryWithDateAsString, index: number }) => (
-    <Draggable draggableId={story.id} index={index}>
-        {(provided, snapshot) => (
-            <div
-                ref={provided.innerRef}
-                {...provided.draggableProps}
-                {...provided.dragHandleProps}
-                className={cn(
-                    "p-3 mb-2 rounded-lg border bg-card text-card-foreground shadow-sm",
-                    snapshot.isDragging && "bg-primary text-primary-foreground"
-                )}
-            >
-                <div className="flex items-start gap-2">
-                    <GripVertical className="h-5 w-5 text-muted-foreground mt-1" />
-                    <div className="flex-1">
-                        <p className="text-sm font-medium">{story.title}</p>
-                        <p className="text-xs text-muted-foreground line-clamp-2">{story.story}</p>
-                    </div>
-                </div>
-            </div>
-        )}
-    </Draggable>
+const StoryItem = ({ story, onMove, moveDirection }: { story: StoryWithDateAsString, onMove: () => void, moveDirection: 'add' | 'remove' }) => (
+    <div
+        className="p-3 mb-2 rounded-lg border bg-card text-card-foreground shadow-sm flex items-center gap-2"
+    >
+        <div className="flex-1">
+            <p className="text-sm font-medium">{story.title}</p>
+            <p className="text-xs text-muted-foreground line-clamp-2">{story.story}</p>
+        </div>
+        <Button variant="outline" size="icon" className="h-8 w-8" onClick={onMove}>
+            {moveDirection === 'add' ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+            <span className="sr-only">{moveDirection === 'add' ? 'Add to collection' : 'Remove from collection'}</span>
+        </Button>
+    </div>
 );
+
 
 export function NewCollectionDialog() {
     const { isNewCollectionDialogOpen, closeNewCollectionDialog, onCollectionCreated } = useQuickAction();
@@ -66,56 +57,22 @@ export function NewCollectionDialog() {
             const fetchStories = async () => {
                 setLoading(true);
                 const stories = await getUserStories();
-                setLibraryStories(stories);
+                setLibraryStories(stories.sort((a,b) => a.title.localeCompare(b.title)));
                 setLoading(false);
             };
             fetchStories();
         }
     }, [isNewCollectionDialogOpen]);
 
-    const onDragEnd = (result: DropResult) => {
-        const { source, destination } = result;
-
-        if (!destination) return;
-
-        const sourceListId = source.droppableId;
-        const destListId = destination.droppableId;
-        
-        let sourceList = sourceListId === 'library' ? [...filteredLibraryStories] : [...collectionStories];
-        let destList = destListId === 'collection' ? [...collectionStories] : [...libraryStories];
-
-        const [movedStory] = sourceList.splice(source.index, 1);
-
-        if (sourceListId === destListId) {
-            // Reordering within the same list
-            destList.splice(destination.index, 0, movedStory);
-             if (sourceListId === 'library') {
-                 // The library list is derived state, so we update the original source
-                 const newLibraryOrder = [...libraryStories];
-                 const originalIndex = libraryStories.findIndex(s => s.id === movedStory.id);
-                 if(originalIndex > -1) {
-                     newLibraryOrder.splice(originalIndex, 1);
-                     newLibraryOrder.splice(destination.index, 0, movedStory);
-                     setLibraryStories(newLibraryOrder);
-                 }
-             } else {
-                setCollectionStories(destList);
-            }
+    const handleMoveStory = (storyToMove: StoryWithDateAsString, direction: 'add' | 'remove') => {
+        if (direction === 'add') {
+            setCollectionStories(prev => [...prev, storyToMove].sort((a,b) => a.title.localeCompare(b.title)));
+            setLibraryStories(prev => prev.filter(s => s.id !== storyToMove.id));
         } else {
-            // Moving between lists
-            destList.splice(destination.index, 0, movedStory);
-            
-            if (sourceListId === 'library') {
-                // Story moved from Library to Collection
-                setLibraryStories(prev => prev.filter(s => s.id !== movedStory.id));
-                setCollectionStories(destList);
-            } else {
-                // Story moved from Collection to Library
-                setCollectionStories(sourceList);
-                setLibraryStories(prev => [...prev, movedStory].sort((a,b) => a.title.localeCompare(b.title)));
-            }
+            setLibraryStories(prev => [...prev, storyToMove].sort((a,b) => a.title.localeCompare(b.title)));
+            setCollectionStories(prev => prev.filter(s => s.id !== storyToMove.id));
         }
-    };
+    }
     
     const handleSave = async () => {
         if (!name.trim()) {
@@ -165,13 +122,18 @@ export function NewCollectionDialog() {
         story.story.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
+    const handleMoveAll = () => {
+        setCollectionStories(prev => [...prev, ...filteredLibraryStories].sort((a, b) => a.title.localeCompare(b.title)));
+        setLibraryStories(prev => prev.filter(story => !filteredLibraryStories.find(s => s.id === story.id)));
+    };
+
     return (
         <Dialog open={isNewCollectionDialogOpen} onOpenChange={handleClose}>
             <DialogContent className="max-w-4xl h-[90vh] flex flex-col p-0">
                 <DialogHeader className="p-6 pb-4 border-b">
                     <DialogTitle>Create New Collection</DialogTitle>
                     <DialogDescription>
-                        Give your collection a name and description, then drag stories from the library to add them.
+                        Give your collection a name and description, then move stories from the library to the new collection.
                     </DialogDescription>
                 </DialogHeader>
                 <div className="grid grid-cols-2 gap-4 px-6 pt-4">
@@ -185,70 +147,57 @@ export function NewCollectionDialog() {
                     </div>
                 </div>
                 <div className="flex-1 px-6 pt-4 pb-2 overflow-hidden">
-                    <DragDropContext onDragEnd={onDragEnd}>
-                        <div className="flex gap-6 h-full">
-                            <Card className="flex-1 flex flex-col h-full overflow-hidden">
-                                <CardHeader>
+                    <div className="flex gap-6 h-full">
+                        <Card className="flex-1 flex flex-col h-full overflow-hidden">
+                            <CardHeader>
+                                <div className="flex justify-between items-center">
                                     <CardTitle>Story Library ({filteredLibraryStories.length})</CardTitle>
-                                    <div className="relative mt-2">
-                                        <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                                        <Input
-                                            placeholder="Search library..."
-                                            value={searchTerm}
-                                            onChange={(e) => setSearchTerm(e.target.value)}
-                                            className="pl-8"
-                                        />
+                                    {filteredLibraryStories.length > 0 && (
+                                        <Button variant="secondary" size="sm" onClick={handleMoveAll}>
+                                            Add all ({filteredLibraryStories.length})
+                                        </Button>
+                                    )}
+                                </div>
+                                <div className="relative mt-2">
+                                    <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                                    <Input
+                                        placeholder="Search library..."
+                                        value={searchTerm}
+                                        onChange={(e) => setSearchTerm(e.target.value)}
+                                        className="pl-8"
+                                    />
+                                </div>
+                            </CardHeader>
+                            <CardContent className="flex-1 overflow-hidden">
+                                <ScrollArea className="h-full">
+                                    <div className="p-1 rounded-md h-full">
+                                        {loading ? <p>Loading stories...</p> : filteredLibraryStories.map((story) => (
+                                            <StoryItem key={story.id} story={story} onMove={() => handleMoveStory(story, 'add')} moveDirection="add" />
+                                        ))}
                                     </div>
-                                </CardHeader>
-                                <CardContent className="flex-1 overflow-hidden">
-                                    <ScrollArea className="h-full">
-                                        <Droppable droppableId="library">
-                                            {(provided, snapshot) => (
-                                                <div 
-                                                    ref={provided.innerRef} 
-                                                    {...provided.droppableProps}
-                                                    className={cn("p-1 rounded-md h-full transition-colors", snapshot.isDraggingOver && "bg-muted")}
-                                                >
-                                                    {loading ? <p>Loading stories...</p> : filteredLibraryStories.map((story, index) => (
-                                                        <StoryCard key={story.id} story={story} index={index} />
-                                                    ))}
-                                                    {provided.placeholder}
-                                                </div>
-                                            )}
-                                        </Droppable>
-                                    </ScrollArea>
-                                </CardContent>
-                            </Card>
-                            <Card className="flex-1 flex flex-col h-full overflow-hidden">
-                                <CardHeader>
-                                    <CardTitle>New Collection ({collectionStories.length})</CardTitle>
-                                </CardHeader>
-                                <CardContent className="flex-1 overflow-hidden">
-                                    <ScrollArea className="h-full">
-                                        <Droppable droppableId="collection">
-                                            {(provided, snapshot) => (
-                                                <div 
-                                                    ref={provided.innerRef} 
-                                                    {...provided.droppableProps}
-                                                    className={cn("p-1 rounded-md h-full transition-colors", snapshot.isDraggingOver && "bg-muted")}
-                                                >
-                                                    {collectionStories.map((story, index) => (
-                                                        <StoryCard key={story.id} story={story} index={index} />
-                                                    ))}
-                                                    {provided.placeholder}
-                                                    {collectionStories.length === 0 && !snapshot.isDraggingOver && (
-                                                        <div className="h-full flex items-center justify-center text-center text-muted-foreground border-2 border-dashed rounded-lg p-4">
-                                                            <p>Drag stories from the library here to build your collection</p>
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            )}
-                                        </Droppable>
-                                    </ScrollArea>
-                                </CardContent>
-                            </Card>
-                        </div>
-                    </DragDropContext>
+                                </ScrollArea>
+                            </CardContent>
+                        </Card>
+                        <Card className="flex-1 flex flex-col h-full overflow-hidden">
+                            <CardHeader>
+                                <CardTitle>New Collection ({collectionStories.length})</CardTitle>
+                            </CardHeader>
+                            <CardContent className="flex-1 overflow-hidden">
+                                <ScrollArea className="h-full">
+                                    <div className="p-1 rounded-md h-full">
+                                        {collectionStories.map((story) => (
+                                            <StoryItem key={story.id} story={story} onMove={() => handleMoveStory(story, 'remove')} moveDirection="remove" />
+                                        ))}
+                                        {collectionStories.length === 0 && (
+                                            <div className="h-full flex items-center justify-center text-center text-muted-foreground border-2 border-dashed rounded-lg p-4">
+                                                <p>Move stories from the library here to build your collection</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                </ScrollArea>
+                            </CardContent>
+                        </Card>
+                    </div>
                 </div>
                 <DialogFooter className="p-6 pt-4 border-t">
                     <Button variant="outline" onClick={handleClose}>Cancel</Button>
@@ -258,3 +207,4 @@ export function NewCollectionDialog() {
         </Dialog>
     );
 }
+
