@@ -21,7 +21,7 @@ import { AppLayout } from '@/components/app-layout';
 import { useParams, useRouter } from 'next/navigation';
 import React from 'react';
 import { Progress } from '@/components/ui/progress';
-import { Phone, Globe, MapPin, ArrowLeft, Plus, Pencil, FileText, Trash2, Paperclip, Upload, Link2, FolderKanban } from 'lucide-react';
+import { Phone, Globe, MapPin, ArrowLeft, Plus, Pencil, FileText, Trash2, Paperclip, Upload, Link2, FolderKanban, Star } from 'lucide-react';
 import type { Company } from '@/services/company-service';
 import { getCompany, updateCompany } from '@/services/company-service';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -44,7 +44,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { EditCompanyModal } from '@/components/edit-company-modal';
-import { getAssessmentsForCompany, type Assessment, deleteAssessments, uploadAssessmentDocument } from '@/services/assessment-service';
+import { getAssessmentsForCompany, type Assessment, deleteAssessments, uploadAssessmentDocument, updateAssessment } from '@/services/assessment-service';
 import { getContactsForCompany, type Contact } from '@/services/contact-service';
 import { getProjectsForCompany, type Project } from '@/services/project-service';
 import { cn } from '@/lib/utils';
@@ -170,6 +170,12 @@ export default function CompanyDetailsPage() {
     setAssessmentToUpload(assessmentId);
     fileInputRef.current?.click();
   };
+  
+  const handleToggleStar = async (e: React.MouseEvent, assessment: Assessment) => {
+    e.stopPropagation();
+    await updateAssessment(assessment.id, { isStarred: !assessment.isStarred });
+    await fetchCompanyData();
+  }
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -471,6 +477,9 @@ export default function CompanyDetailsPage() {
                           data-state={isAssessmentIndeterminate ? 'indeterminate' : (allOnPageSelected ? 'checked' : 'unchecked')}
                         />
                       </TableHead>
+                      <TableHead className="w-[50px]">
+                        <Star className="h-4 w-4" />
+                      </TableHead>
                       <TableHead>Assessment Name</TableHead>
                       <TableHead>Type</TableHead>
                       <TableHead>Status</TableHead>
@@ -491,6 +500,11 @@ export default function CompanyDetailsPage() {
                               aria-label={`Select ${assessment.name}`}
                             />
                           </TableCell>
+                           <TableCell>
+                              <Button variant="ghost" size="icon" onClick={(e) => handleToggleStar(e, assessment)}>
+                                <Star className={cn("h-4 w-4", assessment.isStarred ? 'text-yellow-400 fill-yellow-400' : 'text-muted-foreground')} />
+                              </Button>
+                           </TableCell>
                           <TableCell className="font-medium">
                             {assessment.name}
                           </TableCell>
@@ -533,7 +547,7 @@ export default function CompanyDetailsPage() {
                       ))
                     ) : (
                        <TableRow>
-                        <TableCell colSpan={6} className="h-24 text-center">
+                        <TableCell colSpan={7} className="h-24 text-center">
                           No assessments found.
                         </TableCell>
                       </TableRow>

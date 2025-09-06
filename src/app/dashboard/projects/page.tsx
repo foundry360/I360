@@ -30,11 +30,11 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Skeleton } from '@/components/ui/skeleton';
-import { MoreHorizontal, Plus, Trash2, ArrowUpDown, Search } from 'lucide-react';
+import { MoreHorizontal, Plus, Trash2, ArrowUpDown, Search, Star } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import Link from 'next/link';
 import { useQuickAction } from '@/contexts/quick-action-context';
-import { getProjects, deleteProject, deleteProjects, Project } from '@/services/project-service';
+import { getProjects, deleteProject, deleteProjects, Project, updateProject } from '@/services/project-service';
 import { useUser } from '@/contexts/user-context';
 import { cn } from '@/lib/utils';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -137,6 +137,12 @@ export default function ProjectsPage() {
       console.error('Failed to delete projects:', error);
     }
   };
+  
+  const handleToggleStar = async (e: React.MouseEvent, project: Project) => {
+    e.stopPropagation();
+    await updateProject(project.id, { isStarred: !project.isStarred });
+    await fetchProjects();
+  }
 
   const requestSort = (key: SortKey) => {
     let direction: 'ascending' | 'descending' = 'ascending';
@@ -305,6 +311,11 @@ export default function ProjectsPage() {
                                             data-state={isPageIndeterminate ? 'indeterminate' : (allOnPageSelected ? 'checked' : 'unchecked')}
                                         />
                                     </TableHead>
+                                    <TableHead className="w-[50px] border-t border-b">
+                                        <Button variant="ghost" onClick={() => requestSort('isStarred')} className="group w-full p-0 hover:bg-transparent hover:text-muted-foreground">
+                                           <Star className={cn("h-4 w-4", sortConfig?.key === 'isStarred' ? 'opacity-100' : 'opacity-25')} />
+                                        </Button>
+                                    </TableHead>
                                     <TableHead className="border-t border-r border-b">
                                         <Button variant="ghost" onClick={() => requestSort('name')} className="group w-full p-0 hover:bg-transparent hover:text-muted-foreground">
                                             <div className="flex justify-between items-center w-full">
@@ -369,6 +380,11 @@ export default function ProjectsPage() {
                                                     aria-label={`Select ${project.name}`}
                                                 />
                                             </TableCell>
+                                            <TableCell className="p-2">
+                                                <Button variant="ghost" size="icon" onClick={(e) => handleToggleStar(e, project)}>
+                                                   <Star className={cn("h-4 w-4", project.isStarred ? 'text-yellow-400 fill-yellow-400' : 'text-muted-foreground')} />
+                                                </Button>
+                                            </TableCell>
                                             <TableCell className="font-medium p-2">
                                                <Link href={`/dashboard/projects/${project.id}`} className="hover:text-primary">
                                                     {project.name}
@@ -427,7 +443,7 @@ export default function ProjectsPage() {
                                     ))
                                 ) : (
                                     <TableRow>
-                                        <TableCell colSpan={8} className="h-24 text-center">
+                                        <TableCell colSpan={9} className="h-24 text-center">
                                             No engagements found.
                                         </TableCell>
                                     </TableRow>

@@ -34,10 +34,11 @@ import {
   deleteAssessments,
   Assessment,
   uploadAssessmentDocument,
+  updateAssessment,
 } from '@/services/assessment-service';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Checkbox } from '@/components/ui/checkbox';
-import { MoreHorizontal, Plus, Trash2, ArrowUpDown, FileText, Upload, Paperclip, Search } from 'lucide-react';
+import { MoreHorizontal, Plus, Trash2, ArrowUpDown, FileText, Upload, Paperclip, Search, Star } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { TablePagination } from '@/components/table-pagination';
 import Link from 'next/link';
@@ -158,6 +159,12 @@ export default function AssessmentsPage() {
     setAssessmentToUpload(assessmentId);
     fileInputRef.current?.click();
   };
+  
+  const handleToggleStar = async (e: React.MouseEvent, assessment: Assessment) => {
+    e.stopPropagation();
+    await updateAssessment(assessment.id, { isStarred: !assessment.isStarred });
+    await fetchAssessments();
+  }
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -306,6 +313,11 @@ export default function AssessmentsPage() {
                         data-state={isPageIndeterminate ? 'indeterminate' : (allOnPageSelected ? 'checked' : 'unchecked')}
                       />
                     </TableHead>
+                    <TableHead className="w-[50px] border-t border-b">
+                         <Button variant="ghost" onClick={() => requestSort('isStarred')} className="group w-full p-0 hover:bg-transparent hover:text-muted-foreground">
+                            <Star className={cn("h-4 w-4", sortConfig?.key === 'isStarred' ? 'opacity-100' : 'opacity-25')} />
+                         </Button>
+                    </TableHead>
                     <TableHead className="border-t border-r border-b">
                       <Button variant="ghost" onClick={() => requestSort('name')} className="group w-full p-0 hover:bg-transparent hover:text-muted-foreground">
                         <div className="flex justify-between items-center w-full">
@@ -361,6 +373,11 @@ export default function AssessmentsPage() {
                             }
                             aria-label={`Select ${assessment.name}`}
                           />
+                        </TableCell>
+                        <TableCell className="p-2">
+                            <Button variant="ghost" size="icon" onClick={(e) => handleToggleStar(e, assessment)}>
+                                <Star className={cn("h-4 w-4", assessment.isStarred ? 'text-yellow-400 fill-yellow-400' : 'text-muted-foreground')} />
+                            </Button>
                         </TableCell>
                         <TableCell className="font-medium p-2">
                           <span onClick={() => handleOpenAssessment(assessment)} className="hover:text-primary cursor-pointer">
@@ -441,7 +458,7 @@ export default function AssessmentsPage() {
                     ))
                   ) : (
                     <TableRow>
-                      <TableCell colSpan={7} className="h-24 text-center">
+                      <TableCell colSpan={8} className="h-24 text-center">
                         No assessments found.
                       </TableCell>
                     </TableRow>

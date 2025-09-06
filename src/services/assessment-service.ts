@@ -21,6 +21,7 @@ export interface Assessment {
   formData?: Partial<GtmReadinessInput>;
   companyName?: string;
   documentUrl?: string;
+  isStarred?: boolean;
 }
 
 const assessmentsCollection = collection(db, 'assessments');
@@ -66,7 +67,7 @@ export async function getAssessmentsForCompany(companyId: string): Promise<Asses
 
 export async function createAssessment(assessmentData: Omit<Assessment, 'id'>, isPublicSubmission: boolean = false): Promise<string> {
     const docRef = await addDoc(assessmentsCollection, {});
-    const finalData = { ...assessmentData, id: docRef.id };
+    const finalData = { ...assessmentData, id: docRef.id, isStarred: false };
     await setDoc(docRef, finalData);
 
     if (isPublicSubmission) {

@@ -19,6 +19,7 @@ export interface Project {
   team: string; // Comma-separated list of team members
   category: 'Assessment' | 'Workshop' | 'Planning' | 'Execution' | 'Review' | 'Enablement';
   lastActivity?: string;
+  isStarred?: boolean;
 }
 
 const projectsCollection = collection(db, 'projects');
@@ -97,7 +98,8 @@ export async function createProject(projectData: Omit<Project, 'id' | 'companyNa
       ...projectData,
       name: projectData.name.startsWith(prefix) ? projectData.name : `${prefix}${projectData.name}`,
       id: projectDocRef.id, 
-      lastActivity: new Date().toISOString() 
+      lastActivity: new Date().toISOString(),
+      isStarred: false,
   };
   await setDoc(projectDocRef, newProject);
   return projectDocRef.id;
