@@ -128,7 +128,7 @@ export default function LibraryPage() {
       toast({
         variant: 'destructive',
         title: 'Selection Required',
-        description: 'Please select at least one user story to add.',
+        description: 'Please select at least one user story to add',
       });
       return;
     }
@@ -139,7 +139,7 @@ export default function LibraryPage() {
         // await bulkCreateBacklogItems(projectId, null, storiesToAdd);
         toast({
             title: 'Success!',
-            description: `${storiesToAdd.length} user stor${storiesToAdd.length > 1 ? 'ies' : 'y'} added to the project backlog.`,
+            description: `${storiesToAdd.length} user stor${storiesToAdd.length > 1 ? 'ies' : 'y'} added to the project backlog`,
         });
         router.push(`/dashboard/projects/${projectId}`);
     } catch (error) {
@@ -147,7 +147,7 @@ export default function LibraryPage() {
         toast({
             variant: "destructive",
             title: "Error",
-            description: "There was a problem adding the stories to the engagement.",
+            description: "There was a problem adding the stories to the engagement",
         });
     } finally {
         setLoading(false);
@@ -159,7 +159,7 @@ export default function LibraryPage() {
       toast({
         variant: 'destructive',
         title: 'Selection Required',
-        description: 'Please select at least one user story to add to the collection.',
+        description: 'Please select at least one user story to add to the collection',
       });
       return;
     }
@@ -167,7 +167,7 @@ export default function LibraryPage() {
       await addStoriesToCollection(collectionId, selectedStories);
       toast({
         title: 'Success!',
-        description: `${selectedStories.length} user stor${selectedStories.length > 1 ? 'ies were' : 'y was'} added to the collection.`,
+        description: `${selectedStories.length} user stor${selectedStories.length > 1 ? 'ies were' : 'y was'} added to the collection`,
       });
       setSelectedStories([]);
       fetchLibraryData();
@@ -176,7 +176,7 @@ export default function LibraryPage() {
       toast({
             variant: "destructive",
             title: "Error",
-            description: "There was a problem adding stories to the collection.",
+            description: "There was a problem adding stories to the collection",
         });
     }
   };
@@ -205,7 +205,7 @@ export default function LibraryPage() {
             toast({
               variant: 'destructive',
               title: 'Upload Failed',
-              description: 'CSV file is empty or does not have a "title" column.',
+              description: 'CSV file is empty or does not have a "title" column',
             });
             return;
           }
@@ -219,7 +219,7 @@ export default function LibraryPage() {
           toast({
             variant: "destructive",
             title: "Upload Failed",
-            description: "There was a problem importing your user stories.",
+            description: "There was a problem importing your user stories",
           });
         } finally {
           // Reset file input
@@ -233,7 +233,7 @@ export default function LibraryPage() {
           toast({
             variant: "destructive",
             title: "Parsing Failed",
-            description: "Could not parse the CSV file. Please check its format.",
+            description: "Could not parse the CSV file. Please check its format",
           });
       }
     });
@@ -284,8 +284,8 @@ export default function LibraryPage() {
           <h1 className="text-2xl font-bold">User Story Library</h1>
           <p className="text-muted-foreground">
             {projectId 
-                ? "Select stories to add to your project's backlog."
-                : "Browse and manage reusable user stories for your projects."
+                ? "Select stories to add to your project's backlog"
+                : "Browse and manage reusable user stories for your projects"
             }
           </p>
         </div>
@@ -484,7 +484,7 @@ export default function LibraryPage() {
                         })
                     ) : (
                          <div className="h-64 text-center flex items-center justify-center text-muted-foreground">
-                            No user stories found.
+                            No user stories found
                         </div>
                     )}
                 </div>
@@ -501,8 +501,8 @@ export default function LibraryPage() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <div className="py-4">
-            <p><strong>Successfully Imported:</strong> {uploadStats?.importedCount || 0} user stories.</p>
-            <p><strong>Duplicates Skipped:</strong> {uploadStats?.skippedCount || 0} user stories.</p>
+            <p><strong>Successfully Imported:</strong> {uploadStats?.importedCount || 0} user stories</p>
+            <p><strong>Duplicates Skipped:</strong> {uploadStats?.skippedCount || 0} user stories</p>
           </div>
           <AlertDialogFooter>
             <AlertDialogAction onClick={() => setIsUploadResultDialogOpen(false)}>OK</AlertDialogAction>

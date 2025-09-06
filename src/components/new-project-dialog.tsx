@@ -134,7 +134,7 @@ export function NewProjectDialog() {
           <DialogHeader>
             <DialogTitle>Create New Engagement</DialogTitle>
             <DialogDescription>
-              Fill in the details below to create a new engagement.
+              Fill in the details below to create a new engagement
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4 max-h-[70vh] overflow-y-auto pr-4">

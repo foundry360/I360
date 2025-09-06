@@ -459,7 +459,7 @@ export default function AssessmentsPage() {
                   ) : (
                     <TableRow>
                       <TableCell colSpan={8} className="h-24 text-center">
-                        No assessments found.
+                        No assessments found
                       </TableCell>
                     </TableRow>
                   )}

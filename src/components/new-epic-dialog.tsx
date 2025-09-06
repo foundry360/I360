@@ -88,7 +88,7 @@ export function NewEpicDialog() {
           <DialogHeader>
             <DialogTitle>Create New Epic</DialogTitle>
             <DialogDescription>
-              Fill in the details below to add an Epic to the project.
+              Fill in the details below to add an Epic to the project
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4 max-h-[70vh] overflow-y-auto pr-4">

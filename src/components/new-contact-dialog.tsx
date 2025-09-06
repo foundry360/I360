@@ -83,7 +83,7 @@ export function NewContactDialog() {
           <DialogHeader>
             <DialogTitle>Create New Contact</DialogTitle>
             <DialogDescription>
-              Fill in the details below to create a new contact.
+              Fill in the details below to create a new contact
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">

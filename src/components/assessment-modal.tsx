@@ -40,7 +40,7 @@ export function AssessmentModal() {
         <DialogHeader className="p-6 pb-0">
           <DialogTitle>GTM Readiness Assessment</DialogTitle>
           <DialogDescription>
-            {assessmentToResume ? `Resuming assessment: ${assessmentToResume.name}` : 'Complete the form below to receive an AI-powered analysis of your go-to-market readiness.'}
+            {assessmentToResume ? `Resuming assessment: ${assessmentToResume.name}` : 'Complete the form below to receive an AI-powered analysis of your go-to-market readiness'}
           </DialogDescription>
         </DialogHeader>
         <div className="flex-1 overflow-y-auto">

@@ -74,7 +74,7 @@ export function EditSprintDialog() {
           <DialogHeader>
             <DialogTitle>Edit Wave</DialogTitle>
             <DialogDescription>
-              Update the details for "{item.name}".
+              Update the details for "{item.name}"
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4 max-h-[70vh] overflow-y-auto pr-4">

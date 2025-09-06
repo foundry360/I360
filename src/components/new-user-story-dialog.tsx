@@ -132,7 +132,7 @@ export function NewUserStoryDialog() {
           <DialogHeader>
             <DialogTitle>Create New User Story</DialogTitle>
             <DialogDescription>
-              Add a reusable user story to your library.
+              Add a reusable user story to your library
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4 max-h-[70vh] overflow-y-auto pr-4">
@@ -147,7 +147,7 @@ export function NewUserStoryDialog() {
                 value={newStory.story}
                 onChange={handleInputChange}
                 className="col-span-3"
-                placeholder="As a [type of user], I want [an action] so that [a benefit]."
+                placeholder="As a [type of user], I want [an action] so that [a benefit]"
               />
             </div>
              <div className="grid grid-cols-4 items-start gap-4">
@@ -201,7 +201,7 @@ export function NewUserStoryDialog() {
                            />
                            <CommandList>
                                 <CommandEmpty>
-                                    {showCreateOption ? ' ' : 'No tags found.'}
+                                    {showCreateOption ? ' ' : 'No tags found'}
                                 </CommandEmpty>
                                 <CommandGroup>
                                     {filteredTags.map((tag) => (

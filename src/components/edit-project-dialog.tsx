@@ -144,7 +144,7 @@ export function EditProjectDialog() {
           <DialogHeader>
             <DialogTitle>Edit Engagement</DialogTitle>
             <DialogDescription>
-              Update the details for "{formData.name}".
+              Update the details for "{formData.name}"
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4 max-h-[70vh] overflow-y-auto pr-4">

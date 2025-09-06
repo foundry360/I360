@@ -129,7 +129,7 @@ export function EditBacklogItemDialog() {
           <DialogHeader>
             <DialogTitle>Edit Backlog Item</DialogTitle>
             <DialogDescription>
-              Update the details for "{item.title}".
+              Update the details for "{item.title}"
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4 max-h-[70vh] overflow-y-auto pr-4">

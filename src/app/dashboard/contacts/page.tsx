@@ -368,7 +368,7 @@ export default function ContactsPage() {
                 ) : (
                   <TableRow>
                     <TableCell colSpan={7} className="h-24 text-center">
-                      No contacts found.
+                      No contacts found
                     </TableCell>
                   </TableRow>
                 )}

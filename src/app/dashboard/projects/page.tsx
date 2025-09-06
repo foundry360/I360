@@ -242,7 +242,7 @@ export default function ProjectsPage() {
         <div>
             <h1 className="text-2xl font-bold">Engagements</h1>
             <p className="text-muted-foreground">
-                Manage and track all engagements across your companies.
+                Manage and track all engagements across your companies
             </p>
         </div>
         <Separator />
@@ -444,7 +444,7 @@ export default function ProjectsPage() {
                                 ) : (
                                     <TableRow>
                                         <TableCell colSpan={9} className="h-24 text-center">
-                                            No engagements found.
+                                            No engagements found
                                         </TableCell>
                                     </TableRow>
                                 )}

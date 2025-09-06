@@ -62,7 +62,7 @@ export default function CollectionsPage() {
                 <div>
                     <h1 className="text-2xl font-bold">User Story Collections</h1>
                     <p className="text-muted-foreground">
-                        Create and manage curated collections of user stories to quickly populate engagement backlogs.
+                        Create and manage curated collections of user stories to quickly populate engagement backlogs
                     </p>
                 </div>
                 <Separator />
@@ -84,7 +84,7 @@ export default function CollectionsPage() {
                         <CardContent className="p-10 text-center">
                             <h3 className="text-lg font-semibold">No Collections Yet</h3>
                             <p className="text-muted-foreground mt-2 mb-4">
-                                Get started by creating your first collection of user stories.
+                                Get started by creating your first collection of user stories
                             </p>
                              <Button>
                                 <Plus className="h-4 w-4 mr-2" />
@@ -102,7 +102,7 @@ export default function CollectionsPage() {
                                 </CardHeader>
                                 <CardContent className="flex-grow">
                                     <p className="text-sm text-muted-foreground">
-                                        Contains <strong>{collection.userStoryIds.length}</strong> user stories.
+                                        Contains <strong>{collection.userStoryIds.length}</strong> user stories
                                     </p>
                                 </CardContent>
                                 <CardFooter className="flex justify-end gap-2">

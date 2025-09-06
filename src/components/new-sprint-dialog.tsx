@@ -56,7 +56,7 @@ export function NewSprintDialog() {
   const handleCreateItem = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newItem.name || !newItem.startDate || !newItem.endDate) {
-      alert('Wave Name, Start Date, and End Date are required.');
+      alert('Wave Name, Start Date, and End Date are required');
       return;
     }
     try {
@@ -84,7 +84,7 @@ export function NewSprintDialog() {
           <DialogHeader>
             <DialogTitle>Create New Wave</DialogTitle>
             <DialogDescription>
-              Plan your next iteration by defining its goal and duration.
+              Plan your next iteration by defining its goal and duration
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4 max-h-[70vh] overflow-y-auto pr-4">
