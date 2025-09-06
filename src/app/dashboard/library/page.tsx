@@ -10,12 +10,17 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuPortal,
 } from '@/components/ui/dropdown-menu';
 import { Skeleton } from '@/components/ui/skeleton';
-import { MoreHorizontal, Plus, Trash2, Search, Upload, FilePlus, Layers, Library, Pencil } from 'lucide-react';
+import { MoreHorizontal, Plus, Trash2, Search, Upload, FilePlus, Layers, Library, Pencil, BookCopy } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { useQuickAction } from '@/contexts/quick-action-context';
 import { getUserStories, deleteUserStory, UserStory, bulkCreateUserStories as bulkCreateLibraryStories, getUniqueTags } from '@/services/user-story-service';
+import { getCollections, addStoriesToCollection, type StoryCollection } from '@/services/collection-service';
 import { bulkCreateBacklogItems } from '@/services/backlog-item-service';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
@@ -27,6 +32,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { epicCategories } from '@/lib/epic-categories';
 import { ManageTagsDialog } from '@/components/manage-tags-dialog';
+import Link from 'next/link';
 
 
 type StoryWithDateAsString = Omit<UserStory, 'createdAt'> & { createdAt: string };
@@ -39,6 +45,7 @@ export default function LibraryPage() {
   
   const [stories, setStories] = React.useState<StoryWithDateAsString[]>([]);
   const [allTags, setAllTags] = React.useState<string[]>([]);
+  const [collections, setCollections] = React.useState<StoryCollection[]>([]);
   const [selectedTag, setSelectedTag] = React.useState<string | null>(null);
   const [loading, setLoading] = React.useState(true);
   const [searchTerm, setSearchTerm] = React.useState('');
@@ -54,12 +61,14 @@ export default function LibraryPage() {
   const fetchLibraryData = React.useCallback(async () => {
     try {
       setLoading(true);
-      const [storiesFromDb, tagsFromDb] = await Promise.all([
+      const [storiesFromDb, tagsFromDb, collectionsFromDb] = await Promise.all([
         getUserStories(),
-        getUniqueTags()
+        getUniqueTags(),
+        getCollections(),
       ]);
       setStories(storiesFromDb);
-      // Ensure "Uncategorized" is an option if there are stories without tags.
+      setCollections(collectionsFromDb);
+
       const hasUncategorized = storiesFromDb.some(s => s.tags.length === 0);
       const uniqueTags = ['All', ...tagsFromDb];
       if(hasUncategorized && !uniqueTags.includes('Uncategorized')) {
@@ -125,6 +134,33 @@ export default function LibraryPage() {
         setLoading(false);
     }
   };
+  
+  const handleAddToCollection = async (collectionId: string) => {
+    if (selectedStories.length === 0) {
+      toast({
+        variant: 'destructive',
+        title: 'Selection Required',
+        description: 'Please select at least one user story to add to the collection.',
+      });
+      return;
+    }
+    try {
+      await addStoriesToCollection(collectionId, selectedStories);
+      toast({
+        title: 'Success!',
+        description: `${selectedStories.length} user stor${selectedStories.length > 1 ? 'ies were' : 'y was'} added to the collection.`,
+      });
+      setSelectedStories([]);
+      fetchLibraryData();
+    } catch (error) {
+      console.error("Error adding stories to collection:", error);
+      toast({
+            variant: "destructive",
+            title: "Error",
+            description: "There was a problem adding stories to the collection.",
+        });
+    }
+  };
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -187,8 +223,14 @@ export default function LibraryPage() {
   const filteredStories = React.useMemo(() => {
     return stories.filter(story => {
       let tagMatch = false;
-      if (selectedTag === 'All') {
+      if (selectedTag === 'All' || selectedTag === null) {
         tagMatch = true;
+      } else if (selectedTag.startsWith('coll:')) {
+          const collectionId = selectedTag.split(':')[1];
+          const collection = collections.find(c => c.id === collectionId);
+          if (collection) {
+              tagMatch = story.tags.some(t => collection.userStoryIds.includes(story.id));
+          }
       } else if (selectedTag === 'Uncategorized') {
         tagMatch = story.tags.length === 0;
       } else {
@@ -201,7 +243,7 @@ export default function LibraryPage() {
           story.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
       return tagMatch && searchMatch;
     });
-  }, [stories, selectedTag, searchTerm]);
+  }, [stories, selectedTag, searchTerm, collections]);
 
   const handleSelectStory = (storyId: string) => {
     setSelectedStories(prev => 
@@ -241,12 +283,26 @@ export default function LibraryPage() {
           </div>
           <div className="flex items-center gap-2">
             {projectId && (
-                <>
-                  <Button onClick={handleAddToBacklog} disabled={selectedStories.length === 0 || loading}>
-                    <FilePlus className="mr-2 h-4 w-4" />
-                    Add to Backlog ({selectedStories.length})
-                  </Button>
-                </>
+                <Button onClick={handleAddToBacklog} disabled={selectedStories.length === 0 || loading}>
+                  <FilePlus className="mr-2 h-4 w-4" />
+                  Add to Backlog ({selectedStories.length})
+                </Button>
+            )}
+            {!projectId && selectedStories.length > 0 && (
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="outline">
+                            Add to Collection ({selectedStories.length})
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                        {collections.map(collection => (
+                             <DropdownMenuItem key={collection.id} onSelect={() => handleAddToCollection(collection.id)}>
+                                {collection.name}
+                            </DropdownMenuItem>
+                        ))}
+                    </DropdownMenuContent>
+                </DropdownMenu>
             )}
             <Button variant="outline" size="icon" onClick={handleUploadClick}>
               <Upload className="h-4 w-4" />
@@ -273,7 +329,7 @@ export default function LibraryPage() {
                     </div>
                 </CardHeader>
                 <CardContent>
-                    <ScrollArea className="h-[calc(100vh-22rem)]">
+                    <ScrollArea className="h-[calc(100vh-28rem)]">
                         <div className="space-y-1 pr-4">
                             {loading ? (
                                 Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-8 w-full" />)
@@ -298,6 +354,32 @@ export default function LibraryPage() {
                                 })
                             )}
                         </div>
+                        <Separator className="my-4" />
+                        <div className="flex justify-between items-center mb-2">
+                             <h3 className="text-base font-semibold flex items-center gap-2 pl-4">
+                                <BookCopy className="h-4 w-4" />
+                                Collections
+                            </h3>
+                            <Button asChild variant="ghost" size="icon" className="h-6 w-6">
+                                <Link href="/dashboard/collections"><Plus className="h-3 w-3" /></Link>
+                            </Button>
+                        </div>
+                        <div className="space-y-1 pr-4">
+                             {collections.map(collection => (
+                                <Button 
+                                    key={collection.id} 
+                                    variant="ghost" 
+                                    className={cn(
+                                        "w-full justify-start",
+                                        selectedTag === `coll:${collection.id}` && "bg-muted font-bold"
+                                    )}
+                                    onClick={() => setSelectedTag(`coll:${collection.id}`)}
+                                >
+                                  <BookCopy className="h-4 w-4 mr-2" />
+                                  {collection.name}
+                                </Button>
+                            ))}
+                        </div>
                     </ScrollArea>
                 </CardContent>
              </Card>
@@ -320,7 +402,7 @@ export default function LibraryPage() {
                            return (
                            <label htmlFor={`select-${story.id}`} key={story.id} className="block cursor-pointer">
                              <Card className={cn("flex hover:border-primary", selectedStories.includes(story.id) && "border-primary ring-2 ring-primary")}>
-                               {projectId && (
+                               {(projectId || selectedStories.length > 0) && (
                                   <div className="p-4 flex items-center justify-center border-r">
                                       <Checkbox
                                           id={`select-${story.id}`}
@@ -331,7 +413,7 @@ export default function LibraryPage() {
                                   </div>
                                )}
                                <div className="flex-1">
-                                  <CardHeader className="pb-2 pt-4">
+                                  <CardHeader className="py-3">
                                       <div className="flex justify-between items-start">
                                           <CardTitle className="flex items-center gap-2">
                                               <Icon className={cn("h-4 w-4", categoryConfig.color)} />
@@ -360,7 +442,7 @@ export default function LibraryPage() {
                                           <Badge variant="outline">{story.points || 0} Points</Badge>
                                       </div>
                                   </CardHeader>
-                                  <CardContent className="pt-2 pb-4">
+                                  <CardContent className="pt-0 pb-3">
                                       <p className="text-sm text-muted-foreground">{story.story}</p>
                                   </CardContent>
                                </div>
@@ -403,4 +485,3 @@ export default function LibraryPage() {
     </>
   );
 }
-

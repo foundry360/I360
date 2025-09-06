@@ -14,6 +14,7 @@ import {
   ClipboardList,
   FolderKanban,
   Library,
+  BookCopy
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -71,6 +72,7 @@ export function Sidebar() {
       links: [
         { href: `/dashboard/assessments`, label: 'Assessments', icon: ClipboardList },
         { href: `/dashboard/library`, label: 'Library', icon: Library },
+        { href: `/dashboard/collections`, label: 'Collections', icon: BookCopy },
       ],
     },
     {
