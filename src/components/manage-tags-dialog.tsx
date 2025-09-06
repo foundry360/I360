@@ -43,8 +43,10 @@ export function ManageTagsDialog({ isOpen, onOpenChange, onTagsUpdated }: Manage
     if (isOpen) {
       const fetchInitialTags = async () => {
         const fetchedTags = await getTags();
-        setOriginalTags(fetchedTags);
-        setTags(fetchedTags);
+        // Filter out any special, non-editable tags
+        const editableTags = fetchedTags.filter(tag => tag.name !== 'Uncategorized' && tag.name !== 'All');
+        setOriginalTags(editableTags);
+        setTags(editableTags);
         setTagsToDelete([]);
       };
       fetchInitialTags();
