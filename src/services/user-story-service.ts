@@ -167,6 +167,16 @@ export async function deleteUserStory(id: string): Promise<void> {
   await deleteDoc(docRef);
 }
 
+export async function deleteUserStories(ids: string[]): Promise<void> {
+    const batch = writeBatch(db);
+    ids.forEach(id => {
+        const docRef = doc(userStoriesCollection, id);
+        batch.delete(docRef);
+    });
+    await batch.commit();
+}
+
+
 // Functions for tag management
 export async function createTag(tagData: Omit<Tag, 'id'>): Promise<string> {
     const docRef = await addDoc(tagsCollection, {});

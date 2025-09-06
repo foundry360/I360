@@ -19,7 +19,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { MoreHorizontal, Plus, Trash2, Search, Upload, FilePlus, Layers, Library, Pencil, BookCopy } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { useQuickAction } from '@/contexts/quick-action-context';
-import { getUserStories, deleteUserStory, UserStory, bulkCreateUserStories as bulkCreateLibraryStories, getTags, Tag } from '@/services/user-story-service';
+import { getUserStories, deleteUserStory, UserStory, bulkCreateUserStories as bulkCreateLibraryStories, getTags, Tag, deleteUserStories } from '@/services/user-story-service';
 import { getCollections, addStoriesToCollection, type StoryCollection } from '@/services/collection-service';
 import { bulkCreateBacklogItems } from '@/services/backlog-item-service';
 import { Input } from '@/components/ui/input';
@@ -51,6 +51,7 @@ export default function LibraryPage() {
   const [searchTerm, setSearchTerm] = React.useState('');
   const [selectedStories, setSelectedStories] = React.useState<string[]>([]);
   const [isManageTagsOpen, setIsManageTagsOpen] = React.useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
   
   const { openNewUserStoryDialog, setOnUserStoryCreated } = useQuickAction();
   const { toast } = useToast();
@@ -104,6 +105,24 @@ export default function LibraryPage() {
       console.error('Failed to delete user story:', error);
     }
   };
+  
+  const handleBulkDelete = async () => {
+    try {
+        await deleteUserStories(selectedStories);
+        setSelectedStories([]);
+        fetchLibraryData();
+    } catch (error) {
+        console.error("Failed to delete stories:", error);
+        toast({
+            variant: "destructive",
+            title: "Error",
+            description: "There was a problem deleting the selected stories.",
+        });
+    } finally {
+        setIsDeleteDialogOpen(false);
+    }
+  };
+
 
   const handleUploadClick = () => {
     fileInputRef.current?.click();
@@ -287,6 +306,12 @@ export default function LibraryPage() {
             />
           </div>
           <div className="flex items-center gap-2">
+            {selectedStories.length > 0 && (
+                <Button variant="outline" size="sm" onClick={() => setIsDeleteDialogOpen(true)}>
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Delete ({selectedStories.length})
+                </Button>
+            )}
             {projectId && (
                 <Button onClick={handleAddToBacklog} disabled={selectedStories.length === 0 || loading}>
                   <FilePlus className="mr-2 h-4 w-4" />
@@ -409,16 +434,14 @@ export default function LibraryPage() {
                            return (
                            <label htmlFor={`select-${story.id}`} key={story.id} className="block cursor-pointer">
                              <Card className={cn("flex hover:border-primary", selectedStories.includes(story.id) && "border-primary ring-2 ring-primary")}>
-                               {(projectId || selectedStories.length > 0) && (
-                                  <div className="p-4 flex items-center justify-center border-r">
-                                      <Checkbox
-                                          id={`select-${story.id}`}
-                                          checked={selectedStories.includes(story.id)}
-                                          onCheckedChange={() => handleSelectStory(story.id)}
-                                          aria-label={`Select story ${story.title}`}
-                                      />
-                                  </div>
-                               )}
+                               <div className="p-4 flex items-center justify-center border-r">
+                                  <Checkbox
+                                      id={`select-${story.id}`}
+                                      checked={selectedStories.includes(story.id)}
+                                      onCheckedChange={() => handleSelectStory(story.id)}
+                                      aria-label={`Select story ${story.title}`}
+                                  />
+                               </div>
                                <div className="flex-1">
                                   <CardHeader className="py-3">
                                       <div className="flex justify-between items-start">
@@ -482,6 +505,20 @@ export default function LibraryPage() {
           <AlertDialogFooter>
             <AlertDialogAction onClick={() => setIsUploadResultDialogOpen(false)}>OK</AlertDialogAction>
           </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+            <AlertDialogHeader>
+                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                <AlertDialogDescription>
+                    This action cannot be undone. This will permanently delete the {selectedStories.length} selected user stor{selectedStories.length === 1 ? 'y' : 'ies'}.
+                </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={handleBulkDelete}>Delete</AlertDialogAction>
+            </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
       <ManageTagsDialog
