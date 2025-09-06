@@ -122,7 +122,7 @@ export function NewCollectionDialog() {
             toast({
                 variant: 'destructive',
                 title: 'Name Required',
-                description: 'Please provide a name for your collection.',
+                description: 'Please provide a name for your collection',
             });
             return;
         }
@@ -171,7 +171,7 @@ export function NewCollectionDialog() {
                 <DialogHeader className="p-6 pb-0">
                     <DialogTitle>Create New Collection</DialogTitle>
                     <DialogDescription>
-                        Give your collection a name and description, then drag stories from the library to add them.
+                        Give your collection a name and description, then drag stories from the library to add them
                     </DialogDescription>
                 </DialogHeader>
                 <div className="grid grid-cols-2 gap-4 px-6">
@@ -199,7 +199,7 @@ export function NewCollectionDialog() {
                                     />
                                 </div>
                             </CardHeader>
-                            <CardContent className="flex-1 overflow-y-hidden">
+                            <CardContent className="flex-1 overflow-y-auto">
                                 <ScrollArea className="h-full">
                                     <Droppable droppableId="library">
                                         {(provided, snapshot) => (
@@ -222,7 +222,7 @@ export function NewCollectionDialog() {
                             <CardHeader>
                                 <CardTitle>New Collection ({collectionStories.length})</CardTitle>
                             </CardHeader>
-                            <CardContent className="flex-1 overflow-y-hidden">
+                            <CardContent className="flex-1 overflow-y-auto">
                                <ScrollArea className="h-full">
                                     <Droppable droppableId="collection">
                                         {(provided, snapshot) => (
