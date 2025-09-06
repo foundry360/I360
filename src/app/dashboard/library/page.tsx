@@ -322,7 +322,7 @@ export default function LibraryPage() {
                                 </div>
                              )}
                              <div className="flex-1">
-                                <CardHeader>
+                                <CardHeader className="pb-2">
                                     <div className="flex justify-between items-start">
                                         <CardTitle className="flex items-center gap-2">
                                             <Icon className={cn("h-4 w-4", categoryConfig.color)} />
@@ -351,7 +351,7 @@ export default function LibraryPage() {
                                         <Badge variant="outline">{story.points || 0} Points</Badge>
                                     </div>
                                 </CardHeader>
-                                <CardContent className="pt-6">
+                                <CardContent className="pt-2">
                                     <p className="text-sm text-muted-foreground">{story.story}</p>
                                 </CardContent>
                              </div>
