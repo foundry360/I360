@@ -14,7 +14,8 @@ import {
   ClipboardList,
   FolderKanban,
   Library,
-  BookCopy
+  BookCopy,
+  Star,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -25,6 +26,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { Separator } from './ui/separator';
+import { useQuickAction } from '@/contexts/quick-action-context';
 
 const NavGroup = ({
     title,
@@ -50,13 +52,15 @@ const NavGroup = ({
 
 export function Sidebar() {
   const pathname = usePathname();
+  const { openStarredItemsDialog } = useQuickAction();
   const [isCollapsed, setIsCollapsed] = React.useState(false);
 
   const navItems = [
     {
         group: 'HOME',
         links: [
-            { href: `/dashboard`, label: 'Dashboard', icon: Home }
+            { href: `/dashboard`, label: 'Dashboard', icon: Home },
+            { action: openStarredItemsDialog, label: 'Starred', icon: Star }
         ]
     },
     {
@@ -108,12 +112,35 @@ export function Sidebar() {
                         <div key={group.group}>
                             {group.links.map((item) => {
                                 const Icon = item.icon;
-                                const isActive = pathname === item.href;
+                                const isActive = 'href' in item && pathname === item.href;
+                                
+                                const buttonContent = 'href' in item ? (
+                                    <Link href={item.href}>
+                                        {isActive && (
+                                        <div className="absolute left-0 top-0 h-full w-1.5 bg-primary" />
+                                        )}
+                                        <Icon
+                                        className={cn('h-5 w-5', {
+                                            'mr-2': !isCollapsed,
+                                        })}
+                                        />
+                                        {!isCollapsed && item.label}
+                                    </Link>
+                                ) : (
+                                    <div className="flex items-center" onClick={item.action}>
+                                        <Icon
+                                        className={cn('h-5 w-5', {
+                                            'mr-2': !isCollapsed,
+                                        })}
+                                        />
+                                        {!isCollapsed && item.label}
+                                    </div>
+                                )
                                 return (
-                                <Tooltip key={item.href}>
+                                <Tooltip key={item.label}>
                                     <TooltipTrigger asChild>
                                         <Button
-                                        asChild
+                                        asChild={'href' in item}
                                         variant="sidebar"
                                         className={cn(
                                             'w-full justify-start relative',
@@ -121,17 +148,7 @@ export function Sidebar() {
                                             'bg-sidebar-accent text-sidebar-accent-foreground'
                                         )}
                                         >
-                                        <Link href={item.href}>
-                                            {isActive && (
-                                            <div className="absolute left-0 top-0 h-full w-1.5 bg-primary" />
-                                            )}
-                                            <Icon
-                                            className={cn('h-5 w-5', {
-                                                'mr-2': !isCollapsed,
-                                            })}
-                                            />
-                                            {!isCollapsed && item.label}
-                                        </Link>
+                                        {buttonContent}
                                         </Button>
                                     </TooltipTrigger>
                                     {isCollapsed && (
@@ -149,9 +166,9 @@ export function Sidebar() {
                     <NavGroup key={group.group} title={group.group} isCollapsed={isCollapsed}>
                       {group.links.map((item) => {
                         const Icon = item.icon;
-                        const isActive = pathname.startsWith(item.href);
+                        const isActive = 'href' in item && pathname.startsWith(item.href);
                         return (
-                          <Tooltip key={item.href}>
+                          <Tooltip key={item.label}>
                             <TooltipTrigger asChild>
                               <Button
                                 asChild
@@ -162,17 +179,28 @@ export function Sidebar() {
                                     'bg-sidebar-accent text-sidebar-accent-foreground'
                                 )}
                               >
-                                <Link href={item.href}>
-                                  {isActive && (
-                                    <div className="absolute left-0 top-0 h-full w-1.5 bg-primary" />
-                                  )}
-                                  <Icon
-                                    className={cn('h-5 w-5', {
-                                      'mr-2': !isCollapsed,
-                                    })}
-                                  />
-                                  {!isCollapsed && item.label}
-                                </Link>
+                                {'href' in item ? (
+                                    <Link href={item.href}>
+                                    {isActive && (
+                                        <div className="absolute left-0 top-0 h-full w-1.5 bg-primary" />
+                                    )}
+                                    <Icon
+                                        className={cn('h-5 w-5', {
+                                        'mr-2': !isCollapsed,
+                                        })}
+                                    />
+                                    {!isCollapsed && item.label}
+                                    </Link>
+                                ) : (
+                                    <div className="flex items-center" onClick={'action' in item ? item.action : undefined}>
+                                        <Icon
+                                            className={cn('h-5 w-5', {
+                                            'mr-2': !isCollapsed,
+                                            })}
+                                        />
+                                        {!isCollapsed && item.label}
+                                    </div>
+                                )}
                               </Button>
                             </TooltipTrigger>
                             {isCollapsed && (
