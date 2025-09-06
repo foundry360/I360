@@ -351,7 +351,7 @@ export default function LibraryPage() {
                                         <Badge variant="outline">{story.points || 0} Points</Badge>
                                     </div>
                                 </CardHeader>
-                                <CardContent className="pt-2">
+                                <CardContent className="pt-0 pb-4">
                                     <p className="text-sm text-muted-foreground">{story.story}</p>
                                 </CardContent>
                              </div>
