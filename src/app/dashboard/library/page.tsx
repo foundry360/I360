@@ -12,7 +12,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Skeleton } from '@/components/ui/skeleton';
-import { MoreHorizontal, Plus, Trash2, Search, Upload, FilePlus, BookText, Layers } from 'lucide-react';
+import { MoreHorizontal, Plus, Trash2, Search, Upload, FilePlus, Layers } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { useQuickAction } from '@/contexts/quick-action-context';
 import { getUserStories, deleteUserStory, UserStory, bulkCreateUserStories as bulkCreateLibraryStories, getUniqueTags } from '@/services/user-story-service';
@@ -351,7 +351,7 @@ export default function LibraryPage() {
                                         <Badge variant="outline">{story.points || 0} Points</Badge>
                                     </div>
                                 </CardHeader>
-                                <CardContent>
+                                <CardContent className="pt-6">
                                     <p className="text-sm text-muted-foreground">{story.story}</p>
                                 </CardContent>
                              </div>
