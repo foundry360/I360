@@ -1062,16 +1062,7 @@ export default function ProjectDetailsPage() {
                                                     const IconComponent = epicConfig.icon;
                                                     return (
                                                         <AccordionItem value={epic.id} key={epic.id} className="border-none mb-2">
-                                                            <AccordionTrigger 
-                                                                className="space-y-2 p-2 -m-2 rounded-md hover:bg-muted no-underline cursor-pointer"
-                                                                onClick={(e) => {
-                                                                    e.preventDefault();
-                                                                    setActiveTab('backlog');
-                                                                    setActiveEpicAccordion(prev => 
-                                                                        prev.includes(epic.id) ? prev.filter(id => id !== epic.id) : [...prev, epic.id]
-                                                                    );
-                                                                }}
-                                                            >
+                                                            <div className="space-y-2 p-2 -m-2 rounded-md hover:bg-muted no-underline">
                                                                 <div className="flex flex-col w-full gap-2">
                                                                     <div className="flex justify-between items-baseline w-full">
                                                                         <div className="flex items-center gap-2">
@@ -1082,7 +1073,7 @@ export default function ProjectDetailsPage() {
                                                                     </div>
                                                                     <Progress value={epic.progress} />
                                                                 </div>
-                                                            </AccordionTrigger>
+                                                            </div>
                                                         </AccordionItem>
                                                     )
                                                 })}
