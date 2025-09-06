@@ -341,7 +341,7 @@ export default function LibraryPage() {
         </div>
         <div className="flex-1 grid grid-cols-12 gap-6 overflow-hidden">
           <div className="col-span-3">
-             <Card className="h-full">
+             <Card className="h-full bg-muted/50">
                 <CardHeader>
                     <div className="flex justify-between items-center">
                         <CardTitle className="text-base flex items-center gap-2">
@@ -376,7 +376,7 @@ export default function LibraryPage() {
                                             variant="ghost" 
                                             className={cn(
                                                 "w-full justify-start",
-                                                selectedTag === tag.name && "bg-muted font-bold"
+                                                selectedTag === tag.name && "bg-background font-bold"
                                             )}
                                             onClick={() => setSelectedTag(tag.name)}
                                         >
