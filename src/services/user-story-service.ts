@@ -94,20 +94,49 @@ export async function createUserStory(storyData: Omit<UserStory, 'id' | 'created
 }
 
 export async function bulkCreateUserStories(storiesData: Omit<UserStory, 'id' | 'createdAt'>[]): Promise<{ importedCount: number, skippedCount: number }> {
-  const q = query(userStoriesCollection);
-  const snapshot = await getDocs(q);
-  const existingTitles = new Set(snapshot.docs.map(doc => (doc.data() as UserStory).title.toLowerCase().trim()));
+  // 1. Get all existing user story titles to prevent duplicates
+  const storiesQuery = query(userStoriesCollection);
+  const storiesSnapshot = await getDocs(storiesQuery);
+  const existingStoryTitles = new Set(storiesSnapshot.docs.map(doc => (doc.data() as UserStory).title.toLowerCase().trim()));
+
+  // 2. Get all existing tags to prevent creating duplicate tags
+  const tagsQuery = query(tagsCollection);
+  const tagsSnapshot = await getDocs(tagsQuery);
+  const existingTags = new Map(tagsSnapshot.docs.map(doc => [(doc.data() as Tag).name.toLowerCase().trim(), doc.data() as Tag]));
 
   const batch = writeBatch(db);
   let importedCount = 0;
   
+  // 3. Filter out stories that already exist by title
   const storiesToCreate = storiesData.filter(story => {
     const normalizedTitle = story.title.toLowerCase().trim();
-    return !existingTitles.has(normalizedTitle);
+    return !existingStoryTitles.has(normalizedTitle);
   });
   
   const skippedCount = storiesData.length - storiesToCreate.length;
 
+  // 4. Identify new tags from the stories that need to be created
+  const uniqueNewTags = new Set<string>();
+  storiesToCreate.forEach(story => {
+    story.tags?.forEach(tagName => {
+      if (tagName && !existingTags.has(tagName.toLowerCase().trim())) {
+        uniqueNewTags.add(tagName);
+      }
+    });
+  });
+  
+  // 5. Create new tags if any
+  uniqueNewTags.forEach(tagName => {
+      const newTagRef = doc(tagsCollection);
+      const newTag: Tag = {
+          id: newTagRef.id,
+          name: tagName,
+          icon: 'Layers' // Default icon for new tags
+      };
+      batch.set(newTagRef, newTag);
+  });
+
+  // 6. Create the user stories
   storiesToCreate.forEach(storyData => {
     const docRef = doc(userStoriesCollection);
     const storyWithTimestamp = {
@@ -120,7 +149,7 @@ export async function bulkCreateUserStories(storiesData: Omit<UserStory, 'id' | 
     importedCount++;
   });
 
-  if (importedCount > 0) {
+  if (importedCount > 0 || uniqueNewTags.size > 0) {
       await batch.commit();
   }
   
