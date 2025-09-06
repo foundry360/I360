@@ -1267,7 +1267,6 @@ export default function ProjectDetailsPage() {
                                                 <AccordionTrigger className="text-base font-normal">
                                                     <div className="flex items-center gap-3 flex-1">
                                                         <IconComponent className={cn("h-5 w-5", epicConfig.color)} />
-                                                        <Badge variant={epic.status === 'Done' ? 'success' : 'secondary'} className="whitespace-nowrap">{epic.status}</Badge>
                                                         <span className="font-semibold text-sm">{epic.title}</span>
                                                         <span className="text-muted-foreground text-sm">{projectPrefix}-{epic.epicId}</span>
                                                     </div>
