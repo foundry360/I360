@@ -431,7 +431,7 @@ export default function CompaniesPage() {
                 ) : (
                   <TableRow>
                     <TableCell colSpan={7} className="h-24 text-center">
-                      No companies found.
+                      No companies found
                     </TableCell>
                   </TableRow>
                 )}

@@ -2,47 +2,172 @@
 'use client';
 
 import { db } from '@/lib/firebase';
-import { doc, getDoc, setDoc, writeBatch, collection } from 'firebase/firestore';
+import { doc, getDoc, setDoc, writeBatch, collection, serverTimestamp, FieldValue } from 'firebase/firestore';
 import type { Company } from './company-service';
 import type { Contact } from './contact-service';
 import type { Task, TaskStatus, TaskType, TaskPriority } from './task-service';
 import type { Epic } from './epic-service';
 import type { BacklogItem } from './backlog-item-service';
-
+import type { UserStory } from './user-story-service';
 
 const ACME_INC_ID = 'acme-inc';
 
 const initialTasks: {
-    id: string; title: string; status: TaskStatus; owner: string; ownerAvatarUrl: string; priority: TaskPriority; type: TaskType; order: number; projectId: string;
+    id: string; title: string; status: TaskStatus; owner: string; ownerAvatarUrl: string; priority: TaskPriority; type: TaskType; order: number; projectId: string; backlogId?: number;
 }[] = [
-    { id: 'task-1', title: 'Setup project repository', status: 'Complete', owner: 'John Doe', ownerAvatarUrl: 'https://i.pravatar.cc/150?u=a042581f4e29026024d', priority: 'High', type: 'Planning', order: 0, projectId: 'acme-inc-project' },
-    { id: 'task-2', title: 'Design database schema', status: 'Complete', owner: 'Jane Smith', ownerAvatarUrl: 'https://i.pravatar.cc/150?u=a042581f4e29026704d', priority: 'High', type: 'Planning', order: 1, projectId: 'acme-inc-project' },
-    { id: 'task-3', title: 'Develop authentication flow', status: 'Final Approval', owner: 'John Doe', ownerAvatarUrl: 'https://i.pravatar.cc/150?u=a042581f4e29026024d', priority: 'Medium', type: 'Execution', order: 0, projectId: 'acme-inc-project' },
-    { id: 'task-4', title: 'Build main dashboard UI', status: 'In Progress', owner: 'Mike Johnson', ownerAvatarUrl: 'https://i.pravatar.cc/150?u=a04258114e29026702d', priority: 'High', type: 'Execution', order: 0, projectId: 'acme-inc-project' },
-    { id: 'task-8', title: 'Fix login button style', status: 'Needs Revision', owner: 'Jane Smith', ownerAvatarUrl: 'https://i.pravatar.cc/150?u=a042581f4e29026704d', priority: 'Low', type: 'Review', order: 0, projectId: 'acme-inc-project' },
-    { id: 'task-5', title: 'Implement assessment generation logic', status: 'To Do', owner: 'Mike Johnson', ownerAvatarUrl: 'https://i.pravatar.cc/150?u=a04258114e29026702d', priority: 'High', type: 'Assessment', order: 0, projectId: 'acme-inc-project' },
-    { id: 'task-6', title: 'Write unit tests for services', status: 'To Do', owner: 'John Doe', ownerAvatarUrl: 'https://i.pravatar.cc/150?u=a042581f4e29026024d', priority: 'Medium', type: 'Execution', order: 1, projectId: 'acme-inc-project' },
-    { id: 'task-7', title: 'Configure deployment pipeline', status: 'To Do', owner: 'Emily White', ownerAvatarUrl: 'https://i.pravatar.cc/150?u=a042581f4e29026704e', priority: 'Low', type: 'Enablement', order: 2, projectId: 'acme-inc-project' },
-    { id: 'task-9', title: 'Client Workshop Prep', status: 'In Progress', owner: 'Emily White', ownerAvatarUrl: 'https://i.pravatar.cc/150?u=a042581f4e29026704e', priority: 'Medium', type: 'Workshop', order: 1, projectId: 'acme-inc-project' },
-    { id: 'task-10', title: 'Q3 Planning Session', status: 'To Do', owner: 'Jane Smith', ownerAvatarUrl: 'https://i.pravatar.cc/150?u=a042581f4e29026704d', priority: 'High', type: 'Planning', order: 3, projectId: 'acme-inc-project' },
-    { id: 'task-11', title: 'Review API endpoints', status: 'In Review', owner: 'Mike Johnson', ownerAvatarUrl: 'https://i.pravatar.cc/150?u=a04258114e29026702d', priority: 'Medium', type: 'Review', order: 0, projectId: 'acme-inc-project'},
+    { id: 'task-1', title: 'Setup project repository', status: 'Complete', owner: 'John Doe', ownerAvatarUrl: 'https://i.pravatar.cc/150?u=a042581f4e29026024d', priority: 'High', type: 'Planning', order: 0, projectId: 'acme-inc-project', backlogId: 1.1 },
+    { id: 'task-2', title: 'Design database schema', status: 'Complete', owner: 'Jane Smith', ownerAvatarUrl: 'https://i.pravatar.cc/150?u=a042581f4e29026704d', priority: 'High', type: 'Planning', order: 1, projectId: 'acme-inc-project', backlogId: 1.2 },
+    { id: 'task-3', title: 'Develop authentication flow', status: 'Final Approval', owner: 'John Doe', ownerAvatarUrl: 'https://i.pravatar.cc/150?u=a042581f4e29026024d', priority: 'Medium', type: 'Execution', order: 0, projectId: 'acme-inc-project', backlogId: 2.1 },
+    { id: 'task-4', title: 'Build main dashboard UI', status: 'In Progress', owner: 'Mike Johnson', ownerAvatarUrl: 'https://i.pravatar.cc/150?u=a04258114e29026702d', priority: 'High', type: 'Execution', order: 0, projectId: 'acme-inc-project', backlogId: 2.2 },
+    { id: 'task-8', title: 'Fix login button style', status: 'Needs Revision', owner: 'Jane Smith', ownerAvatarUrl: 'https://i.pravatar.cc/150?u=a042581f4e29026704d', priority: 'Low', type: 'Review', order: 0, projectId: 'acme-inc-project', backlogId: 2.3 },
+    { id: 'task-5', title: 'Implement assessment generation logic', status: 'To Do', owner: 'Mike Johnson', ownerAvatarUrl: 'https://i.pravatar.cc/150?u=a04258114e29026702d', priority: 'High', type: 'Assessment', order: 0, projectId: 'acme-inc-project', backlogId: 3.1 },
+    { id: 'task-6', title: 'Write unit tests for services', status: 'To Do', owner: 'John Doe', ownerAvatarUrl: 'https://i.pravatar.cc/150?u=a042581f4e29026024d', priority: 'Medium', type: 'Execution', order: 1, projectId: 'acme-inc-project', backlogId: 3.2 },
+    { id: 'task-7', title: 'Configure deployment pipeline', status: 'To Do', owner: 'Emily White', ownerAvatarUrl: 'https://i.pravatar.cc/150?u=a042581f4e29026704e', priority: 'Low', type: 'Enablement', order: 2, projectId: 'acme-inc-project', backlogId: 4.1 },
+    { id: 'task-9', title: 'Client Workshop Prep', status: 'In Progress', owner: 'Emily White', ownerAvatarUrl: 'https://i.pravatar.cc/150?u=a042581f4e29026704e', priority: 'Medium', type: 'Workshop', order: 1, projectId: 'acme-inc-project', backlogId: 4.2 },
+    { id: 'task-10', title: 'Q3 Planning Session', status: 'To Do', owner: 'Jane Smith', ownerAvatarUrl: 'https://i.pravatar.cc/150?u=a042581f4e29026704d', priority: 'High', type: 'Planning', order: 3, projectId: 'acme-inc-project', backlogId: 5.1 },
+    { id: 'task-11', title: 'Review API endpoints', status: 'In Review', owner: 'Mike Johnson', ownerAvatarUrl: 'https://i.pravatar.cc/150?u=a04258114e29026702d', priority: 'Medium', type: 'Review', order: 0, projectId: 'acme-inc-project', backlogId: 5.2 },
 ];
 
-const initialEpics: Omit<Epic, 'id'>[] = [
-    { projectId: 'acme-inc-project', epicId: 1, title: "User Authentication & Profile Management", description: "As a user, I want to be able to sign up, log in, and manage my profile information securely.", status: "In Progress" },
-    { projectId: 'acme-inc-project', epicId: 2, title: "Assessment & Reporting Engine", description: "As a user, I want to be able to complete an assessment and view a detailed, insightful report based on my answers.", status: "To Do" }
+
+const initialProjectTemplate = [
+    {
+        epic: { title: "Foundation & Strategic Alignment", description: "This category focuses on establishing a strong foundation for the GTM strategy by aligning all departments and defining the core principles of the engagement.", tags: ["Strategy", "Foundation", "GTM"] },
+        backlogItems: [
+            "Establish committee charter and weekly meeting cadence",
+            "Create project management infrastructure and communication protocols",
+            "Perform current-state analysis",
+            "Execute lost deal analysis",
+            "Perform competitive analysis update and differentiation assessment",
+            "Facilitate cross-functional ICP workshops",
+            "Document detailed ICP including demographics, psychographics, and behaviors",
+            "Analyze customer research insights for value driver identification",
+            "Conduct value proposition development workshops with stakeholders",
+            "Create unified messaging framework with competitive differentiation",
+            "Develop objection handling and proof point documentation",
+            "Validate messaging with customer feedback and A/B testing",
+            "Design comprehensive sales enablement program with new messaging",
+            "Realign marketing campaigns and content with updated ICP",
+            "Update all customer-facing materials (proposals, presentations, website)",
+            "Execute internal communication rollout across organization",
+            "Implement messaging consistency measurement and monitoring"
+        ]
+    },
+    {
+        epic: { title: "RevOps Foundation & Data Infrastructure", description: "This category is about building a robust data and technology infrastructure to support all revenue-generating activities.", tags: ["RevOps", "Data", "Tech Stack"] },
+        backlogItems: [
+            "Conduct a comprehensive CRM configuration audit",
+            "Implement data hygiene protocols and validation rules",
+            "Execute systematic data cleansing (prioritizing customer/prospect data)",
+            "Optimize page layouts, custom fields, and user permissions",
+            "Map integration architecture and data flow requirements",
+            "Implement priority integrations (Marketing automation, Customer success platform)",
+            "Develop workflow automation (lead routing, opportunity progression)",
+            "Configure automated data synchronization between systems",
+            "Test integrations and establish failure/recovery procedures",
+            "Create real-time performance dashboards for all GTM functions",
+            "Implement automated forecasting system (replace manual Excel processes)",
+            "Deploy advanced lead scoring and customer health monitoring",
+            "Establish KPI tracking with trend analysis and alerts",
+            "Build an executive dashboard with strategic metrics",
+            "Document optimized workflows and standard operating procedures",
+            "Create user adoption measurement and feedback systems",
+            "Establish ongoing data quality monitoring and maintenance",
+            "Implement change management support for technology adoption"
+        ]
+    },
+    {
+        epic: { title: "Sales Process Enhancement & Pipeline Optimization", description: "This category focuses on standardizing and optimizing the sales process to improve efficiency and increase pipeline velocity.", tags: ["Sales", "Pipeline", "Process"] },
+        backlogItems: [
+            "Map current sales process and identify bottlenecks",
+            "Design optimized sales methodology aligned with customer journey",
+            "Create stage-gate criteria and advancement requirements",
+            "Develop sales playbooks for different customer segments",
+            "Implement opportunity management best practices",
+            "Establish pipeline coverage targets (move from 1x to 4x)",
+            "Implement lead qualification framework (improve from <20% to 50% conversion)",
+            "Create pipeline health monitoring and alerts",
+            "Design territory and account assignment optimization",
+            "Establish regular pipeline review cadence and procedures",
+            "Create competitive battlecards and positioning materials",
+            "Develop proposal templates and sales collateral library",
+            "Implement sales training on new messaging and processes",
+            "Establish ongoing coaching and skill development programs",
+            "Create performance tracking and improvement plans"
+        ]
+    },
+    {
+        epic: { title: "Customer Experience & Lifecycle Management", description: "This category aims to improve the customer experience across the entire lifecycle to drive retention and expansion.", tags: ["Customer Success", "CX", "Lifecycle"] },
+        backlogItems: [
+            "Execute comprehensive customer journey mapping across all touchpoints",
+            "Identify friction points and experience gaps throughout lifecycle",
+            "Develop customer segmentation and persona-based experience paths",
+            "Design onboarding optimization to reduce time-to-value (target: 6+ months to 2 months)",
+            "Create customer journey measurement and monitoring systems",
+            "Implement a customer health scoring system with predictive analytics",
+            "Design proactive customer success workflows and intervention triggers",
+            "Create customer success playbooks (onboarding, adoption, expansion, renewal)",
+            "Establish regular business review cycles and value demonstration",
+            "Build customer communication automation and personalization",
+            "Implement comprehensive feedback system (NPS, CSAT, interviews)",
+            "Create systematic customer feedback analysis and response processes",
+            "Develop customer advocacy and referral programs",
+            "Build a case study and a success story development process",
+            "Establish customer advisory board and strategic relationship programs",
+            "Design account-based marketing campaigns for existing customers",
+            "Create expansion opportunity identification and management processes",
+            "Implement renewal management with early risk identification",
+            "Develop customer value demonstration and ROI reporting",
+            "Build competitive win-back and retention programs"
+        ]
+    },
+    {
+        epic: { title: "Performance Measurement & Continuous Optimization", description: "This category is focused on establishing a data-driven culture of continuous improvement and performance measurement.", tags: ["Analytics", "KPIs", "Optimization"] },
+        backlogItems: [
+            "Establish a comprehensive KPI framework across all GTM domains",
+            "Create performance benchmarking against industry standards",
+            "Implement real-time performance monitoring and alerting",
+            "Design an executive dashboard with key transformation metrics",
+            "Build automated reporting and insight generation",
+            "Implement predictive analytics for customer behavior and churn risk",
+            "Deploy competitive intelligence and market positioning optimization",
+            "Create advanced forecasting with scenario planning capabilities",
+            "Build customer lifetime value optimization frameworks",
+            "Establish market opportunity identification and prioritization systems",
+            "Design systematic performance review and optimization cycles",
+            "Create feedback collection and analysis processes",
+            "Implement A/B testing framework for process and messaging optimization",
+            "Establish innovation and experimentation processes",
+            "Build knowledge management and organizational learning systems"
+        ]
+    },
+    {
+        epic: { title: "Advanced Capabilities & Scaling", description: "This category involves implementing advanced technologies and strategic capabilities to prepare the organization for future growth and scaling.", tags: ["AI", "Scaling", "Automation"] },
+        backlogItems: [
+            "Deploy AI-enhanced lead scoring and customer behavior prediction",
+            "Implement conversation intelligence and sales process optimization",
+            "Create predictive customer health and churn modeling",
+            "Build intelligent content and campaign personalization",
+            "Establish automated competitive analysis and response systems",
+            "Implement end-to-end customer lifecycle automation",
+            "Create advanced territory and account optimization systems",
+            "Build an intelligent proposal and pricing optimization",
+            "Deploy automated market opportunity identification",
+            "Establish self-healing system monitoring and maintenance",
+            "Create market expansion readiness assessment and planning",
+            "Build scalable process frameworks for geographic/segment expansion",
+            "Implement strategic partnership and channel development",
+            "Establish competitive moat development and protection",
+            "Create acquisition integration and synergy realization capabilities"
+        ]
+    }
 ];
 
-const initialBacklogItems: Omit<BacklogItem, 'id'>[] = [
-    // Epic 1
-    { projectId: 'acme-inc-project', epicId: 'acme-inc-project-epic-1', backlogId: 101, title: "User sign-up page", description: "Create the UI and logic for user registration.", status: "Complete", points: 5, priority: 'High' },
-    { projectId: 'acme-inc-project', epicId: 'acme-inc-project-epic-1', backlogId: 102, title: "User login page", description: "Create the UI and logic for user authentication.", status: "Complete", points: 3, priority: 'High' },
-    { projectId: 'acme-inc-project', epicId: 'acme-inc-project-epic-1', backlogId: 103, title: "User profile page", description: "Allow users to view and update their display name and avatar.", status: "To Do", points: 5, priority: 'Medium' },
-    // Epic 2
-    { projectId: 'acme-inc-project', epicId: 'acme-inc-project-epic-2', backlogId: 104, title: "Assessment form creation", description: "Build the multi-step form for the GTM assessment.", status: "To Do", points: 8, priority: 'High' },
-    { projectId: 'acme-inc-project', epicId: 'acme-inc-project-epic-2', backlogId: 105, title: "AI report generation flow", description: "Create the Genkit flow to analyze form data and produce a report.", status: "To Do", points: 13, priority: 'High' },
-    { projectId: 'acme-inc-project', epicId: 'acme-inc-project-epic-2', backlogId: 106, title: "Report display component", description: "Build the React component to display the generated report in a visually appealing way.", status: "To Do", points: 8, priority: 'Medium' },
-];
+const initialUserStories: Omit<UserStory, 'id' | 'createdAt'>[] = initialProjectTemplate.map(item => ({
+    title: item.epic.title,
+    story: item.epic.description,
+    acceptanceCriteria: item.backlogItems,
+    tags: item.epic.tags,
+}));
 
 
 export const seedInitialData = async () => {
@@ -91,13 +216,14 @@ export const seedInitialData = async () => {
         
         const acmeProject = {
             id: 'acme-inc-project',
-            name: 'ACME-01012024-Default Project',
+            name: 'ACME-Default Project',
             description: 'Default seed project for Acme Inc.',
             companyId: ACME_INC_ID,
             status: 'Active' as const,
             priority: 'High' as const,
             startDate: new Date().toISOString(),
             owner: 'Wile E. Coyote',
+            ownerAvatarUrl: `https://i.pravatar.cc/150?u=wile@acme.inc`,
             team: 'Wile E. Coyote, Road Runner',
             category: 'Execution' as const,
         }
@@ -125,26 +251,21 @@ export const seedInitialData = async () => {
                 const taskRef = doc(tasksCollectionRef, task.id);
                 batch.set(taskRef, task);
             });
-
-            // Set Epics
-            const epicsCollectionRef = collection(db, 'epics');
-            initialEpics.forEach((epic, index) => {
-                const epicId = `${epic.projectId}-epic-${index + 1}`;
-                const epicRef = doc(epicsCollectionRef, epicId);
-                batch.set(epicRef, { ...epic, id: epicId });
-            });
-
-            // Set Backlog Items
-            const backlogItemsCollectionRef = collection(db, 'backlogItems');
-            initialBacklogItems.forEach((item, index) => {
-                const itemId = `${item.projectId}-item-${index + 1}`;
-                const itemRef = doc(backlogItemsCollectionRef, itemId);
-                batch.set(itemRef, { ...item, id: itemId });
+            
+            // Set User Stories
+            const userStoriesCollectionRef = collection(db, 'userStories');
+            initialUserStories.forEach(story => {
+                const storyRef = doc(userStoriesCollectionRef);
+                const storyWithTimestamp: Omit<UserStory, 'id'> = {
+                    ...story,
+                    createdAt: serverTimestamp()
+                };
+                batch.set(storyRef, { ...storyWithTimestamp, id: storyRef.id });
             });
             
             await batch.commit();
 
-            console.log("Successfully seeded 'Acme Inc', contacts, project, tasks, epics, and backlog items.");
+            console.log("Successfully seeded 'Acme Inc', contacts, project, tasks, and user stories.");
         } catch (error) {
             console.error("Error seeding data: ", error);
         }

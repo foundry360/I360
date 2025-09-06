@@ -15,6 +15,8 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from './ui/textarea';
 import { createEpic, type Epic } from '@/services/epic-service';
 import { useQuickAction } from '@/contexts/quick-action-context';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import { getTags, type Tag } from '@/services/user-story-service';
 
 type NewEpicState = Omit<Epic, 'id' | 'epicId'>;
 
@@ -23,6 +25,7 @@ const initialNewEpicState: NewEpicState = {
   title: '',
   description: '',
   status: 'To Do',
+  category: 'Uncategorized',
 };
 
 export function NewEpicDialog() {
@@ -34,16 +37,24 @@ export function NewEpicDialog() {
   } = useQuickAction();
   
   const [newItem, setNewItem] = React.useState<NewEpicState>(initialNewEpicState);
+  const [availableTags, setAvailableTags] = React.useState<Tag[]>([]);
 
   React.useEffect(() => {
     if (newEpicData) {
       setNewItem(prev => ({ ...prev, projectId: newEpicData.projectId }));
     }
-  }, [newEpicData]);
+    if (isNewEpicDialogOpen) {
+      getTags().then(setAvailableTags);
+    }
+  }, [newEpicData, isNewEpicDialogOpen]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { id, value } = e.target;
     setNewItem((prev) => ({ ...prev, [id]: value }));
+  };
+
+  const handleSelectChange = (value: string) => {
+    setNewItem((prev) => ({ ...prev, category: value }));
   };
 
   const handleCreateItem = async (e: React.FormEvent) => {
@@ -77,7 +88,7 @@ export function NewEpicDialog() {
           <DialogHeader>
             <DialogTitle>Create New Epic</DialogTitle>
             <DialogDescription>
-              Fill in the details below to add an Epic to the project.
+              Fill in the details below to add an Epic to the project
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4 max-h-[70vh] overflow-y-auto pr-4">
@@ -88,6 +99,19 @@ export function NewEpicDialog() {
              <div className="grid grid-cols-4 items-start gap-4">
               <Label htmlFor="description" className="text-right pt-2">Description</Label>
               <Textarea id="description" value={newItem.description} onChange={handleInputChange} className="col-span-3" />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="category" className="text-right">Category</Label>
+                <Select onValueChange={handleSelectChange} value={newItem.category}>
+                    <SelectTrigger className="col-span-3">
+                        <SelectValue placeholder="Select a category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        {availableTags.map(tag => (
+                            <SelectItem key={tag.id} value={tag.name}>{tag.name}</SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
             </div>
           </div>
           <DialogFooter className="pt-4">

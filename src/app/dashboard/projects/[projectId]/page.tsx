@@ -21,13 +21,6 @@ import {
   MoreVertical,
   Pencil,
   Trash2,
-  BookCopy,
-  Database,
-  Megaphone,
-  HeartHandshake,
-  BarChart3,
-  Scaling,
-  Rocket,
   CheckCircle,
   Search,
   Clock,
@@ -38,6 +31,9 @@ import {
   TrendingUp,
   AlertTriangle,
   Calendar,
+  Library,
+  Inbox,
+  Rocket,
 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
@@ -64,6 +60,9 @@ import { Progress } from '@/components/ui/progress';
 import { Line, LineChart, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, CartesianGrid, Area, Dot, Legend } from 'recharts';
 import { ChartContainer, ChartTooltipContent, type ChartConfig, ChartLegend, ChartLegendContent } from '@/components/ui/chart';
 import { TimelineView } from '@/components/timeline-view';
+import Link from 'next/link';
+import { getTags, type Tag } from '@/services/user-story-service';
+import { tagConfig } from '@/lib/tag-config';
 
 type TaskType = Task['type'];
 type BoardColumns = Record<TaskStatus, Task[]>;
@@ -76,16 +75,6 @@ const taskTypeIcons: Record<TaskType, React.ElementType> = {
     Execution: Wrench,
     Review: SearchCheck,
 };
-
-export const epicIcons: Record<string, { icon: React.ElementType, color: string }> = {
-    "Foundation & Strategic Alignment": { icon: BookCopy, color: 'text-chart-1' },
-    "RevOps Foundation & Data Infrastructure": { icon: Database, color: 'text-chart-2' },
-    "Sales Process Enhancement & Pipeline Optimization": { icon: Megaphone, color: 'text-chart-3' },
-    "Customer Experience & Lifecycle Management": { icon: HeartHandshake, color: 'text-chart-4' },
-    "Performance Measurement & Continuous Optimization": { icon: BarChart3, color: 'text-chart-5' },
-    "Advanced Capabilities & Scaling": { icon: Scaling, color: 'text-primary' },
-};
-
 
 const taskTypeColors: Record<TaskType, string> = {
     Assessment: 'bg-chart-1',
@@ -268,6 +257,7 @@ export default function ProjectDetailsPage() {
     const [backlogItems, setBacklogItems] = React.useState<BacklogItem[]>([]);
     const [sprints, setSprints] = React.useState<Sprint[]>([]);
     const [contacts, setContacts] = React.useState<Contact[]>([]);
+    const [allTags, setAllTags] = React.useState<Tag[]>([]);
     const [loading, setLoading] = React.useState(true);
     const [activeTab, setActiveTab] = React.useState('summary');
     const { 
@@ -283,24 +273,26 @@ export default function ProjectDetailsPage() {
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
     const [itemToDelete, setItemToDelete] = React.useState<{type: 'epic' | 'backlogItem' | 'sprint', id: string, name: string} | null>(null);
     const [allWorkSearchTerm, setAllWorkSearchTerm] = React.useState('');
-    const [activeBacklogAccordion, setActiveBacklogAccordion] = React.useState<string[]>([]);
+    const [activeEpicAccordion, setActiveEpicAccordion] = React.useState<string[]>([]);
 
     const fetchData = React.useCallback(async () => {
         if (!projectId) return;
         setLoading(true);
         try {
-            const [projectData, tasksData, epicsData, backlogItemsData, sprintsData] = await Promise.all([
+            const [projectData, tasksData, epicsData, backlogItemsData, sprintsData, tagsData] = await Promise.all([
                 getProject(projectId),
                 getTasksForProject(projectId),
                 getEpicsForProject(projectId),
                 getBacklogItemsForProject(projectId),
                 getSprintsForProject(projectId),
+                getTags(),
             ]);
             setProject(projectData);
             setTasks(tasksData);
             setEpics(epicsData);
             setBacklogItems(backlogItemsData);
             setSprints(sprintsData);
+            setAllTags(tagsData);
             
             if (projectData?.companyId) {
                 const companyContacts = await getContactsForCompany(projectData.companyId);
@@ -441,24 +433,24 @@ export default function ProjectDetailsPage() {
             if (itemsInSprint.length === 0) {
                 toast({
                     variant: 'destructive',
-                    title: 'Cannot Start Empty Sprint',
-                    description: 'Add items to the sprint before starting it.',
+                    title: 'Cannot Start Empty Wave',
+                    description: 'Add items to the wave before starting it.',
                 });
                 setLoading(false);
                 return;
             }
             await startSprint(sprintId, projectId, itemsInSprint, tasks);
             toast({
-                title: 'Sprint Started!',
+                title: 'Wave Started!',
                 description: 'Tasks have been created on the board.',
             });
             await fetchData();
         } catch (error) {
-            console.error('Failed to start sprint:', error);
+            console.error('Failed to start wave:', error);
             toast({
                 variant: 'destructive',
-                title: 'Error Starting Sprint',
-                description: 'There was a problem starting the sprint.',
+                title: 'Error Starting Wave',
+                description: 'There was a problem starting the wave.',
             });
         } finally {
             setLoading(false);
@@ -470,16 +462,16 @@ export default function ProjectDetailsPage() {
             setLoading(true);
             await completeSprint(sprintId, projectId);
             toast({
-                title: 'Sprint Completed!',
+                title: 'Wave Completed!',
                 description: 'Completed tasks have been archived.',
             });
             await fetchData();
         } catch (error) {
-            console.error('Failed to complete sprint:', error);
-            const errorMessage = (error instanceof Error) ? error.message : 'There was a problem completing the sprint.';
+            console.error('Failed to complete wave:', error);
+            const errorMessage = (error instanceof Error) ? error.message : 'There was a problem completing the wave.';
             toast({
                 variant: 'destructive',
-                title: 'Error Completing Sprint',
+                title: 'Error Completing Wave',
                 description: errorMessage,
             });
         } finally {
@@ -518,6 +510,7 @@ export default function ProjectDetailsPage() {
                 id: epic.id,
                 name: epic.title,
                 progress: Math.round(progress),
+                category: epic.category,
             }
         });
     }, [epics, backlogItems, tasks]);
@@ -720,6 +713,7 @@ export default function ProjectDetailsPage() {
             type: 'epic' as const,
             progress: epicProgress,
             children: epicChildren,
+            category: epic.category,
         };
     }).filter(Boolean);
 
@@ -740,6 +734,8 @@ export default function ProjectDetailsPage() {
       if (!name) return '';
       return name.split(' ').map(n => n[0]).join('').toUpperCase();
     }
+    
+    const unassignedBacklogItems = backlogItems.filter(item => !item.epicId);
 
     if (loading) {
         return (
@@ -801,23 +797,29 @@ export default function ProjectDetailsPage() {
                         >
                             Summary
                         </TabsTrigger>
-                        <TabsTrigger 
-                            value="board"
-                            className="pb-3 rounded-none data-[state=active]:shadow-none data-[state=active]:border-primary data-[state=active]:border-b-4 data-[state=active]:text-foreground data-[state=active]:font-bold"
-                        >
-                            Board
-                        </TabsTrigger>
                          <TabsTrigger 
                             value="backlog"
                             className="pb-3 rounded-none data-[state=active]:shadow-none data-[state=active]:border-primary data-[state=active]:border-b-4 data-[state=active]:text-foreground data-[state=active]:font-bold"
                         >
                             Backlog
                         </TabsTrigger>
+                        <TabsTrigger 
+                            value="board"
+                            className="pb-3 rounded-none data-[state=active]:shadow-none data-[state=active]:border-primary data-[state=active]:border-b-4 data-[state=active]:text-foreground data-[state=active]:font-bold"
+                        >
+                            Board
+                        </TabsTrigger>
+                        <TabsTrigger 
+                            value="epics"
+                            className="pb-3 rounded-none data-[state=active]:shadow-none data-[state=active]:border-primary data-[state=active]:border-b-4 data-[state=active]:text-foreground data-[state=active]:font-bold"
+                        >
+                            Epics
+                        </TabsTrigger>
                          <TabsTrigger 
                             value="sprints"
                             className="pb-3 rounded-none data-[state=active]:shadow-none data-[state=active]:border-primary data-[state=active]:border-b-4 data-[state=active]:text-foreground data-[state=active]:font-bold"
                         >
-                            Sprints
+                            Waves
                         </TabsTrigger>
                          <TabsTrigger 
                             value="timeline"
@@ -833,18 +835,34 @@ export default function ProjectDetailsPage() {
                         </TabsTrigger>
                     </TabsList>
                      <div className="flex items-center gap-2">
-                        {activeTab === 'backlog' && (
-                             <>
+                        {(activeTab === 'backlog' || activeTab === 'epics') && (
+                             <div className="flex items-center gap-2">
                                 <TooltipProvider>
                                     <Tooltip>
                                         <TooltipTrigger asChild>
-                                            <Button variant="outline" size="icon" onClick={() => openNewEpicDialog(projectId)}><Layers className="h-4 w-4" /></Button>
+                                            <Button asChild variant="outline" size="icon">
+                                                <Link href={`/dashboard/library?projectId=${projectId}`}>
+                                                    <Library className="h-4 w-4" />
+                                                </Link>
+                                            </Button>
                                         </TooltipTrigger>
                                         <TooltipContent>
-                                            <p>Add Epic</p>
+                                            <p>Add from Library</p>
                                         </TooltipContent>
                                     </Tooltip>
                                 </TooltipProvider>
+                                {activeTab === 'epics' && (
+                                    <TooltipProvider>
+                                        <Tooltip>
+                                            <TooltipTrigger asChild>
+                                                <Button variant="outline" size="icon" onClick={() => openNewEpicDialog(projectId)}><Layers className="h-4 w-4" /></Button>
+                                            </TooltipTrigger>
+                                            <TooltipContent>
+                                                <p>Add Epic</p>
+                                            </TooltipContent>
+                                        </Tooltip>
+                                    </TooltipProvider>
+                                )}
                                 <TooltipProvider>
                                     <Tooltip>
                                         <TooltipTrigger asChild>
@@ -855,7 +873,7 @@ export default function ProjectDetailsPage() {
                                         </TooltipContent>
                                     </Tooltip>
                                 </TooltipProvider>
-                            </>
+                            </div>
                         )}
                          {activeTab === 'sprints' && (
                             <TooltipProvider>
@@ -866,7 +884,7 @@ export default function ProjectDetailsPage() {
                                         </Button>
                                     </TooltipTrigger>
                                     <TooltipContent>
-                                        <p>New Sprint</p>
+                                        <p>New Wave</p>
                                     </TooltipContent>
                                 </Tooltip>
                             </TooltipProvider>
@@ -881,7 +899,7 @@ export default function ProjectDetailsPage() {
                                 <Card>
                                     <CardHeader>
                                         <CardTitle>Velocity</CardTitle>
-                                        <CardDescription>Story points completed per sprint</CardDescription>
+                                        <CardDescription>Story points completed per wave</CardDescription>
                                     </CardHeader>
                                     <CardContent>
                                         {velocityData.length > 0 ? (
@@ -937,7 +955,7 @@ export default function ProjectDetailsPage() {
                                             </ChartContainer>
                                         ) : (
                                             <div className="h-[150px] flex items-center justify-center text-center text-muted-foreground text-sm">
-                                                Complete a sprint to see your team's velocity.
+                                                Complete a wave to see your team's velocity.
                                             </div>
                                         )}
                                     </CardContent>
@@ -989,7 +1007,7 @@ export default function ProjectDetailsPage() {
                                             </ChartContainer>
                                         ) : (
                                              <div className="h-[150px] flex items-center justify-center text-center text-muted-foreground text-sm p-4">
-                                                Complete a sprint with estimated story points to generate a burndown chart.
+                                                Complete a wave with estimated story points to generate a burndown chart.
                                             </div>
                                         )}
                                     </CardContent>
@@ -999,7 +1017,7 @@ export default function ProjectDetailsPage() {
                                 {activeSprintHealthData && (
                                     <Card>
                                         <CardHeader>
-                                            <CardTitle>Active Sprint Health</CardTitle>
+                                            <CardTitle>Active Wave Health</CardTitle>
                                             <CardDescription>{activeSprint?.name}</CardDescription>
                                         </CardHeader>
                                         <CardContent>
@@ -1043,27 +1061,18 @@ export default function ProjectDetailsPage() {
                                     </CardHeader>
                                     <CardContent>
                                          {epicProgressData.length > 0 ? (
-                                            <Accordion type="multiple" value={activeBacklogAccordion} onValueChange={setActiveBacklogAccordion} className="w-full">
+                                            <Accordion type="multiple" className="w-full">
                                                 {epicProgressData.map((epic, index) => {
-                                                    const epicConfig = epicIcons[epic.name] || { icon: Layers, color: 'text-foreground' };
-                                                    const IconComponent = epicConfig.icon;
+                                                    const config = tagConfig.find(c => c.iconName === epic.category) || tagConfig.find(t => t.iconName === 'Layers');
+                                                    const IconComponent = config?.icon || Layers;
+                                                    const color = config?.color || 'text-foreground';
                                                     return (
                                                         <AccordionItem value={epic.id} key={epic.id} className="border-none mb-2">
-                                                            <AccordionTrigger 
-                                                                className="space-y-2 p-2 -m-2 rounded-md hover:bg-muted no-underline cursor-pointer"
-                                                                onClick={(e) => {
-                                                                    e.preventDefault();
-                                                                    setActiveTab('backlog');
-                                                                    setActiveBacklogAccordion(prev => 
-                                                                        prev.includes(epic.id) ? prev.filter(id => id !== epic.id) : [...prev, epic.id]
-                                                                    );
-                                                                }}
-                                                                noChevron
-                                                            >
-                                                                <div className="flex flex-col w-full gap-2">
+                                                            <AccordionTrigger className="text-base font-normal no-underline hover:no-underline p-2 -m-2 rounded-md hover:bg-muted" noChevron>
+                                                                <div className="space-y-2 w-full">
                                                                     <div className="flex justify-between items-baseline w-full">
                                                                         <div className="flex items-center gap-2">
-                                                                            <IconComponent className={cn("h-4 w-4", epicConfig.color)} />
+                                                                            <IconComponent className={cn("h-4 w-4", color)} />
                                                                             <p className="text-sm font-medium">{epic.name}</p>
                                                                         </div>
                                                                         <p className="text-sm text-muted-foreground">{epic.progress}% complete</p>
@@ -1224,116 +1233,228 @@ export default function ProjectDetailsPage() {
                             </div>
                         </DragDropContext>
                     </TabsContent>
+                    <TabsContent value="epics">
+                        <div className="space-y-6">
+                            {epics.length === 0 ? (
+                                 <Card className="border-dashed">
+                                    <CardContent className="p-10 text-center">
+                                        <div className="flex justify-center mb-4">
+                                            <div className="bg-primary rounded-full p-3">
+                                                <Layers className="h-8 w-8 text-primary-foreground" />
+                                            </div>
+                                        </div>
+                                        <h3 className="text-lg font-semibold">No Epics Yet!</h3>
+                                        <p className="text-muted-foreground mt-2 mb-4">
+                                            Epics are large bodies of work that can be broken down into smaller stories. Get started by creating your first one.
+                                        </p>
+                                        <div className="flex justify-center gap-4">
+                                            <Button onClick={() => openNewEpicDialog(projectId)}><Plus className="h-4 w-4 mr-2" /> Create Epic</Button>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            ) : (
+                                <Accordion type="multiple" className="w-full" value={activeEpicAccordion} onValueChange={setActiveEpicAccordion}>
+                                    {epics.map(epic => {
+                                        const config = tagConfig.find(c => c.iconName === epic.category) || tagConfig.find(t => t.iconName === 'Layers');
+                                        const IconComponent = config?.icon || Layers;
+                                        const color = config?.color || 'text-foreground';
+                                        const itemsInEpic = backlogItems.filter(item => item.epicId === epic.id);
+                                        
+                                        return (
+                                            <AccordionItem key={epic.id} value={epic.id}>
+                                                <AccordionTrigger className="text-base font-normal">
+                                                    <div className="flex items-center gap-3 flex-1">
+                                                        <IconComponent className={cn("h-5 w-5", color)} />
+                                                        <span className="font-semibold text-sm">{epic.title}</span>
+                                                        <span className="text-muted-foreground text-sm">{projectPrefix}-{epic.epicId}</span>
+                                                    </div>
+                                                </AccordionTrigger>
+                                                <AccordionContent>
+                                                    <div className="pl-8 pr-4 space-y-4">
+                                                        <div className="flex justify-between items-start">
+                                                            <p className="text-muted-foreground flex-1 pr-4">{epic.description}</p>
+                                                            <DropdownMenu>
+                                                                <DropdownMenuTrigger asChild>
+                                                                    <Button variant="ghost" size="icon" className="h-8 w-8"><MoreVertical className="h-4 w-4" /></Button>
+                                                                </DropdownMenuTrigger>
+                                                                <DropdownMenuContent align="end">
+                                                                    <DropdownMenuItem onSelect={() => openEditEpicDialog(epic)}><Pencil className="mr-2 h-4 w-4" />Edit</DropdownMenuItem>
+                                                                    <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setItemToDelete({type: 'epic', id: epic.id, name: epic.title}); setIsDeleteDialogOpen(true);}} className="text-destructive focus:bg-destructive/90 focus:text-destructive-foreground">
+                                                                        <Trash2 className="mr-2 h-4 w-4" />
+                                                                        Delete
+                                                                    </DropdownMenuItem>
+                                                                </DropdownMenuContent>
+                                                            </DropdownMenu>
+                                                        </div>
+                                                        <div className="border rounded-lg">
+                                                            {itemsInEpic.length > 0 ? itemsInEpic.map(item => (
+                                                                <div 
+                                                                    key={item.id} 
+                                                                    className="flex justify-between items-center p-3 border-b last:border-b-0 hover:bg-muted/50 cursor-pointer"
+                                                                    onClick={() => openEditBacklogItemDialog(item, epics, sprints, contacts)}
+                                                                >
+                                                                    <div className="flex items-center gap-3">
+                                                                        <TooltipProvider>
+                                                                            <Tooltip>
+                                                                                <TooltipTrigger>
+                                                                                    <IconComponent className={cn("h-4 w-4", color)} />
+                                                                                </TooltipTrigger>
+                                                                                <TooltipContent>
+                                                                                    <p>Epic: {epic.title}</p>
+                                                                                </TooltipContent>
+                                                                            </Tooltip>
+                                                                        </TooltipProvider>
+                                                                        <span className="text-foreground text-sm">{projectPrefix}-{item.backlogId}</span>
+                                                                        <p className="text-sm font-medium">{item.title}</p>
+                                                                    </div>
+                                                                    <div className="flex items-center gap-4">
+                                                                        <Badge variant="outline">{item.status}</Badge>
+                                                                        <Badge variant="secondary">{item.points} Points</Badge>
+                                                                        <TooltipProvider>
+                                                                            <Tooltip>
+                                                                                <TooltipTrigger>
+                                                                                    <PriorityIcon priority={item.priority} />
+                                                                                </TooltipTrigger>
+                                                                                <TooltipContent>
+                                                                                    <p>Priority: {item.priority}</p>
+                                                                                </TooltipContent>
+                                                                            </Tooltip>
+                                                                        </TooltipProvider>
+                                                                        <DropdownMenu>
+                                                                            <DropdownMenuTrigger asChild>
+                                                                                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => e.stopPropagation()}><MoreVertical className="h-4 w-4" /></Button>
+                                                                            </DropdownMenuTrigger>
+                                                                            <DropdownMenuContent align="end">
+                                                                                <DropdownMenuItem onSelect={(e) => { e.stopPropagation(); openEditBacklogItemDialog(item, epics, sprints, contacts); }}><Pencil className="mr-2 h-4 w-4" />Edit</DropdownMenuItem>
+                                                                                <DropdownMenuSub>
+                                                                                    <DropdownMenuSubTrigger>
+                                                                                        <Rocket className="mr-2 h-4 w-4" />
+                                                                                        <span>Move to Wave</span>
+                                                                                    </DropdownMenuSubTrigger>
+                                                                                    <DropdownMenuPortal>
+                                                                                    <DropdownMenuSubContent>
+                                                                                        <DropdownMenuItem onSelect={() => handleMoveToSprint(item.id, null)}>Backlog</DropdownMenuItem>
+                                                                                        <Separator />
+                                                                                        {upcomingSprints.map(sprint => (
+                                                                                            <DropdownMenuItem key={sprint.id} onSelect={() => handleMoveToSprint(item.id, sprint.id)}>
+                                                                                                {sprint.name}
+                                                                                            </DropdownMenuItem>
+                                                                                        ))}
+                                                                                    </DropdownMenuSubContent>
+                                                                                    </DropdownMenuPortal>
+                                                                                </DropdownMenuSub>
+                                                                                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setItemToDelete({type: 'backlogItem', id: item.id, name: item.title}); setIsDeleteDialogOpen(true);}} className="text-destructive focus:bg-destructive/90 focus:text-destructive-foreground">
+                                                                                    <Trash2 className="mr-2 h-4 w-4" />
+                                                                                    Delete
+                                                                                </DropdownMenuItem>
+                                                                            </DropdownMenuContent>
+                                                                        </DropdownMenu>
+                                                                    </div>
+                                                                </div>
+                                                            )) : (
+                                                                <p className="text-sm text-muted-foreground text-center p-4">No backlog items for this epic.</p>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </AccordionContent>
+                                            </AccordionItem>
+                                        )
+                                    })}
+                                </Accordion>
+                            )}
+                       </div>
+                    </TabsContent>
                     <TabsContent value="backlog">
                        <div className="space-y-6">
-                            <Accordion type="multiple" className="w-full" value={activeBacklogAccordion} onValueChange={setActiveBacklogAccordion}>
-                                {epics.map(epic => {
-                                    const epicConfig = epicIcons[epic.title] || { icon: Layers, color: 'text-foreground' };
-                                    const IconComponent = epicConfig.icon;
-                                    const itemsInEpic = backlogItems.filter(item => item.epicId === epic.id && !item.sprintId);
-                                    
-                                    return (
-                                        <AccordionItem key={epic.id} value={epic.id}>
-                                            <AccordionTrigger className="text-base font-normal">
-                                                <div className="flex items-center gap-3 flex-1">
-                                                    <IconComponent className={cn("h-5 w-5", epicConfig.color)} />
-                                                    <Badge variant={epic.status === 'Done' ? 'success' : 'secondary'} className="whitespace-nowrap">{epic.status}</Badge>
-                                                    <span className="font-semibold text-sm">{epic.title}</span>
-                                                    <span className="text-muted-foreground text-sm">{projectPrefix}-{epic.epicId}</span>
-                                                </div>
-                                            </AccordionTrigger>
-                                            <AccordionContent>
-                                                <div className="pl-8 pr-4 space-y-4">
-                                                    <div className="flex justify-between items-start">
-                                                        <p className="text-muted-foreground flex-1 pr-4">{epic.description}</p>
+                            {unassignedBacklogItems.length === 0 ? (
+                                <Card className="border-dashed">
+                                    <CardContent className="p-10 text-center">
+                                        <div className="flex justify-center mb-4">
+                                            <div className="bg-primary rounded-full p-3">
+                                                <Inbox className="h-8 w-8 text-primary-foreground" />
+                                            </div>
+                                        </div>
+                                        <h3 className="text-lg font-semibold">The backlog is empty!</h3>
+                                        <p className="text-muted-foreground mt-2 mb-4">
+                                            This space is for user stories that haven't been assigned to an epic yet.
+                                        </p>
+                                        <div className="flex justify-center gap-4">
+                                            <Button asChild>
+                                                <Link href={`/dashboard/library?projectId=${projectId}`}><Plus className="h-4 w-4 mr-2" /> Add from Library</Link>
+                                            </Button>
+                                            <Button variant="secondary" onClick={() => openNewBacklogItemDialog(projectId, project.companyId, epics)}>
+                                                Create New Item
+                                            </Button>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            ) : (
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle>Unassigned Backlog Items</CardTitle>
+                                        <CardDescription>Items that are not yet assigned to an epic.</CardDescription>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <div className="border rounded-lg">
+                                            {unassignedBacklogItems.map(item => (
+                                                <div 
+                                                    key={item.id} 
+                                                    className="flex justify-between items-center p-3 border-b last:border-b-0 hover:bg-muted/50 cursor-pointer"
+                                                    onClick={() => openEditBacklogItemDialog(item, epics, sprints, contacts)}
+                                                >
+                                                    <div className="flex items-center gap-3">
+                                                        <span className="text-foreground text-sm">{projectPrefix}-{item.backlogId}</span>
+                                                        <p className="text-sm font-medium">{item.title}</p>
+                                                    </div>
+                                                    <div className="flex items-center gap-4">
+                                                        <Badge variant="outline">{item.status}</Badge>
+                                                        <Badge variant="secondary">{item.points} Points</Badge>
+                                                        <TooltipProvider>
+                                                            <Tooltip>
+                                                                <TooltipTrigger>
+                                                                    <PriorityIcon priority={item.priority} />
+                                                                </TooltipTrigger>
+                                                                <TooltipContent>
+                                                                    <p>Priority: {item.priority}</p>
+                                                                </TooltipContent>
+                                                            </Tooltip>
+                                                        </TooltipProvider>
                                                         <DropdownMenu>
                                                             <DropdownMenuTrigger asChild>
-                                                                <Button variant="ghost" size="icon" className="h-8 w-8"><MoreVertical className="h-4 w-4" /></Button>
+                                                                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => e.stopPropagation()}><MoreVertical className="h-4 w-4" /></Button>
                                                             </DropdownMenuTrigger>
                                                             <DropdownMenuContent align="end">
-                                                                <DropdownMenuItem onSelect={() => openEditEpicDialog(epic)}><Pencil className="mr-2 h-4 w-4" />Edit</DropdownMenuItem>
-                                                                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setItemToDelete({type: 'epic', id: epic.id, name: epic.title}); setIsDeleteDialogOpen(true);}} className="text-destructive focus:bg-destructive/90 focus:text-destructive-foreground">
+                                                                <DropdownMenuItem onSelect={(e) => { e.stopPropagation(); openEditBacklogItemDialog(item, epics, sprints, contacts); }}><Pencil className="mr-2 h-4 w-4" />Edit</DropdownMenuItem>
+                                                                <DropdownMenuSub>
+                                                                    <DropdownMenuSubTrigger>
+                                                                        <Rocket className="mr-2 h-4 w-4" />
+                                                                        <span>Move to Wave</span>
+                                                                    </DropdownMenuSubTrigger>
+                                                                    <DropdownMenuPortal>
+                                                                    <DropdownMenuSubContent>
+                                                                        <DropdownMenuItem onSelect={() => handleMoveToSprint(item.id, null)}>Backlog</DropdownMenuItem>
+                                                                        <Separator />
+                                                                        {upcomingSprints.map(sprint => (
+                                                                            <DropdownMenuItem key={sprint.id} onSelect={() => handleMoveToSprint(item.id, sprint.id)}>
+                                                                                {sprint.name}
+                                                                            </DropdownMenuItem>
+                                                                        ))}
+                                                                    </DropdownMenuSubContent>
+                                                                    </DropdownMenuPortal>
+                                                                </DropdownMenuSub>
+                                                                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setItemToDelete({type: 'backlogItem', id: item.id, name: item.title}); setIsDeleteDialogOpen(true);}} className="text-destructive focus:bg-destructive/90 focus:text-destructive-foreground">
                                                                     <Trash2 className="mr-2 h-4 w-4" />
                                                                     Delete
                                                                 </DropdownMenuItem>
                                                             </DropdownMenuContent>
                                                         </DropdownMenu>
                                                     </div>
-                                                    <div className="border rounded-lg">
-                                                        {itemsInEpic.length > 0 ? itemsInEpic.map(item => (
-                                                            <div 
-                                                                key={item.id} 
-                                                                className="flex justify-between items-center p-3 border-b last:border-b-0 hover:bg-muted/50 cursor-pointer"
-                                                                onClick={() => openEditBacklogItemDialog(item, epics, sprints, contacts)}
-                                                            >
-                                                                <div className="flex items-center gap-3">
-                                                                    <TooltipProvider>
-                                                                        <Tooltip>
-                                                                            <TooltipTrigger>
-                                                                                <IconComponent className={cn("h-4 w-4", epicConfig.color)} />
-                                                                            </TooltipTrigger>
-                                                                            <TooltipContent>
-                                                                                <p>Epic: {epic.title}</p>
-                                                                            </TooltipContent>
-                                                                        </Tooltip>
-                                                                    </TooltipProvider>
-                                                                    <span className="text-foreground text-sm">{projectPrefix}-{item.backlogId}</span>
-                                                                    <p className="text-sm font-medium">{item.title}</p>
-                                                                </div>
-                                                                <div className="flex items-center gap-4">
-                                                                    <Badge variant="outline">{item.status}</Badge>
-                                                                    <Badge variant="secondary">{item.points} Points</Badge>
-                                                                    <TooltipProvider>
-                                                                        <Tooltip>
-                                                                            <TooltipTrigger>
-                                                                                <PriorityIcon priority={item.priority} />
-                                                                            </TooltipTrigger>
-                                                                            <TooltipContent>
-                                                                                <p>Priority: {item.priority}</p>
-                                                                            </TooltipContent>
-                                                                        </Tooltip>
-                                                                    </TooltipProvider>
-                                                                    <DropdownMenu>
-                                                                        <DropdownMenuTrigger asChild>
-                                                                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => e.stopPropagation()}><MoreVertical className="h-4 w-4" /></Button>
-                                                                        </DropdownMenuTrigger>
-                                                                        <DropdownMenuContent align="end">
-                                                                            <DropdownMenuItem onSelect={(e) => { e.stopPropagation(); openEditBacklogItemDialog(item, epics, sprints, contacts); }}><Pencil className="mr-2 h-4 w-4" />Edit</DropdownMenuItem>
-                                                                            <DropdownMenuSub>
-                                                                                <DropdownMenuSubTrigger>
-                                                                                    <Rocket className="mr-2 h-4 w-4" />
-                                                                                    <span>Move to Sprint</span>
-                                                                                </DropdownMenuSubTrigger>
-                                                                                <DropdownMenuPortal>
-                                                                                <DropdownMenuSubContent>
-                                                                                    <DropdownMenuItem onSelect={() => handleMoveToSprint(item.id, null)}>Backlog</DropdownMenuItem>
-                                                                                    <Separator />
-                                                                                    {upcomingSprints.map(sprint => (
-                                                                                        <DropdownMenuItem key={sprint.id} onSelect={() => handleMoveToSprint(item.id, sprint.id)}>
-                                                                                            {sprint.name}
-                                                                                        </DropdownMenuItem>
-                                                                                    ))}
-                                                                                </DropdownMenuSubContent>
-                                                                                </DropdownMenuPortal>
-                                                                            </DropdownMenuSub>
-                                                                            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setItemToDelete({type: 'backlogItem', id: item.id, name: item.title}); setIsDeleteDialogOpen(true);}} className="text-destructive focus:bg-destructive/90 focus:text-destructive-foreground">
-                                                                                <Trash2 className="mr-2 h-4 w-4" />
-                                                                                Delete
-                                                                            </DropdownMenuItem>
-                                                                        </DropdownMenuContent>
-                                                                    </DropdownMenu>
-                                                                </div>
-                                                            </div>
-                                                        )) : (
-                                                            <p className="text-sm text-muted-foreground text-center p-4">No unassigned backlog items for this epic.</p>
-                                                        )}
-                                                    </div>
                                                 </div>
-                                            </AccordionContent>
-                                        </AccordionItem>
-                                    )
-                                })}
-                            </Accordion>
+                                            ))}
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            )}
                        </div>
                     </TabsContent>
                     <TabsContent value="sprints">
@@ -1346,11 +1467,11 @@ export default function ProjectDetailsPage() {
 
                                 return (
                                 <div key={status}>
-                                    <h2 className="text-lg font-semibold mb-2">{status === 'Not Started' ? 'Upcoming Sprints' : `${status} Sprints`}</h2>
+                                    <h2 className="text-lg font-semibold mb-2">{status === 'Not Started' ? 'Upcoming Waves' : `${status} Waves`}</h2>
                                     {sprintsByStatus.length === 0 ? (
                                         <Card className="border-dashed">
                                             <CardContent className="p-6 text-center text-muted-foreground">
-                                                {status === 'Completed' ? 'No sprints have been completed yet.' : 'No upcoming sprints have been planned.'}
+                                                {status === 'Completed' ? 'No waves have been completed yet.' : 'No upcoming waves have been planned.'}
                                             </CardContent>
                                         </Card>
                                     ) : (
@@ -1377,12 +1498,12 @@ export default function ProjectDetailsPage() {
                                                                     <DropdownMenuContent align="end">
                                                                         {sprint.status === 'Not Started' && (
                                                                             <DropdownMenuItem onSelect={() => handleStartSprint(sprint.id)} disabled={loading}>
-                                                                                <Rocket className="mr-2 h-4 w-4" /> Start Sprint
+                                                                                <Rocket className="mr-2 h-4 w-4" /> Start Wave
                                                                             </DropdownMenuItem>
                                                                         )}
                                                                         {sprint.status === 'Active' && (
                                                                             <DropdownMenuItem onSelect={() => handleCompleteSprint(sprint.id)} disabled={loading}>
-                                                                                <CheckCircle className="mr-2 h-4 w-4" /> Complete Sprint
+                                                                                <CheckCircle className="mr-2 h-4 w-4" /> Complete Wave
                                                                             </DropdownMenuItem>
                                                                         )}
                                                                         {sprint.status !== 'Completed' && (
@@ -1404,8 +1525,9 @@ export default function ProjectDetailsPage() {
                                                             <div className="border rounded-lg">
                                                                 {itemsInSprint.length > 0 ? itemsInSprint.map(item => {
                                                                     const epic = epics.find(e => e.id === item.epicId);
-                                                                    const epicConfig = epic ? (epicIcons[epic.title] || { icon: Layers, color: 'text-foreground' }) : { icon: Layers, color: 'text-foreground' };
-                                                                    const IconComponent = epicConfig.icon;
+                                                                    const tag = epic ? allTags.find(t => t.name === epic.category) : undefined;
+                                                                    const config = tag ? (tagConfig.find(c => c.iconName === tag.icon) || tagConfig.find(t => t.iconName === 'Layers')) : tagConfig.find(t => t.iconName === 'Layers');
+                                                                    const IconComponent = config?.icon || Layers;
                                                                     return (
                                                                         <div key={item.id} className="flex justify-between items-center p-3 border-b last:border-b-0 hover:bg-muted/50 cursor-pointer"
                                                                             onClick={() => openEditBacklogItemDialog(item, epics, sprints, contacts)}
@@ -1415,7 +1537,7 @@ export default function ProjectDetailsPage() {
                                                                                 <p className="text-sm font-medium">{item.title}</p>
                                                                                 {epic && (
                                                                                     <Badge variant="secondary" className="cursor-pointer" onClick={(e) => { e.stopPropagation(); setActiveTab('backlog')}}>
-                                                                                        <IconComponent className={cn("h-3 w-3 mr-1", epicConfig.color)} />
+                                                                                        <IconComponent className={cn("h-3 w-3 mr-1", config?.color)} />
                                                                                         {epic.title}
                                                                                     </Badge>
                                                                                 )}
@@ -1437,7 +1559,7 @@ export default function ProjectDetailsPage() {
                                                                         </div>
                                                                     )
                                                                 }) : (
-                                                                    <p className="text-sm text-muted-foreground text-center p-4">No items in this sprint.</p>
+                                                                    <p className="text-sm text-muted-foreground text-center p-4">No items in this wave.</p>
                                                                 )}
                                                             </div>
                                                         </AccordionContent>
@@ -1473,8 +1595,8 @@ export default function ProjectDetailsPage() {
                                 {allSprintItems.length > 0 ? allSprintItems.map(item => {
                                     const epic = epics.find(e => e.id === item.epicId);
                                     const sprint = sprints.find(s => s.id === item.sprintId);
-                                    const epicConfig = epic ? (epicIcons[epic.title] || { icon: Layers, color: 'text-foreground' }) : { icon: Layers, color: 'text-foreground' };
-                                    const IconComponent = epicConfig.icon;
+                                    const config = epic ? (tagConfig.find(c => c.iconName === epic.category) || tagConfig.find(t => t.iconName === 'Layers')) : tagConfig.find(t => t.iconName === 'Layers');
+                                    const IconComponent = config?.icon || Layers;
                                     return (
                                         <div key={item.id} className="flex justify-between items-center p-3 border-b last:border-b-0 hover:bg-muted/50 cursor-pointer"
                                             onClick={() => openEditBacklogItemDialog(item, epics, sprints, contacts)}
@@ -1483,7 +1605,7 @@ export default function ProjectDetailsPage() {
                                                 <TooltipProvider>
                                                     <Tooltip>
                                                         <TooltipTrigger>
-                                                            <IconComponent className={cn("h-4 w-4", epicConfig.color)} />
+                                                            <IconComponent className={cn("h-4 w-4", config?.color)} />
                                                         </TooltipTrigger>
                                                         <TooltipContent>
                                                             <p>Epic: {epic?.title || 'Unknown'}</p>
@@ -1516,7 +1638,7 @@ export default function ProjectDetailsPage() {
                                     )
                                 }) : (
                                     <p className="text-sm text-muted-foreground text-center p-6">
-                                        {allWorkSearchTerm ? 'No matching items found.' : 'No items assigned to any sprints.'}
+                                        {allWorkSearchTerm ? 'No matching items found.' : 'No items assigned to any waves.'}
                                     </p>
                                 )}
                             </div>
@@ -1541,7 +1663,3 @@ export default function ProjectDetailsPage() {
         </div>
     );
 }
-
-    
-
-    

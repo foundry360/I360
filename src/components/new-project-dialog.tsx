@@ -53,6 +53,9 @@ export function NewProjectDialog() {
   const [companies, setCompanies] = React.useState<Company[]>([]);
   const { user } = useUser();
   const [systemUsers, setSystemUsers] = React.useState<any[]>([]);
+  const [nameSuffix, setNameSuffix] = React.useState('');
+  const [namePrefix, setNamePrefix] = React.useState('');
+
 
   React.useEffect(() => {
     if (isNewProjectDialogOpen) {
@@ -71,7 +74,7 @@ export function NewProjectDialog() {
         setSystemUsers(uniqueUsers);
       }
     }
-  }, [isNewProjectDialogOpen, user]);
+  }, [isNewProjectDialogOpen, user?.uid, user?.displayName, user?.email, user?.photoURL]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { id, value } = e.target;
@@ -88,31 +91,25 @@ export function NewProjectDialog() {
        setNewProject((prev) => ({ ...prev, [field]: value }));
     }
   };
+  
+  const handleCompanyChange = (companyId: string) => {
+    const company = companies.find(c => c.id === companyId);
+    if (company) {
+        setNamePrefix(`${company.name.substring(0, 4).toUpperCase()}-`);
+        setNewProject(prev => ({...prev, companyId}));
+    }
+  }
 
   const handleCreateProject = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newProject.name || !newProject.companyId) {
+    if (!nameSuffix || !newProject.companyId) {
       alert('Engagement name and company are required');
       return;
     }
     try {
-      const company = companies.find(c => c.id === newProject.companyId);
-      if (!company) {
-          alert('Could not find selected company');
-          return;
-      }
-      
-      const companyPrefix = company.name.substring(0, 4).toUpperCase();
-      const formattedName = `${companyPrefix}-${newProject.name}`;
-
-      const projectToCreate = {
-        ...newProject,
-        name: formattedName,
-      };
-
-      await createProject(projectToCreate);
-      setNewProject(initialNewProjectState);
-      closeNewProjectDialog();
+      const finalName = `${namePrefix}${nameSuffix}`;
+      await createProject({ ...newProject, name: finalName });
+      handleOpenChange(false);
       if (onProjectCreated) {
         onProjectCreated();
       }
@@ -124,6 +121,8 @@ export function NewProjectDialog() {
   const handleOpenChange = (isOpen: boolean) => {
     if (!isOpen) {
       setNewProject(initialNewProjectState);
+      setNamePrefix('');
+      setNameSuffix('');
       closeNewProjectDialog();
     }
   };
@@ -135,21 +134,13 @@ export function NewProjectDialog() {
           <DialogHeader>
             <DialogTitle>Create New Engagement</DialogTitle>
             <DialogDescription>
-              Fill in the details below to create a new engagement.
+              Fill in the details below to create a new engagement
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4 max-h-[70vh] overflow-y-auto pr-4">
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="name" className="text-right">Name</Label>
-              <Input id="name" value={newProject.name} onChange={handleInputChange} className="col-span-3" required />
-            </div>
-            <div className="grid grid-cols-4 items-start gap-4">
-              <Label htmlFor="description" className="text-right pt-2">Description</Label>
-              <Textarea id="description" value={newProject.description} onChange={handleInputChange} className="col-span-3" />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="companyId" className="text-right">Company</Label>
-              <Select onValueChange={handleSelectChange('companyId')} value={newProject.companyId} required>
+               <Label htmlFor="companyId" className="text-right">Company</Label>
+               <Select onValueChange={handleCompanyChange} value={newProject.companyId} required>
                 <SelectTrigger className="col-span-3">
                   <SelectValue placeholder="Select a company" />
                 </SelectTrigger>
@@ -159,6 +150,25 @@ export function NewProjectDialog() {
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="name" className="text-right">Name</Label>
+              <div className="col-span-3 flex items-center gap-1 rounded-md border border-input focus-within:ring-2 focus-within:ring-ring">
+                  <span className="pl-3 pr-1 text-muted-foreground">{namePrefix}</span>
+                  <Input 
+                    id="name" 
+                    value={nameSuffix} 
+                    onChange={(e) => setNameSuffix(e.target.value)} 
+                    className="flex-1 border-0 focus-visible:ring-0 focus-visible:ring-offset-0" 
+                    required
+                    disabled={!namePrefix}
+                    placeholder={namePrefix ? "Enter engagement title" : "Select a company first"}
+                  />
+               </div>
+            </div>
+            <div className="grid grid-cols-4 items-start gap-4">
+              <Label htmlFor="description" className="text-right pt-2">Description</Label>
+              <Textarea id="description" value={newProject.description} onChange={handleInputChange} className="col-span-3" />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="owner" className="text-right">Owner</Label>

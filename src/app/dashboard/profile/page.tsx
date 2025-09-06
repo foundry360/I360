@@ -40,7 +40,7 @@ export default function ProfilePage() {
         toast({
             variant: 'destructive',
             title: 'Error',
-            description: 'You must be logged in to update your profile.',
+            description: 'You must be logged in to update your profile',
         });
         return;
     }
@@ -90,7 +90,7 @@ export default function ProfilePage() {
           <CardHeader>
             <CardTitle>Your Information</CardTitle>
             <CardDescription>
-              View and edit your personal details.
+              View and edit your personal details
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">

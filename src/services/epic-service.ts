@@ -12,6 +12,7 @@ export interface Epic {
   title: string;
   description: string;
   status: 'To Do' | 'In Progress' | 'Done';
+  category: string;
 }
 
 const epicsCollection = collection(db, 'epics');

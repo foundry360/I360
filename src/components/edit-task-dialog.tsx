@@ -94,7 +94,7 @@ export function EditTaskDialog() {
           <DialogHeader>
             <DialogTitle>Edit Task</DialogTitle>
             <DialogDescription>
-              Update the details for "{task.title}".
+              Update the details for "{task.title}"
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4 max-h-[70vh] overflow-y-auto pr-4">

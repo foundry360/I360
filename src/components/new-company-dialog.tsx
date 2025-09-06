@@ -94,7 +94,7 @@ export function NewCompanyDialog() {
                 value={newCompany.description}
                 onChange={handleInputChange}
                 className="col-span-3"
-                placeholder="A brief description of the company."
+                placeholder="A brief description of the company"
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">

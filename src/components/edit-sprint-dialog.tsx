@@ -54,7 +54,7 @@ export function EditSprintDialog() {
         onSprintUpdated();
       }
     } catch (error) {
-      console.error('Failed to update sprint:', error);
+      console.error('Failed to update wave:', error);
     }
   };
 
@@ -72,18 +72,18 @@ export function EditSprintDialog() {
       <DialogContent className="sm:max-w-[600px]">
         <form onSubmit={handleUpdateItem}>
           <DialogHeader>
-            <DialogTitle>Edit Sprint</DialogTitle>
+            <DialogTitle>Edit Wave</DialogTitle>
             <DialogDescription>
-              Update the details for "{item.name}".
+              Update the details for "{item.name}"
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4 max-h-[70vh] overflow-y-auto pr-4">
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="name" className="text-right">Sprint Name</Label>
+              <Label htmlFor="name" className="text-right">Wave Name</Label>
               <Input id="name" value={item.name} onChange={handleInputChange} className="col-span-3" required />
             </div>
              <div className="grid grid-cols-4 items-start gap-4">
-              <Label htmlFor="goal" className="text-right pt-2">Sprint Goal</Label>
+              <Label htmlFor="goal" className="text-right pt-2">Wave Goal</Label>
               <Textarea id="goal" value={item.goal} onChange={handleInputChange} className="col-span-3" />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">

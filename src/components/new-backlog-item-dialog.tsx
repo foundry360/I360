@@ -83,7 +83,7 @@ export function NewBacklogItemDialog() {
   const handleCreateItem = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newItem.title || !newItem.epicId || !newItem.owner) {
-      alert('Title and Epic are required, and an owner must be set on the project.');
+      alert('Title and Epic are required, and an owner must be set on the project');
       return;
     }
     try {

@@ -22,6 +22,7 @@ import {
 } from '@/components/ui/select';
 import { updateEpic, type Epic } from '@/services/epic-service';
 import { useQuickAction } from '@/contexts/quick-action-context';
+import { getTags, type Tag } from '@/services/user-story-service';
 
 export function EditEpicDialog() {
   const {
@@ -32,12 +33,16 @@ export function EditEpicDialog() {
   } = useQuickAction();
   
   const [item, setItem] = React.useState<Epic | null>(null);
+  const [availableTags, setAvailableTags] = React.useState<Tag[]>([]);
 
   React.useEffect(() => {
     if (editEpicData) {
       setItem(editEpicData);
     }
-  }, [editEpicData]);
+    if (isEditEpicDialogOpen) {
+      getTags().then(setAvailableTags);
+    }
+  }, [editEpicData, isEditEpicDialogOpen]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     if (!item) return;
@@ -45,9 +50,9 @@ export function EditEpicDialog() {
     setItem((prev) => ({ ...prev!, [id]: value }));
   };
   
-   const handleSelectChange = (value: string) => {
+   const handleSelectChange = (field: 'status' | 'category') => (value: string) => {
     if (!item) return;
-    setItem((prev) => ({ ...prev!, status: value as Epic['status'] }));
+    setItem((prev) => ({ ...prev!, [field]: value as any }));
   };
 
   const handleUpdateItem = async (e: React.FormEvent) => {
@@ -80,7 +85,7 @@ export function EditEpicDialog() {
           <DialogHeader>
             <DialogTitle>Edit Epic</DialogTitle>
             <DialogDescription>
-              Update the details for "{item.title}".
+              Update the details for "{item.title}"
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4 max-h-[70vh] overflow-y-auto pr-4">
@@ -92,9 +97,22 @@ export function EditEpicDialog() {
               <Label htmlFor="description" className="text-right pt-2">Description</Label>
               <Textarea id="description" value={item.description} onChange={handleInputChange} className="col-span-3" />
             </div>
+             <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="category" className="text-right">Category</Label>
+                <Select onValueChange={handleSelectChange('category')} value={item.category}>
+                    <SelectTrigger className="col-span-3">
+                        <SelectValue placeholder="Select a category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        {availableTags.map(tag => (
+                            <SelectItem key={tag.id} value={tag.name}>{tag.name}</SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+            </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="status" className="text-right">Status</Label>
-                <Select onValueChange={handleSelectChange} value={item.status}>
+                <Select onValueChange={handleSelectChange('status')} value={item.status}>
                     <SelectTrigger className="col-span-3">
                         <SelectValue placeholder="Select a status" />
                     </SelectTrigger>
