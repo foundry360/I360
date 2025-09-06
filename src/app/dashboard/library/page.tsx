@@ -12,7 +12,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Skeleton } from '@/components/ui/skeleton';
-import { MoreHorizontal, Plus, Trash2, Search, Upload, FilePlus, Layers, Library } from 'lucide-react';
+import { MoreHorizontal, Plus, Trash2, Search, Upload, FilePlus, Layers, Library, Pencil } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { useQuickAction } from '@/contexts/quick-action-context';
 import { getUserStories, deleteUserStory, UserStory, bulkCreateUserStories as bulkCreateLibraryStories, getUniqueTags } from '@/services/user-story-service';
@@ -26,6 +26,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { epicCategories } from '@/lib/epic-categories';
+import { ManageCategoriesDialog } from '@/components/manage-categories-dialog';
 
 
 type StoryWithDateAsString = Omit<UserStory, 'createdAt'> & { createdAt: string };
@@ -42,6 +43,7 @@ export default function LibraryPage() {
   const [loading, setLoading] = React.useState(true);
   const [searchTerm, setSearchTerm] = React.useState('');
   const [selectedStories, setSelectedStories] = React.useState<string[]>([]);
+  const [isManageCategoriesOpen, setIsManageCategoriesOpen] = React.useState(false);
   
   const { openNewUserStoryDialog, setOnUserStoryCreated } = useQuickAction();
   const { toast } = useToast();
@@ -64,7 +66,7 @@ export default function LibraryPage() {
         uniqueTags.push('Uncategorized');
       }
       setAllTags(uniqueTags);
-      setSelectedTag('All');
+      setSelectedTag(prev => prev && uniqueTags.includes(prev) ? prev : 'All');
     } catch (error) {
       console.error('Failed to fetch library data:', error);
     } finally {
@@ -260,10 +262,15 @@ export default function LibraryPage() {
           <div className="col-span-3">
              <Card className="h-full">
                 <CardHeader>
-                    <CardTitle className="text-base flex items-center gap-2">
-                        <Layers className="h-4 w-4" />
-                        Categories
-                    </CardTitle>
+                    <div className="flex justify-between items-center">
+                        <CardTitle className="text-base flex items-center gap-2">
+                            <Layers className="h-4 w-4" />
+                            Categories
+                        </CardTitle>
+                        <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setIsManageCategoriesOpen(true)}>
+                            <Pencil className="h-3 w-3" />
+                        </Button>
+                    </div>
                 </CardHeader>
                 <CardContent>
                     <ScrollArea className="h-[calc(100vh-22rem)]">
@@ -307,7 +314,7 @@ export default function LibraryPage() {
                         ))
                     ) : filteredStories.length > 0 ? (
                         filteredStories.map(story => {
-                           const primaryTag = story.tags[0] as keyof typeof epicCategories;
+                           const primaryTag = story.tags[0] as keyof typeof epicCategories || 'Uncategorized';
                            const categoryConfig = epicCategories[primaryTag] || epicCategories['Uncategorized'];
                            const Icon = categoryConfig.icon;
                            return (
@@ -388,6 +395,12 @@ export default function LibraryPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      <ManageCategoriesDialog
+        isOpen={isManageCategoriesOpen}
+        onOpenChange={setIsManageCategoriesOpen}
+        onCategoriesUpdated={fetchLibraryData}
+      />
     </>
   );
 }
+
