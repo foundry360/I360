@@ -35,7 +35,7 @@ const StoryCard = ({ story, index }: { story: StoryWithDateAsString, index: numb
                 {...provided.dragHandleProps}
                 className={cn(
                     "p-3 mb-2 rounded-lg border bg-card text-card-foreground shadow-sm",
-                    snapshot.isDragging && "bg-primary text-primary-foreground"
+                    snapshot.isDragging && "bg-primary text-primary-foreground w-[320px] h-auto"
                 )}
             >
                 <div className="flex items-start gap-2">
@@ -181,7 +181,7 @@ export function NewCollectionDialog() {
                 </div>
                 <DragDropContext onDragEnd={onDragEnd}>
                     <div className="grid grid-cols-2 gap-6 flex-1 overflow-hidden">
-                        <Card>
+                        <Card className="flex flex-col">
                             <CardHeader>
                                 <CardTitle>Story Library ({filteredLibraryStories.length})</CardTitle>
                                 <div className="relative mt-2">
@@ -194,8 +194,8 @@ export function NewCollectionDialog() {
                                     />
                                 </div>
                             </CardHeader>
-                            <CardContent className="h-full pb-0">
-                                <ScrollArea className="h-[calc(90vh-22rem)]">
+                            <CardContent className="flex-1 overflow-hidden">
+                                <ScrollArea className="h-[calc(100% - 1rem)]">
                                     <Droppable droppableId="library">
                                         {(provided, snapshot) => (
                                             <div 
@@ -213,12 +213,12 @@ export function NewCollectionDialog() {
                                 </ScrollArea>
                             </CardContent>
                         </Card>
-                         <Card>
+                         <Card className="flex flex-col">
                             <CardHeader>
                                 <CardTitle>New Collection ({collectionStories.length})</CardTitle>
                             </CardHeader>
-                            <CardContent className="h-full pb-0">
-                               <ScrollArea className="h-[calc(90vh-19rem)]">
+                            <CardContent className="flex-1 overflow-hidden">
+                               <ScrollArea className="h-[calc(100% - 1rem)]">
                                     <Droppable droppableId="collection">
                                         {(provided, snapshot) => (
                                              <div 
@@ -251,4 +251,3 @@ export function NewCollectionDialog() {
         </Dialog>
     );
 }
-
