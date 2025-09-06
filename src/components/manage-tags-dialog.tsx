@@ -13,14 +13,14 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { getTags, createTag, updateTag, deleteTag, Tag } from '@/services/user-story-service';
+import { getTags, batchUpdateTags, Tag } from '@/services/user-story-service';
 import { ScrollArea } from './ui/scroll-area';
 import { PlusCircle, Save, Trash2, X } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from './ui/alert-dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { tagConfig, type TagConfig } from '@/lib/tag-config';
 import { cn } from '@/lib/utils';
-
+import { useToast } from '@/hooks/use-toast';
 
 interface ManageTagsDialogProps {
   isOpen: boolean;
@@ -29,71 +29,78 @@ interface ManageTagsDialogProps {
 }
 
 export function ManageTagsDialog({ isOpen, onOpenChange, onTagsUpdated }: ManageTagsDialogProps) {
+  const { toast } = useToast();
+  const [originalTags, setOriginalTags] = React.useState<Tag[]>([]);
   const [tags, setTags] = React.useState<Tag[]>([]);
+  
   const [newTagName, setNewTagName] = React.useState('');
   const [newTagIcon, setNewTagIcon] = React.useState<TagConfig['iconName']>('Layers');
-  const [tagToUpdate, setTagToUpdate] = React.useState<Record<string, Partial<Tag>>>({});
-  const [tagToDelete, setTagToDelete] = React.useState<Tag | null>(null);
-
-  const fetchTags = React.useCallback(async () => {
-    const uniqueTags = await getTags();
-    setTags(uniqueTags);
-  }, []);
+  
+  const [tagsToDelete, setTagsToDelete] = React.useState<Tag[]>([]);
+  const [tagPendingDelete, setTagPendingDelete] = React.useState<Tag | null>(null);
 
   React.useEffect(() => {
     if (isOpen) {
-      fetchTags();
+      const fetchInitialTags = async () => {
+        const fetchedTags = await getTags();
+        setOriginalTags(fetchedTags);
+        setTags(fetchedTags);
+        setTagsToDelete([]);
+      };
+      fetchInitialTags();
     }
-  }, [isOpen, fetchTags]);
+  }, [isOpen]);
   
-  const handleAddNewTag = async () => {
+  const handleAddNewTag = () => {
     if (!newTagName.trim()) return;
-    try {
-        await createTag({ name: newTagName.trim(), icon: newTagIcon });
-        setNewTagName('');
-        await fetchTags();
-        onTagsUpdated();
-    } catch(error) {
-        console.error("Error creating tag:", error);
-    }
-  };
-
-  const handleUpdateTag = async (tag: Tag) => {
-    const updatedData = tagToUpdate[tag.id];
-    if (!updatedData || (updatedData.name === tag.name && updatedData.icon === tag.icon)) {
-      setTagToUpdate(prev => {
-          const { [tag.id]: _, ...rest } = prev;
-          return rest;
-      });
-      return;
-    }
-    
-    try {
-        await updateTag(tag.id, updatedData);
-        await fetchTags();
-        onTagsUpdated();
-    } catch (error) {
-        console.error("Error updating tag:", error);
-    } finally {
-        setTagToUpdate(prev => {
-            const { [tag.id]: _, ...rest } = prev;
-            return rest;
-        });
-    }
+    const newTag: Tag = {
+      id: `new-${Date.now()}`, // Temporary ID
+      name: newTagName.trim(),
+      icon: newTagIcon,
+    };
+    setTags(prev => [...prev, newTag]);
+    setNewTagName('');
   };
   
-  const handleDeleteTag = async () => {
-    if (!tagToDelete) return;
-    try {
-      await deleteTag(tagToDelete.id, tagToDelete.name);
-      await fetchTags();
-      onTagsUpdated();
-    } catch (error) {
-        console.error("Error deleting tag:", error);
-    } finally {
-        setTagToDelete(null);
+  const handleUpdateTag = (id: string, field: 'name' | 'icon', value: string) => {
+    setTags(prev => prev.map(tag => tag.id === id ? {...tag, [field]: value} : tag));
+  }
+
+  const handleDeleteClick = (tag: Tag) => {
+    setTagPendingDelete(tag);
+  }
+  
+  const confirmDeleteTag = () => {
+    if (!tagPendingDelete) return;
+    setTags(prev => prev.filter(t => t.id !== tagPendingDelete.id));
+    if (!tagPendingDelete.id.startsWith('new-')) {
+        setTagsToDelete(prev => [...prev, tagPendingDelete]);
     }
+    setTagPendingDelete(null);
   };
+  
+  const handleSaveChanges = async () => {
+    const tagsToAdd = tags.filter(t => t.id.startsWith('new-')).map(({name, icon}) => ({name, icon}));
+    const tagsToUpdate = tags.filter(t => {
+      if (t.id.startsWith('new-')) return false;
+      const original = originalTags.find(ot => ot.id === t.id);
+      return original && (original.name !== t.name || original.icon !== t.icon);
+    });
+
+    try {
+      await batchUpdateTags({
+        tagsToAdd,
+        tagsToUpdate,
+        tagsToDelete
+      });
+      toast({ title: 'Success', description: 'Tags have been updated successfully.' });
+      onTagsUpdated();
+      onOpenChange(false);
+    } catch(error) {
+      console.error("Error updating tags:", error);
+      toast({ variant: 'destructive', title: 'Error', description: 'Failed to update tags.'});
+    }
+  }
 
 
   return (
@@ -103,7 +110,7 @@ export function ManageTagsDialog({ isOpen, onOpenChange, onTagsUpdated }: Manage
         <DialogHeader>
           <DialogTitle>Manage Tags</DialogTitle>
           <DialogDescription>
-            Add, edit, or delete the tags used to categorize your user stories.
+            Add, edit, or delete the tags used to categorize your user stories. Changes are saved when you click "Save & Close".
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4 py-4">
@@ -139,19 +146,17 @@ export function ManageTagsDialog({ isOpen, onOpenChange, onTagsUpdated }: Manage
                 {tags.map(tag => (
                     <div key={tag.id} className="flex items-center gap-2 p-1 rounded-md hover:bg-muted">
                         <Input 
-                            value={tagToUpdate[tag.id]?.name ?? tag.name}
-                            onChange={(e) => setTagToUpdate(prev => ({ ...prev, [tag.id]: {...prev[tag.id], name: e.target.value} }))}
-                            onBlur={() => handleUpdateTag(tag)}
-                            onKeyDown={(e) => { if (e.key === 'Enter') handleUpdateTag(tag); }}
+                            value={tag.name}
+                            onChange={(e) => handleUpdateTag(tag.id, 'name', e.target.value)}
                             className="flex-1"
                         />
-                         <Select onValueChange={(value) => {
-                             setTagToUpdate(prev => ({ ...prev, [tag.id]: {...prev[tag.id], icon: value as TagConfig['iconName']} }));
-                             handleUpdateTag({ ...tag, icon: value as TagConfig['iconName'] });
-                         }} value={tagToUpdate[tag.id]?.icon ?? tag.icon}>
+                         <Select 
+                            onValueChange={(value) => handleUpdateTag(tag.id, 'icon', value)} 
+                            value={tag.icon}
+                          >
                             <SelectTrigger className="w-[60px]">
                                 <SelectValue>
-                                    {React.createElement(tagConfig.find(c => c.iconName === (tagToUpdate[tag.id]?.icon ?? tag.icon))?.icon || tagConfig[0].icon, {className: "h-4 w-4"})}
+                                    {React.createElement(tagConfig.find(c => c.iconName === tag.icon)?.icon || tagConfig[0].icon, {className: "h-4 w-4"})}
                                 </SelectValue>
                             </SelectTrigger>
                             <SelectContent>
@@ -167,7 +172,7 @@ export function ManageTagsDialog({ isOpen, onOpenChange, onTagsUpdated }: Manage
                             variant="ghost" 
                             size="icon" 
                             className="text-destructive hover:text-destructive"
-                            onClick={() => setTagToDelete(tag)}
+                            onClick={() => handleDeleteClick(tag)}
                         >
                             <Trash2 className="h-4 w-4" />
                         </Button>
@@ -176,23 +181,27 @@ export function ManageTagsDialog({ isOpen, onOpenChange, onTagsUpdated }: Manage
             </ScrollArea>
         </div>
         <DialogFooter>
-          <Button type="button" onClick={() => onOpenChange(false)}>
-            Done
+           <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            Cancel
+          </Button>
+          <Button type="button" onClick={handleSaveChanges}>
+            <Save className="mr-2 h-4 w-4" />
+            Save & Close
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
-     <AlertDialog open={!!tagToDelete} onOpenChange={(open) => !open && setTagToDelete(null)}>
+     <AlertDialog open={!!tagPendingDelete} onOpenChange={(open) => !open && setTagPendingDelete(null)}>
         <AlertDialogContent>
             <AlertDialogHeader>
                 <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                 <AlertDialogDescription>
-                    This will permanently delete the "{tagToDelete?.name}" tag. This action cannot be undone.
+                    This will permanently delete the "{tagPendingDelete?.name}" tag. If this tag is in use, it will be removed from all user stories. This action cannot be undone.
                 </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-                <AlertDialogCancel onClick={() => setTagToDelete(null)}>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={handleDeleteTag} className="bg-destructive hover:bg-destructive/90">Delete</AlertDialogAction>
+                <AlertDialogCancel onClick={() => setTagPendingDelete(null)}>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={confirmDeleteTag} className="bg-destructive hover:bg-destructive/90">Delete</AlertDialogAction>
             </AlertDialogFooter>
         </AlertDialogContent>
     </AlertDialog>

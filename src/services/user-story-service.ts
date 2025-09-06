@@ -16,6 +16,7 @@ import {
   query,
   where,
   arrayRemove,
+  getDoc,
 } from 'firebase/firestore';
 import { tagConfig, type TagConfig } from '@/lib/tag-config';
 
@@ -206,4 +207,55 @@ export async function deleteTag(id: string, tagName: string): Promise<void> {
     });
 
     await batch.commit();
+}
+
+
+export async function batchUpdateTags(updates: {
+  tagsToAdd: Omit<Tag, 'id'>[],
+  tagsToUpdate: Tag[],
+  tagsToDelete: Tag[],
+}) {
+  const { tagsToAdd, tagsToUpdate, tagsToDelete } = updates;
+  const batch = writeBatch(db);
+
+  // Handle deletions
+  for (const tag of tagsToDelete) {
+    const tagRef = doc(db, 'tags', tag.id);
+    batch.delete(tagRef);
+
+    // Remove tag from stories
+    const storiesQuery = query(userStoriesCollection, where('tags', 'array-contains', tag.name));
+    const storiesSnapshot = await getDocs(storiesQuery);
+    storiesSnapshot.forEach(storyDoc => {
+      batch.update(storyDoc.ref, { tags: arrayRemove(tag.name) });
+    });
+  }
+  
+  // Handle updates
+  for (const tag of tagsToUpdate) {
+    const tagRef = doc(db, 'tags', tag.id);
+    const { id, ...tagData } = tag; // Don't write the id into the document body
+    batch.update(tagRef, tagData);
+    
+    // If tag name changed, we need to update all stories
+    const originalTagDoc = await getDoc(tagRef);
+    const originalTagData = originalTagDoc.data() as Tag | undefined;
+    if(originalTagData && originalTagData.name !== tag.name) {
+       const storiesQuery = query(userStoriesCollection, where('tags', 'array-contains', originalTagData.name));
+       const storiesSnapshot = await getDocs(storiesQuery);
+       storiesSnapshot.forEach(storyDoc => {
+          const storyData = storyDoc.data() as UserStory;
+          const updatedTags = storyData.tags.map(t => t === originalTagData.name ? tag.name : t);
+          batch.update(storyDoc.ref, { tags: updatedTags });
+       });
+    }
+  }
+
+  // Handle additions
+  for (const tagData of tagsToAdd) {
+    const newTagRef = doc(tagsCollection);
+    batch.set(newTagRef, { ...tagData, id: newTagRef.id });
+  }
+
+  await batch.commit();
 }
