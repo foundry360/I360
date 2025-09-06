@@ -154,3 +154,4 @@ export async function deleteBacklogItem(id: string): Promise<void> {
         await updateProjectLastActivity(item.projectId);
     }
 }
+
