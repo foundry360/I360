@@ -194,51 +194,47 @@ export function NewCollectionDialog() {
                                     />
                                 </div>
                             </CardHeader>
-                            <CardContent className="flex-1 overflow-y-hidden">
-                                <ScrollArea className="h-full">
-                                    <Droppable droppableId="library">
-                                        {(provided, snapshot) => (
-                                            <div 
-                                                ref={provided.innerRef} 
-                                                {...provided.droppableProps}
-                                                className={cn("p-2 rounded-md h-full transition-colors", snapshot.isDraggingOver && "bg-muted")}
-                                            >
-                                                {loading ? <p>Loading stories...</p> : filteredLibraryStories.map((story, index) => (
-                                                    <StoryCard key={story.id} story={story} index={index} />
-                                                ))}
-                                                {provided.placeholder}
-                                            </div>
-                                        )}
-                                    </Droppable>
-                                </ScrollArea>
+                            <CardContent className="flex-1 overflow-y-auto">
+                                <Droppable droppableId="library">
+                                    {(provided, snapshot) => (
+                                        <div 
+                                            ref={provided.innerRef} 
+                                            {...provided.droppableProps}
+                                            className={cn("p-1 rounded-md h-full transition-colors", snapshot.isDraggingOver && "bg-muted")}
+                                        >
+                                            {loading ? <p>Loading stories...</p> : filteredLibraryStories.map((story, index) => (
+                                                <StoryCard key={story.id} story={story} index={index} />
+                                            ))}
+                                            {provided.placeholder}
+                                        </div>
+                                    )}
+                                </Droppable>
                             </CardContent>
                         </Card>
                          <Card className="flex flex-col h-full">
                             <CardHeader>
                                 <CardTitle>New Collection ({collectionStories.length})</CardTitle>
                             </CardHeader>
-                            <CardContent className="flex-1 overflow-y-hidden">
-                                <ScrollArea className="h-full">
-                                    <Droppable droppableId="collection">
-                                        {(provided, snapshot) => (
-                                             <div 
-                                                ref={provided.innerRef} 
-                                                {...provided.droppableProps}
-                                                className={cn("p-2 rounded-md h-full transition-colors", snapshot.isDraggingOver && "bg-muted")}
-                                            >
-                                                {collectionStories.map((story, index) => (
-                                                    <StoryCard key={story.id} story={story} index={index} />
-                                                ))}
-                                                {provided.placeholder}
-                                                {collectionStories.length === 0 && !snapshot.isDraggingOver && (
-                                                    <div className="h-full flex items-center justify-center text-center text-muted-foreground border-2 border-dashed rounded-lg p-4">
-                                                        <p>Drag stories from the library here to build your collection</p>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        )}
-                                    </Droppable>
-                                </ScrollArea>
+                            <CardContent className="flex-1 overflow-y-auto">
+                                <Droppable droppableId="collection">
+                                    {(provided, snapshot) => (
+                                         <div 
+                                            ref={provided.innerRef} 
+                                            {...provided.droppableProps}
+                                            className={cn("p-1 rounded-md h-full transition-colors", snapshot.isDraggingOver && "bg-muted")}
+                                        >
+                                            {collectionStories.map((story, index) => (
+                                                <StoryCard key={story.id} story={story} index={index} />
+                                            ))}
+                                            {provided.placeholder}
+                                            {collectionStories.length === 0 && !snapshot.isDraggingOver && (
+                                                <div className="h-full flex items-center justify-center text-center text-muted-foreground border-2 border-dashed rounded-lg p-4">
+                                                    <p>Drag stories from the library here to build your collection</p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+                                </Droppable>
                             </CardContent>
                         </Card>
                     </div>
