@@ -442,7 +442,7 @@ export default function ProjectDetailsPage() {
             });
             await fetchData();
         } catch (error) {
-            console.error('Failed to start sprint:', error);
+            console.error('Failed to start wave:', error);
             toast({
                 variant: 'destructive',
                 title: 'Error Starting Wave',
@@ -792,6 +792,12 @@ export default function ProjectDetailsPage() {
                         >
                             Summary
                         </TabsTrigger>
+                         <TabsTrigger 
+                            value="backlog"
+                            className="pb-3 rounded-none data-[state=active]:shadow-none data-[state=active]:border-primary data-[state=active]:border-b-4 data-[state=active]:text-foreground data-[state=active]:font-bold"
+                        >
+                            Backlog
+                        </TabsTrigger>
                         <TabsTrigger 
                             value="board"
                             className="pb-3 rounded-none data-[state=active]:shadow-none data-[state=active]:border-primary data-[state=active]:border-b-4 data-[state=active]:text-foreground data-[state=active]:font-bold"
@@ -803,12 +809,6 @@ export default function ProjectDetailsPage() {
                             className="pb-3 rounded-none data-[state=active]:shadow-none data-[state=active]:border-primary data-[state=active]:border-b-4 data-[state=active]:text-foreground data-[state=active]:font-bold"
                         >
                             Epics
-                        </TabsTrigger>
-                         <TabsTrigger 
-                            value="backlog"
-                            className="pb-3 rounded-none data-[state=active]:shadow-none data-[state=active]:border-primary data-[state=active]:border-b-4 data-[state=active]:text-foreground data-[state=active]:font-bold"
-                        >
-                            Backlog
                         </TabsTrigger>
                          <TabsTrigger 
                             value="sprints"
@@ -1062,8 +1062,8 @@ export default function ProjectDetailsPage() {
                                                     const IconComponent = epicConfig.icon;
                                                     return (
                                                         <AccordionItem value={epic.id} key={epic.id} className="border-none mb-2">
-                                                            <div className="space-y-2 p-2 -m-2 rounded-md hover:bg-muted no-underline">
-                                                                <div className="flex flex-col w-full gap-2">
+                                                            <AccordionTrigger className="text-base font-normal no-underline hover:no-underline p-2 -m-2 rounded-md hover:bg-muted" noChevron>
+                                                                <div className="space-y-2 w-full">
                                                                     <div className="flex justify-between items-baseline w-full">
                                                                         <div className="flex items-center gap-2">
                                                                             <IconComponent className={cn("h-4 w-4", epicConfig.color)} />
@@ -1073,7 +1073,7 @@ export default function ProjectDetailsPage() {
                                                                     </div>
                                                                     <Progress value={epic.progress} />
                                                                 </div>
-                                                            </div>
+                                                            </AccordionTrigger>
                                                         </AccordionItem>
                                                     )
                                                 })}
