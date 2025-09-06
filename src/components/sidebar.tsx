@@ -266,7 +266,7 @@ export function Sidebar() {
                   if (group.group === 'HOME') {
                     return (
                         <div key={group.group}>
-                            {group.links.map((item) => renderNavItem(item))}
+                            {group.links.map((item) => <div key={item.label}>{renderNavItem(item)}</div>)}
                         </div>
                     )
                   }
