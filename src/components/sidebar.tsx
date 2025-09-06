@@ -60,7 +60,7 @@ const NavGroup = ({
 
 type CombinedItem = (Project | Assessment) & { itemType: 'Engagement' | 'Assessment' };
 
-function StarredItemsPopoverContent() {
+function StarredItemsPopoverContent({ isOpen }: { isOpen: boolean }) {
     const [items, setItems] = React.useState<CombinedItem[]>([]);
     const [loading, setLoading] = React.useState(false);
     const [searchTerm, setSearchTerm] = React.useState('');
@@ -82,8 +82,10 @@ function StarredItemsPopoverContent() {
             setItems([...starredProjects, ...starredAssessments].sort((a,b) => a.name.localeCompare(b.name)));
             setLoading(false);
         };
-        fetchStarredItems();
-    }, []);
+        if (isOpen) {
+          fetchStarredItems();
+        }
+    }, [isOpen]);
 
     const filteredItems = items.filter(item => 
         item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -226,6 +228,7 @@ function RecentItemsPopoverContent() {
 export function Sidebar() {
   const pathname = usePathname();
   const [isCollapsed, setIsCollapsed] = React.useState(false);
+  const [isStarredPopoverOpen, setIsStarredPopoverOpen] = React.useState(false);
 
   const navItems = [
     {
@@ -268,8 +271,41 @@ export function Sidebar() {
     const Icon = item.icon;
     const isActive = 'href' in item && pathname === item.href;
 
-    if (item.id === 'starred' || item.id === 'recent') {
-        const PopoverContentComponent = item.id === 'starred' ? StarredItemsPopoverContent : RecentItemsPopoverContent;
+    if (item.id === 'starred') {
+        return (
+             <Popover key={item.id} open={isStarredPopoverOpen} onOpenChange={setIsStarredPopoverOpen}>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <PopoverTrigger asChild>
+                             <Button
+                                variant="sidebar"
+                                className='w-full justify-start relative'
+                                >
+                                <div className="flex items-center flex-1">
+                                    <Icon
+                                    className={cn('h-5 w-5', {
+                                        'mr-2': !isCollapsed,
+                                    })}
+                                    />
+                                    {!isCollapsed && item.label}
+                                </div>
+                                {!isCollapsed && <ChevronRightIcon className="h-4 w-4" />}
+                            </Button>
+                        </PopoverTrigger>
+                    </TooltipTrigger>
+                    {isCollapsed && (
+                        <TooltipContent side="right">
+                        {item.label}
+                        </TooltipContent>
+                    )}
+                </Tooltip>
+                <StarredItemsPopoverContent isOpen={isStarredPopoverOpen} />
+            </Popover>
+        )
+    }
+
+    if (item.id === 'recent') {
+        const PopoverContentComponent = RecentItemsPopoverContent;
         return (
              <Popover key={item.id}>
                 <Tooltip>
@@ -303,7 +339,7 @@ export function Sidebar() {
     }
 
     return (
-        <Tooltip key={item.href}>
+        <Tooltip key={item.href || item.id}>
             <TooltipTrigger asChild>
                 <Button
                 asChild
