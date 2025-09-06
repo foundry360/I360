@@ -109,6 +109,12 @@ type QuickActionContextType = {
   setOnUserStoryUpdated: (callback: (() => void) | null) => (() => void) | void;
   editUserStoryData: StoryForEdit | null;
 
+  isNewCollectionDialogOpen: boolean;
+  openNewCollectionDialog: () => void;
+  closeNewCollectionDialog: () => void;
+  onCollectionCreated: (() => void) | null;
+  setOnCollectionCreated: (callback: (() => void) | null) => (() => void) | void;
+
   onAddFromLibrary: (() => void) | null;
   setOnAddFromLibrary: (callback: (() => void) | null) => (() => void) | void;
   
@@ -172,6 +178,9 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
   const [isEditUserStoryDialogOpen, setIsEditUserStoryDialogOpen] = React.useState(false);
   const onUserStoryUpdatedRef = React.useRef<(() => void) | null>(null);
   const [editUserStoryData, setEditUserStoryData] = React.useState<StoryForEdit | null>(null);
+
+  const [isNewCollectionDialogOpen, setIsNewCollectionDialogOpen] = React.useState(false);
+  const onCollectionCreatedRef = React.useRef<(() => void) | null>(null);
   
   const onAddFromLibraryRef = React.useRef<(() => void) | null>(null);
 
@@ -334,6 +343,13 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
     onUserStoryUpdatedRef.current = callback;
     return () => { onUserStoryUpdatedRef.current = null; };
   }, []);
+
+  const openNewCollectionDialog = React.useCallback(() => setIsNewCollectionDialogOpen(true), []);
+  const closeNewCollectionDialog = React.useCallback(() => setIsNewCollectionDialogOpen(false), []);
+  const setOnCollectionCreated = React.useCallback((callback: (() => void) | null) => {
+    onCollectionCreatedRef.current = callback;
+    return () => { onCollectionCreatedRef.current = null; };
+  }, []);
   
   const setOnAddFromLibrary = React.useCallback((callback: (() => void) | null) => {
     onAddFromLibraryRef.current = callback;
@@ -434,6 +450,12 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
     onUserStoryUpdated: onUserStoryUpdatedRef.current,
     setOnUserStoryUpdated,
     editUserStoryData,
+
+    isNewCollectionDialogOpen,
+    openNewCollectionDialog,
+    closeNewCollectionDialog,
+    onCollectionCreated: onCollectionCreatedRef.current,
+    setOnCollectionCreated,
     
     onAddFromLibrary: onAddFromLibraryRef.current,
     setOnAddFromLibrary,
@@ -455,6 +477,7 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
     isEditTaskDialogOpen, openEditTaskDialog, closeEditTaskDialog, editTaskData, setOnTaskUpdated,
     isNewUserStoryDialogOpen, openNewUserStoryDialog, closeNewUserStoryDialog, setOnUserStoryCreated,
     isEditUserStoryDialogOpen, openEditUserStoryDialog, closeEditUserStoryDialog, editUserStoryData, setOnUserStoryUpdated,
+    isNewCollectionDialogOpen, openNewCollectionDialog, closeNewCollectionDialog, setOnCollectionCreated,
     setOnAddFromLibrary,
     globalSearchTerm,
   ]);

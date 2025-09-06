@@ -26,6 +26,7 @@ export default function CollectionsPage() {
     const [collections, setCollections] = React.useState<StoryCollection[]>([]);
     const [loading, setLoading] = React.useState(true);
     const [collectionToDelete, setCollectionToDelete] = React.useState<StoryCollection | null>(null);
+    const { openNewCollectionDialog, setOnCollectionCreated } = useQuickAction();
 
     const fetchCollections = React.useCallback(async () => {
         try {
@@ -41,7 +42,11 @@ export default function CollectionsPage() {
 
     React.useEffect(() => {
         fetchCollections();
-    }, [fetchCollections]);
+        const unsubscribe = setOnCollectionCreated(fetchCollections);
+        return () => {
+            if (unsubscribe) unsubscribe();
+        };
+    }, [fetchCollections, setOnCollectionCreated]);
 
     const handleDeleteCollection = async () => {
         if (!collectionToDelete) return;
@@ -67,7 +72,7 @@ export default function CollectionsPage() {
                 </div>
                 <Separator />
                  <div className="flex justify-end items-center">
-                     <Button>
+                     <Button onClick={openNewCollectionDialog}>
                         <Plus className="h-4 w-4 mr-2" />
                         New Collection
                     </Button>
@@ -86,7 +91,7 @@ export default function CollectionsPage() {
                             <p className="text-muted-foreground mt-2 mb-4">
                                 Get started by creating your first collection of user stories
                             </p>
-                             <Button>
+                             <Button onClick={openNewCollectionDialog}>
                                 <Plus className="h-4 w-4 mr-2" />
                                 New Collection
                             </Button>
