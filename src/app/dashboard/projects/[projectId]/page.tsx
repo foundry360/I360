@@ -429,15 +429,15 @@ export default function ProjectDetailsPage() {
             if (itemsInSprint.length === 0) {
                 toast({
                     variant: 'destructive',
-                    title: 'Cannot Start Empty Sprint',
-                    description: 'Add items to the sprint before starting it.',
+                    title: 'Cannot Start Empty Wave',
+                    description: 'Add items to the wave before starting it.',
                 });
                 setLoading(false);
                 return;
             }
             await startSprint(sprintId, projectId, itemsInSprint, tasks);
             toast({
-                title: 'Sprint Started!',
+                title: 'Wave Started!',
                 description: 'Tasks have been created on the board.',
             });
             await fetchData();
@@ -445,8 +445,8 @@ export default function ProjectDetailsPage() {
             console.error('Failed to start sprint:', error);
             toast({
                 variant: 'destructive',
-                title: 'Error Starting Sprint',
-                description: 'There was a problem starting the sprint.',
+                title: 'Error Starting Wave',
+                description: 'There was a problem starting the wave.',
             });
         } finally {
             setLoading(false);
@@ -458,16 +458,16 @@ export default function ProjectDetailsPage() {
             setLoading(true);
             await completeSprint(sprintId, projectId);
             toast({
-                title: 'Sprint Completed!',
+                title: 'Wave Completed!',
                 description: 'Completed tasks have been archived.',
             });
             await fetchData();
         } catch (error) {
-            console.error('Failed to complete sprint:', error);
-            const errorMessage = (error instanceof Error) ? error.message : 'There was a problem completing the sprint.';
+            console.error('Failed to complete wave:', error);
+            const errorMessage = (error instanceof Error) ? error.message : 'There was a problem completing the wave.';
             toast({
                 variant: 'destructive',
-                title: 'Error Completing Sprint',
+                title: 'Error Completing Wave',
                 description: errorMessage,
             });
         } finally {
@@ -814,7 +814,7 @@ export default function ProjectDetailsPage() {
                             value="sprints"
                             className="pb-3 rounded-none data-[state=active]:shadow-none data-[state=active]:border-primary data-[state=active]:border-b-4 data-[state=active]:text-foreground data-[state=active]:font-bold"
                         >
-                            Sprints
+                            Waves
                         </TabsTrigger>
                          <TabsTrigger 
                             value="timeline"
@@ -879,7 +879,7 @@ export default function ProjectDetailsPage() {
                                         </Button>
                                     </TooltipTrigger>
                                     <TooltipContent>
-                                        <p>New Sprint</p>
+                                        <p>New Wave</p>
                                     </TooltipContent>
                                 </Tooltip>
                             </TooltipProvider>
@@ -894,7 +894,7 @@ export default function ProjectDetailsPage() {
                                 <Card>
                                     <CardHeader>
                                         <CardTitle>Velocity</CardTitle>
-                                        <CardDescription>Story points completed per sprint</CardDescription>
+                                        <CardDescription>Story points completed per wave</CardDescription>
                                     </CardHeader>
                                     <CardContent>
                                         {velocityData.length > 0 ? (
@@ -950,7 +950,7 @@ export default function ProjectDetailsPage() {
                                             </ChartContainer>
                                         ) : (
                                             <div className="h-[150px] flex items-center justify-center text-center text-muted-foreground text-sm">
-                                                Complete a sprint to see your team's velocity.
+                                                Complete a wave to see your team's velocity.
                                             </div>
                                         )}
                                     </CardContent>
@@ -1002,7 +1002,7 @@ export default function ProjectDetailsPage() {
                                             </ChartContainer>
                                         ) : (
                                              <div className="h-[150px] flex items-center justify-center text-center text-muted-foreground text-sm p-4">
-                                                Complete a sprint with estimated story points to generate a burndown chart.
+                                                Complete a wave with estimated story points to generate a burndown chart.
                                             </div>
                                         )}
                                     </CardContent>
@@ -1012,7 +1012,7 @@ export default function ProjectDetailsPage() {
                                 {activeSprintHealthData && (
                                     <Card>
                                         <CardHeader>
-                                            <CardTitle>Active Sprint Health</CardTitle>
+                                            <CardTitle>Active Wave Health</CardTitle>
                                             <CardDescription>{activeSprint?.name}</CardDescription>
                                         </CardHeader>
                                         <CardContent>
@@ -1331,7 +1331,7 @@ export default function ProjectDetailsPage() {
                                                                                 <DropdownMenuSub>
                                                                                     <DropdownMenuSubTrigger>
                                                                                         <Rocket className="mr-2 h-4 w-4" />
-                                                                                        <span>Move to Sprint</span>
+                                                                                        <span>Move to Wave</span>
                                                                                     </DropdownMenuSubTrigger>
                                                                                     <DropdownMenuPortal>
                                                                                     <DropdownMenuSubContent>
@@ -1430,7 +1430,7 @@ export default function ProjectDetailsPage() {
                                                                 <DropdownMenuSub>
                                                                     <DropdownMenuSubTrigger>
                                                                         <Rocket className="mr-2 h-4 w-4" />
-                                                                        <span>Move to Sprint</span>
+                                                                        <span>Move to Wave</span>
                                                                     </DropdownMenuSubTrigger>
                                                                     <DropdownMenuPortal>
                                                                     <DropdownMenuSubContent>
@@ -1469,11 +1469,11 @@ export default function ProjectDetailsPage() {
 
                                 return (
                                 <div key={status}>
-                                    <h2 className="text-lg font-semibold mb-2">{status === 'Not Started' ? 'Upcoming Sprints' : `${status} Sprints`}</h2>
+                                    <h2 className="text-lg font-semibold mb-2">{status === 'Not Started' ? 'Upcoming Waves' : `${status} Waves`}</h2>
                                     {sprintsByStatus.length === 0 ? (
                                         <Card className="border-dashed">
                                             <CardContent className="p-6 text-center text-muted-foreground">
-                                                {status === 'Completed' ? 'No sprints have been completed yet.' : 'No upcoming sprints have been planned.'}
+                                                {status === 'Completed' ? 'No waves have been completed yet.' : 'No upcoming waves have been planned.'}
                                             </CardContent>
                                         </Card>
                                     ) : (
@@ -1500,12 +1500,12 @@ export default function ProjectDetailsPage() {
                                                                     <DropdownMenuContent align="end">
                                                                         {sprint.status === 'Not Started' && (
                                                                             <DropdownMenuItem onSelect={() => handleStartSprint(sprint.id)} disabled={loading}>
-                                                                                <Rocket className="mr-2 h-4 w-4" /> Start Sprint
+                                                                                <Rocket className="mr-2 h-4 w-4" /> Start Wave
                                                                             </DropdownMenuItem>
                                                                         )}
                                                                         {sprint.status === 'Active' && (
                                                                             <DropdownMenuItem onSelect={() => handleCompleteSprint(sprint.id)} disabled={loading}>
-                                                                                <CheckCircle className="mr-2 h-4 w-4" /> Complete Sprint
+                                                                                <CheckCircle className="mr-2 h-4 w-4" /> Complete Wave
                                                                             </DropdownMenuItem>
                                                                         )}
                                                                         {sprint.status !== 'Completed' && (
@@ -1560,7 +1560,7 @@ export default function ProjectDetailsPage() {
                                                                         </div>
                                                                     )
                                                                 }) : (
-                                                                    <p className="text-sm text-muted-foreground text-center p-4">No items in this sprint.</p>
+                                                                    <p className="text-sm text-muted-foreground text-center p-4">No items in this wave.</p>
                                                                 )}
                                                             </div>
                                                         </AccordionContent>
@@ -1639,7 +1639,7 @@ export default function ProjectDetailsPage() {
                                     )
                                 }) : (
                                     <p className="text-sm text-muted-foreground text-center p-6">
-                                        {allWorkSearchTerm ? 'No matching items found.' : 'No items assigned to any sprints.'}
+                                        {allWorkSearchTerm ? 'No matching items found.' : 'No items assigned to any waves.'}
                                     </p>
                                 )}
                             </div>

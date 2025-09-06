@@ -56,7 +56,7 @@ export function NewSprintDialog() {
   const handleCreateItem = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newItem.name || !newItem.startDate || !newItem.endDate) {
-      alert('Sprint Name, Start Date, and End Date are required.');
+      alert('Wave Name, Start Date, and End Date are required.');
       return;
     }
     try {
@@ -66,7 +66,7 @@ export function NewSprintDialog() {
         onSprintCreated();
       }
     } catch (error) {
-      console.error('Failed to create sprint:', error);
+      console.error('Failed to create wave:', error);
     }
   };
 
@@ -82,18 +82,18 @@ export function NewSprintDialog() {
       <DialogContent className="sm:max-w-[600px]">
         <form onSubmit={handleCreateItem}>
           <DialogHeader>
-            <DialogTitle>Create New Sprint</DialogTitle>
+            <DialogTitle>Create New Wave</DialogTitle>
             <DialogDescription>
               Plan your next iteration by defining its goal and duration.
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4 max-h-[70vh] overflow-y-auto pr-4">
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="name" className="text-right">Sprint Name</Label>
+              <Label htmlFor="name" className="text-right">Wave Name</Label>
               <Input id="name" value={newItem.name} onChange={handleInputChange} className="col-span-3" required />
             </div>
              <div className="grid grid-cols-4 items-start gap-4">
-              <Label htmlFor="goal" className="text-right pt-2">Sprint Goal</Label>
+              <Label htmlFor="goal" className="text-right pt-2">Wave Goal</Label>
               <Textarea id="goal" value={newItem.goal} onChange={handleInputChange} className="col-span-3" />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
@@ -109,7 +109,7 @@ export function NewSprintDialog() {
             <Button type="button" variant="outline" onClick={() => handleOpenChange(false)}>
               Cancel
             </Button>
-            <Button type="submit">Create Sprint</Button>
+            <Button type="submit">Create Wave</Button>
           </DialogFooter>
         </form>
       </DialogContent>

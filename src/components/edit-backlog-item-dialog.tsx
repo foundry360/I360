@@ -28,6 +28,8 @@ import { TaskPriority, TaskStatus } from '@/services/task-service';
 import { Contact } from '@/services/contact-service';
 import { useUser } from '@/contexts/user-context';
 import { format, parseISO } from 'date-fns';
+import { Rocket } from 'lucide-react';
+import { Separator } from './ui/separator';
 
 // MOCK USER DATA - Replace with a service call to fetch actual users
 const mockUsers = [
@@ -166,10 +168,10 @@ export function EditBacklogItemDialog() {
               </Select>
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="sprintId" className="text-right">Sprint</Label>
+              <Label htmlFor="sprintId" className="text-right">Wave</Label>
               <Select onValueChange={handleSelectChange('sprintId')} value={item.sprintId ?? 'null'}>
                 <SelectTrigger className="col-span-3">
-                  <SelectValue placeholder="Assign to a sprint" />
+                  <SelectValue placeholder="Assign to a wave" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value={'null'}>Backlog</SelectItem>
