@@ -12,7 +12,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Skeleton } from '@/components/ui/skeleton';
-import { MoreHorizontal, Plus, Trash2, Search, Upload, FilePlus } from 'lucide-react';
+import { MoreHorizontal, Plus, Trash2, Search, Upload, FilePlus, BookText } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { useQuickAction } from '@/contexts/quick-action-context';
 import { getUserStories, deleteUserStory, UserStory, bulkCreateUserStories as bulkCreateLibraryStories, getUniqueTags } from '@/services/user-story-service';
@@ -20,7 +20,6 @@ import { bulkCreateBacklogItems } from '@/services/backlog-item-service';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import Papa from 'papaparse';
-import { epicCategories } from '@/lib/epic-categories';
 import { cn } from '@/lib/utils';
 import { Layers } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
@@ -246,7 +245,10 @@ export default function LibraryPage() {
           <div className="col-span-3">
              <Card className="h-full">
                 <CardHeader>
-                    <CardTitle className="text-base">Categories</CardTitle>
+                    <CardTitle className="text-base flex items-center gap-2">
+                        <Layers className="h-4 w-4" />
+                        Categories
+                    </CardTitle>
                 </CardHeader>
                 <CardContent>
                     <ScrollArea className="h-[calc(100vh-22rem)]">
@@ -298,7 +300,10 @@ export default function LibraryPage() {
                              <div className="flex-1">
                                 <CardHeader>
                                     <div className="flex justify-between items-start">
-                                        <CardTitle>{story.title}</CardTitle>
+                                        <CardTitle className="flex items-center gap-2">
+                                            <BookText className="h-4 w-4" />
+                                            {story.title}
+                                        </CardTitle>
                                         <DropdownMenu>
                                             <DropdownMenuTrigger asChild>
                                                 <Button variant="ghost" className="h-8 w-8 p-0">
