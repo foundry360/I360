@@ -184,9 +184,9 @@ export function NewCollectionDialog() {
                         <Textarea id="description" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="A short description of this collection's purpose" />
                     </div>
                 </div>
-                <div className="flex-1 grid grid-cols-2 gap-6 overflow-hidden px-6 pt-4 pb-2">
+                <div className="flex-1 flex gap-6 overflow-hidden px-6 pt-4 pb-2">
                     <DragDropContext onDragEnd={onDragEnd}>
-                        <Card className="flex flex-col h-full overflow-hidden">
+                        <Card className="flex-1 flex flex-col h-full overflow-hidden">
                             <CardHeader>
                                 <CardTitle>Story Library ({filteredLibraryStories.length})</CardTitle>
                                 <div className="relative mt-2">
@@ -199,47 +199,51 @@ export function NewCollectionDialog() {
                                     />
                                 </div>
                             </CardHeader>
-                            <CardContent className="flex-1 overflow-y-auto">
-                                <Droppable droppableId="library">
-                                    {(provided, snapshot) => (
-                                        <div 
-                                            ref={provided.innerRef} 
-                                            {...provided.droppableProps}
-                                            className={cn("p-1 rounded-md h-full transition-colors", snapshot.isDraggingOver && "bg-muted")}
-                                        >
-                                            {loading ? <p>Loading stories...</p> : filteredLibraryStories.map((story, index) => (
-                                                <StoryCard key={story.id} story={story} index={index} />
-                                            ))}
-                                            {provided.placeholder}
-                                        </div>
-                                    )}
-                                </Droppable>
+                            <CardContent className="flex-1 flex flex-col overflow-hidden">
+                                <ScrollArea className="flex-1">
+                                    <Droppable droppableId="library">
+                                        {(provided, snapshot) => (
+                                            <div 
+                                                ref={provided.innerRef} 
+                                                {...provided.droppableProps}
+                                                className={cn("p-1 rounded-md h-full transition-colors", snapshot.isDraggingOver && "bg-muted")}
+                                            >
+                                                {loading ? <p>Loading stories...</p> : filteredLibraryStories.map((story, index) => (
+                                                    <StoryCard key={story.id} story={story} index={index} />
+                                                ))}
+                                                {provided.placeholder}
+                                            </div>
+                                        )}
+                                    </Droppable>
+                                </ScrollArea>
                             </CardContent>
                         </Card>
-                         <Card className="flex flex-col h-full overflow-hidden">
+                         <Card className="flex-1 flex flex-col h-full overflow-hidden">
                             <CardHeader>
                                 <CardTitle>New Collection ({collectionStories.length})</CardTitle>
                             </CardHeader>
-                            <CardContent className="flex-1 overflow-y-auto">
-                                <Droppable droppableId="collection">
-                                    {(provided, snapshot) => (
-                                         <div 
-                                            ref={provided.innerRef} 
-                                            {...provided.droppableProps}
-                                            className={cn("p-1 rounded-md h-full transition-colors", snapshot.isDraggingOver && "bg-muted")}
-                                        >
-                                            {collectionStories.map((story, index) => (
-                                                <StoryCard key={story.id} story={story} index={index} />
-                                            ))}
-                                            {provided.placeholder}
-                                            {collectionStories.length === 0 && !snapshot.isDraggingOver && (
-                                                <div className="h-full flex items-center justify-center text-center text-muted-foreground border-2 border-dashed rounded-lg p-4">
-                                                    <p>Drag stories from the library here to build your collection</p>
-                                                </div>
-                                            )}
-                                        </div>
-                                    )}
-                                </Droppable>
+                             <CardContent className="flex-1 flex flex-col overflow-hidden">
+                                <ScrollArea className="flex-1">
+                                    <Droppable droppableId="collection">
+                                        {(provided, snapshot) => (
+                                             <div 
+                                                ref={provided.innerRef} 
+                                                {...provided.droppableProps}
+                                                className={cn("p-1 rounded-md h-full transition-colors", snapshot.isDraggingOver && "bg-muted")}
+                                            >
+                                                {collectionStories.map((story, index) => (
+                                                    <StoryCard key={story.id} story={story} index={index} />
+                                                ))}
+                                                {provided.placeholder}
+                                                {collectionStories.length === 0 && !snapshot.isDraggingOver && (
+                                                    <div className="h-full flex items-center justify-center text-center text-muted-foreground border-2 border-dashed rounded-lg p-4">
+                                                        <p>Drag stories from the library here to build your collection</p>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
+                                    </Droppable>
+                                </ScrollArea>
                             </CardContent>
                         </Card>
                     </DragDropContext>
