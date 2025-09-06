@@ -181,7 +181,7 @@ export function NewCollectionDialog() {
                 </div>
                 <DragDropContext onDragEnd={onDragEnd}>
                     <div className="grid grid-cols-2 gap-6 flex-1 overflow-hidden">
-                        <Card className="flex flex-col">
+                        <Card>
                             <CardHeader>
                                 <CardTitle>Story Library ({filteredLibraryStories.length})</CardTitle>
                                 <div className="relative mt-2">
@@ -194,8 +194,8 @@ export function NewCollectionDialog() {
                                     />
                                 </div>
                             </CardHeader>
-                            <CardContent className="flex-1 overflow-hidden">
-                                <ScrollArea className="h-full">
+                            <CardContent className="h-full pb-0">
+                                <ScrollArea className="h-[calc(90vh-22rem)]">
                                     <Droppable droppableId="library">
                                         {(provided, snapshot) => (
                                             <div 
@@ -213,12 +213,12 @@ export function NewCollectionDialog() {
                                 </ScrollArea>
                             </CardContent>
                         </Card>
-                         <Card className="flex flex-col">
+                         <Card>
                             <CardHeader>
                                 <CardTitle>New Collection ({collectionStories.length})</CardTitle>
                             </CardHeader>
-                            <CardContent className="flex-1 overflow-hidden">
-                               <ScrollArea className="h-full">
+                            <CardContent className="h-full pb-0">
+                               <ScrollArea className="h-[calc(90vh-19rem)]">
                                     <Droppable droppableId="collection">
                                         {(provided, snapshot) => (
                                              <div 
