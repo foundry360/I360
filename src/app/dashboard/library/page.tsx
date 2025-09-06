@@ -21,7 +21,6 @@ import { Separator } from '@/components/ui/separator';
 import { useQuickAction } from '@/contexts/quick-action-context';
 import { getUserStories, deleteUserStory, UserStory, bulkCreateUserStories as bulkCreateLibraryStories, getTags, Tag, deleteUserStories } from '@/services/user-story-service';
 import { getCollections, addStoriesToCollection, type StoryCollection } from '@/services/collection-service';
-import { bulkCreateBacklogItems } from '@/services/backlog-item-service';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import Papa from 'papaparse';
@@ -74,7 +73,7 @@ export default function LibraryPage() {
       let tagsWithOptions: (Tag | {id: string, name: string})[] = [{id: 'All', name: 'All'}, ...tagsFromDb];
       
       if(hasUncategorized) {
-        tagsWithOptions.push({id: 'Uncategorized', name: 'Uncategorized'});
+        tagsWithOptions.push({id: 'Uncategorized', name: 'Uncategorized', icon: 'Layers'});
       }
       setAllTags(tagsWithOptions as Tag[]);
       setSelectedTag(prev => {
