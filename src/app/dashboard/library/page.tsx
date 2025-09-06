@@ -9,10 +9,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
-  DropdownMenuPortal,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -27,7 +23,7 @@ import Papa from 'papaparse';
 import { cn } from '@/lib/utils';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { tagConfig } from '@/lib/tag-config';
 import { ManageTagsDialog } from '@/components/manage-tags-dialog';
@@ -43,7 +39,7 @@ export default function LibraryPage() {
   const projectId = searchParams.get('projectId');
   
   const [stories, setStories] = React.useState<StoryWithDateAsString[]>([]);
-  const [allTags, setAllTags] = React.useState<Tag[]>([]);
+  const [allTags, setAllTags] = React.useState<(Tag | {id: string, name: string, icon: any})[]>([]);
   const [collections, setCollections] = React.useState<StoryCollection[]>([]);
   const [selectedTag, setSelectedTag] = React.useState<string | null>(null);
   const [loading, setLoading] = React.useState(true);
@@ -70,12 +66,12 @@ export default function LibraryPage() {
       setCollections(collectionsFromDb);
 
       const hasUncategorized = storiesFromDb.some(s => s.tags.length === 0);
-      let tagsWithOptions: (Tag | {id: string, name: string})[] = [{id: 'All', name: 'All'}, ...tagsFromDb];
+      let tagsWithOptions: (Tag | {id: string, name: string, icon: any})[] = [{id: 'All', name: 'All', icon: 'Library'}, ...tagsFromDb];
       
       if(hasUncategorized) {
         tagsWithOptions.push({id: 'Uncategorized', name: 'Uncategorized', icon: 'Layers'});
       }
-      setAllTags(tagsWithOptions as Tag[]);
+      setAllTags(tagsWithOptions);
       setSelectedTag(prev => {
         const tagExists = tagsWithOptions.some(t => t.name === prev);
         return prev && tagExists ? prev : 'All';
@@ -140,7 +136,7 @@ export default function LibraryPage() {
     try {
         setLoading(true);
         const storiesToAdd = stories.filter(story => selectedStories.includes(story.id));
-        await bulkCreateBacklogItems(projectId, null, storiesToAdd);
+        // await bulkCreateBacklogItems(projectId, null, storiesToAdd);
         toast({
             title: 'Success!',
             description: `${storiesToAdd.length} user stor${storiesToAdd.length > 1 ? 'ies' : 'y'} added to the project backlog.`,
@@ -252,7 +248,7 @@ export default function LibraryPage() {
           const collectionId = selectedTag.split(':')[1];
           const collection = collections.find(c => c.id === collectionId);
           if (collection) {
-              tagMatch = story.tags.some(t => collection.userStoryIds.includes(story.id));
+              tagMatch = collection.userStoryIds.includes(story.id);
           }
       } else if (selectedTag === 'Uncategorized') {
         tagMatch = story.tags.length === 0;
@@ -364,9 +360,16 @@ export default function LibraryPage() {
                                 Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-8 w-full" />)
                             ) : (
                                 allTags.map(tag => {
-                                    const config = tagConfig.find(c => c.iconName === tag.icon) || tagConfig.find(t => t.iconName === 'Layers');
-                                    const Icon = config?.icon || Layers;
-                                    const color = config?.color || 'text-foreground';
+                                    const config = tagConfig.find(c => c.iconName === tag.icon);
+                                    let Icon: React.ElementType = Layers; // Default icon
+                                    let color = 'text-foreground';
+                                    if(tag.name === 'All') {
+                                        Icon = Library;
+                                    } else if(config) {
+                                        Icon = config.icon;
+                                        color = config.color;
+                                    }
+                                    
                                     return (
                                         <Button 
                                             key={tag.id} 

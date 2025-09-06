@@ -15,7 +15,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { getTags, batchUpdateTags, Tag } from '@/services/user-story-service';
 import { ScrollArea } from './ui/scroll-area';
-import { PlusCircle, Save, Trash2, X } from 'lucide-react';
+import { PlusCircle, Save, Trash2 } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from './ui/alert-dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { tagConfig, type TagConfig } from '@/lib/tag-config';
@@ -145,7 +145,10 @@ export function ManageTagsDialog({ isOpen, onOpenChange, onTagsUpdated }: Manage
             </div>
             <Label className="pt-4 block">Existing Tags</Label>
             <ScrollArea className="h-64 border rounded-md p-2">
-                {tags.map(tag => (
+                {tags.map(tag => {
+                    const tagIconConfig = tagConfig.find(c => c.iconName === tag.icon) || tagConfig[0];
+                    const Icon = tagIconConfig.icon;
+                    return (
                     <div key={tag.id} className="flex items-center gap-2 p-1 rounded-md hover:bg-muted">
                         <Input 
                             value={tag.name}
@@ -158,14 +161,14 @@ export function ManageTagsDialog({ isOpen, onOpenChange, onTagsUpdated }: Manage
                           >
                             <SelectTrigger className="w-[60px]">
                                 <SelectValue>
-                                    {React.createElement(tagConfig.find(c => c.iconName === tag.icon)?.icon || tagConfig[0].icon, {className: "h-4 w-4"})}
+                                    <Icon className={cn("h-4 w-4", tagIconConfig.color)} />
                                 </SelectValue>
                             </SelectTrigger>
                             <SelectContent>
                                 {tagConfig.map(config => {
-                                    const Icon = config.icon;
+                                    const IconComponent = config.icon;
                                     return <SelectItem key={config.iconName} value={config.iconName}>
-                                        <Icon className={cn("h-4 w-4", config.color)} />
+                                        <IconComponent className={cn("h-4 w-4", config.color)} />
                                     </SelectItem>
                                 })}
                             </SelectContent>
@@ -179,7 +182,7 @@ export function ManageTagsDialog({ isOpen, onOpenChange, onTagsUpdated }: Manage
                             <Trash2 className="h-4 w-4" />
                         </Button>
                     </div>
-                ))}
+                )})}
             </ScrollArea>
         </div>
         <DialogFooter>

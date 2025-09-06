@@ -1063,8 +1063,7 @@ export default function ProjectDetailsPage() {
                                          {epicProgressData.length > 0 ? (
                                             <Accordion type="multiple" className="w-full">
                                                 {epicProgressData.map((epic, index) => {
-                                                    const tag = allTags.find(t => t.name === epic.category);
-                                                    const config = tag ? (tagConfig.find(c => c.iconName === tag.icon) || tagConfig.find(t => t.iconName === 'Layers')) : tagConfig.find(t => t.iconName === 'Layers');
+                                                    const config = tagConfig.find(c => c.iconName === epic.category) || tagConfig.find(t => t.iconName === 'Layers');
                                                     const IconComponent = config?.icon || Layers;
                                                     const color = config?.color || 'text-foreground';
                                                     return (
@@ -1256,8 +1255,7 @@ export default function ProjectDetailsPage() {
                             ) : (
                                 <Accordion type="multiple" className="w-full" value={activeEpicAccordion} onValueChange={setActiveEpicAccordion}>
                                     {epics.map(epic => {
-                                        const tag = allTags.find(t => t.name === epic.category);
-                                        const config = tag ? (tagConfig.find(c => c.iconName === tag.icon) || tagConfig.find(t => t.iconName === 'Layers')) : tagConfig.find(t => t.iconName === 'Layers');
+                                        const config = tagConfig.find(c => c.iconName === epic.category) || tagConfig.find(t => t.iconName === 'Layers');
                                         const IconComponent = config?.icon || Layers;
                                         const color = config?.color || 'text-foreground';
                                         const itemsInEpic = backlogItems.filter(item => item.epicId === epic.id);
@@ -1597,8 +1595,7 @@ export default function ProjectDetailsPage() {
                                 {allSprintItems.length > 0 ? allSprintItems.map(item => {
                                     const epic = epics.find(e => e.id === item.epicId);
                                     const sprint = sprints.find(s => s.id === item.sprintId);
-                                    const tag = epic ? allTags.find(t => t.name === epic.category) : undefined;
-                                    const config = tag ? (tagConfig.find(c => c.iconName === tag.icon) || tagConfig.find(t => t.iconName === 'Layers')) : tagConfig.find(t => t.iconName === 'Layers');
+                                    const config = epic ? (tagConfig.find(c => c.iconName === epic.category) || tagConfig.find(t => t.iconName === 'Layers')) : tagConfig.find(t => t.iconName === 'Layers');
                                     const IconComponent = config?.icon || Layers;
                                     return (
                                         <div key={item.id} className="flex justify-between items-center p-3 border-b last:border-b-0 hover:bg-muted/50 cursor-pointer"
