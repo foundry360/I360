@@ -18,6 +18,7 @@ import {
   Star,
   Search,
   History,
+  ChevronRight as ChevronRightIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -267,7 +268,8 @@ export function Sidebar() {
     const Icon = item.icon;
     const isActive = 'href' in item && pathname === item.href;
 
-    if (item.id === 'starred') {
+    if (item.id === 'starred' || item.id === 'recent') {
+        const PopoverContentComponent = item.id === 'starred' ? StarredItemsPopoverContent : RecentItemsPopoverContent;
         return (
              <Popover key={item.id}>
                 <Tooltip>
@@ -277,12 +279,15 @@ export function Sidebar() {
                                 variant="sidebar"
                                 className='w-full justify-start relative'
                                 >
-                                <Icon
-                                className={cn('h-5 w-5', {
-                                    'mr-2': !isCollapsed,
-                                })}
-                                />
-                                {!isCollapsed && item.label}
+                                <div className="flex items-center flex-1">
+                                    <Icon
+                                    className={cn('h-5 w-5', {
+                                        'mr-2': !isCollapsed,
+                                    })}
+                                    />
+                                    {!isCollapsed && item.label}
+                                </div>
+                                {!isCollapsed && <ChevronRightIcon className="h-4 w-4" />}
                             </Button>
                         </PopoverTrigger>
                     </TooltipTrigger>
@@ -292,37 +297,7 @@ export function Sidebar() {
                         </TooltipContent>
                     )}
                 </Tooltip>
-                <StarredItemsPopoverContent />
-            </Popover>
-        )
-    }
-
-    if (item.id === 'recent') {
-        return (
-             <Popover key={item.id}>
-                <Tooltip>
-                    <TooltipTrigger asChild>
-                        <PopoverTrigger asChild>
-                             <Button
-                                variant="sidebar"
-                                className='w-full justify-start relative'
-                                >
-                                <Icon
-                                className={cn('h-5 w-5', {
-                                    'mr-2': !isCollapsed,
-                                })}
-                                />
-                                {!isCollapsed && item.label}
-                            </Button>
-                        </PopoverTrigger>
-                    </TooltipTrigger>
-                    {isCollapsed && (
-                        <TooltipContent side="right">
-                        {item.label}
-                        </TooltipContent>
-                    )}
-                </Tooltip>
-                <RecentItemsPopoverContent />
+                <PopoverContentComponent />
             </Popover>
         )
     }
