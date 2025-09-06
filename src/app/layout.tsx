@@ -22,6 +22,9 @@ import { NewSprintDialog } from '@/components/new-sprint-dialog';
 import { EditSprintDialog } from '@/components/edit-sprint-dialog';
 import { EditTaskDialog } from '@/components/edit-task-dialog';
 import { NewUserStoryDialog } from '@/components/new-user-story-dialog';
+import { useIdle } from '@/hooks/use-idle';
+import { signOut } from '@/services/auth-service';
+import { useToast } from '@/hooks/use-toast';
 
 const unprotectedRoutes = ['/login', '/public/assessment/[companyId]', '/public/assessment/thanks'];
 
@@ -29,7 +32,19 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
   const { user, loading } = useUser();
   const router = useRouter();
   const pathname = usePathname();
+  const { toast } = useToast();
   const [isMounted, setIsMounted] = React.useState(false);
+
+  const handleIdle = () => {
+    signOut();
+    toast({
+      title: "You have been logged out",
+      description: "You were logged out due to inactivity.",
+    });
+    router.push('/login');
+  };
+
+  useIdle(handleIdle, 20 * 60 * 1000); // 20 minutes
 
   React.useEffect(() => {
     setIsMounted(true);
