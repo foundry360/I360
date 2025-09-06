@@ -20,7 +20,7 @@ import { createCollection } from '@/services/collection-service';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 import { ScrollArea } from './ui/scroll-area';
 import { Card, CardHeader, CardTitle, CardContent } from './ui/card';
-import { GripVertical } from 'lucide-react';
+import { GripVertical, Search } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 
@@ -59,6 +59,7 @@ export function NewCollectionDialog() {
     const [libraryStories, setLibraryStories] = React.useState<StoryWithDateAsString[]>([]);
     const [collectionStories, setCollectionStories] = React.useState<StoryWithDateAsString[]>([]);
     const [loading, setLoading] = React.useState(false);
+    const [searchTerm, setSearchTerm] = React.useState('');
 
     React.useEffect(() => {
         if (isNewCollectionDialogOpen) {
@@ -77,23 +78,37 @@ export function NewCollectionDialog() {
 
         if (!destination) return;
 
-        const sourceList = source.droppableId === 'library' ? [...libraryStories] : [...collectionStories];
-        const destList = destination.droppableId === 'library' ? [...libraryStories] : [...collectionStories];
+        const sourceListId = source.droppableId;
+        const destListId = destination.droppableId;
+        
+        let sourceList = sourceListId === 'library' ? [...filteredLibraryStories] : [...collectionStories];
+        let destList = destListId === 'library' ? [...filteredLibraryStories] : [...collectionStories];
+
         const [movedStory] = sourceList.splice(source.index, 1);
 
-        if (source.droppableId === destination.droppableId) {
+        if (sourceListId === destListId) {
             // Reordering within the same list
             sourceList.splice(destination.index, 0, movedStory);
-             if (source.droppableId === 'library') {
-                setLibraryStories(sourceList);
-            } else {
+             if (sourceListId === 'library') {
+                // This is tricky because we are reordering a filtered list.
+                // A full implementation would need to update the original `libraryStories` array.
+                // For now, we'll prevent re-ordering in the filtered library view for simplicity.
+             } else {
                 setCollectionStories(sourceList);
             }
         } else {
             // Moving between lists
             destList.splice(destination.index, 0, movedStory);
-            setLibraryStories(source.droppableId === 'library' ? sourceList : destList);
-            setCollectionStories(source.droppableId === 'collection' ? sourceList : destList);
+            
+            if (sourceListId === 'library') {
+                // Story moved from Library to Collection
+                setLibraryStories(prev => prev.filter(s => s.id !== movedStory.id));
+                setCollectionStories(destList);
+            } else {
+                // Story moved from Collection to Library
+                setCollectionStories(sourceList);
+                setLibraryStories(prev => [...prev, movedStory].sort((a,b) => a.title.localeCompare(b.title)));
+            }
         }
     };
     
@@ -136,8 +151,14 @@ export function NewCollectionDialog() {
         setDescription('');
         setLibraryStories([]);
         setCollectionStories([]);
+        setSearchTerm('');
         closeNewCollectionDialog();
     };
+    
+    const filteredLibraryStories = libraryStories.filter(story =>
+        story.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        story.story.toLowerCase().includes(searchTerm.toLowerCase())
+    );
 
     return (
         <Dialog open={isNewCollectionDialogOpen} onOpenChange={handleClose}>
@@ -162,7 +183,16 @@ export function NewCollectionDialog() {
                     <div className="grid grid-cols-2 gap-6 flex-1 overflow-hidden">
                         <Card className="flex flex-col">
                             <CardHeader>
-                                <CardTitle>Story Library</CardTitle>
+                                <CardTitle>Story Library ({filteredLibraryStories.length})</CardTitle>
+                                <div className="relative mt-2">
+                                    <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                                    <Input
+                                        placeholder="Search library..."
+                                        value={searchTerm}
+                                        onChange={(e) => setSearchTerm(e.target.value)}
+                                        className="pl-8"
+                                    />
+                                </div>
                             </CardHeader>
                             <CardContent className="flex-1 overflow-hidden">
                                 <ScrollArea className="h-full">
@@ -173,7 +203,7 @@ export function NewCollectionDialog() {
                                                 {...provided.droppableProps}
                                                 className={cn("p-2 rounded-md h-full transition-colors", snapshot.isDraggingOver && "bg-muted")}
                                             >
-                                                {loading ? <p>Loading stories...</p> : libraryStories.map((story, index) => (
+                                                {loading ? <p>Loading stories...</p> : filteredLibraryStories.map((story, index) => (
                                                     <StoryCard key={story.id} story={story} index={index} />
                                                 ))}
                                                 {provided.placeholder}
