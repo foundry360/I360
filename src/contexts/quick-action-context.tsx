@@ -9,6 +9,10 @@ import type { Sprint } from '@/services/sprint-service';
 import type { Task } from '@/services/task-service';
 import type { Contact } from '@/services/contact-service';
 import type { Project } from '@/services/project-service';
+import type { UserStory } from '@/services/user-story-service';
+
+type StoryForEdit = Omit<UserStory, 'createdAt'> & { createdAt: string };
+
 
 type QuickActionContextType = {
   isNewCompanyDialogOpen: boolean;
@@ -98,6 +102,13 @@ type QuickActionContextType = {
   onUserStoryCreated: (() => void) | null;
   setOnUserStoryCreated: (callback: (() => void) | null) => (() => void) | void;
   
+  isEditUserStoryDialogOpen: boolean;
+  openEditUserStoryDialog: (story: StoryForEdit) => void;
+  closeEditUserStoryDialog: () => void;
+  onUserStoryUpdated: (() => void) | null;
+  setOnUserStoryUpdated: (callback: (() => void) | null) => (() => void) | void;
+  editUserStoryData: StoryForEdit | null;
+
   onAddFromLibrary: (() => void) | null;
   setOnAddFromLibrary: (callback: (() => void) | null) => (() => void) | void;
   
@@ -157,6 +168,10 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
 
   const [isNewUserStoryDialogOpen, setIsNewUserStoryDialogOpen] = React.useState(false);
   const onUserStoryCreatedRef = React.useRef<(() => void) | null>(null);
+  
+  const [isEditUserStoryDialogOpen, setIsEditUserStoryDialogOpen] = React.useState(false);
+  const onUserStoryUpdatedRef = React.useRef<(() => void) | null>(null);
+  const [editUserStoryData, setEditUserStoryData] = React.useState<StoryForEdit | null>(null);
   
   const onAddFromLibraryRef = React.useRef<(() => void) | null>(null);
 
@@ -306,6 +321,19 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
     onUserStoryCreatedRef.current = callback;
     return () => { onUserStoryCreatedRef.current = null; };
   }, []);
+
+  const openEditUserStoryDialog = React.useCallback((story: StoryForEdit) => {
+    setEditUserStoryData(story);
+    setIsEditUserStoryDialogOpen(true);
+  }, []);
+  const closeEditUserStoryDialog = React.useCallback(() => {
+    setIsEditUserStoryDialogOpen(false);
+    setEditUserStoryData(null);
+  }, []);
+  const setOnUserStoryUpdated = React.useCallback((callback: (() => void) | null) => {
+    onUserStoryUpdatedRef.current = callback;
+    return () => { onUserStoryUpdatedRef.current = null; };
+  }, []);
   
   const setOnAddFromLibrary = React.useCallback((callback: (() => void) | null) => {
     onAddFromLibraryRef.current = callback;
@@ -400,6 +428,13 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
     onUserStoryCreated: onUserStoryCreatedRef.current,
     setOnUserStoryCreated,
     
+    isEditUserStoryDialogOpen,
+    openEditUserStoryDialog,
+    closeEditUserStoryDialog,
+    onUserStoryUpdated: onUserStoryUpdatedRef.current,
+    setOnUserStoryUpdated,
+    editUserStoryData,
+    
     onAddFromLibrary: onAddFromLibraryRef.current,
     setOnAddFromLibrary,
     
@@ -419,6 +454,7 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
     isEditSprintDialogOpen, openEditSprintDialog, closeEditSprintDialog, editSprintData, setOnSprintUpdated,
     isEditTaskDialogOpen, openEditTaskDialog, closeEditTaskDialog, editTaskData, setOnTaskUpdated,
     isNewUserStoryDialogOpen, openNewUserStoryDialog, closeNewUserStoryDialog, setOnUserStoryCreated,
+    isEditUserStoryDialogOpen, openEditUserStoryDialog, closeEditUserStoryDialog, editUserStoryData, setOnUserStoryUpdated,
     setOnAddFromLibrary,
     globalSearchTerm,
   ]);

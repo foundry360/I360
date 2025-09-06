@@ -48,7 +48,7 @@ export default function LibraryPage() {
   const [isManageTagsOpen, setIsManageTagsOpen] = React.useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
   
-  const { openNewUserStoryDialog, setOnUserStoryCreated } = useQuickAction();
+  const { openNewUserStoryDialog, setOnUserStoryCreated, openEditUserStoryDialog, setOnUserStoryUpdated } = useQuickAction();
   const { toast } = useToast();
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   const [isUploadResultDialogOpen, setIsUploadResultDialogOpen] = React.useState(false);
@@ -86,11 +86,13 @@ export default function LibraryPage() {
 
   React.useEffect(() => {
     fetchLibraryData();
-    const unsubscribe = setOnUserStoryCreated(fetchLibraryData);
+    const unsubscribeCreated = setOnUserStoryCreated(fetchLibraryData);
+    const unsubscribeUpdated = setOnUserStoryUpdated(fetchLibraryData);
     return () => {
-      if (unsubscribe) unsubscribe();
+      if (unsubscribeCreated) unsubscribeCreated();
+      if (unsubscribeUpdated) unsubscribeUpdated();
     };
-  }, [fetchLibraryData, setOnUserStoryCreated]);
+  }, [fetchLibraryData, setOnUserStoryCreated, setOnUserStoryUpdated]);
 
   const handleDelete = async (id: string) => {
     try {
@@ -459,7 +461,7 @@ export default function LibraryPage() {
                                                   </Button>
                                               </DropdownMenuTrigger>
                                               <DropdownMenuContent align="end">
-                                                  <DropdownMenuItem>View/Edit</DropdownMenuItem>
+                                                  <DropdownMenuItem onSelect={() => openEditUserStoryDialog(story)}>View/Edit</DropdownMenuItem>
                                                   <DropdownMenuItem
                                                       onClick={() => handleDelete(story.id)}
                                                       className="text-destructive focus:text-destructive-foreground"

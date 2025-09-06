@@ -22,6 +22,7 @@ import { NewSprintDialog } from '@/components/new-sprint-dialog';
 import { EditSprintDialog } from '@/components/edit-sprint-dialog';
 import { EditTaskDialog } from '@/components/edit-task-dialog';
 import { NewUserStoryDialog } from '@/components/new-user-story-dialog';
+import { EditUserStoryDialog } from '@/components/edit-user-story-dialog';
 import { useIdle } from '@/hooks/use-idle';
 import { signOut } from '@/services/auth-service';
 import { useToast } from '@/hooks/use-toast';
@@ -126,6 +127,7 @@ export default function RootLayout({
                   <EditSprintDialog />
                   <EditTaskDialog />
                   <NewUserStoryDialog />
+                  <EditUserStoryDialog />
                   <AssessmentModal 
                     // These props are managed by the QuickActionProvider now
                   />
