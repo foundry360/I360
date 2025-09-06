@@ -3,12 +3,6 @@
 
 import * as React from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from '@/components/ui/accordion';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -21,7 +15,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { MoreHorizontal, Plus, Trash2, Search, Upload, FilePlus } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { useQuickAction } from '@/contexts/quick-action-context';
-import { getUserStories, deleteUserStory, UserStory, bulkCreateUserStories as bulkCreateLibraryStories } from '@/services/user-story-service';
+import { getUserStories, deleteUserStory, UserStory, bulkCreateUserStories as bulkCreateLibraryStories, getUniqueTags } from '@/services/user-story-service';
 import { bulkCreateBacklogItems } from '@/services/backlog-item-service';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
@@ -31,32 +25,10 @@ import { cn } from '@/lib/utils';
 import { Layers } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Checkbox } from '@/components/ui/checkbox';
-
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 type StoryWithDateAsString = Omit<UserStory, 'createdAt'> & { createdAt: string };
-
-const getIconForTag = (tag: string) => {
-    const lowerCaseTag = tag.toLowerCase();
-    if (lowerCaseTag.includes('foundation') || lowerCaseTag.includes('strategy')) {
-      return epicCategories['Foundation & Strategic Alignment'];
-    }
-    if (lowerCaseTag.includes('data') || lowerCaseTag.includes('revops')) {
-      return epicCategories['RevOps Foundation & Data Infrastructure'];
-    }
-    if (lowerCaseTag.includes('sales') || lowerCaseTag.includes('pipeline')) {
-      return epicCategories['Sales Process Enhancement & Pipeline Optimization'];
-    }
-    if (lowerCaseTag.includes('customer') || lowerCaseTag.includes('cx')) {
-      return epicCategories['Customer Experience & Lifecycle Management'];
-    }
-    if (lowerCaseTag.includes('performance') || lowerCaseTag.includes('optimization')) {
-      return epicCategories['Performance Measurement & Continuous Optimization'];
-    }
-    if (lowerCaseTag.includes('scaling') || lowerCaseTag.includes('advanced')) {
-      return epicCategories['Advanced Capabilities & Scaling'];
-    }
-    return { icon: Layers, color: 'text-foreground' };
-}
 
 
 export default function LibraryPage() {
@@ -65,6 +37,8 @@ export default function LibraryPage() {
   const projectId = searchParams.get('projectId');
   
   const [stories, setStories] = React.useState<StoryWithDateAsString[]>([]);
+  const [allTags, setAllTags] = React.useState<string[]>([]);
+  const [selectedTag, setSelectedTag] = React.useState<string | null>(null);
   const [loading, setLoading] = React.useState(true);
   const [searchTerm, setSearchTerm] = React.useState('');
   const [selectedStories, setSelectedStories] = React.useState<string[]>([]);
@@ -78,8 +52,13 @@ export default function LibraryPage() {
   const fetchLibraryData = React.useCallback(async () => {
     try {
       setLoading(true);
-      const storiesFromDb = await getUserStories();
+      const [storiesFromDb, tagsFromDb] = await Promise.all([
+        getUserStories(),
+        getUniqueTags()
+      ]);
       setStories(storiesFromDb);
+      setAllTags(['All', ...tagsFromDb]);
+      setSelectedTag('All');
     } catch (error) {
       console.error('Failed to fetch library data:', error);
     } finally {
@@ -197,50 +176,23 @@ export default function LibraryPage() {
     });
   };
 
-  const storiesByTag = React.useMemo(() => {
-    const filtered = stories.filter(story =>
-      story.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      story.story.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      story.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))
-    );
-
-    const grouped: Record<string, StoryWithDateAsString[]> = {};
-    filtered.forEach(story => {
-      if (story.tags.length === 0) {
-        if (!grouped['Uncategorized']) {
-          grouped['Uncategorized'] = [];
-        }
-        grouped['Uncategorized'].push(story);
-      } else {
-        story.tags.forEach(tag => {
-          if (!grouped[tag]) {
-            grouped[tag] = [];
-          }
-          grouped[tag].push(story);
-        });
-      }
+  const filteredStories = React.useMemo(() => {
+    return stories.filter(story => {
+      const tagMatch = selectedTag === 'All' || story.tags.includes(selectedTag!);
+      const searchMatch = 
+          story.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          story.story.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          story.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
+      return tagMatch && searchMatch;
     });
-    return grouped;
-  }, [stories, searchTerm]);
-  
-  const allTags = Object.keys(storiesByTag).sort();
-  
+  }, [stories, selectedTag, searchTerm]);
+
   const handleSelectStory = (storyId: string) => {
     setSelectedStories(prev => 
         prev.includes(storyId) ? prev.filter(id => id !== storyId) : [...prev, storyId]
     );
   };
   
-  const handleSelectAllForTag = (tag: string, isSelected: boolean) => {
-    const storyIdsInTag = storiesByTag[tag].map(s => s.id);
-    if (isSelected) {
-      setSelectedStories(prev => [...new Set([...prev, ...storyIdsInTag])]);
-    } else {
-      setSelectedStories(prev => prev.filter(id => !storyIdsInTag.includes(id)));
-    }
-  };
-
-
   return (
     <>
       <input
@@ -250,7 +202,7 @@ export default function LibraryPage() {
         className="hidden"
         accept=".csv"
       />
-      <div className="space-y-6">
+      <div className="flex flex-col h-full space-y-6">
         <div>
           <h1 className="text-2xl font-bold">User Story Library</h1>
           <p className="text-muted-foreground">
@@ -290,93 +242,100 @@ export default function LibraryPage() {
             </Button>
           </div>
         </div>
-        <div className="border rounded-lg p-2">
-          {loading ? (
-            <div className="space-y-4 p-4">
-              <Skeleton className="h-12 w-full" />
-              <Skeleton className="h-12 w-full" />
-              <Skeleton className="h-12 w-full" />
-            </div>
-          ) : (
-            <Accordion type="multiple" className="w-full">
-              {allTags.length > 0 ? (
-                allTags.map(tag => {
-                  const { icon: Icon, color } = getIconForTag(tag);
-                  const storyIdsInTag = storiesByTag[tag].map(s => s.id);
-                  const allInTagSelected = storyIdsInTag.every(id => selectedStories.includes(id));
-
-                  return (
-                    <AccordionItem value={tag} key={tag}>
-                        <div className="flex items-center hover:bg-muted/50 rounded-md">
-                             {projectId && (
-                                <div className="p-4 pl-4 pr-2">
-                                    <Checkbox
-                                        id={`select-all-${tag}`}
-                                        checked={allInTagSelected}
-                                        onCheckedChange={(checked) => handleSelectAllForTag(tag, checked as boolean)}
-                                    />
-                                </div>
+        <div className="flex-1 grid grid-cols-12 gap-6 overflow-hidden">
+          <div className="col-span-3">
+             <Card className="h-full">
+                <CardHeader>
+                    <CardTitle className="text-base">Categories</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <ScrollArea className="h-[calc(100vh-22rem)]">
+                        <div className="space-y-1 pr-4">
+                            {loading ? (
+                                Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-8 w-full" />)
+                            ) : (
+                                allTags.map(tag => (
+                                    <Button 
+                                        key={tag} 
+                                        variant="ghost" 
+                                        className={cn(
+                                            "w-full justify-start",
+                                            selectedTag === tag && "bg-muted font-bold"
+                                        )}
+                                        onClick={() => setSelectedTag(tag)}
+                                    >
+                                        {tag}
+                                    </Button>
+                                ))
                             )}
-                            <AccordionTrigger className={cn("flex-1 p-4", !projectId && "pl-4")}>
-                                <div className="flex items-center gap-2 flex-1">
-                                    <Icon className={cn("h-5 w-5", color)} />
-                                    <span className="text-base font-semibold">{tag}</span>
-                                    <Badge variant="secondary">{storiesByTag[tag].length}</Badge>
-                                </div>
-                            </AccordionTrigger>
                         </div>
-                      <AccordionContent>
-                        <div className="space-y-2 pl-4">
-                          {storiesByTag[tag].map(story => (
-                            <div key={story.id} className="flex items-center justify-between p-3 rounded-md hover:bg-muted">
-                              <div className="flex-1 flex items-center gap-3">
-                                  {projectId && (
+                    </ScrollArea>
+                </CardContent>
+             </Card>
+          </div>
+          <div className="col-span-9">
+            <ScrollArea className="h-[calc(100vh-18rem)]">
+                <div className="pr-4 space-y-4">
+                    {loading ? (
+                        Array.from({ length: 3 }).map((_, i) => (
+                           <Card key={i}>
+                                <CardHeader><Skeleton className="h-6 w-3/4" /></CardHeader>
+                                <CardContent><Skeleton className="h-10 w-full" /></CardContent>
+                           </Card>
+                        ))
+                    ) : filteredStories.length > 0 ? (
+                        filteredStories.map(story => (
+                           <Card key={story.id} className="flex">
+                             {projectId && (
+                                <div className="p-4 flex items-center justify-center border-r">
                                     <Checkbox
-                                        id={story.id}
+                                        id={`select-${story.id}`}
                                         checked={selectedStories.includes(story.id)}
                                         onCheckedChange={() => handleSelectStory(story.id)}
                                     />
-                                  )}
-                                  <Icon className={cn("h-4 w-4", color)} />
-                                  <div>
-                                        <p className="font-medium text-sm">{story.title}</p>
-                                        <p className="text-xs text-muted-foreground line-clamp-1">{story.story}</p>
-                                    </div>
                                 </div>
-                              <div className="flex items-center gap-4 ml-4">
-                                  <Badge variant="outline">{story.points || 0} Points</Badge>
-                                  <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                      <Button variant="ghost" className="h-8 w-8 p-0">
-                                        <span className="sr-only">Open menu</span>
-                                        <MoreHorizontal className="h-4 w-4" />
-                                      </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="end">
-                                      <DropdownMenuItem>View/Edit</DropdownMenuItem>
-                                      <DropdownMenuItem
-                                        onClick={() => handleDelete(story.id)}
-                                        className="text-destructive focus:text-destructive-foreground"
-                                      >
-                                        <Trash2 className="mr-2 h-4 w-4" /> Delete
-                                      </DropdownMenuItem>
-                                    </DropdownMenuContent>
-                                  </DropdownMenu>
-                              </div>
-                            </div>
-                          ))}
+                             )}
+                             <div className="flex-1">
+                                <CardHeader>
+                                    <div className="flex justify-between items-start">
+                                        <CardTitle>{story.title}</CardTitle>
+                                        <DropdownMenu>
+                                            <DropdownMenuTrigger asChild>
+                                                <Button variant="ghost" className="h-8 w-8 p-0">
+                                                <span className="sr-only">Open menu</span>
+                                                <MoreHorizontal className="h-4 w-4" />
+                                                </Button>
+                                            </DropdownMenuTrigger>
+                                            <DropdownMenuContent align="end">
+                                                <DropdownMenuItem>View/Edit</DropdownMenuItem>
+                                                <DropdownMenuItem
+                                                    onClick={() => handleDelete(story.id)}
+                                                    className="text-destructive focus:text-destructive-foreground"
+                                                >
+                                                    <Trash2 className="mr-2 h-4 w-4" /> Delete
+                                                </DropdownMenuItem>
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
+                                    </div>
+                                    <div className="flex items-center gap-2 pt-1">
+                                        {story.tags.map(tag => <Badge key={tag} variant="secondary">{tag}</Badge>)}
+                                        <Badge variant="outline">{story.points || 0} Points</Badge>
+                                    </div>
+                                </CardHeader>
+                                <CardContent>
+                                    <p className="text-sm text-muted-foreground">{story.story}</p>
+                                </CardContent>
+                             </div>
+                           </Card>
+                        ))
+                    ) : (
+                         <div className="h-64 text-center flex items-center justify-center text-muted-foreground">
+                            No user stories found.
                         </div>
-                      </AccordionContent>
-                    </AccordionItem>
-                  )
-                })
-              ) : (
-                <div className="h-24 text-center flex items-center justify-center text-muted-foreground">
-                  No user stories found.
+                    )}
                 </div>
-              )}
-            </Accordion>
-          )}
+            </ScrollArea>
+          </div>
         </div>
       </div>
       <AlertDialog open={isUploadResultDialogOpen} onOpenChange={setIsUploadResultDialogOpen}>
