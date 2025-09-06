@@ -4,13 +4,14 @@
 import * as React from 'react';
 import { addMonths, differenceInDays, differenceInMonths, format, startOfMonth, endOfMonth, eachDayOfInterval, parseISO, isSameMonth } from 'date-fns';
 import { cn } from '@/lib/utils';
-import { epicIcons } from '@/app/dashboard/projects/[projectId]/page';
+import { epicCategories } from '@/lib/epic-categories';
 import { Layers, GripVertical, ChevronDown, ChevronRight } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
 import { Progress } from './ui/progress';
 import type { TaskStatus } from '@/services/task-service';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
+import type { EpicCategory } from '@/lib/epic-categories';
 
 interface TimelineItem {
     id: string;
@@ -22,6 +23,7 @@ interface TimelineItem {
     progress?: number;
     children?: TimelineItem[];
     dueDate?: string | null;
+    category?: EpicCategory;
 }
 
 interface TimelineViewProps {
@@ -34,7 +36,7 @@ const statusToProgress: Record<TaskStatus, number> = {
     'To Do': 0,
     'In Progress': 25,
     'In Review': 50,
-    'Needs Revisions': 65,
+    'Needs Revision': 65,
     'Final Approval': 80,
     'Complete': 100,
 };
@@ -43,7 +45,7 @@ const statusColors: Record<TaskStatus, string> = {
     'To Do': 'bg-muted-foreground/20 text-muted-foreground',
     'In Progress': 'bg-blue-500/20 text-blue-600 dark:text-blue-400',
     'In Review': 'bg-purple-500/20 text-purple-600 dark:text-purple-400',
-    'Needs Revisions': 'bg-orange-500/20 text-orange-600 dark:text-orange-400',
+    'Needs Revision': 'bg-orange-500/20 text-orange-600 dark:text-orange-400',
     'Final Approval': 'bg-yellow-500/20 text-yellow-600 dark:text-yellow-400',
     'Complete': 'bg-green-500/20 text-green-600 dark:text-green-400',
 };
@@ -98,7 +100,7 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ items, projectStartD
         const isCollapsed = collapsedItems[item.id];
         const canCollapse = item.type !== 'item' && item.children && item.children.length > 0;
         
-        const epicConfig = epicIcons[item.title] || { icon: Layers, color: 'text-foreground' };
+        const epicConfig = item.category ? epicCategories[item.category] : epicCategories['Uncategorized'];
         const IconComponent = epicConfig.icon;
         
         let progress: number;

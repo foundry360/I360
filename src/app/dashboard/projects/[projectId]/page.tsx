@@ -21,13 +21,6 @@ import {
   MoreVertical,
   Pencil,
   Trash2,
-  BookCopy,
-  Database,
-  Megaphone,
-  HeartHandshake,
-  BarChart3,
-  Scaling,
-  Rocket,
   CheckCircle,
   Search,
   Clock,
@@ -67,6 +60,7 @@ import { Line, LineChart, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveCo
 import { ChartContainer, ChartTooltipContent, type ChartConfig, ChartLegend, ChartLegendContent } from '@/components/ui/chart';
 import { TimelineView } from '@/components/timeline-view';
 import Link from 'next/link';
+import { epicCategories } from '@/lib/epic-categories';
 
 type TaskType = Task['type'];
 type BoardColumns = Record<TaskStatus, Task[]>;
@@ -79,16 +73,6 @@ const taskTypeIcons: Record<TaskType, React.ElementType> = {
     Execution: Wrench,
     Review: SearchCheck,
 };
-
-export const epicIcons: Record<string, { icon: React.ElementType, color: string }> = {
-    "Foundation & Strategic Alignment": { icon: BookCopy, color: 'text-chart-1' },
-    "RevOps Foundation & Data Infrastructure": { icon: Database, color: 'text-chart-2' },
-    "Sales Process Enhancement & Pipeline Optimization": { icon: Megaphone, color: 'text-chart-3' },
-    "Customer Experience & Lifecycle Management": { icon: HeartHandshake, color: 'text-chart-4' },
-    "Performance Measurement & Continuous Optimization": { icon: BarChart3, color: 'text-chart-5' },
-    "Advanced Capabilities & Scaling": { icon: Scaling, color: 'text-primary' },
-};
-
 
 const taskTypeColors: Record<TaskType, string> = {
     Assessment: 'bg-chart-1',
@@ -521,6 +505,7 @@ export default function ProjectDetailsPage() {
                 id: epic.id,
                 name: epic.title,
                 progress: Math.round(progress),
+                category: epic.category,
             }
         });
     }, [epics, backlogItems, tasks]);
@@ -1064,7 +1049,7 @@ export default function ProjectDetailsPage() {
                                          {epicProgressData.length > 0 ? (
                                             <Accordion type="multiple" className="w-full">
                                                 {epicProgressData.map((epic, index) => {
-                                                    const epicConfig = epicIcons[epic.name] || { icon: Layers, color: 'text-foreground' };
+                                                    const epicConfig = epicCategories[epic.category] || epicCategories['Uncategorized'];
                                                     const IconComponent = epicConfig.icon;
                                                     return (
                                                         <AccordionItem value={epic.id} key={epic.id} className="border-none mb-2">
@@ -1342,7 +1327,7 @@ export default function ProjectDetailsPage() {
                                         </AccordionItem>
                                     )}
                                     {epics.map(epic => {
-                                        const epicConfig = epicIcons[epic.title] || { icon: Layers, color: 'text-foreground' };
+                                        const epicConfig = epicCategories[epic.category] || epicCategories['Uncategorized'];
                                         const IconComponent = epicConfig.icon;
                                         const itemsInEpic = backlogItems.filter(item => item.epicId === epic.id && !item.sprintId);
                                         
@@ -1520,7 +1505,7 @@ export default function ProjectDetailsPage() {
                                                             <div className="border rounded-lg">
                                                                 {itemsInSprint.length > 0 ? itemsInSprint.map(item => {
                                                                     const epic = epics.find(e => e.id === item.epicId);
-                                                                    const epicConfig = epic ? (epicIcons[epic.title] || { icon: Layers, color: 'text-foreground' }) : { icon: Layers, color: 'text-foreground' };
+                                                                    const epicConfig = epic ? (epicCategories[epic.category] || epicCategories['Uncategorized']) : epicCategories['Uncategorized'];
                                                                     const IconComponent = epicConfig.icon;
                                                                     return (
                                                                         <div key={item.id} className="flex justify-between items-center p-3 border-b last:border-b-0 hover:bg-muted/50 cursor-pointer"
@@ -1589,7 +1574,7 @@ export default function ProjectDetailsPage() {
                                 {allSprintItems.length > 0 ? allSprintItems.map(item => {
                                     const epic = epics.find(e => e.id === item.epicId);
                                     const sprint = sprints.find(s => s.id === item.sprintId);
-                                    const epicConfig = epic ? (epicIcons[epic.title] || { icon: Layers, color: 'text-foreground' }) : { icon: Layers, color: 'text-foreground' };
+                                    const epicConfig = epic ? (epicCategories[epic.category] || epicCategories['Uncategorized']) : epicCategories['Uncategorized'];
                                     const IconComponent = epicConfig.icon;
                                     return (
                                         <div key={item.id} className="flex justify-between items-center p-3 border-b last:border-b-0 hover:bg-muted/50 cursor-pointer"

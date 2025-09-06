@@ -22,6 +22,7 @@ import {
 } from '@/components/ui/select';
 import { updateEpic, type Epic } from '@/services/epic-service';
 import { useQuickAction } from '@/contexts/quick-action-context';
+import { epicCategories, type EpicCategory } from '@/lib/epic-categories';
 
 export function EditEpicDialog() {
   const {
@@ -45,9 +46,9 @@ export function EditEpicDialog() {
     setItem((prev) => ({ ...prev!, [id]: value }));
   };
   
-   const handleSelectChange = (value: string) => {
+   const handleSelectChange = (field: 'status' | 'category') => (value: string) => {
     if (!item) return;
-    setItem((prev) => ({ ...prev!, status: value as Epic['status'] }));
+    setItem((prev) => ({ ...prev!, [field]: value as any }));
   };
 
   const handleUpdateItem = async (e: React.FormEvent) => {
@@ -92,9 +93,22 @@ export function EditEpicDialog() {
               <Label htmlFor="description" className="text-right pt-2">Description</Label>
               <Textarea id="description" value={item.description} onChange={handleInputChange} className="col-span-3" />
             </div>
+             <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="category" className="text-right">Category</Label>
+                <Select onValueChange={handleSelectChange('category')} value={item.category}>
+                    <SelectTrigger className="col-span-3">
+                        <SelectValue placeholder="Select a category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        {Object.keys(epicCategories).map(cat => (
+                            <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+            </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="status" className="text-right">Status</Label>
-                <Select onValueChange={handleSelectChange} value={item.status}>
+                <Select onValueChange={handleSelectChange('status')} value={item.status}>
                     <SelectTrigger className="col-span-3">
                         <SelectValue placeholder="Select a status" />
                     </SelectTrigger>

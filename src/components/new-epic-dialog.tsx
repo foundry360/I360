@@ -15,6 +15,8 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from './ui/textarea';
 import { createEpic, type Epic } from '@/services/epic-service';
 import { useQuickAction } from '@/contexts/quick-action-context';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import { epicCategories, type EpicCategory } from '@/lib/epic-categories';
 
 type NewEpicState = Omit<Epic, 'id' | 'epicId'>;
 
@@ -23,6 +25,7 @@ const initialNewEpicState: NewEpicState = {
   title: '',
   description: '',
   status: 'To Do',
+  category: 'Uncategorized',
 };
 
 export function NewEpicDialog() {
@@ -44,6 +47,10 @@ export function NewEpicDialog() {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { id, value } = e.target;
     setNewItem((prev) => ({ ...prev, [id]: value }));
+  };
+
+  const handleSelectChange = (value: string) => {
+    setNewItem((prev) => ({ ...prev, category: value as EpicCategory }));
   };
 
   const handleCreateItem = async (e: React.FormEvent) => {
@@ -88,6 +95,19 @@ export function NewEpicDialog() {
              <div className="grid grid-cols-4 items-start gap-4">
               <Label htmlFor="description" className="text-right pt-2">Description</Label>
               <Textarea id="description" value={newItem.description} onChange={handleInputChange} className="col-span-3" />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="category" className="text-right">Category</Label>
+                <Select onValueChange={handleSelectChange} value={newItem.category}>
+                    <SelectTrigger className="col-span-3">
+                        <SelectValue placeholder="Select a category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        {Object.keys(epicCategories).map(cat => (
+                            <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
             </div>
           </div>
           <DialogFooter className="pt-4">

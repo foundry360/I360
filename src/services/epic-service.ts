@@ -4,6 +4,7 @@
 import { db } from '@/lib/firebase';
 import { collection, query, where, getDocs, doc, setDoc, addDoc, updateDoc, deleteDoc, writeBatch, getDoc } from 'firebase/firestore';
 import { updateProjectLastActivity } from './project-service';
+import type { EpicCategory } from '@/lib/epic-categories';
 
 export interface Epic {
   id: string;
@@ -12,6 +13,7 @@ export interface Epic {
   title: string;
   description: string;
   status: 'To Do' | 'In Progress' | 'Done';
+  category: EpicCategory;
 }
 
 const epicsCollection = collection(db, 'epics');
