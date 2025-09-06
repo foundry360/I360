@@ -98,10 +98,6 @@ type QuickActionContextType = {
   onUserStoryCreated: (() => void) | null;
   setOnUserStoryCreated: (callback: (() => void) | null) => (() => void) | void;
   
-  isStarredItemsDialogOpen: boolean;
-  openStarredItemsDialog: () => void;
-  closeStarredItemsDialog: () => void;
-
   onAddFromLibrary: (() => void) | null;
   setOnAddFromLibrary: (callback: (() => void) | null) => (() => void) | void;
   
@@ -161,8 +157,6 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
 
   const [isNewUserStoryDialogOpen, setIsNewUserStoryDialogOpen] = React.useState(false);
   const onUserStoryCreatedRef = React.useRef<(() => void) | null>(null);
-  
-  const [isStarredItemsDialogOpen, setIsStarredItemsDialogOpen] = React.useState(false);
   
   const onAddFromLibraryRef = React.useRef<(() => void) | null>(null);
 
@@ -313,9 +307,6 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
     return () => { onUserStoryCreatedRef.current = null; };
   }, []);
   
-  const openStarredItemsDialog = React.useCallback(() => setIsStarredItemsDialogOpen(true), []);
-  const closeStarredItemsDialog = React.useCallback(() => setIsStarredItemsDialogOpen(false), []);
-
   const setOnAddFromLibrary = React.useCallback((callback: (() => void) | null) => {
     onAddFromLibraryRef.current = callback;
     return () => { onAddFromLibraryRef.current = null; };
@@ -409,10 +400,6 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
     onUserStoryCreated: onUserStoryCreatedRef.current,
     setOnUserStoryCreated,
     
-    isStarredItemsDialogOpen,
-    openStarredItemsDialog,
-    closeStarredItemsDialog,
-
     onAddFromLibrary: onAddFromLibraryRef.current,
     setOnAddFromLibrary,
     
@@ -432,7 +419,6 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
     isEditSprintDialogOpen, openEditSprintDialog, closeEditSprintDialog, editSprintData, setOnSprintUpdated,
     isEditTaskDialogOpen, openEditTaskDialog, closeEditTaskDialog, editTaskData, setOnTaskUpdated,
     isNewUserStoryDialogOpen, openNewUserStoryDialog, closeNewUserStoryDialog, setOnUserStoryCreated,
-    isStarredItemsDialogOpen, openStarredItemsDialog, closeStarredItemsDialog,
     setOnAddFromLibrary,
     globalSearchTerm,
   ]);
