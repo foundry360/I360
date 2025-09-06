@@ -26,7 +26,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { epicCategories } from '@/lib/epic-categories';
-import { ManageCategoriesDialog } from '@/components/manage-categories-dialog';
+import { ManageTagsDialog } from '@/components/manage-tags-dialog';
 
 
 type StoryWithDateAsString = Omit<UserStory, 'createdAt'> & { createdAt: string };
@@ -265,7 +265,7 @@ export default function LibraryPage() {
                     <div className="flex justify-between items-center">
                         <CardTitle className="text-base flex items-center gap-2">
                             <Layers className="h-4 w-4" />
-                            Categories
+                            Tags
                         </CardTitle>
                         <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setIsManageCategoriesOpen(true)}>
                             <Pencil className="h-3 w-3" />
@@ -395,7 +395,7 @@ export default function LibraryPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-      <ManageCategoriesDialog
+      <ManageTagsDialog
         isOpen={isManageCategoriesOpen}
         onOpenChange={setIsManageCategoriesOpen}
         onCategoriesUpdated={fetchLibraryData}

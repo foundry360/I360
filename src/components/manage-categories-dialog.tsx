@@ -18,13 +18,13 @@ import { ScrollArea } from './ui/scroll-area';
 import { PlusCircle, Save, Trash2, X } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from './ui/alert-dialog';
 
-interface ManageCategoriesDialogProps {
+interface ManageTagsDialogProps {
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
   onCategoriesUpdated: () => void;
 }
 
-export function ManageCategoriesDialog({ isOpen, onOpenChange, onCategoriesUpdated }: ManageCategoriesDialogProps) {
+export function ManageTagsDialog({ isOpen, onOpenChange, onCategoriesUpdated }: ManageTagsDialogProps) {
   const [tags, setTags] = React.useState<string[]>([]);
   const [newTag, setNewTag] = React.useState('');
   const [tagToUpdate, setTagToUpdate] = React.useState<Record<string, string>>({});
@@ -92,25 +92,25 @@ export function ManageCategoriesDialog({ isOpen, onOpenChange, onCategoriesUpdat
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Manage Categories</DialogTitle>
+          <DialogTitle>Manage Tags</DialogTitle>
           <DialogDescription>
             Add, edit, or delete the tags used to categorize your user stories.
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4 py-4">
-            <Label>New Category</Label>
+            <Label>New Tag</Label>
             <div className="flex gap-2">
                 <Input 
                     value={newTag}
                     onChange={(e) => setNewTag(e.target.value)}
-                    placeholder="Enter new category name..."
+                    placeholder="Enter new tag name..."
                     onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddNewTag(); } }}
                 />
                 <Button onClick={handleAddNewTag} size="icon">
                     <PlusCircle className="h-4 w-4" />
                 </Button>
             </div>
-            <Label className="pt-4">Existing Categories</Label>
+            <Label className="pt-4 block">Existing Tags</Label>
             <ScrollArea className="h-64 border rounded-md p-2">
                 {tags.map(tag => (
                     <div key={tag} className="flex items-center gap-2 p-1 rounded-md hover:bg-muted">
