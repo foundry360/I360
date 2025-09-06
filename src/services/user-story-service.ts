@@ -14,6 +14,8 @@ import {
   FieldValue,
   writeBatch,
   query,
+  where,
+  arrayRemove,
 } from 'firebase/firestore';
 import { tagConfig, type TagConfig } from '@/lib/tag-config';
 
@@ -198,13 +200,9 @@ export async function deleteTag(id: string, tagName: string): Promise<void> {
     batch.delete(tagRef);
 
     // Remove the tag from all stories that use it
-    const storiesSnapshot = await getDocs(userStoriesCollection);
+    const storiesSnapshot = await getDocs(query(userStoriesCollection, where('tags', 'array-contains', tagName)));
     storiesSnapshot.docs.forEach(docSnapshot => {
-        const story = docSnapshot.data() as UserStory;
-        if(story.tags && story.tags.includes(tagName)) {
-            const newTags = story.tags.filter(t => t !== tagName);
-            batch.update(docSnapshot.ref, { tags: newTags });
-        }
+        batch.update(docSnapshot.ref, { tags: arrayRemove(tagName) });
     });
 
     await batch.commit();
