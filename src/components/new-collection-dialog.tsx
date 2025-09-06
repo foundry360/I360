@@ -82,19 +82,24 @@ export function NewCollectionDialog() {
         const destListId = destination.droppableId;
         
         let sourceList = sourceListId === 'library' ? [...filteredLibraryStories] : [...collectionStories];
-        let destList = destListId === 'library' ? [...filteredLibraryStories] : [...collectionStories];
+        let destList = destListId === 'collection' ? [...collectionStories] : [...libraryStories];
 
         const [movedStory] = sourceList.splice(source.index, 1);
 
         if (sourceListId === destListId) {
             // Reordering within the same list
-            sourceList.splice(destination.index, 0, movedStory);
+            destList.splice(destination.index, 0, movedStory);
              if (sourceListId === 'library') {
-                // This is tricky because we are reordering a filtered list.
-                // A full implementation would need to update the original `libraryStories` array.
-                // For now, we'll prevent re-ordering in the filtered library view for simplicity.
+                 // The library list is derived state, so we update the original source
+                 const newLibraryOrder = [...libraryStories];
+                 const originalIndex = libraryStories.findIndex(s => s.id === movedStory.id);
+                 if(originalIndex > -1) {
+                     newLibraryOrder.splice(originalIndex, 1);
+                     newLibraryOrder.splice(destination.index, 0, movedStory);
+                     setLibraryStories(newLibraryOrder);
+                 }
              } else {
-                setCollectionStories(sourceList);
+                setCollectionStories(destList);
             }
         } else {
             // Moving between lists
@@ -162,14 +167,14 @@ export function NewCollectionDialog() {
 
     return (
         <Dialog open={isNewCollectionDialogOpen} onOpenChange={handleClose}>
-            <DialogContent className="max-w-4xl h-[90vh] flex flex-col">
-                <DialogHeader>
+            <DialogContent className="max-w-4xl h-[90vh] flex flex-col p-0">
+                <DialogHeader className="p-6 pb-0">
                     <DialogTitle>Create New Collection</DialogTitle>
                     <DialogDescription>
                         Give your collection a name and description, then drag stories from the library to add them.
                     </DialogDescription>
                 </DialogHeader>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-4 px-6">
                     <div className="space-y-2">
                         <Label htmlFor="name">Collection Name</Label>
                         <Input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g., Q3 Marketing Features" />
@@ -179,9 +184,9 @@ export function NewCollectionDialog() {
                         <Textarea id="description" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="A short description of this collection's purpose" />
                     </div>
                 </div>
-                <DragDropContext onDragEnd={onDragEnd}>
-                    <div className="grid grid-cols-2 gap-6 flex-1 overflow-hidden">
-                        <Card className="flex flex-col h-full">
+                <div className="flex-1 grid grid-cols-2 gap-6 overflow-hidden px-6 pb-2">
+                    <DragDropContext onDragEnd={onDragEnd}>
+                        <Card className="flex flex-col">
                             <CardHeader>
                                 <CardTitle>Story Library ({filteredLibraryStories.length})</CardTitle>
                                 <div className="relative mt-2">
@@ -194,52 +199,56 @@ export function NewCollectionDialog() {
                                     />
                                 </div>
                             </CardHeader>
-                            <CardContent className="flex-1 overflow-y-auto">
-                                <Droppable droppableId="library">
-                                    {(provided, snapshot) => (
-                                        <div 
-                                            ref={provided.innerRef} 
-                                            {...provided.droppableProps}
-                                            className={cn("p-1 rounded-md h-full transition-colors", snapshot.isDraggingOver && "bg-muted")}
-                                        >
-                                            {loading ? <p>Loading stories...</p> : filteredLibraryStories.map((story, index) => (
-                                                <StoryCard key={story.id} story={story} index={index} />
-                                            ))}
-                                            {provided.placeholder}
-                                        </div>
-                                    )}
-                                </Droppable>
+                            <CardContent className="flex-1 overflow-y-hidden">
+                                <ScrollArea className="h-full">
+                                    <Droppable droppableId="library">
+                                        {(provided, snapshot) => (
+                                            <div 
+                                                ref={provided.innerRef} 
+                                                {...provided.droppableProps}
+                                                className={cn("p-1 rounded-md h-full transition-colors", snapshot.isDraggingOver && "bg-muted")}
+                                            >
+                                                {loading ? <p>Loading stories...</p> : filteredLibraryStories.map((story, index) => (
+                                                    <StoryCard key={story.id} story={story} index={index} />
+                                                ))}
+                                                {provided.placeholder}
+                                            </div>
+                                        )}
+                                    </Droppable>
+                                </ScrollArea>
                             </CardContent>
                         </Card>
-                         <Card className="flex flex-col h-full">
+                         <Card className="flex flex-col">
                             <CardHeader>
                                 <CardTitle>New Collection ({collectionStories.length})</CardTitle>
                             </CardHeader>
-                            <CardContent className="flex-1 overflow-y-auto">
-                                <Droppable droppableId="collection">
-                                    {(provided, snapshot) => (
-                                         <div 
-                                            ref={provided.innerRef} 
-                                            {...provided.droppableProps}
-                                            className={cn("p-1 rounded-md h-full transition-colors", snapshot.isDraggingOver && "bg-muted")}
-                                        >
-                                            {collectionStories.map((story, index) => (
-                                                <StoryCard key={story.id} story={story} index={index} />
-                                            ))}
-                                            {provided.placeholder}
-                                            {collectionStories.length === 0 && !snapshot.isDraggingOver && (
-                                                <div className="h-full flex items-center justify-center text-center text-muted-foreground border-2 border-dashed rounded-lg p-4">
-                                                    <p>Drag stories from the library here to build your collection</p>
-                                                </div>
-                                            )}
-                                        </div>
-                                    )}
-                                </Droppable>
+                            <CardContent className="flex-1 overflow-y-hidden">
+                               <ScrollArea className="h-full">
+                                    <Droppable droppableId="collection">
+                                        {(provided, snapshot) => (
+                                             <div 
+                                                ref={provided.innerRef} 
+                                                {...provided.droppableProps}
+                                                className={cn("p-1 rounded-md h-full transition-colors", snapshot.isDraggingOver && "bg-muted")}
+                                            >
+                                                {collectionStories.map((story, index) => (
+                                                    <StoryCard key={story.id} story={story} index={index} />
+                                                ))}
+                                                {provided.placeholder}
+                                                {collectionStories.length === 0 && !snapshot.isDraggingOver && (
+                                                    <div className="h-full flex items-center justify-center text-center text-muted-foreground border-2 border-dashed rounded-lg p-4">
+                                                        <p>Drag stories from the library here to build your collection</p>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
+                                    </Droppable>
+                                </ScrollArea>
                             </CardContent>
                         </Card>
-                    </div>
-                </DragDropContext>
-                <DialogFooter className="pt-4">
+                    </DragDropContext>
+                </div>
+                <DialogFooter className="p-6 pt-2">
                     <Button variant="outline" onClick={handleClose}>Cancel</Button>
                     <Button onClick={handleSave}>Save Collection</Button>
                 </DialogFooter>
