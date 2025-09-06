@@ -26,7 +26,6 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { epicCategories } from '@/lib/epic-categories';
-import { BookText } from 'lucide-react';
 
 
 type StoryWithDateAsString = Omit<UserStory, 'createdAt'> & { createdAt: string };
@@ -312,51 +311,54 @@ export default function LibraryPage() {
                            const categoryConfig = epicCategories[primaryTag] || epicCategories['Uncategorized'];
                            const Icon = categoryConfig.icon;
                            return (
-                           <Card key={story.id} className="flex">
-                             {projectId && (
-                                <div className="p-4 flex items-center justify-center border-r">
-                                    <Checkbox
-                                        id={`select-${story.id}`}
-                                        checked={selectedStories.includes(story.id)}
-                                        onCheckedChange={() => handleSelectStory(story.id)}
-                                    />
-                                </div>
-                             )}
-                             <div className="flex-1">
-                                <CardHeader className="pb-2 pt-4">
-                                    <div className="flex justify-between items-start">
-                                        <CardTitle className="flex items-center gap-2">
-                                            <Icon className={cn("h-4 w-4", categoryConfig.color)} />
-                                            {story.title}
-                                        </CardTitle>
-                                        <DropdownMenu>
-                                            <DropdownMenuTrigger asChild>
-                                                <Button variant="ghost" className="h-8 w-8 p-0">
-                                                <span className="sr-only">Open menu</span>
-                                                <MoreHorizontal className="h-4 w-4" />
-                                                </Button>
-                                            </DropdownMenuTrigger>
-                                            <DropdownMenuContent align="end">
-                                                <DropdownMenuItem>View/Edit</DropdownMenuItem>
-                                                <DropdownMenuItem
-                                                    onClick={() => handleDelete(story.id)}
-                                                    className="text-destructive focus:text-destructive-foreground"
-                                                >
-                                                    <Trash2 className="mr-2 h-4 w-4" /> Delete
-                                                </DropdownMenuItem>
-                                            </DropdownMenuContent>
-                                        </DropdownMenu>
-                                    </div>
-                                    <div className="flex items-center gap-2 pt-1">
-                                        {story.tags.map(tag => <Badge key={tag} variant="secondary">{tag}</Badge>)}
-                                        <Badge variant="outline">{story.points || 0} Points</Badge>
-                                    </div>
-                                </CardHeader>
-                                <CardContent className="pt-2 pb-4">
-                                    <p className="text-sm text-muted-foreground">{story.story}</p>
-                                </CardContent>
-                             </div>
-                           </Card>
+                           <label htmlFor={`select-${story.id}`} key={story.id} className="block cursor-pointer">
+                             <Card className={cn("flex hover:border-primary", selectedStories.includes(story.id) && "border-primary ring-2 ring-primary")}>
+                               {projectId && (
+                                  <div className="p-4 flex items-center justify-center border-r">
+                                      <Checkbox
+                                          id={`select-${story.id}`}
+                                          checked={selectedStories.includes(story.id)}
+                                          onCheckedChange={() => handleSelectStory(story.id)}
+                                          aria-label={`Select story ${story.title}`}
+                                      />
+                                  </div>
+                               )}
+                               <div className="flex-1">
+                                  <CardHeader className="pb-2 pt-4">
+                                      <div className="flex justify-between items-start">
+                                          <CardTitle className="flex items-center gap-2">
+                                              <Icon className={cn("h-4 w-4", categoryConfig.color)} />
+                                              {story.title}
+                                          </CardTitle>
+                                          <DropdownMenu>
+                                              <DropdownMenuTrigger asChild>
+                                                  <Button variant="ghost" className="h-8 w-8 p-0" onClick={(e) => e.stopPropagation()}>
+                                                    <span className="sr-only">Open menu</span>
+                                                    <MoreHorizontal className="h-4 w-4" />
+                                                  </Button>
+                                              </DropdownMenuTrigger>
+                                              <DropdownMenuContent align="end">
+                                                  <DropdownMenuItem>View/Edit</DropdownMenuItem>
+                                                  <DropdownMenuItem
+                                                      onClick={() => handleDelete(story.id)}
+                                                      className="text-destructive focus:text-destructive-foreground"
+                                                  >
+                                                      <Trash2 className="mr-2 h-4 w-4" /> Delete
+                                                  </DropdownMenuItem>
+                                              </DropdownMenuContent>
+                                          </DropdownMenu>
+                                      </div>
+                                      <div className="flex items-center gap-2 pt-1">
+                                          {story.tags.map(tag => <Badge key={tag} variant="secondary">{tag}</Badge>)}
+                                          <Badge variant="outline">{story.points || 0} Points</Badge>
+                                      </div>
+                                  </CardHeader>
+                                  <CardContent className="pt-2 pb-4">
+                                      <p className="text-sm text-muted-foreground">{story.story}</p>
+                                  </CardContent>
+                               </div>
+                             </Card>
+                           </label>
                            )
                         })
                     ) : (
