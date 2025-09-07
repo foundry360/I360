@@ -7,7 +7,7 @@ import Link from 'next/link';
 import {
   ChevronsLeft,
   ChevronsRight,
-  Home,
+  LayoutDashboard,
   User,
   Briefcase,
   Users,
@@ -244,7 +244,7 @@ export function Sidebar() {
     {
         group: 'HOME',
         links: [
-            { href: `/dashboard`, label: 'Dashboard', icon: Home },
+            { href: `/dashboard`, label: 'Workspace', icon: LayoutDashboard },
             { id: 'starred', label: 'Starred', icon: Star },
             { id: 'recent', label: 'Recent', icon: History }
         ]
