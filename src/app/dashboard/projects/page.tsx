@@ -93,7 +93,9 @@ export default function ProjectsPage() {
 
   React.useEffect(() => {
     return () => {
-      setGlobalSearchTerm('');
+      if(window.location.pathname !== '/dashboard') {
+          setGlobalSearchTerm('');
+      }
     };
   }, [setGlobalSearchTerm]);
   
@@ -496,3 +498,5 @@ export default function ProjectsPage() {
     </>
   );
 }
+
+    

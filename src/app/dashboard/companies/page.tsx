@@ -111,7 +111,9 @@ export default function CompaniesPage() {
   
   React.useEffect(() => {
     return () => {
-      setGlobalSearchTerm('');
+      if(window.location.pathname !== '/dashboard') {
+          setGlobalSearchTerm('');
+      }
     };
   }, [setGlobalSearchTerm]);
 
@@ -478,5 +480,7 @@ export default function CompaniesPage() {
       </AlertDialog>
     </div>
   );
+
+    
 
     

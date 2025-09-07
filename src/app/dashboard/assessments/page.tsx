@@ -101,7 +101,9 @@ export default function AssessmentsPage() {
 
   React.useEffect(() => {
     return () => {
-      setGlobalSearchTerm('');
+      if(window.location.pathname !== '/dashboard') {
+          setGlobalSearchTerm('');
+      }
     };
   }, [setGlobalSearchTerm]);
 
@@ -508,3 +510,5 @@ export default function AssessmentsPage() {
     </>
   );
 }
+
+    
