@@ -351,9 +351,9 @@ export default function LibraryPage() {
             </Button>
           </div>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 flex-1 min-h-0">
-          <div className="md:col-span-1 flex flex-col min-w-[250px]">
-            <Card className="bg-muted/50 flex flex-col flex-1">
+        <div className="flex flex-col md:flex-row gap-6 flex-1">
+          <div className="w-full md:w-1/4 md:min-w-[250px]">
+            <Card className="bg-muted/50 h-full">
               <ScrollArea className="h-full">
                 <CardHeader>
                   <div className="flex justify-between items-center">
@@ -412,20 +412,20 @@ export default function LibraryPage() {
                 </CardContent>
                 <Separator className="my-4" />
                 <CardHeader>
-                   <div className="flex justify-between items-center">
-                      <CardTitle className="text-base flex items-center gap-2">
-                        <BookCopy className="h-4 w-4" />
-                        Collections
-                      </CardTitle>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-6 w-6"
-                        onClick={() => openManageCollectionsDialog()}
-                      >
-                        <Pencil className="h-3 w-3" />
-                      </Button>
-                    </div>
+                  <div className="flex justify-between items-center">
+                    <CardTitle className="text-base flex items-center gap-2">
+                      <BookCopy className="h-4 w-4" />
+                      Collections
+                    </CardTitle>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6"
+                      onClick={() => openManageCollectionsDialog()}
+                    >
+                      <Pencil className="h-3 w-3" />
+                    </Button>
+                  </div>
                 </CardHeader>
                 <CardContent className="pt-0 pr-2">
                 <div className="space-y-1">
@@ -455,7 +455,7 @@ export default function LibraryPage() {
               </ScrollArea>
             </Card>
           </div>
-          <div className="md:col-span-3 min-w-0">
+          <div className="md:col-span-3 flex-1">
             <ScrollArea className="h-[calc(100vh-18rem)]">
                 <div className="pr-4 space-y-4">
                     {loading ? (
