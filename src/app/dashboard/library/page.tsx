@@ -400,16 +400,16 @@ export default function LibraryPage() {
                             )}
                         </div>
                         <Separator className="my-4" />
-                        <CardHeader className="p-0">
-                           <div className="flex justify-between items-center">
-                               <CardTitle className="text-base flex items-center gap-2">
-                                  <BookCopy className="h-4 w-4" />
-                                  Collections
-                              </CardTitle>
-                              <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => openManageCollectionsDialog()}>
-                                  <Pencil className="h-3 w-3" />
-                              </Button>
-                           </div>
+                        <CardHeader className="p-0 mb-2">
+                            <div className="flex justify-between items-center">
+                                <CardTitle className="text-base flex items-center gap-2">
+                                    <BookCopy className="h-4 w-4" />
+                                    Collections
+                                </CardTitle>
+                                <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => openManageCollectionsDialog()}>
+                                    <Pencil className="h-3 w-3" />
+                                </Button>
+                            </div>
                         </CardHeader>
                         <div className="space-y-1 pr-4 pt-2">
                              {collections.map(collection => {
@@ -553,4 +553,5 @@ export default function LibraryPage() {
     </>
   );
 }
+
 
