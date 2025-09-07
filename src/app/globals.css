@@ -57,8 +57,8 @@ body {
     --radius: 0.5rem;
     
     /* Custom Status Colors */
-    --success: 142.1 76.2% 36.3%; /* Pastel Green */
-    --success-foreground: 142.1 76.2% 20.3%;
+    --success: 142 71% 45%; /* #22c55e */
+    --success-foreground: 0 0% 98%;
     --warning: 51 86% 64%; /* Pastel Yellow */
     --warning-foreground: 51 50% 20%;
     --danger: 358 100% 64%; /* #FF474C */
@@ -105,8 +105,8 @@ body {
     --chart-5: 340 75% 55%;
 
     /* Custom Status Colors */
-    --success: 142.1 76.2% 46.3%; 
-    --success-foreground: 142.1 76.2% 86.3%;
+    --success: 142 71% 45%; /* #22c55e */
+    --success-foreground: 0 0% 98%;
     --warning: 51 86% 64%; /* Pastel Yellow */
     --warning-foreground: 51 50% 20%;
     --danger: 358 100% 64%; /* #FF474C */
