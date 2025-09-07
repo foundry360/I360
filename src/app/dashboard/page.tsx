@@ -224,10 +224,11 @@ export default function DashboardPage() {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
               <Input
                 placeholder="Search everything..."
-                className="pl-10 text-base"
+                className="pl-10 text-base pr-10"
                 value={globalSearchTerm}
                 onChange={(e) => setGlobalSearchTerm(e.target.value)}
               />
+               <ArrowRight className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
             </div>
             <p className="text-xs text-muted-foreground mt-2">
               Start typing to see results across the entire application.
