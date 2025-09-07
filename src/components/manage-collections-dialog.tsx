@@ -150,7 +150,7 @@ export function ManageCollectionsDialog({ isOpen, onOpenChange, onCollectionsUpd
                             })}
                         </SelectContent>
                     </Select>
-                    <Button onClick={handleAddNewCollection} size="icon" className="shrink-0">
+                    <Button type="button" onClick={handleAddNewCollection} size="icon" className="shrink-0">
                         <PlusCircle className="h-4 w-4" />
                     </Button>
                 </div>
