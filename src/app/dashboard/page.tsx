@@ -31,6 +31,7 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { cn } from '@/lib/utils';
 
 type ActivityItem = {
   id: string;
@@ -232,9 +233,9 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent>
                 {thisWeeksTasks.length > 0 ? (
-                    <div className="space-y-2">
-                        {visibleTasks.map(task => (
-                            <div key={task.id} className="flex items-center justify-between rounded-md hover:bg-muted cursor-pointer" onClick={() => router.push(`/dashboard/projects/${task.projectId}`)}>
+                    <div className="space-y-0">
+                        {visibleTasks.map((task, index) => (
+                            <div key={task.id} className={cn("flex items-center justify-between py-2 rounded-md hover:bg-muted cursor-pointer", index !== visibleTasks.length - 1 && 'border-b')} onClick={() => router.push(`/dashboard/projects/${task.projectId}`)}>
                                 <div>
                                     <p className="font-medium text-sm">{task.title}</p>
                                     <p className="text-xs text-muted-foreground">Due: {format(parseISO(task.dueDate!), 'EEE, MMM dd')}</p>
@@ -248,7 +249,7 @@ export default function DashboardPage() {
                         {thisWeeksTasks.length > 5 && (
                              <Button 
                                 variant="link" 
-                                className="p-0 h-auto text-sm"
+                                className="p-0 h-auto text-sm mt-2"
                                 onClick={() => setIsTasksExpanded(!isTasksExpanded)}
                             >
                                 {isTasksExpanded ? 'See Less' : 'See More...'}
@@ -367,4 +368,5 @@ export default function DashboardPage() {
       </div>
     </div>
   );
-}
+
+    
