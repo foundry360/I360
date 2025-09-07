@@ -405,11 +405,9 @@ export default function LibraryPage() {
                                 <BookCopy className="h-4 w-4" />
                                 Collections
                             </h3>
-                            <div className="flex items-center">
-                                <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setIsManageCollectionsOpen(true)}>
-                                    <Pencil className="h-3 w-3" />
-                                </Button>
-                            </div>
+                            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setIsManageCollectionsOpen(true)}>
+                                <Pencil className="h-3 w-3" />
+                            </Button>
                         </div>
                         <div className="space-y-1 pr-4">
                              {collections.map(collection => {
@@ -425,7 +423,7 @@ export default function LibraryPage() {
                                     )}
                                     onClick={() => setSelectedTag(`coll:${collection.id}`)}
                                 >
-                                  <Icon className="h-4 w-4 mr-2" />
+                                  <Icon className={cn("h-4 w-4 mr-2", config?.color)} />
                                   {collection.name}
                                 </Button>
                             )})}
