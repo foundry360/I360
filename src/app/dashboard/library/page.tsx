@@ -12,7 +12,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Skeleton } from '@/components/ui/skeleton';
-import { MoreHorizontal, Plus, Trash2, Search, Upload, FilePlus, Layers, Library, Pencil, BookCopy, ArrowLeft } from 'lucide-react';
+import { MoreHorizontal, Plus, Trash2, Search, Upload, FilePlus, Layers, Library, Pencil, BookCopy, ArrowLeft, Edit } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { useQuickAction } from '@/contexts/quick-action-context';
 import { getUserStories, deleteUserStory, UserStory, bulkCreateUserStories as bulkCreateLibraryStories, getTags, Tag, deleteUserStories } from '@/services/user-story-service';
@@ -398,14 +398,19 @@ export default function LibraryPage() {
                             )}
                         </div>
                         <Separator className="my-4" />
-                        <div className="flex justify-between items-center mb-2">
-                             <h3 className="text-base font-semibold flex items-center gap-2 pl-4">
+                        <div className="flex justify-between items-center mb-2 px-2">
+                             <h3 className="text-base font-semibold flex items-center gap-2">
                                 <BookCopy className="h-4 w-4" />
                                 Collections
                             </h3>
-                            <Button asChild variant="ghost" size="icon" className="h-6 w-6">
-                                <Link href="/dashboard/collections"><Plus className="h-3 w-3" /></Link>
-                            </Button>
+                            <div className="flex items-center">
+                                <Button asChild variant="ghost" size="icon" className="h-6 w-6">
+                                    <Link href="/dashboard/collections"><Edit className="h-3 w-3" /></Link>
+                                </Button>
+                                <Button asChild variant="ghost" size="icon" className="h-6 w-6">
+                                    <Link href="/dashboard/collections"><Plus className="h-3 w-3" /></Link>
+                                </Button>
+                            </div>
                         </div>
                         <div className="space-y-1 pr-4">
                              {collections.map(collection => (
