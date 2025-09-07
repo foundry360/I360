@@ -11,21 +11,21 @@ import {
 } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useUser } from '@/contexts/user-context';
-import { Input } from '@/components/ui/input';
 import {
-  ScanSearch,
-  FolderKanban,
-  ClipboardList,
   UserPlus,
   ArrowRight,
   TrendingUp,
+  FolderKanban,
+  ClipboardList,
+  CalendarCheck,
+  Clock
 } from 'lucide-react';
 import { getProjects, type Project } from '@/services/project-service';
 import { getAssessments, type Assessment } from '@/services/assessment-service';
 import { getContacts, type Contact } from '@/services/contact-service';
 import { getTasks, type Task } from '@/services/task-service';
 import { useQuickAction } from '@/contexts/quick-action-context';
-import { formatDistanceToNow, parseISO } from 'date-fns';
+import { formatDistanceToNow, parseISO, isWithinInterval, addDays, format } from 'date-fns';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
@@ -52,6 +52,7 @@ export default function DashboardPage() {
   const [recentEngagements, setRecentEngagements] = React.useState<ProjectWithProgress[]>(
     []
   );
+  const [thisWeeksTasks, setThisWeeksTasks] = React.useState<Task[]>([]);
   const [allRecentActivity, setAllRecentActivity] = React.useState<ActivityItem[]>(
     []
   );
@@ -86,6 +87,14 @@ export default function DashboardPage() {
             acc[task.projectId].push(task);
             return acc;
         }, {} as Record<string, Task[]>);
+        
+        const today = new Date();
+        const nextWeek = addDays(today, 7);
+        const weeklyTasks = allTasks.filter(task => {
+            if (!task.dueDate) return false;
+            return isWithinInterval(parseISO(task.dueDate), { start: today, end: nextWeek });
+        }).sort((a,b) => parseISO(a.dueDate!).getTime() - parseISO(b.dueDate!).getTime());
+        setThisWeeksTasks(weeklyTasks);
 
         const projectsWithProgress: ProjectWithProgress[] = projects.map(project => {
             const projectTasks = tasksByProject[project.id] || [];
@@ -111,7 +120,7 @@ export default function DashboardPage() {
           message: `Assessment '${a.name}' status is ${a.status}.`,
           timestamp: a.lastActivity || a.startDate,
           icon: ClipboardList,
-          link: `/assessment/${a.id}/report`,
+          link: a.status === 'Completed' ? `/assessment/${a.id}/report` : `/dashboard/assessments`,
         }));
 
         const contactActivities: ActivityItem[] = contacts.map((c) => ({
@@ -213,23 +222,36 @@ export default function DashboardPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
         <Card className="h-full lg:col-span-3">
-          <CardHeader>
-            <CardTitle>Global Search</CardTitle>
-            <CardDescription>
-              Find companies, contacts, engagements, and more
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="relative">
-              <Input
-                placeholder="Search everything..."
-                className="pr-10 text-base"
-                value={globalSearchTerm}
-                onChange={(e) => setGlobalSearchTerm(e.target.value)}
-              />
-              <ScanSearch className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-            </div>
-          </CardContent>
+           <CardHeader>
+                <CardTitle>Tasks Due This Week</CardTitle>
+                <CardDescription>
+                    Your immediate priorities for the next 7 days
+                </CardDescription>
+            </CardHeader>
+            <CardContent>
+                {thisWeeksTasks.length > 0 ? (
+                    <div className="space-y-4">
+                        {thisWeeksTasks.map(task => (
+                            <div key={task.id} className="flex items-center justify-between p-2 rounded-md hover:bg-muted cursor-pointer" onClick={() => router.push(`/dashboard/projects/${task.projectId}`)}>
+                                <div>
+                                    <p className="font-medium text-sm">{task.title}</p>
+                                    <p className="text-xs text-muted-foreground">Due: {format(parseISO(task.dueDate!), 'EEE, MMM dd')}</p>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                     <Badge variant="outline">{task.status}</Badge>
+                                     <Badge variant="secondary">{task.priority}</Badge>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                ) : (
+                    <div className="flex flex-col items-center justify-center h-48 text-center text-muted-foreground">
+                        <CalendarCheck className="h-12 w-12 mb-4" />
+                        <h3 className="font-semibold">All clear for the week!</h3>
+                        <p>No tasks are due in the next 7 days.</p>
+                    </div>
+                )}
+            </CardContent>
         </Card>
         <Card className="h-full lg:col-span-2">
           <CardHeader>
@@ -327,7 +349,7 @@ export default function DashboardPage() {
             ))
           ) : (
             <p className="text-muted-foreground col-span-full text-center py-8">
-              No engagements found.
+              No engagements found
             </p>
           )}
         </div>
