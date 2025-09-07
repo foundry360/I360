@@ -16,6 +16,7 @@ import {
   writeBatch
 } from 'firebase/firestore';
 import type { UserStory } from './user-story-service';
+import type { TagConfig } from '@/lib/tag-config';
 
 export interface StoryCollection {
   id: string;
@@ -23,6 +24,7 @@ export interface StoryCollection {
   description: string;
   userStoryIds: string[];
   createdAt: string;
+  icon: TagConfig['iconName'];
 }
 
 const collectionsCollection = collection(db, 'storyCollections');
@@ -30,7 +32,7 @@ const collectionsCollection = collection(db, 'storyCollections');
 export async function getCollections(): Promise<StoryCollection[]> {
   try {
     const snapshot = await getDocs(collectionsCollection);
-    return snapshot.docs.map((doc) => doc.data() as StoryCollection);
+    return snapshot.docs.map((doc) => doc.data() as StoryCollection).sort((a,b) => a.name.localeCompare(b.name));
   } catch (error) {
     console.error("Error fetching collections: ", error);
     return [];
@@ -43,6 +45,7 @@ export async function createCollection(collectionData: Omit<StoryCollection, 'id
     ...collectionData,
     id: docRef.id,
     createdAt: new Date().toISOString(),
+    icon: collectionData.icon || 'BookCopy'
   };
   await setDoc(docRef, newCollection);
   return docRef.id;

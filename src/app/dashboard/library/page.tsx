@@ -27,6 +27,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { tagConfig } from '@/lib/tag-config';
 import { ManageTagsDialog } from '@/components/manage-tags-dialog';
+import { ManageCollectionsDialog } from '@/components/manage-collections-dialog';
 import Link from 'next/link';
 
 
@@ -46,6 +47,7 @@ export default function LibraryPage() {
   const [searchTerm, setSearchTerm] = React.useState('');
   const [selectedStories, setSelectedStories] = React.useState<string[]>([]);
   const [isManageTagsOpen, setIsManageTagsOpen] = React.useState(false);
+  const [isManageCollectionsOpen, setIsManageCollectionsOpen] = React.useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
   
   const { openNewUserStoryDialog, setOnUserStoryCreated, openEditUserStoryDialog, setOnUserStoryUpdated } = useQuickAction();
@@ -404,8 +406,8 @@ export default function LibraryPage() {
                                 Collections
                             </h3>
                             <div className="flex items-center">
-                                <Button asChild variant="ghost" size="icon" className="h-6 w-6">
-                                    <Link href="/dashboard/collections"><Edit className="h-3 w-3" /></Link>
+                                <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setIsManageCollectionsOpen(true)}>
+                                    <Pencil className="h-3 w-3" />
                                 </Button>
                                 <Button asChild variant="ghost" size="icon" className="h-6 w-6">
                                     <Link href="/dashboard/collections"><Plus className="h-3 w-3" /></Link>
@@ -413,7 +415,10 @@ export default function LibraryPage() {
                             </div>
                         </div>
                         <div className="space-y-1 pr-4">
-                             {collections.map(collection => (
+                             {collections.map(collection => {
+                                const config = tagConfig.find(c => c.iconName === collection.icon) || tagConfig.find(c => c.iconName === 'BookCopy');
+                                const Icon = config?.icon || BookCopy;
+                                return (
                                 <Button 
                                     key={collection.id} 
                                     variant="ghost" 
@@ -423,10 +428,10 @@ export default function LibraryPage() {
                                     )}
                                     onClick={() => setSelectedTag(`coll:${collection.id}`)}
                                 >
-                                  <BookCopy className="h-4 w-4 mr-2" />
+                                  <Icon className="h-4 w-4 mr-2" />
                                   {collection.name}
                                 </Button>
-                            ))}
+                            )})}
                         </div>
                     </ScrollArea>
                 </CardContent>
@@ -542,6 +547,11 @@ export default function LibraryPage() {
         isOpen={isManageTagsOpen}
         onOpenChange={setIsManageTagsOpen}
         onTagsUpdated={fetchLibraryData}
+      />
+      <ManageCollectionsDialog
+        isOpen={isManageCollectionsOpen}
+        onOpenChange={setIsManageCollectionsOpen}
+        onCollectionsUpdated={fetchLibraryData}
       />
     </>
   );

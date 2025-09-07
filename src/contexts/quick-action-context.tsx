@@ -124,6 +124,12 @@ type QuickActionContextType = {
   setOnCollectionAddedToProject: (callback: (() => void) | null) => (() => void) | void;
   addFromCollectionData: { projectId: string; collections: StoryCollection[] } | null;
 
+  isManageCollectionsDialogOpen: boolean;
+  openManageCollectionsDialog: () => void;
+  closeManageCollectionsDialog: () => void;
+  onCollectionsUpdated: (() => void) | null;
+  setOnCollectionsUpdated: (callback: (() => void) | null) => (() => void) | void;
+  
   onAddFromLibrary: (() => void) | null;
   setOnAddFromLibrary: (callback: (() => void) | null) => (() => void) | void;
   
@@ -194,6 +200,9 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
   const [isAddFromCollectionDialogOpen, setIsAddFromCollectionDialogOpen] = React.useState(false);
   const onCollectionAddedToProjectRef = React.useRef<(() => void) | null>(null);
   const [addFromCollectionData, setAddFromCollectionData] = React.useState<{ projectId: string, collections: StoryCollection[] } | null>(null);
+  
+  const [isManageCollectionsDialogOpen, setIsManageCollectionsDialogOpen] = React.useState(false);
+  const onCollectionsUpdatedRef = React.useRef<(() => void) | null>(null);
   
   const onAddFromLibraryRef = React.useRef<(() => void) | null>(null);
 
@@ -376,6 +385,13 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
     onCollectionAddedToProjectRef.current = callback;
     return () => { onCollectionAddedToProjectRef.current = null; };
   }, []);
+
+  const openManageCollectionsDialog = React.useCallback(() => setIsManageCollectionsDialogOpen(true), []);
+  const closeManageCollectionsDialog = React.useCallback(() => setIsManageCollectionsDialogOpen(false), []);
+  const setOnCollectionsUpdated = React.useCallback((callback: (() => void) | null) => {
+    onCollectionsUpdatedRef.current = callback;
+    return () => { onCollectionsUpdatedRef.current = null; };
+  }, []);
   
   const setOnAddFromLibrary = React.useCallback((callback: (() => void) | null) => {
     onAddFromLibraryRef.current = callback;
@@ -489,6 +505,12 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
     onCollectionAddedToProject: onCollectionAddedToProjectRef.current,
     setOnCollectionAddedToProject,
     addFromCollectionData,
+
+    isManageCollectionsDialogOpen,
+    openManageCollectionsDialog,
+    closeManageCollectionsDialog,
+    onCollectionsUpdated: onCollectionsUpdatedRef.current,
+    setOnCollectionsUpdated,
     
     onAddFromLibrary: onAddFromLibraryRef.current,
     setOnAddFromLibrary,
@@ -512,6 +534,7 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
     isEditUserStoryDialogOpen, openEditUserStoryDialog, closeEditUserStoryDialog, editUserStoryData, setOnUserStoryUpdated,
     isNewCollectionDialogOpen, openNewCollectionDialog, closeNewCollectionDialog, setOnCollectionCreated,
     isAddFromCollectionDialogOpen, openAddFromCollectionDialog, closeAddFromCollectionDialog, addFromCollectionData, setOnCollectionAddedToProject,
+    isManageCollectionsDialogOpen, openManageCollectionsDialog, closeManageCollectionsDialog, setOnCollectionsUpdated,
     setOnAddFromLibrary,
     globalSearchTerm,
   ]);
