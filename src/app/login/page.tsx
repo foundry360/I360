@@ -26,6 +26,11 @@ export default function LoginPage() {
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
   const [loading, setLoading] = React.useState(false);
+  const [isClient, setIsClient] = React.useState(false);
+
+  React.useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -56,6 +61,10 @@ export default function LoginPage() {
             </div>
         </div>
     );
+  }
+  
+  if (!isClient) {
+    return null;
   }
 
   return (
