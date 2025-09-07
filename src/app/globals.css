@@ -117,8 +117,7 @@ body {
     --sidebar-primary-foreground: 210 40% 98%;
     --sidebar-accent: 0 0% 3%;
     --sidebar-accent-foreground: 210 40% 98%;
-    --sidebar-border: 0 0% 4%;
-    --sidebar-ring: 256 96% 63%;
+    --sidebar-border: 0 0% 14%;
   }
 }
 
@@ -130,6 +129,6 @@ body {
     @apply bg-background text-foreground;
   }
   .dark .sidebar-popover {
-    @apply border-sidebar-border;
+    --border: var(--sidebar-border);
   }
 }
