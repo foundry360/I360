@@ -50,7 +50,7 @@ export default function LibraryPage() {
   const [isManageCollectionsOpen, setIsManageCollectionsOpen] = React.useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
   
-  const { openNewUserStoryDialog, setOnUserStoryCreated, openEditUserStoryDialog, setOnUserStoryUpdated } = useQuickAction();
+  const { openNewUserStoryDialog, setOnUserStoryCreated, openEditUserStoryDialog, setOnUserStoryUpdated, openManageCollectionsDialog } = useQuickAction();
   const { toast } = useToast();
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   const [isUploadResultDialogOpen, setIsUploadResultDialogOpen] = React.useState(false);
@@ -401,17 +401,17 @@ export default function LibraryPage() {
                         </div>
                         <Separator className="my-4" />
                         <CardHeader className="p-0">
-                           <div className="flex justify-between items-center mb-2">
+                           <div className="flex justify-between items-center">
                                <CardTitle className="text-base flex items-center gap-2">
                                   <BookCopy className="h-4 w-4" />
                                   Collections
                               </CardTitle>
-                              <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setIsManageCollectionsOpen(true)}>
+                              <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => openManageCollectionsDialog()}>
                                   <Pencil className="h-3 w-3" />
                               </Button>
                            </div>
                         </CardHeader>
-                        <div className="space-y-1 pr-4">
+                        <div className="space-y-1 pr-4 pt-2">
                              {collections.map(collection => {
                                 const config = tagConfig.find(c => c.iconName === collection.icon) || tagConfig.find(c => c.iconName === 'BookCopy');
                                 const Icon = config?.icon || BookCopy;
@@ -553,3 +553,4 @@ export default function LibraryPage() {
     </>
   );
 }
+
