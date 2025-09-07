@@ -213,19 +213,25 @@ export default function DashboardPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {recentActivity.map((item) => {
+            <div className="space-y-0">
+              {recentActivity.map((item, index) => {
                 const Icon = item.icon;
                 return (
                   <div
                     key={item.id}
-                    className="flex items-center gap-4 cursor-pointer hover:bg-muted p-2 rounded-md -m-2"
+                    className="flex items-start gap-4 cursor-pointer hover:bg-muted p-2 rounded-md -m-2"
                     onClick={() => router.push(item.link)}
                   >
-                    <div className="bg-primary/10 p-2 rounded-full">
-                      <Icon className="h-5 w-5 text-primary" />
+                    <div className="flex flex-col items-center">
+                      <div className="bg-primary/10 p-2 rounded-full z-10">
+                        <Icon className="h-5 w-5 text-primary" />
+                      </div>
+                      {index < recentActivity.length - 1 && (
+                        <div className="w-px h-full bg-primary/20 -mt-1" />
+                      )}
                     </div>
-                    <div className="flex-1">
+
+                    <div className="flex-1 pb-4">
                       <p className="text-sm">{item.message}</p>
                       <p className="text-xs text-muted-foreground">
                         {formatDistanceToNow(parseISO(item.timestamp), {
@@ -233,7 +239,7 @@ export default function DashboardPage() {
                         })}
                       </p>
                     </div>
-                    <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                    <ArrowRight className="h-4 w-4 text-muted-foreground mt-1" />
                   </div>
                 );
               })}
@@ -285,5 +291,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-
-    
