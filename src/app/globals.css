@@ -129,4 +129,7 @@ body {
   body {
     @apply bg-background text-foreground;
   }
+  .dark .sidebar-popover {
+    @apply border-sidebar-border;
+  }
 }
