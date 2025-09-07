@@ -8,6 +8,8 @@ import { updateProjectLastActivity } from './project-service';
 import { parseISO } from 'date-fns';
 import type { UserStory } from './user-story-service';
 import { getProject } from './project-service';
+import { getDoc as getStoryDoc } from 'firebase/firestore';
+import type { StoryCollection } from './collection-service';
 
 export interface BacklogItem {
   id: string;
@@ -97,6 +99,54 @@ export async function bulkCreateBacklogItems(projectId: string, epicId: string |
     await updateProjectLastActivity(projectId);
 }
 
+export async function addCollectionToProjectBacklog(projectId: string, collectionId: string): Promise<void> {
+    const project = await getProject(projectId);
+    if (!project) throw new Error("Project not found");
+
+    const collectionRef = doc(db, 'storyCollections', collectionId);
+    const collectionSnap = await getDoc(collectionRef);
+    if (!collectionSnap.exists()) throw new Error("Collection not found");
+
+    const collectionData = collectionSnap.data() as StoryCollection;
+    
+    if (collectionData.userStoryIds.length === 0) {
+        return; // Nothing to add
+    }
+
+    const storyDocs = await Promise.all(
+        collectionData.userStoryIds.map(storyId => getDoc(doc(db, 'userStories', storyId)))
+    );
+
+    const stories = storyDocs
+        .filter(docSnap => docSnap.exists())
+        .map(docSnap => docSnap.data() as UserStory);
+
+    const batch = writeBatch(db);
+    let lastBacklogId = await getNextBacklogId(projectId);
+
+    for (const story of stories) {
+        const docRef = doc(backlogItemsCollection);
+        const newItem: BacklogItem = {
+            id: docRef.id,
+            projectId,
+            epicId: null, // Imported stories don't have an epic by default
+            backlogId: lastBacklogId++,
+            title: story.title,
+            description: story.story,
+            status: 'To Do',
+            points: story.points || 0,
+            priority: 'Medium',
+            owner: project.owner,
+            ownerAvatarUrl: project.ownerAvatarUrl,
+            dueDate: null,
+        };
+        batch.set(docRef, newItem);
+    }
+
+    await batch.commit();
+    await updateProjectLastActivity(projectId);
+}
+
 
 export async function updateBacklogItem(id: string, data: Partial<BacklogItem>): Promise<void> {
     const docRef = doc(db, 'backlogItems', id);
@@ -155,3 +205,4 @@ export async function deleteBacklogItem(id: string): Promise<void> {
     }
 }
 
+    

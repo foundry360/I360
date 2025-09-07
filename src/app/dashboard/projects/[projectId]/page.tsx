@@ -34,6 +34,7 @@ import {
   Library,
   Inbox,
   Rocket,
+  BookCopy,
 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
@@ -43,9 +44,10 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { getProject, Project } from '@/services/project-service';
 import { getTasksForProject, updateTaskOrderAndStatus, Task, TaskStatus, updateTask, createTask, deleteTask } from '@/services/task-service';
 import { getEpicsForProject, Epic, deleteEpic } from '@/services/epic-service';
-import { getBacklogItemsForProject, BacklogItem, deleteBacklogItem, updateBacklogItem } from '@/services/backlog-item-service';
+import { getBacklogItemsForProject, BacklogItem, deleteBacklogItem, updateBacklogItem, addCollectionToProjectBacklog } from '@/services/backlog-item-service';
 import { getSprintsForProject, Sprint, SprintStatus, startSprint, deleteSprint, updateSprint, completeSprint } from '@/services/sprint-service';
 import { getContactsForCompany, Contact } from '@/services/contact-service';
+import { getCollections, type StoryCollection } from '@/services/collection-service';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
@@ -258,6 +260,7 @@ export default function ProjectDetailsPage() {
     const [sprints, setSprints] = React.useState<Sprint[]>([]);
     const [contacts, setContacts] = React.useState<Contact[]>([]);
     const [allTags, setAllTags] = React.useState<Tag[]>([]);
+    const [collections, setCollections] = React.useState<StoryCollection[]>([]);
     const [loading, setLoading] = React.useState(true);
     const [activeTab, setActiveTab] = React.useState('summary');
     const { 
@@ -268,6 +271,7 @@ export default function ProjectDetailsPage() {
         openNewSprintDialog, setOnSprintCreated,
         openEditSprintDialog, setOnSprintUpdated,
         openEditTaskDialog, setOnTaskUpdated,
+        setOnAddFromLibrary,
     } = useQuickAction();
     const { toast } = useToast();
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
@@ -279,13 +283,14 @@ export default function ProjectDetailsPage() {
         if (!projectId) return;
         setLoading(true);
         try {
-            const [projectData, tasksData, epicsData, backlogItemsData, sprintsData, tagsData] = await Promise.all([
+            const [projectData, tasksData, epicsData, backlogItemsData, sprintsData, tagsData, collectionsData] = await Promise.all([
                 getProject(projectId),
                 getTasksForProject(projectId),
                 getEpicsForProject(projectId),
                 getBacklogItemsForProject(projectId),
                 getSprintsForProject(projectId),
                 getTags(),
+                getCollections(),
             ]);
             setProject(projectData);
             setTasks(tasksData);
@@ -293,6 +298,7 @@ export default function ProjectDetailsPage() {
             setBacklogItems(backlogItemsData);
             setSprints(sprintsData);
             setAllTags(tagsData);
+            setCollections(collectionsData);
             
             if (projectData?.companyId) {
                 const companyContacts = await getContactsForCompany(projectData.companyId);
@@ -348,6 +354,8 @@ export default function ProjectDetailsPage() {
         const unsubscribeSprint = setOnSprintCreated(fetchData);
         const unsubscribeSprintUpdate = setOnSprintUpdated(fetchData);
         const unsubscribeTask = setOnTaskUpdated(fetchData);
+        const unsubscribeLibrary = setOnAddFromLibrary(fetchData);
+
         return () => {
             if (unsubscribeBacklog) unsubscribeBacklog();
             if (unsubscribeEpic) unsubscribeEpic();
@@ -356,8 +364,9 @@ export default function ProjectDetailsPage() {
             if (unsubscribeSprint) unsubscribeSprint();
             if (unsubscribeSprintUpdate) unsubscribeSprintUpdate();
             if (unsubscribeTask) unsubscribeTask();
+            if (unsubscribeLibrary) unsubscribeLibrary();
         };
-    }, [fetchData, setOnBacklogItemCreated, setOnEpicCreated, setOnEpicUpdated, setOnBacklogItemUpdated, setOnSprintCreated, setOnSprintUpdated, setOnTaskUpdated]);
+    }, [fetchData, setOnBacklogItemCreated, setOnEpicCreated, setOnEpicUpdated, setOnBacklogItemUpdated, setOnSprintCreated, setOnSprintUpdated, setOnTaskUpdated, setOnAddFromLibrary]);
 
     const projectPrefix = project ? project.name.substring(0, project.name.indexOf('-')) : '';
     
@@ -478,6 +487,28 @@ export default function ProjectDetailsPage() {
             setLoading(false);
         }
     }
+
+    const handleAddToBacklogFromCollection = async (collectionId: string) => {
+        try {
+            setLoading(true);
+            await addCollectionToProjectBacklog(projectId, collectionId);
+            const selectedCollection = collections.find(c => c.id === collectionId);
+            toast({
+                title: 'Success!',
+                description: `Stories from "${selectedCollection?.name}" have been added to the backlog.`,
+            });
+            await fetchData();
+        } catch (error) {
+            console.error("Error adding collection to backlog:", error);
+             toast({
+                variant: "destructive",
+                title: "Error",
+                description: "There was a problem adding stories from the collection.",
+            });
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const upcomingSprints = sprints.filter(s => s.status === 'Not Started' || s.status === 'Active');
 
@@ -837,6 +868,19 @@ export default function ProjectDetailsPage() {
                      <div className="flex items-center gap-2">
                         {(activeTab === 'backlog' || activeTab === 'epics') && (
                              <div className="flex items-center gap-2">
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                         <Button variant="outline"><BookCopy className="mr-2 h-4 w-4" /> Add from Collection</Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent>
+                                        {collections.map(collection => (
+                                            <DropdownMenuItem key={collection.id} onSelect={() => handleAddToBacklogFromCollection(collection.id)}>
+                                                {collection.name}
+                                            </DropdownMenuItem>
+                                        ))}
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+
                                 <TooltipProvider>
                                     <Tooltip>
                                         <TooltipTrigger asChild>
@@ -1663,3 +1707,5 @@ export default function ProjectDetailsPage() {
         </div>
     );
 }
+
+    
