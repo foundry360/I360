@@ -223,8 +223,8 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-        <Card className="h-full lg:col-span-3">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card className="h-full">
            <CardHeader>
                 <CardTitle>Tasks Due This Week</CardTitle>
                 <CardDescription>
@@ -265,7 +265,7 @@ export default function DashboardPage() {
                 )}
             </CardContent>
         </Card>
-        <Card className="h-full lg:col-span-2">
+        <Card className="h-full">
           <CardHeader>
             <CardTitle>Recent Activity</CardTitle>
             <CardDescription>
@@ -368,6 +368,8 @@ export default function DashboardPage() {
       </div>
     </div>
   );
+
+    
 
     
 
