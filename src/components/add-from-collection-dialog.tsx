@@ -126,7 +126,7 @@ export function AddFromCollectionDialog() {
                                 <div className="relative mt-2">
                                     <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                                     <Input
-                                        placeholder="Search library..."
+                                        placeholder="Search collections..."
                                         value={searchTerm}
                                         onChange={(e) => setSearchTerm(e.target.value)}
                                         className="pl-8"
