@@ -409,9 +409,6 @@ export default function LibraryPage() {
                                 <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setIsManageCollectionsOpen(true)}>
                                     <Pencil className="h-3 w-3" />
                                 </Button>
-                                <Button asChild variant="ghost" size="icon" className="h-6 w-6">
-                                    <Link href="/dashboard/collections"><Plus className="h-3 w-3" /></Link>
-                                </Button>
                             </div>
                         </div>
                         <div className="space-y-1 pr-4">
