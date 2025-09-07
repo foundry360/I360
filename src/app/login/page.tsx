@@ -19,6 +19,30 @@ import { useToast } from '@/hooks/use-toast';
 import { useUser } from '@/contexts/user-context';
 import { Loader2 } from 'lucide-react';
 
+const AnimatedLoader = () => (
+  <div className="flex flex-col items-center justify-center gap-4">
+    <div className="relative h-24 w-24">
+      <div className="absolute h-full w-full animate-spin-slow">
+        <div className="absolute top-0 left-0 h-8 w-8 rounded-full bg-primary opacity-75"></div>
+      </div>
+      <div className="absolute h-full w-full animate-spin-medium">
+        <div className="absolute bottom-0 right-0 h-8 w-8 rounded-full bg-accent opacity-75"></div>
+      </div>
+      <div className="absolute h-full w-full animate-spin-fast">
+        <div className="absolute top-1/2 left-1/2 h-8 w-8 -translate-x-1/2 -translate-y-1/2 rounded-full bg-chart-2 opacity-75"></div>
+      </div>
+       <div className="absolute h-full w-full animate-spin-slower">
+        <div className="absolute bottom-0 left-0 h-8 w-8 rounded-md bg-chart-4 opacity-75"></div>
+      </div>
+       <div className="absolute h-full w-full animate-spin-medium-reverse">
+        <div className="absolute top-0 right-0 h-8 w-8 rounded-md bg-chart-5 opacity-75"></div>
+      </div>
+    </div>
+    <p className="mt-4 text-lg font-semibold text-foreground">Insights360 is launching...</p>
+  </div>
+);
+
+
 export default function LoginPage() {
   const router = useRouter();
   const { toast } = useToast();
@@ -55,10 +79,7 @@ export default function LoginPage() {
   if (user) {
     return (
         <div className="flex h-screen items-center justify-center bg-background p-4">
-            <div className="flex flex-col items-center gap-2">
-                <Loader2 className="h-8 w-8 animate-spin" />
-                <p>Redirecting...</p>
-            </div>
+            <AnimatedLoader />
         </div>
     );
   }
