@@ -34,6 +34,7 @@ import { Input } from './ui/input';
 import { ScrollArea } from './ui/scroll-area';
 import { getProjects, Project } from '@/services/project-service';
 import { getAssessments, Assessment } from '@/services/assessment-service';
+import { getCollections, StoryCollection } from '@/services/collection-service';
 import { Skeleton } from './ui/skeleton';
 
 const NavGroup = ({
@@ -58,7 +59,7 @@ const NavGroup = ({
     )
 }
 
-type CombinedItem = (Project | Assessment) & { itemType: 'Engagement' | 'Assessment' };
+type CombinedItem = (Project | Assessment | StoryCollection) & { itemType: 'Engagement' | 'Assessment' | 'Collection' };
 
 function StarredItemsPopoverContent({ isOpen }: { isOpen: boolean }) {
     const [items, setItems] = React.useState<CombinedItem[]>([]);
@@ -95,8 +96,10 @@ function StarredItemsPopoverContent({ isOpen }: { isOpen: boolean }) {
     const handleItemClick = (item: CombinedItem) => {
         if (item.itemType === 'Engagement') {
             router.push(`/dashboard/projects/${item.id}`);
-        } else {
+        } else if (item.itemType === 'Assessment'){
             router.push(`/assessment/${item.id}/report`);
+        } else {
+             router.push(`/dashboard/library`);
         }
     };
 
@@ -142,7 +145,7 @@ function StarredItemsPopoverContent({ isOpen }: { isOpen: boolean }) {
     )
 }
 
-function RecentItemsPopoverContent() {
+function RecentItemsPopoverContent({ isOpen }: { isOpen: boolean }) {
     const [items, setItems] = React.useState<CombinedItem[]>([]);
     const [loading, setLoading] = React.useState(false);
     const [searchTerm, setSearchTerm] = React.useState('');
@@ -151,24 +154,28 @@ function RecentItemsPopoverContent() {
     React.useEffect(() => {
         const fetchRecentItems = async () => {
             setLoading(true);
-            const [projects, assessments] = await Promise.all([getProjects(), getAssessments()]);
+            const [projects, assessments, collections] = await Promise.all([getProjects(), getAssessments(), getCollections()]);
             
             const engagementItems = projects.map(p => ({ ...p, itemType: 'Engagement' as const }));
             const assessmentItems = assessments.map(a => ({ ...a, itemType: 'Assessment' as const }));
+            const collectionItems = collections.map(c => ({ ...c, itemType: 'Collection' as const }));
 
-            const allItems = [...engagementItems, ...assessmentItems];
+            const allItems = [...engagementItems, ...assessmentItems, ...collectionItems];
             
             const sortedItems = allItems.sort((a,b) => {
-                const dateA = new Date(a.lastActivity || a.startDate).getTime();
-                const dateB = new Date(b.lastActivity || b.startDate).getTime();
+                const dateA = new Date((a as Project | Assessment).lastActivity || (a as StoryCollection).createdAt).getTime();
+                const dateB = new Date((b as Project | Assessment).lastActivity || (b as StoryCollection).createdAt).getTime();
                 return dateB - dateA;
             });
 
-            setItems(sortedItems.slice(0, 20)); // Get top 20 recent items
+            setItems(sortedItems.slice(0, 20));
             setLoading(false);
         };
-        fetchRecentItems();
-    }, []);
+
+        if (isOpen) {
+            fetchRecentItems();
+        }
+    }, [isOpen]);
 
     const filteredItems = items.filter(item => 
         item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -178,8 +185,10 @@ function RecentItemsPopoverContent() {
     const handleItemClick = (item: CombinedItem) => {
         if (item.itemType === 'Engagement') {
             router.push(`/dashboard/projects/${item.id}`);
-        } else {
+        } else if (item.itemType === 'Assessment'){
             router.push(`/assessment/${item.id}/report`);
+        } else {
+             router.push(`/dashboard/library`);
         }
     };
 
@@ -206,9 +215,9 @@ function RecentItemsPopoverContent() {
                                 className="flex items-center gap-3 p-2 rounded-md hover:bg-muted cursor-pointer"
                                 onClick={() => handleItemClick(item)}
                             >
-                                {item.itemType === 'Engagement' ? 
-                                    <FolderKanban className="h-5 w-5 text-primary" /> : 
-                                    <ClipboardList className="h-5 w-5 text-primary" />
+                                {item.itemType === 'Engagement' ? <FolderKanban className="h-5 w-5 text-primary" /> : 
+                                 item.itemType === 'Assessment' ? <ClipboardList className="h-5 w-5 text-primary" /> :
+                                 <BookCopy className="h-5 w-5 text-primary" />
                                 }
                                 <div className="flex-1">
                                     <p className="text-sm font-medium">{item.name}</p>
@@ -229,6 +238,7 @@ export function Sidebar() {
   const pathname = usePathname();
   const [isCollapsed, setIsCollapsed] = React.useState(false);
   const [isStarredPopoverOpen, setIsStarredPopoverOpen] = React.useState(false);
+  const [isRecentPopoverOpen, setIsRecentPopoverOpen] = React.useState(false);
 
   const navItems = [
     {
@@ -305,9 +315,8 @@ export function Sidebar() {
     }
 
     if (item.id === 'recent') {
-        const PopoverContentComponent = RecentItemsPopoverContent;
         return (
-             <Popover key={item.id}>
+             <Popover key={item.id} open={isRecentPopoverOpen} onOpenChange={setIsRecentPopoverOpen}>
                 <Tooltip>
                     <TooltipTrigger asChild>
                         <PopoverTrigger asChild>
@@ -333,7 +342,7 @@ export function Sidebar() {
                         </TooltipContent>
                     )}
                 </Tooltip>
-                <PopoverContentComponent />
+                <RecentItemsPopoverContent isOpen={isRecentPopoverOpen} />
             </Popover>
         )
     }
