@@ -352,10 +352,10 @@ export default function LibraryPage() {
           </div>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 flex-1 min-h-0">
-          <Card className="md:col-span-1 bg-muted/50 flex flex-col">
-            <CardContent className="flex-1 overflow-hidden p-4">
+          <div className="md:col-span-1 flex flex-col min-w-[250px]">
+            <Card className="bg-muted/50 flex flex-col flex-1">
               <ScrollArea className="h-full">
-                <CardHeader className="p-0 mb-2">
+                <CardHeader>
                   <div className="flex justify-between items-center">
                     <CardTitle className="text-base flex items-center gap-2">
                       <Layers className="h-4 w-4" />
@@ -371,7 +371,8 @@ export default function LibraryPage() {
                     </Button>
                   </div>
                 </CardHeader>
-                <div className="space-y-1 pr-4">
+                <CardContent className="pt-0 pr-2">
+                <div className="space-y-1">
                   {loading ? (
                     Array.from({ length: 5 }).map((_, i) => (
                       <Skeleton key={i} className="h-8 w-full" />
@@ -408,9 +409,10 @@ export default function LibraryPage() {
                     })
                   )}
                 </div>
+                </CardContent>
                 <Separator className="my-4" />
-                <CardHeader className="p-0">
-                  <div className="flex justify-between items-center">
+                <CardHeader>
+                   <div className="flex justify-between items-center">
                       <CardTitle className="text-base flex items-center gap-2">
                         <BookCopy className="h-4 w-4" />
                         Collections
@@ -425,7 +427,8 @@ export default function LibraryPage() {
                       </Button>
                     </div>
                 </CardHeader>
-                <div className="space-y-1 pr-4 pt-2">
+                <CardContent className="pt-0 pr-2">
+                <div className="space-y-1">
                   {collections.map((collection) => {
                     const config =
                       tagConfig.find((c) => c.iconName === collection.icon) ||
@@ -448,9 +451,10 @@ export default function LibraryPage() {
                     );
                   })}
                 </div>
+                </CardContent>
               </ScrollArea>
-            </CardContent>
-          </Card>
+            </Card>
+          </div>
           <div className="md:col-span-3 min-w-0">
             <ScrollArea className="h-[calc(100vh-18rem)]">
                 <div className="pr-4 space-y-4">
@@ -481,7 +485,7 @@ export default function LibraryPage() {
                                <div className="flex-1">
                                   <CardHeader className="py-3">
                                       <div className="flex justify-between items-start">
-                                          <CardTitle className="flex items-center gap-2">
+                                          <CardTitle className="flex items-center gap-2 text-base">
                                               <Icon className={cn("h-4 w-4", color)} />
                                               {story.title}
                                           </CardTitle>
