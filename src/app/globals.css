@@ -72,6 +72,7 @@ body {
     --sidebar-accent: 217.2 32.6% 17.5%;
     --sidebar-accent-foreground: 210 40% 98%;
     --sidebar-border: 217.2 32.6% 17.5%;
+    --sidebar-divider: 217.2 32.6% 22.5%;
     --sidebar-ring: 256 96% 63%;
   }
   .dark {
@@ -118,6 +119,7 @@ body {
     --sidebar-accent: 0 0% 3%;
     --sidebar-accent-foreground: 210 40% 98%;
     --sidebar-border: 0 0% 4%;
+    --sidebar-divider: 0 0% 3%;
   }
 }
 
