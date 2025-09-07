@@ -351,22 +351,22 @@ export default function LibraryPage() {
             </Button>
           </div>
         </div>
-        <div className="flex-1 grid grid-cols-1 md:grid-cols-4 gap-6 min-h-0">
-          <div className="md:col-span-1 flex flex-col">
-             <Card className="h-full bg-muted/50 flex flex-col shrink">
-                <CardHeader>
-                    <div className="flex justify-between items-center">
-                        <CardTitle className="text-base flex items-center gap-2">
-                            <Layers className="h-4 w-4" />
-                            Tags
-                        </CardTitle>
-                        <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setIsManageTagsOpen(true)}>
-                            <Pencil className="h-3 w-3" />
-                        </Button>
-                    </div>
-                </CardHeader>
-                <CardContent className="flex-1 overflow-hidden">
+        <div className="flex-1 flex gap-6 min-h-0">
+          <div className="w-[280px] shrink-0">
+             <Card className="h-full bg-muted/50 flex flex-col">
+                <CardContent className="flex-1 overflow-hidden p-4">
                     <ScrollArea className="h-full">
+                        <CardHeader className="p-0 mb-2">
+                            <div className="flex justify-between items-center">
+                                <CardTitle className="text-base flex items-center gap-2">
+                                    <Layers className="h-4 w-4" />
+                                    Tags
+                                </CardTitle>
+                                <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setIsManageTagsOpen(true)}>
+                                    <Pencil className="h-3 w-3" />
+                                </Button>
+                            </div>
+                        </CardHeader>
                         <div className="space-y-1 pr-4">
                             {loading ? (
                                 Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-8 w-full" />)
@@ -434,7 +434,7 @@ export default function LibraryPage() {
                 </CardContent>
              </Card>
           </div>
-          <div className="md:col-span-3">
+          <div className="flex-1 min-w-0">
             <ScrollArea className="h-[calc(100vh-18rem)]">
                 <div className="pr-4 space-y-4">
                     {loading ? (
