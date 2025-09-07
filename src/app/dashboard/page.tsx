@@ -232,9 +232,9 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent>
                 {thisWeeksTasks.length > 0 ? (
-                    <div className="space-y-4">
+                    <div className="space-y-2">
                         {visibleTasks.map(task => (
-                            <div key={task.id} className="flex items-center justify-between p-2 rounded-md hover:bg-muted cursor-pointer" onClick={() => router.push(`/dashboard/projects/${task.projectId}`)}>
+                            <div key={task.id} className="flex items-center justify-between rounded-md hover:bg-muted cursor-pointer" onClick={() => router.push(`/dashboard/projects/${task.projectId}`)}>
                                 <div>
                                     <p className="font-medium text-sm">{task.title}</p>
                                     <p className="text-xs text-muted-foreground">Due: {format(parseISO(task.dueDate!), 'EEE, MMM dd')}</p>
