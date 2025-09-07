@@ -57,6 +57,7 @@ export default function DashboardPage() {
     []
   );
   const [isActivityExpanded, setIsActivityExpanded] = React.useState(false);
+  const [isTasksExpanded, setIsTasksExpanded] = React.useState(false);
 
 
   React.useEffect(() => {
@@ -159,6 +160,7 @@ export default function DashboardPage() {
   }, []);
   
   const recentActivity = isActivityExpanded ? allRecentActivity : allRecentActivity.slice(0, 5);
+  const visibleTasks = isTasksExpanded ? thisWeeksTasks : thisWeeksTasks.slice(0, 5);
 
   const getFirstName = () => {
     if (user?.displayName) {
@@ -231,7 +233,7 @@ export default function DashboardPage() {
             <CardContent>
                 {thisWeeksTasks.length > 0 ? (
                     <div className="space-y-4">
-                        {thisWeeksTasks.map(task => (
+                        {visibleTasks.map(task => (
                             <div key={task.id} className="flex items-center justify-between p-2 rounded-md hover:bg-muted cursor-pointer" onClick={() => router.push(`/dashboard/projects/${task.projectId}`)}>
                                 <div>
                                     <p className="font-medium text-sm">{task.title}</p>
@@ -243,6 +245,15 @@ export default function DashboardPage() {
                                 </div>
                             </div>
                         ))}
+                        {thisWeeksTasks.length > 5 && (
+                             <Button 
+                                variant="link" 
+                                className="p-0 h-auto text-sm"
+                                onClick={() => setIsTasksExpanded(!isTasksExpanded)}
+                            >
+                                {isTasksExpanded ? 'See Less' : 'See More...'}
+                            </Button>
+                        )}
                     </div>
                 ) : (
                     <div className="flex flex-col items-center justify-center h-48 text-center text-muted-foreground">
