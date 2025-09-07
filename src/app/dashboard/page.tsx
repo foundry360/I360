@@ -206,7 +206,7 @@ export default function DashboardPage() {
             {greeting ? `${greeting}, ${getFirstName()} 👋` : `Welcome, ${getFirstName()} 👋`}
           </h1>
           <p className="text-muted-foreground">
-            Here's a quick overview of your workspace.
+            Here's a quick overview of your workspace
           </p>
         </div>
       </div>
@@ -216,7 +216,7 @@ export default function DashboardPage() {
           <CardHeader>
             <CardTitle>Global Search</CardTitle>
             <CardDescription>
-              Find companies, contacts, projects, and more.
+              Find companies, contacts, engagements, and more
             </CardDescription>
           </CardHeader>
           <CardContent>
