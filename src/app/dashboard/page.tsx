@@ -235,7 +235,7 @@ export default function DashboardPage() {
                 {thisWeeksTasks.length > 0 ? (
                     <div className="space-y-0">
                         {visibleTasks.map((task, index) => (
-                            <div key={task.id} className={cn("flex items-center justify-between py-2 rounded-md hover:bg-muted cursor-pointer", index !== visibleTasks.length - 1 && 'border-b')} onClick={() => router.push(`/dashboard/projects/${task.projectId}`)}>
+                            <div key={task.id} className={cn("flex items-center justify-between py-2 rounded-md hover:bg-muted cursor-pointer", index !== visibleTasks.length - 1 && 'border-b dark:border-white/10')} onClick={() => router.push(`/dashboard/projects/${task.projectId}`)}>
                                 <div>
                                     <p className="font-medium text-sm">{task.title}</p>
                                     <p className="text-xs text-muted-foreground">Due: {format(parseISO(task.dueDate!), 'EEE, MMM dd')}</p>
@@ -368,5 +368,7 @@ export default function DashboardPage() {
       </div>
     </div>
   );
+
+    
 
     
