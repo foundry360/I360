@@ -130,7 +130,7 @@ export function ManageCollectionsDialog({ isOpen, onOpenChange, onCollectionsUpd
                         value={newCollectionDescription}
                         onChange={(e) => setNewCollectionDescription(e.target.value)}
                         placeholder="Description..."
-                        className="flex-1 h-10 min-h-[40px] resize-y whitespace-nowrap"
+                        className="flex-1 h-10 min-h-[40px] resize-y"
                     />
                     <Select onValueChange={(value) => setNewCollectionIcon(value as TagConfig['iconName'])} value={newCollectionIcon}>
                         <SelectTrigger className="w-[60px] shrink-0">
@@ -174,7 +174,7 @@ export function ManageCollectionsDialog({ isOpen, onOpenChange, onCollectionsUpd
                                 value={collection.description}
                                 onChange={(e) => handleFieldChange(collection.id, 'description', e.target.value)}
                                 onBlur={() => handleUpdateCollection(collection)}
-                                className="flex-1 text-sm text-muted-foreground h-10 min-h-[40px] resize-y whitespace-nowrap"
+                                className="flex-1 text-sm text-muted-foreground h-10 min-h-[40px] resize-y"
                                 placeholder="No description"
                             />
                              <Select 
