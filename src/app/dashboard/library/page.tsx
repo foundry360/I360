@@ -351,90 +351,107 @@ export default function LibraryPage() {
             </Button>
           </div>
         </div>
-        <div className="flex-1 flex gap-6 min-h-0">
-          <div className="w-[280px] shrink-0">
-             <Card className="h-full bg-muted/50 flex flex-col">
-                <CardContent className="flex-1 overflow-hidden p-4">
-                    <ScrollArea className="h-full">
-                        <CardHeader className="p-0 mb-2">
-                            <div className="flex justify-between items-center">
-                                <CardTitle className="text-base flex items-center gap-2">
-                                    <Layers className="h-4 w-4" />
-                                    Tags
-                                </CardTitle>
-                                <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setIsManageTagsOpen(true)}>
-                                    <Pencil className="h-3 w-3" />
-                                </Button>
-                            </div>
-                        </CardHeader>
-                        <div className="space-y-1 pr-4">
-                            {loading ? (
-                                Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-8 w-full" />)
-                            ) : (
-                                allTags.map(tag => {
-                                    const config = tagConfig.find(c => c.iconName === tag.icon);
-                                    let Icon: React.ElementType = Layers; // Default icon
-                                    let color = 'text-foreground';
-                                    if(tag.name === 'All') {
-                                        Icon = Library;
-                                    } else if(config) {
-                                        Icon = config.icon;
-                                        color = config.color;
-                                    }
-                                    
-                                    return (
-                                        <Button 
-                                            key={tag.id} 
-                                            variant="ghost" 
-                                            className={cn(
-                                                "w-full justify-start",
-                                                selectedTag === tag.name && "bg-background font-bold"
-                                            )}
-                                            onClick={() => setSelectedTag(tag.name)}
-                                        >
-                                          <Icon className={cn("h-4 w-4 mr-2", color)} />
-                                          {tag.name}
-                                        </Button>
-                                    )
-                                })
-                            )}
-                        </div>
-                        <Separator className="my-4" />
-                        <CardHeader className="p-0 mb-2">
-                            <div className="flex justify-between items-center">
-                                <CardTitle className="text-base flex items-center gap-2">
-                                    <BookCopy className="h-4 w-4" />
-                                    Collections
-                                </CardTitle>
-                                <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => openManageCollectionsDialog()}>
-                                    <Pencil className="h-3 w-3" />
-                                </Button>
-                            </div>
-                        </CardHeader>
-                        <div className="space-y-1 pr-4 pt-2">
-                             {collections.map(collection => {
-                                const config = tagConfig.find(c => c.iconName === collection.icon) || tagConfig.find(c => c.iconName === 'BookCopy');
-                                const Icon = config?.icon || BookCopy;
-                                return (
-                                <Button 
-                                    key={collection.id} 
-                                    variant="ghost" 
-                                    className={cn(
-                                        "w-full justify-start",
-                                        selectedTag === `coll:${collection.id}` && "bg-muted font-bold"
-                                    )}
-                                    onClick={() => setSelectedTag(`coll:${collection.id}`)}
-                                >
-                                  <Icon className={cn("h-4 w-4 mr-2", config?.color)} />
-                                  {collection.name}
-                                </Button>
-                            )})}
-                        </div>
-                    </ScrollArea>
-                </CardContent>
-             </Card>
-          </div>
-          <div className="flex-1 min-w-0">
+        <div className="grid grid-cols-[280px_1fr] gap-6 flex-1 min-h-0">
+          <Card className="bg-muted/50 flex flex-col">
+            <CardContent className="flex-1 overflow-hidden p-4">
+              <ScrollArea className="h-full">
+                <CardHeader className="p-0 mb-2">
+                  <div className="flex justify-between items-center">
+                    <CardTitle className="text-base flex items-center gap-2">
+                      <Layers className="h-4 w-4" />
+                      Tags
+                    </CardTitle>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6"
+                      onClick={() => setIsManageTagsOpen(true)}
+                    >
+                      <Pencil className="h-3 w-3" />
+                    </Button>
+                  </div>
+                </CardHeader>
+                <div className="space-y-1 pr-4">
+                  {loading ? (
+                    Array.from({ length: 5 }).map((_, i) => (
+                      <Skeleton key={i} className="h-8 w-full" />
+                    ))
+                  ) : (
+                    allTags.map((tag) => {
+                      const config = tagConfig.find(
+                        (c) => c.iconName === tag.icon
+                      );
+                      let Icon: React.ElementType = Layers; // Default icon
+                      let color = 'text-foreground';
+                      if (tag.name === 'All') {
+                        Icon = Library;
+                      } else if (config) {
+                        Icon = config.icon;
+                        color = config.color;
+                      }
+
+                      return (
+                        <Button
+                          key={tag.id}
+                          variant="ghost"
+                          className={cn(
+                            'w-full justify-start',
+                            selectedTag === tag.name &&
+                              'bg-background font-bold'
+                          )}
+                          onClick={() => setSelectedTag(tag.name)}
+                        >
+                          <Icon className={cn('h-4 w-4 mr-2', color)} />
+                          {tag.name}
+                        </Button>
+                      );
+                    })
+                  )}
+                </div>
+                <Separator className="my-4" />
+                <CardHeader className="p-0 mb-2">
+                    <div className="flex justify-between items-center">
+                      <CardTitle className="text-base flex items-center gap-2">
+                        <BookCopy className="h-4 w-4" />
+                        Collections
+                      </CardTitle>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6"
+                        onClick={() => openManageCollectionsDialog()}
+                      >
+                        <Pencil className="h-3 w-3" />
+                      </Button>
+                    </div>
+                </CardHeader>
+                <div className="space-y-1 pr-4 pt-2">
+                  {collections.map((collection) => {
+                    const config =
+                      tagConfig.find((c) => c.iconName === collection.icon) ||
+                      tagConfig.find((c) => c.iconName === 'BookCopy');
+                    const Icon = config?.icon || BookCopy;
+                    return (
+                      <Button
+                        key={collection.id}
+                        variant="ghost"
+                        className={cn(
+                          'w-full justify-start',
+                          selectedTag === `coll:${collection.id}` &&
+                            'bg-muted font-bold'
+                        )}
+                        onClick={() => setSelectedTag(`coll:${collection.id}`)}
+                      >
+                        <Icon className={cn('h-4 w-4 mr-2', config?.color)} />
+                        {collection.name}
+                      </Button>
+                    );
+                  })}
+                </div>
+              </ScrollArea>
+            </CardContent>
+          </Card>
+          <div className="min-w-0">
             <ScrollArea className="h-[calc(100vh-18rem)]">
                 <div className="pr-4 space-y-4">
                     {loading ? (
