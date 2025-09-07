@@ -326,7 +326,7 @@ export default function LibraryPage() {
                   Add to Backlog ({selectedStories.length})
                 </Button>
             )}
-            {!projectId && selectedStories.length > 0 && (
+            {!projectId && selectedStories.length > 0 && !selectedTag?.startsWith('coll:') && (
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button variant="outline">
