@@ -19,10 +19,14 @@ import { ScrollArea } from './ui/scroll-area';
 import { Card, CardHeader, CardTitle, CardContent } from './ui/card';
 import { ChevronLeft, ChevronRight, Search } from 'lucide-react';
 import { Input } from './ui/input';
+import { cn } from '@/lib/utils';
 
 const CollectionItem = ({ collection, onMove, moveDirection }: { collection: StoryCollection, onMove: () => void, moveDirection: 'add' | 'remove' }) => (
     <div
-        className="p-3 mb-2 rounded-lg border bg-card text-card-foreground shadow-sm flex items-center gap-2"
+        className={cn(
+            "p-3 mb-2 rounded-lg border text-card-foreground shadow-sm flex items-center gap-2",
+            moveDirection === 'add' ? 'bg-[rgb(0,0,2)]' : 'bg-card'
+        )}
     >
         <div className="flex-1">
             <p className="text-sm font-medium">{collection.name}</p>
@@ -154,7 +158,7 @@ export function AddFromCollectionDialog() {
                                             <CollectionItem key={collection.id} collection={collection} onMove={() => handleMoveCollection(collection, 'remove')} moveDirection="remove" />
                                         ))}
                                         {selectedCollections.length === 0 && (
-                                            <div className="h-full flex items-center justify-center text-center text-muted-foreground bg-muted border-2 border-dashed border-card rounded-lg p-4">
+                                            <div className="h-full flex items-center justify-center text-center bg-muted/20 text-muted-foreground/80 border-2 border-dashed border-border/80 rounded-lg p-4">
                                                 <p>Move collections from the left here to add them to the backlog.</p>
                                             </div>
                                         )}
