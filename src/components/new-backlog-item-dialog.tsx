@@ -109,7 +109,7 @@ export function NewBacklogItemDialog() {
       <DialogContent className="sm:max-w-[600px]">
         <form onSubmit={handleCreateItem}>
           <DialogHeader>
-            <DialogTitle>Create New Backlog Item</DialogTitle>
+            <DialogTitle>Create new item</DialogTitle>
             <DialogDescription>
               Fill in the details below to add an item to the project backlog. The owner will be automatically assigned from the project.
             </DialogDescription>
