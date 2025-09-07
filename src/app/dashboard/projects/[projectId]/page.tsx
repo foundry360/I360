@@ -866,7 +866,7 @@ export default function ProjectDetailsPage() {
                         </TabsTrigger>
                     </TabsList>
                      <div className="flex items-center gap-2">
-                        {((activeTab === 'backlog' && unassignedBacklogItems.length > 0) || activeTab === 'epics') && (
+                        {(activeTab === 'backlog' || activeTab === 'epics') && (
                              <div className="flex items-center gap-2">
                                 <DropdownMenu>
                                   <TooltipProvider>
@@ -1434,8 +1434,20 @@ export default function ProjectDetailsPage() {
                                             This space is for user stories that haven't been assigned to an epic yet.
                                         </p>
                                         <div className="flex justify-center gap-4">
-                                            <Button asChild>
-                                                <Link href={`/dashboard/library?projectId=${projectId}`}><Plus className="h-4 w-4 mr-2" /> Add from Library</Link>
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger asChild>
+                                                    <Button><BookCopy className="h-4 w-4 mr-2" /> Add from Collection</Button>
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent>
+                                                    {collections.map(collection => (
+                                                        <DropdownMenuItem key={collection.id} onSelect={() => handleAddToBacklogFromCollection(collection.id)}>
+                                                            {collection.name}
+                                                        </DropdownMenuItem>
+                                                    ))}
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
+                                            <Button variant="secondary" asChild>
+                                                <Link href={`/dashboard/library?projectId=${projectId}`}><Library className="h-4 w-4 mr-2" /> Add from Library</Link>
                                             </Button>
                                             <Button variant="secondary" onClick={() => openNewBacklogItemDialog(projectId, project.companyId, epics)}>
                                                 Create New Item
