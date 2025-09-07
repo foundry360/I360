@@ -104,7 +104,7 @@ function StarredItemsPopoverContent({ isOpen }: { isOpen: boolean }) {
     };
 
     return (
-        <PopoverContent className="w-96 sidebar-popover" side="right" align="start">
+        <PopoverContent className="w-96 border" side="right" align="start">
             <h4 className="font-medium text-sm mb-2">Starred Items</h4>
             <div className="relative mb-4">
                 <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -193,7 +193,7 @@ function RecentItemsPopoverContent({ isOpen }: { isOpen: boolean }) {
     };
 
     return (
-        <PopoverContent className="w-96 sidebar-popover" side="right" align="start">
+        <PopoverContent className="w-96 border" side="right" align="start">
             <h4 className="font-medium text-sm mb-2">Recent Items</h4>
             <div className="relative mb-4">
                 <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
