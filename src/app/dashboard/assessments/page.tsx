@@ -71,7 +71,7 @@ export default function AssessmentsPage() {
   const { toast } = useToast();
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   const [assessmentToUpload, setAssessmentToUpload] = React.useState<string | null>(null);
-  const [isSearchVisible, setIsSearchVisible] = React.useState(!!globalSearchTerm);
+  const [isSearchVisible, setIsSearchVisible] = React.useState(false);
 
   const fetchAssessments = React.useCallback(async () => {
     try {
@@ -93,6 +93,12 @@ export default function AssessmentsPage() {
     }
   }, [fetchAssessments, setOnAssessmentCompleted]);
   
+  React.useEffect(() => {
+    if (globalSearchTerm) {
+      setIsSearchVisible(true);
+    }
+  }, [globalSearchTerm]);
+
   React.useEffect(() => {
     return () => {
       setGlobalSearchTerm('');

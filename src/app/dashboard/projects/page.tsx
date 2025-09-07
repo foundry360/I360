@@ -61,7 +61,7 @@ export default function ProjectsPage() {
 
   const { openNewProjectDialog, setOnProjectCreated, openEditProjectDialog, setOnProjectUpdated, globalSearchTerm, setGlobalSearchTerm } = useQuickAction();
   const { user } = useUser();
-  const [isSearchVisible, setIsSearchVisible] = React.useState(!!globalSearchTerm);
+  const [isSearchVisible, setIsSearchVisible] = React.useState(false);
 
   const fetchProjects = React.useCallback(async () => {
     try {
@@ -84,6 +84,12 @@ export default function ProjectsPage() {
       if (unsubscribeUpdated) unsubscribeUpdated();
     };
   }, [fetchProjects, setOnProjectCreated, setOnProjectUpdated]);
+
+  React.useEffect(() => {
+    if (globalSearchTerm) {
+      setIsSearchVisible(true);
+    }
+  }, [globalSearchTerm]);
 
   React.useEffect(() => {
     return () => {

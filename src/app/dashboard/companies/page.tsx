@@ -73,7 +73,7 @@ export default function CompaniesPage() {
 
   const { openNewCompanyDialog, setOnCompanyCreated, globalSearchTerm, setGlobalSearchTerm } = useQuickAction();
   const { toast } = useToast();
-  const [isSearchVisible, setIsSearchVisible] = React.useState(!!globalSearchTerm);
+  const [isSearchVisible, setIsSearchVisible] = React.useState(false);
 
   const fetchCompanies = React.useCallback(async () => {
     try {
@@ -104,6 +104,12 @@ export default function CompaniesPage() {
       if (unsubscribe) unsubscribe();
     };
   }, [fetchCompanies, setOnCompanyCreated]);
+  
+  React.useEffect(() => {
+    if (globalSearchTerm) {
+      setIsSearchVisible(true);
+    }
+  }, [globalSearchTerm]);
   
   React.useEffect(() => {
     return () => {
