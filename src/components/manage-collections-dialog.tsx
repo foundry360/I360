@@ -20,7 +20,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { tagConfig, type TagConfig } from '@/lib/tag-config';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
-import { Textarea } from './ui/textarea';
 import { Label } from './ui/label';
 
 interface ManageCollectionsDialogProps {
@@ -126,11 +125,11 @@ export function ManageCollectionsDialog({ isOpen, onOpenChange, onCollectionsUpd
                         placeholder="Enter new collection name..."
                         className="flex-1"
                     />
-                    <Textarea
+                    <Input
                         value={newCollectionDescription}
                         onChange={(e) => setNewCollectionDescription(e.target.value)}
                         placeholder="Description..."
-                        className="flex-1 h-10 min-h-[40px] resize-y"
+                        className="flex-1"
                     />
                     <Select onValueChange={(value) => setNewCollectionIcon(value as TagConfig['iconName'])} value={newCollectionIcon}>
                         <SelectTrigger className="w-[60px] shrink-0">
@@ -170,11 +169,11 @@ export function ManageCollectionsDialog({ isOpen, onOpenChange, onCollectionsUpd
                                 onBlur={() => handleUpdateCollection(collection)}
                                 className="flex-1 font-medium"
                             />
-                            <Textarea 
+                            <Input 
                                 value={collection.description}
                                 onChange={(e) => handleFieldChange(collection.id, 'description', e.target.value)}
                                 onBlur={() => handleUpdateCollection(collection)}
-                                className="flex-1 text-sm text-muted-foreground h-10 min-h-[40px] resize-y"
+                                className="flex-1 text-sm text-muted-foreground"
                                 placeholder="No description"
                             />
                              <Select 
