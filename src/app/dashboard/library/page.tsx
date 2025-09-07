@@ -12,7 +12,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Skeleton } from '@/components/ui/skeleton';
-import { MoreHorizontal, Plus, Trash2, Search, Upload, FilePlus, Layers, Library, Pencil, BookCopy } from 'lucide-react';
+import { MoreHorizontal, Plus, Trash2, Search, Upload, FilePlus, Layers, Library, Pencil, BookCopy, ArrowLeft } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { useQuickAction } from '@/contexts/quick-action-context';
 import { getUserStories, deleteUserStory, UserStory, bulkCreateUserStories as bulkCreateLibraryStories, getTags, Tag, deleteUserStories } from '@/services/user-story-service';
@@ -282,14 +282,22 @@ export default function LibraryPage() {
         accept=".csv"
       />
       <div className="flex flex-col h-full space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold">User Story Library</h1>
-          <p className="text-muted-foreground">
-            {projectId 
-                ? "Select stories to add to your project's backlog"
-                : "Browse and manage reusable user stories for your projects"
-            }
-          </p>
+        <div className="flex items-center gap-4">
+            {projectId && (
+                <Button variant="outline" size="icon" onClick={() => router.back()}>
+                    <ArrowLeft className="h-4 w-4" />
+                    <span className="sr-only">Back</span>
+                </Button>
+            )}
+            <div>
+                <h1 className="text-2xl font-bold">User Story Library</h1>
+                <p className="text-muted-foreground">
+                    {projectId 
+                        ? "Select stories to add to your project's backlog"
+                        : "Browse and manage reusable user stories for your projects"
+                    }
+                </p>
+            </div>
         </div>
         <Separator />
         <div className="flex justify-between items-center">
