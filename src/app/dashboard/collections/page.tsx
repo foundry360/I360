@@ -81,10 +81,11 @@ export default function CollectionsPage() {
                 <Separator />
 
                 {loading ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                         <Skeleton className="h-48 w-full" />
                         <Skeleton className="h-48 w-full" />
                         <Skeleton className="h-48 w-full" />
+                         <Skeleton className="h-48 w-full" />
                     </div>
                 ) : collections.length === 0 ? (
                      <Card className="border-dashed col-span-full">
@@ -100,7 +101,7 @@ export default function CollectionsPage() {
                         </CardContent>
                     </Card>
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                         {collections.map(collection => (
                             <Card key={collection.id} className="flex flex-col">
                                 <CardHeader>
