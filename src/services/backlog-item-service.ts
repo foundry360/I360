@@ -147,6 +147,54 @@ export async function addCollectionToProjectBacklog(projectId: string, collectio
     await updateProjectLastActivity(projectId);
 }
 
+export async function addCollectionsToProjectBacklog(projectId: string, collectionIds: string[]): Promise<void> {
+    const project = await getProject(projectId);
+    if (!project) throw new Error("Project not found");
+
+    const batch = writeBatch(db);
+    let lastBacklogId = await getNextBacklogId(projectId);
+
+    for (const collectionId of collectionIds) {
+        const collectionRef = doc(db, 'storyCollections', collectionId);
+        const collectionSnap = await getDoc(collectionRef);
+
+        if (collectionSnap.exists()) {
+            const collectionData = collectionSnap.data() as StoryCollection;
+            if (collectionData.userStoryIds.length === 0) continue;
+
+            const storyDocs = await Promise.all(
+                collectionData.userStoryIds.map(storyId => getDoc(doc(db, 'userStories', storyId)))
+            );
+
+            const stories = storyDocs
+                .filter(docSnap => docSnap.exists())
+                .map(docSnap => docSnap.data() as UserStory);
+
+            for (const story of stories) {
+                const docRef = doc(backlogItemsCollection);
+                const newItem: BacklogItem = {
+                    id: docRef.id,
+                    projectId,
+                    epicId: null,
+                    backlogId: lastBacklogId++,
+                    title: story.title,
+                    description: story.story,
+                    status: 'To Do',
+                    points: story.points || 0,
+                    priority: 'Medium',
+                    owner: project.owner,
+                    ownerAvatarUrl: project.ownerAvatarUrl,
+                    dueDate: null,
+                };
+                batch.set(docRef, newItem);
+            }
+        }
+    }
+
+    await batch.commit();
+    await updateProjectLastActivity(projectId);
+}
+
 
 export async function updateBacklogItem(id: string, data: Partial<BacklogItem>): Promise<void> {
     const docRef = doc(db, 'backlogItems', id);
@@ -204,5 +252,3 @@ export async function deleteBacklogItem(id: string): Promise<void> {
         await updateProjectLastActivity(item.projectId);
     }
 }
-
-    
