@@ -7,6 +7,7 @@ import {
   CardTitle,
   CardDescription,
   CardContent,
+  CardFooter
 } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useUser } from '@/contexts/user-context';
@@ -22,12 +23,14 @@ import {
 import { getProjects, type Project } from '@/services/project-service';
 import { getAssessments, type Assessment } from '@/services/assessment-service';
 import { getContacts, type Contact } from '@/services/contact-service';
+import { getTasks, type Task } from '@/services/task-service';
 import { useQuickAction } from '@/contexts/quick-action-context';
 import { formatDistanceToNow, parseISO } from 'date-fns';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
 
 type ActivityItem = {
   id: string;
@@ -38,13 +41,15 @@ type ActivityItem = {
   link: string;
 };
 
+type ProjectWithProgress = Project & { progress: number };
+
 export default function DashboardPage() {
   const { user } = useUser();
   const router = useRouter();
   const { globalSearchTerm, setGlobalSearchTerm } = useQuickAction();
   const [greeting, setGreeting] = React.useState('');
   const [loading, setLoading] = React.useState(true);
-  const [recentEngagements, setRecentEngagements] = React.useState<Project[]>(
+  const [recentEngagements, setRecentEngagements] = React.useState<ProjectWithProgress[]>(
     []
   );
   const [allRecentActivity, setAllRecentActivity] = React.useState<ActivityItem[]>(
@@ -67,11 +72,29 @@ export default function DashboardPage() {
     async function loadDashboardData() {
       setLoading(true);
       try {
-        const [projects, assessments, contacts] = await Promise.all([
+        const [projects, assessments, contacts, allTasks] = await Promise.all([
           getProjects(),
           getAssessments(),
           getContacts(),
+          getTasks(),
         ]);
+        
+        const tasksByProject = allTasks.reduce((acc, task) => {
+            if (!acc[task.projectId]) {
+                acc[task.projectId] = [];
+            }
+            acc[task.projectId].push(task);
+            return acc;
+        }, {} as Record<string, Task[]>);
+
+        const projectsWithProgress: ProjectWithProgress[] = projects.map(project => {
+            const projectTasks = tasksByProject[project.id] || [];
+            const totalTasks = projectTasks.length;
+            const completedTasks = projectTasks.filter(t => t.status === 'Complete').length;
+            const progress = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
+            return { ...project, progress };
+        });
+
 
         const projectActivities: ActivityItem[] = projects.map((p) => ({
           id: p.id,
@@ -110,12 +133,12 @@ export default function DashboardPage() {
         );
         setAllRecentActivity(allActivities);
 
-        const sortedProjects = projects.sort(
+        const sortedProjects = projectsWithProgress.sort(
           (a, b) =>
             parseISO(b.lastActivity || '1970-01-01').getTime() -
             parseISO(a.lastActivity || '1970-01-01').getTime()
         );
-        setRecentEngagements(sortedProjects.slice(0, 6)); // Limit to 6 recent engagements
+        setRecentEngagements(sortedProjects.slice(0, 10)); 
       } catch (error) {
         console.error('Failed to fetch dashboard data', error);
       } finally {
@@ -159,12 +182,14 @@ export default function DashboardPage() {
           <Skeleton className="h-8 w-1/3" />
           <Skeleton className="h-4 w-1/2" />
         </div>
-        <div className="grid gap-6 md:grid-cols-2">
-          <Skeleton className="h-64 w-full" />
-          <Skeleton className="h-64 w-full" />
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-5">
+          <div className="lg:col-span-3"><Skeleton className="h-64 w-full" /></div>
+          <div className="lg:col-span-2"><Skeleton className="h-64 w-full" /></div>
         </div>
         <Skeleton className="h-px w-full" />
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
+          <Skeleton className="h-48 w-full" />
+          <Skeleton className="h-48 w-full" />
           <Skeleton className="h-48 w-full" />
           <Skeleton className="h-48 w-full" />
           <Skeleton className="h-48 w-full" />
@@ -277,7 +302,7 @@ export default function DashboardPage() {
             recentEngagements.map((project) => (
               <Card
                 key={project.id}
-                className="cursor-pointer hover:border-primary transition-colors"
+                className="cursor-pointer hover:border-primary transition-colors flex flex-col"
                 onClick={() => router.push(`/dashboard/projects/${project.id}`)}
               >
                 <CardHeader>
@@ -289,11 +314,18 @@ export default function DashboardPage() {
                   </CardTitle>
                   <CardDescription>{project.companyName}</CardDescription>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="flex-grow">
                   <p className="text-sm text-muted-foreground line-clamp-2 h-10">
                     {project.description}
                   </p>
                 </CardContent>
+                <CardFooter className="flex-col items-start gap-1 pt-4">
+                   <div className="flex justify-between w-full text-xs text-muted-foreground">
+                       <span>Progress</span>
+                       <span>{Math.round(project.progress)}%</span>
+                   </div>
+                   <Progress value={project.progress} className="h-2" />
+                </CardFooter>
               </Card>
             ))
           ) : (
