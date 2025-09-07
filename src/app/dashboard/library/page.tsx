@@ -351,7 +351,7 @@ export default function LibraryPage() {
             </Button>
           </div>
         </div>
-        <div className="flex-1 grid grid-cols-12 gap-6">
+        <div className="flex-1 grid grid-cols-12 gap-6 min-h-0">
           <div className="col-span-3">
              <Card className="h-full bg-muted/50 flex flex-col">
                 <CardHeader>
