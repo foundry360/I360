@@ -34,7 +34,9 @@ export async function getContacts(): Promise<Contact[]> {
 export async function getContactsForCompany(companyId: string): Promise<Contact[]> {
     const q = query(contactsCollection, where("companyId", "==", companyId));
     const snapshot = await getDocs(q);
-    return snapshot.docs.map(doc => doc.data() as Contact);
+    const companyDoc = await getDoc(doc(db, 'companies', companyId));
+    const companyName = companyDoc.exists() ? (companyDoc.data() as Company).name : 'Unknown Company';
+    return snapshot.docs.map(d => ({...d.data(), companyName} as Contact));
 }
 
 

@@ -111,7 +111,7 @@ export default function CompanyDetailsPage() {
       if (company) {
           const assessmentActivity: ActivityItem[] = allAssessments.map(a => ({
               activity: `Assessment "${a.name}" status: ${a.status}`,
-              time: new Date(a.startDate),
+              time: new Date(a.lastActivity || a.startDate),
           }));
 
           const contactActivity: ActivityItem[] = companyContacts.map(c => ({

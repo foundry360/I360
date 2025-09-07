@@ -47,9 +47,11 @@ export default function DashboardPage() {
   const [recentEngagements, setRecentEngagements] = React.useState<Project[]>(
     []
   );
-  const [recentActivity, setRecentActivity] = React.useState<ActivityItem[]>(
+  const [allRecentActivity, setAllRecentActivity] = React.useState<ActivityItem[]>(
     []
   );
+  const [isActivityExpanded, setIsActivityExpanded] = React.useState(false);
+
 
   React.useEffect(() => {
     // This effect runs only on the client, after hydration
@@ -106,7 +108,7 @@ export default function DashboardPage() {
           (a, b) =>
             parseISO(b.timestamp).getTime() - parseISO(a.timestamp).getTime()
         );
-        setRecentActivity(allActivities.slice(0, 10)); // Limit to 10 recent activities
+        setAllRecentActivity(allActivities);
 
         const sortedProjects = projects.sort(
           (a, b) =>
@@ -123,6 +125,8 @@ export default function DashboardPage() {
 
     loadDashboardData();
   }, []);
+  
+  const recentActivity = isActivityExpanded ? allRecentActivity : allRecentActivity.slice(0, 5);
 
   const getFirstName = () => {
     if (user?.displayName) {
@@ -246,6 +250,15 @@ export default function DashboardPage() {
                 );
               })}
             </div>
+            {allRecentActivity.length > 5 && (
+                <Button 
+                    variant="link" 
+                    className="p-0 h-auto text-sm mt-4"
+                    onClick={() => setIsActivityExpanded(!isActivityExpanded)}
+                >
+                    {isActivityExpanded ? 'View less' : 'View all'}
+                </Button>
+            )}
           </CardContent>
         </Card>
       </div>

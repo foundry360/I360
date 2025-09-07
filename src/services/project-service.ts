@@ -63,7 +63,14 @@ export async function getProject(id: string): Promise<Project | null> {
         const docRef = doc(db, 'projects', id);
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
-            return docSnap.data() as Project;
+            const project = docSnap.data() as Project;
+             if (project.companyId) {
+                const companyDoc = await getDoc(doc(db, 'companies', project.companyId));
+                if (companyDoc.exists()) {
+                    project.companyName = companyDoc.data().name;
+                }
+            }
+            return project;
         } else {
             console.warn(`Project with id ${id} not found.`);
             return null;
