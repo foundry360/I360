@@ -380,6 +380,7 @@ export default function LibraryPage() {
                     ))
                   ) : (
                     allTags.map((tag) => {
+                      const isActive = selectedTag === tag.name;
                       const config = tagConfig.find(
                         (c) => c.iconName === tag.icon
                       );
@@ -397,12 +398,12 @@ export default function LibraryPage() {
                           key={tag.id}
                           variant="ghost"
                           className={cn(
-                            'w-full justify-start',
-                            selectedTag === tag.name &&
-                              'bg-background font-bold'
+                            'w-full justify-start relative',
+                            isActive && 'bg-background font-bold'
                           )}
                           onClick={() => setSelectedTag(tag.name)}
                         >
+                          {isActive && <div className="absolute left-0 top-0 h-full w-1 bg-primary rounded-r-full" />}
                           <Icon className={cn('h-4 w-4 mr-2', color)} />
                           {tag.name}
                         </Button>
@@ -431,6 +432,7 @@ export default function LibraryPage() {
                 <CardContent className="pt-0 pr-2">
                 <div className="space-y-1">
                   {collections.map((collection) => {
+                    const isActive = selectedTag === `coll:${collection.id}`;
                     const config =
                       tagConfig.find((c) => c.iconName === collection.icon) ||
                       tagConfig.find((c) => c.iconName === 'BookCopy');
@@ -440,12 +442,12 @@ export default function LibraryPage() {
                         key={collection.id}
                         variant="ghost"
                         className={cn(
-                          'w-full justify-start',
-                          selectedTag === `coll:${collection.id}` &&
-                            'bg-muted font-bold'
+                          'w-full justify-start relative',
+                          isActive && 'bg-background font-bold'
                         )}
                         onClick={() => setSelectedTag(`coll:${collection.id}`)}
                       >
+                        {isActive && <div className="absolute left-0 top-0 h-full w-1 bg-primary rounded-r-full" />}
                         <Icon className={cn('h-4 w-4 mr-2', config?.color)} />
                         {collection.name}
                       </Button>
