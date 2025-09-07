@@ -9,7 +9,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
       <Header />
       <div className="flex flex-1 overflow-hidden bg-sidebar">
         <Sidebar />
-        <main className="flex-1 overflow-y-auto bg-background p-4 md:p-6 rounded-tl-lg">
+        <main className="flex-1 overflow-auto bg-background p-4 md:p-6 rounded-tl-lg">
           {children}
         </main>
       </div>
