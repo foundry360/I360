@@ -110,7 +110,7 @@ body {
     --danger: 358 100% 64%; /* #FF474C */
     --danger-foreground: 0 0% 98%;
 
-    --sidebar-background: 240 2% 12%; /* #1f1f21 */
+    --sidebar-background: 240 2% 10%;
     --sidebar-foreground: 210 40% 98%;
     --sidebar-primary: 256 96% 63%;
     --sidebar-primary-foreground: 210 40% 98%;
