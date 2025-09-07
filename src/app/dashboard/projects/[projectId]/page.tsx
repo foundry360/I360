@@ -1427,7 +1427,7 @@ export default function ProjectDetailsPage() {
                                             This space is for user stories that haven't been assigned to an epic or wave yet.
                                         </p>
                                          <div className="flex justify-center gap-4">
-                                            <Button onClick={() => openAddFromCollectionDialog(projectId, collections)}><BookCopy className="h-4 w-4 mr-2" /> Add from Collection</Button>
+                                            <Button variant="outline" onClick={() => openAddFromCollectionDialog(projectId, collections)}><BookCopy className="h-4 w-4 mr-2" /> Add from Collection</Button>
                                             <Button variant="outline" asChild>
                                                 <Link href={`/dashboard/library?projectId=${projectId}`}><Library className="h-4 w-4 mr-2" /> Add from Library</Link>
                                             </Button>
