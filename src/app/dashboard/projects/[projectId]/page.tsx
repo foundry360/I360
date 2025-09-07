@@ -272,6 +272,7 @@ export default function ProjectDetailsPage() {
         openEditSprintDialog, setOnSprintUpdated,
         openEditTaskDialog, setOnTaskUpdated,
         setOnAddFromLibrary,
+        openAddFromCollectionDialog, setOnCollectionAddedToProject
     } = useQuickAction();
     const { toast } = useToast();
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
@@ -355,6 +356,7 @@ export default function ProjectDetailsPage() {
         const unsubscribeSprintUpdate = setOnSprintUpdated(fetchData);
         const unsubscribeTask = setOnTaskUpdated(fetchData);
         const unsubscribeLibrary = setOnAddFromLibrary(fetchData);
+        const unsubscribeCollection = setOnCollectionAddedToProject(fetchData);
 
         return () => {
             if (unsubscribeBacklog) unsubscribeBacklog();
@@ -365,8 +367,9 @@ export default function ProjectDetailsPage() {
             if (unsubscribeSprintUpdate) unsubscribeSprintUpdate();
             if (unsubscribeTask) unsubscribeTask();
             if (unsubscribeLibrary) unsubscribeLibrary();
+            if (unsubscribeCollection) unsubscribeCollection();
         };
-    }, [fetchData, setOnBacklogItemCreated, setOnEpicCreated, setOnEpicUpdated, setOnBacklogItemUpdated, setOnSprintCreated, setOnSprintUpdated, setOnTaskUpdated, setOnAddFromLibrary]);
+    }, [fetchData, setOnBacklogItemCreated, setOnEpicCreated, setOnEpicUpdated, setOnBacklogItemUpdated, setOnSprintCreated, setOnSprintUpdated, setOnTaskUpdated, setOnAddFromLibrary, setOnCollectionAddedToProject]);
 
     const projectPrefix = project ? project.name.substring(0, project.name.indexOf('-')) : '';
     
@@ -767,6 +770,7 @@ export default function ProjectDetailsPage() {
     }
     
     const unassignedBacklogItems = backlogItems.filter(item => !item.epicId);
+    const unassignedAndUnscheduledBacklogItems = unassignedBacklogItems.filter(item => !item.sprintId);
 
     if (loading) {
         return (
@@ -866,31 +870,18 @@ export default function ProjectDetailsPage() {
                         </TabsTrigger>
                     </TabsList>
                      <div className="flex items-center gap-2">
-                        {(activeTab === 'backlog' || activeTab === 'epics') && unassignedBacklogItems.length > 0 && (
+                        {(activeTab === 'backlog' || activeTab === 'epics') && unassignedAndUnscheduledBacklogItems.length > 0 && (
                              <div className="flex items-center gap-2">
-                                <DropdownMenu>
-                                  <TooltipProvider>
+                                 <TooltipProvider>
                                     <Tooltip>
-                                      <TooltipTrigger asChild>
-                                        <DropdownMenuTrigger asChild>
-                                          <Button variant="outline" size="icon">
-                                            <BookCopy className="h-4 w-4" />
-                                          </Button>
-                                        </DropdownMenuTrigger>
-                                      </TooltipTrigger>
-                                      <TooltipContent>
-                                        <p>Add from Collection</p>
-                                      </TooltipContent>
+                                        <TooltipTrigger asChild>
+                                           <Button variant="outline" size="icon" onClick={() => openAddFromCollectionDialog(projectId, collections)}><BookCopy className="h-4 w-4" /></Button>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                            <p>Add from Collection</p>
+                                        </TooltipContent>
                                     </Tooltip>
-                                  </TooltipProvider>
-                                    <DropdownMenuContent>
-                                        {collections.map(collection => (
-                                            <DropdownMenuItem key={collection.id} onSelect={() => handleAddToBacklogFromCollection(collection.id)}>
-                                                {collection.name}
-                                            </DropdownMenuItem>
-                                        ))}
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
+                                </TooltipProvider>
 
                                 <TooltipProvider>
                                     <Tooltip>
@@ -1423,7 +1414,7 @@ export default function ProjectDetailsPage() {
                     </TabsContent>
                     <TabsContent value="backlog">
                        <div className="space-y-6">
-                            {unassignedBacklogItems.length === 0 ? (
+                            {unassignedAndUnscheduledBacklogItems.length === 0 ? (
                                 <Card className="border-dashed">
                                     <CardContent className="p-10 text-center">
                                         <div className="flex justify-center mb-4">
@@ -1433,21 +1424,10 @@ export default function ProjectDetailsPage() {
                                         </div>
                                         <h3 className="text-lg font-semibold">The backlog is empty!</h3>
                                         <p className="text-muted-foreground mt-2 mb-4">
-                                            This space is for user stories that haven't been assigned to an epic yet.
+                                            This space is for user stories that haven't been assigned to an epic or wave yet.
                                         </p>
                                          <div className="flex justify-center gap-4">
-                                            <DropdownMenu>
-                                                <DropdownMenuTrigger asChild>
-                                                    <Button><BookCopy className="h-4 w-4 mr-2" /> Add from Collection</Button>
-                                                </DropdownMenuTrigger>
-                                                <DropdownMenuContent>
-                                                    {collections.map(collection => (
-                                                        <DropdownMenuItem key={collection.id} onSelect={() => handleAddToBacklogFromCollection(collection.id)}>
-                                                            {collection.name}
-                                                        </DropdownMenuItem>
-                                                    ))}
-                                                </DropdownMenuContent>
-                                            </DropdownMenu>
+                                            <Button onClick={() => openAddFromCollectionDialog(projectId, collections)}><BookCopy className="h-4 w-4 mr-2" /> Add from Collection</Button>
                                             <Button variant="outline" asChild>
                                                 <Link href={`/dashboard/library?projectId=${projectId}`}><Library className="h-4 w-4 mr-2" /> Add from Library</Link>
                                             </Button>
@@ -1461,11 +1441,11 @@ export default function ProjectDetailsPage() {
                                 <Card>
                                     <CardHeader>
                                         <CardTitle>Unassigned Backlog Items</CardTitle>
-                                        <CardDescription>Items that are not yet assigned to an epic.</CardDescription>
+                                        <CardDescription>Items that are not yet assigned to an epic or wave.</CardDescription>
                                     </CardHeader>
                                     <CardContent>
                                         <div className="border rounded-lg">
-                                            {unassignedBacklogItems.map(item => (
+                                            {unassignedAndUnscheduledBacklogItems.map(item => (
                                                 <div 
                                                     key={item.id} 
                                                     className="flex justify-between items-center p-3 border-b last:border-b-0 hover:bg-muted/50 cursor-pointer"

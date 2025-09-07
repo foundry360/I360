@@ -27,6 +27,7 @@ import { useIdle } from '@/hooks/use-idle';
 import { signOut } from '@/services/auth-service';
 import { useToast } from '@/hooks/use-toast';
 import { NewCollectionDialog } from '@/components/new-collection-dialog';
+import { AddFromCollectionDialog } from '@/components/add-from-collection-dialog';
 
 const unprotectedRoutes = ['/login', '/public/assessment/[companyId]', '/public/assessment/thanks'];
 
@@ -130,6 +131,7 @@ export default function RootLayout({
                   <NewUserStoryDialog />
                   <EditUserStoryDialog />
                   <NewCollectionDialog />
+                  <AddFromCollectionDialog />
                   <AssessmentModal 
                     // These props are managed by the QuickActionProvider now
                   />

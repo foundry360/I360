@@ -10,6 +10,8 @@ import type { Task } from '@/services/task-service';
 import type { Contact } from '@/services/contact-service';
 import type { Project } from '@/services/project-service';
 import type { UserStory } from '@/services/user-story-service';
+import type { StoryCollection } from '@/services/collection-service';
+
 
 type StoryForEdit = Omit<UserStory, 'createdAt'> & { createdAt: string };
 
@@ -114,6 +116,13 @@ type QuickActionContextType = {
   closeNewCollectionDialog: () => void;
   onCollectionCreated: (() => void) | null;
   setOnCollectionCreated: (callback: (() => void) | null) => (() => void) | void;
+  
+  isAddFromCollectionDialogOpen: boolean;
+  openAddFromCollectionDialog: (projectId: string, collections: StoryCollection[]) => void;
+  closeAddFromCollectionDialog: () => void;
+  onCollectionAddedToProject: (() => void) | null;
+  setOnCollectionAddedToProject: (callback: (() => void) | null) => (() => void) | void;
+  addFromCollectionData: { projectId: string; collections: StoryCollection[] } | null;
 
   onAddFromLibrary: (() => void) | null;
   setOnAddFromLibrary: (callback: (() => void) | null) => (() => void) | void;
@@ -181,6 +190,10 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
 
   const [isNewCollectionDialogOpen, setIsNewCollectionDialogOpen] = React.useState(false);
   const onCollectionCreatedRef = React.useRef<(() => void) | null>(null);
+
+  const [isAddFromCollectionDialogOpen, setIsAddFromCollectionDialogOpen] = React.useState(false);
+  const onCollectionAddedToProjectRef = React.useRef<(() => void) | null>(null);
+  const [addFromCollectionData, setAddFromCollectionData] = React.useState<{ projectId: string, collections: StoryCollection[] } | null>(null);
   
   const onAddFromLibraryRef = React.useRef<(() => void) | null>(null);
 
@@ -350,6 +363,19 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
     onCollectionCreatedRef.current = callback;
     return () => { onCollectionCreatedRef.current = null; };
   }, []);
+
+  const openAddFromCollectionDialog = React.useCallback((projectId: string, collections: StoryCollection[]) => {
+    setAddFromCollectionData({ projectId, collections });
+    setIsAddFromCollectionDialogOpen(true);
+  }, []);
+  const closeAddFromCollectionDialog = React.useCallback(() => {
+    setIsAddFromCollectionDialogOpen(false);
+    setAddFromCollectionData(null);
+  }, []);
+  const setOnCollectionAddedToProject = React.useCallback((callback: (() => void) | null) => {
+    onCollectionAddedToProjectRef.current = callback;
+    return () => { onCollectionAddedToProjectRef.current = null; };
+  }, []);
   
   const setOnAddFromLibrary = React.useCallback((callback: (() => void) | null) => {
     onAddFromLibraryRef.current = callback;
@@ -457,6 +483,13 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
     onCollectionCreated: onCollectionCreatedRef.current,
     setOnCollectionCreated,
     
+    isAddFromCollectionDialogOpen,
+    openAddFromCollectionDialog,
+    closeAddFromCollectionDialog,
+    onCollectionAddedToProject: onCollectionAddedToProjectRef.current,
+    setOnCollectionAddedToProject,
+    addFromCollectionData,
+    
     onAddFromLibrary: onAddFromLibraryRef.current,
     setOnAddFromLibrary,
     
@@ -478,6 +511,7 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
     isNewUserStoryDialogOpen, openNewUserStoryDialog, closeNewUserStoryDialog, setOnUserStoryCreated,
     isEditUserStoryDialogOpen, openEditUserStoryDialog, closeEditUserStoryDialog, editUserStoryData, setOnUserStoryUpdated,
     isNewCollectionDialogOpen, openNewCollectionDialog, closeNewCollectionDialog, setOnCollectionCreated,
+    isAddFromCollectionDialogOpen, openAddFromCollectionDialog, closeAddFromCollectionDialog, addFromCollectionData, setOnCollectionAddedToProject,
     setOnAddFromLibrary,
     globalSearchTerm,
   ]);
