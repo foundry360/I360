@@ -866,7 +866,7 @@ export default function ProjectDetailsPage() {
                         </TabsTrigger>
                     </TabsList>
                      <div className="flex items-center gap-2">
-                        {(activeTab === 'backlog' || activeTab === 'epics') && (
+                        {((activeTab === 'backlog' && unassignedBacklogItems.length > 0) || activeTab === 'epics') && (
                              <div className="flex items-center gap-2">
                                 <DropdownMenu>
                                   <TooltipProvider>
