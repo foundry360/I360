@@ -353,7 +353,7 @@ export default function LibraryPage() {
         </div>
         <div className="flex-1 grid grid-cols-12 gap-6 overflow-hidden">
           <div className="col-span-3">
-             <Card className="h-full bg-muted/50">
+             <Card className="h-full bg-muted/50 flex flex-col">
                 <CardHeader>
                     <div className="flex justify-between items-center">
                         <CardTitle className="text-base flex items-center gap-2">
@@ -365,8 +365,8 @@ export default function LibraryPage() {
                         </Button>
                     </div>
                 </CardHeader>
-                <CardContent>
-                    <ScrollArea className="h-[calc(100vh-28rem)]">
+                <CardContent className="flex-1 overflow-hidden">
+                    <ScrollArea className="h-full">
                         <div className="space-y-1 pr-4">
                             {loading ? (
                                 Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-8 w-full" />)
@@ -400,15 +400,17 @@ export default function LibraryPage() {
                             )}
                         </div>
                         <Separator className="my-4" />
-                        <div className="flex justify-between items-center mb-2 px-2">
-                             <h3 className="text-base font-semibold flex items-center gap-2">
-                                <BookCopy className="h-4 w-4" />
-                                Collections
-                            </h3>
-                            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setIsManageCollectionsOpen(true)}>
-                                <Pencil className="h-3 w-3" />
-                            </Button>
-                        </div>
+                        <CardHeader className="p-0">
+                           <div className="flex justify-between items-center mb-2">
+                               <CardTitle className="text-base flex items-center gap-2">
+                                  <BookCopy className="h-4 w-4" />
+                                  Collections
+                              </CardTitle>
+                              <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setIsManageCollectionsOpen(true)}>
+                                  <Pencil className="h-3 w-3" />
+                              </Button>
+                           </div>
+                        </CardHeader>
                         <div className="space-y-1 pr-4">
                              {collections.map(collection => {
                                 const config = tagConfig.find(c => c.iconName === collection.icon) || tagConfig.find(c => c.iconName === 'BookCopy');
