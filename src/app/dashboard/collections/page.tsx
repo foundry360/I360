@@ -64,19 +64,21 @@ export default function CollectionsPage() {
     return (
         <>
             <div className="space-y-6">
-                <div>
-                    <h1 className="text-2xl font-bold">User Story Collections</h1>
-                    <p className="text-muted-foreground">
-                        Create and manage curated collections of user stories to quickly populate engagement backlogs
-                    </p>
+                <div className="flex justify-between items-center">
+                    <div>
+                        <h1 className="text-2xl font-bold">User Story Collections</h1>
+                        <p className="text-muted-foreground">
+                            Create and manage curated collections of user stories to quickly populate engagement backlogs
+                        </p>
+                    </div>
+                    {!loading && collections.length > 0 && (
+                        <Button size="icon" onClick={openNewCollectionDialog}>
+                           <Plus className="h-4 w-4" />
+                           <span className="sr-only">New Collection</span>
+                       </Button>
+                    )}
                 </div>
                 <Separator />
-                 <div className="flex justify-end items-center">
-                     <Button onClick={openNewCollectionDialog}>
-                        <Plus className="h-4 w-4 mr-2" />
-                        New Collection
-                    </Button>
-                </div>
 
                 {loading ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
