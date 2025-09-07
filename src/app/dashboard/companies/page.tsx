@@ -57,8 +57,6 @@ export default function CompaniesPage() {
   const [companies, setCompanies] = React.useState<Company[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
-  const [isBulkDeleteDialogOpen, setIsBulkDeleteDialogOpen] =
-    React.useState(false);
   const [companyToDelete, setCompanyToDelete] = React.useState<Company | null>(
     null
   );
@@ -161,7 +159,7 @@ export default function CompaniesPage() {
     try {
       await deleteCompanies(selectedCompanies);
       setSelectedCompanies([]);
-      setIsBulkDeleteDialogOpen(false);
+      setIsDeleteDialogOpen(false);
       await fetchCompanies();
     } catch (error) {
       console.error('Failed to delete companies:', error);
@@ -260,7 +258,7 @@ export default function CompaniesPage() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setIsBulkDeleteDialogOpen(true)}
+              onClick={() => setIsDeleteDialogOpen(true)}
             >
               <Trash2 className="h-4 w-4 mr-2" />
               Delete ({numSelected})
@@ -465,35 +463,14 @@ export default function CompaniesPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the
-              company "{companyToDelete?.name}"
+              {numSelected > 0
+                ? `This action cannot be undone. This will permanently delete the ${numSelected} selected companies.`
+                : `This action cannot be undone. This will permanently delete the company "${companyToDelete?.name}"`}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteCompany}>
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-      <AlertDialog
-        open={isBulkDeleteDialogOpen}
-        onOpenChange={setIsBulkDeleteDialogOpen}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the
-              {selectedCompanies.length} selected companies.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setIsBulkDeleteDialogOpen(false)}>
-              Cancel
-            </AlertDialogCancel>
-            <AlertDialogAction onClick={handleBulkDelete}>
+            <AlertDialogAction onClick={numSelected > 0 ? handleBulkDelete : handleDeleteCompany}>
               Delete
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -501,4 +478,5 @@ export default function CompaniesPage() {
       </AlertDialog>
     </div>
   );
-}
+
+    
