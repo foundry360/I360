@@ -229,16 +229,13 @@ export default function DashboardPage() {
               />
               <ScanSearch className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
             </div>
-            <p className="text-xs text-muted-foreground mt-2">
-              Start typing to see results across the entire application.
-            </p>
           </CardContent>
         </Card>
         <Card className="h-full lg:col-span-2">
           <CardHeader>
             <CardTitle>Recent Activity</CardTitle>
             <CardDescription>
-              The latest updates from your workspace.
+              The latest updates from your workspace
             </CardDescription>
           </CardHeader>
           <CardContent>
