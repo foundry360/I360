@@ -64,6 +64,7 @@ export function ManageCollectionsDialog({ isOpen, onOpenChange, onCollectionsUpd
         });
         setNewCollectionName('');
         setNewCollectionDescription('');
+        setNewCollectionIcon('BookCopy');
         await fetchCollections();
         onCollectionsUpdated();
     } catch(error) {
@@ -117,7 +118,7 @@ export function ManageCollectionsDialog({ isOpen, onOpenChange, onCollectionsUpd
         </DialogHeader>
         <div className="space-y-4 py-4">
             <Label>New Collection</Label>
-            <div className="p-4 border rounded-lg space-y-4">
+            <div className="p-4 border rounded-lg">
                 <div className="flex flex-col sm:flex-row gap-2">
                     <Input 
                         value={newCollectionName}
@@ -133,7 +134,7 @@ export function ManageCollectionsDialog({ isOpen, onOpenChange, onCollectionsUpd
                     />
                     <Select onValueChange={(value) => setNewCollectionIcon(value as TagConfig['iconName'])} value={newCollectionIcon}>
                         <SelectTrigger className="w-[60px] shrink-0">
-                            <SelectValue>
+                             <SelectValue>
                                 {(() => {
                                     const Icon = tagConfig.find(c => c.iconName === newCollectionIcon)?.icon || 'BookCopy';
                                     const color = tagConfig.find(c => c.iconName === newCollectionIcon)?.color;
