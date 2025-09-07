@@ -73,7 +73,7 @@ export default function CompaniesPage() {
 
   const { openNewCompanyDialog, setOnCompanyCreated, globalSearchTerm, setGlobalSearchTerm } = useQuickAction();
   const { toast } = useToast();
-  const [isSearchVisible, setIsSearchVisible] = React.useState(false);
+  const [isSearchVisible, setIsSearchVisible] = React.useState(!!globalSearchTerm);
 
   const fetchCompanies = React.useCallback(async () => {
     try {

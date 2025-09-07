@@ -66,7 +66,7 @@ export default function ContactsPage() {
   const [sortConfig, setSortConfig] = React.useState<{ key: SortKey; direction: 'ascending' | 'descending' } | null>({ key: 'name', direction: 'ascending' });
 
   const { openNewContactDialog, setOnContactCreated, globalSearchTerm, setGlobalSearchTerm } = useQuickAction();
-  const [isSearchVisible, setIsSearchVisible] = React.useState(false);
+  const [isSearchVisible, setIsSearchVisible] = React.useState(!!globalSearchTerm);
 
   const fetchContacts = React.useCallback(async () => {
     try {

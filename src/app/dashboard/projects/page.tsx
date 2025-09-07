@@ -61,7 +61,7 @@ export default function ProjectsPage() {
 
   const { openNewProjectDialog, setOnProjectCreated, openEditProjectDialog, setOnProjectUpdated, globalSearchTerm, setGlobalSearchTerm } = useQuickAction();
   const { user } = useUser();
-  const [isSearchVisible, setIsSearchVisible] = React.useState(false);
+  const [isSearchVisible, setIsSearchVisible] = React.useState(!!globalSearchTerm);
 
   const fetchProjects = React.useCallback(async () => {
     try {
