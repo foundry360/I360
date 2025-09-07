@@ -49,7 +49,7 @@ const NavGroup = ({
         <div className="space-y-1">
             {!isCollapsed && (
                 <>
-                    <Separator className="my-4 bg-sidebar-divider" />
+                    <Separator className="my-4 bg-[hsl(var(--sidebar-divider))]" />
                     <h4 className="text-xs font-semibold text-sidebar-foreground uppercase tracking-wider px-2 pt-2 pb-1">{title}</h4>
                 </>
             )}
