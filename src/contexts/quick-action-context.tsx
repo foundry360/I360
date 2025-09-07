@@ -525,7 +525,7 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
     isEditProjectDialogOpen, openEditProjectDialog, closeEditProjectDialog, editProjectData, setOnProjectUpdated,
     isNewBacklogItemDialogOpen, openNewBacklogItemDialog, closeNewBacklogItemDialog, newBacklogItemData, setOnBacklogItemCreated,
     isNewEpicDialogOpen, openNewEpicDialog, closeNewEpicDialog, newEpicData, setOnEpicCreated,
-    isEditEpicDialogOpen, openEditProjectDialog, closeEditEpicDialog, editEpicData, setOnEpicUpdated,
+    isEditEpicDialogOpen, openEditEpicDialog, closeEditEpicDialog, editEpicData, setOnEpicUpdated,
     isEditBacklogItemDialogOpen, openEditBacklogItemDialog, closeEditBacklogItemDialog, editBacklogItemData, setOnBacklogItemUpdated,
     isNewSprintDialogOpen, openNewSprintDialog, closeNewSprintDialog, newSprintData, setOnSprintCreated,
     isEditSprintDialogOpen, openEditSprintDialog, closeEditSprintDialog, editSprintData, setOnSprintUpdated,

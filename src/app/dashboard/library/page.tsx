@@ -47,10 +47,9 @@ export default function LibraryPage() {
   const [searchTerm, setSearchTerm] = React.useState('');
   const [selectedStories, setSelectedStories] = React.useState<string[]>([]);
   const [isManageTagsOpen, setIsManageTagsOpen] = React.useState(false);
-  const [isManageCollectionsOpen, setIsManageCollectionsOpen] = React.useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
   
-  const { openNewUserStoryDialog, setOnUserStoryCreated, openEditUserStoryDialog, setOnUserStoryUpdated, openManageCollectionsDialog } = useQuickAction();
+  const { openNewUserStoryDialog, setOnUserStoryCreated, openEditUserStoryDialog, setOnUserStoryUpdated, openManageCollectionsDialog, onCollectionsUpdated, setOnCollectionsUpdated } = useQuickAction();
   const { toast } = useToast();
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   const [isUploadResultDialogOpen, setIsUploadResultDialogOpen] = React.useState(false);
@@ -90,11 +89,13 @@ export default function LibraryPage() {
     fetchLibraryData();
     const unsubscribeCreated = setOnUserStoryCreated(fetchLibraryData);
     const unsubscribeUpdated = setOnUserStoryUpdated(fetchLibraryData);
+    const unsubscribeCollections = setOnCollectionsUpdated(fetchLibraryData);
     return () => {
       if (unsubscribeCreated) unsubscribeCreated();
       if (unsubscribeUpdated) unsubscribeUpdated();
+      if (unsubscribeCollections) unsubscribeCollections();
     };
-  }, [fetchLibraryData, setOnUserStoryCreated, setOnUserStoryUpdated]);
+  }, [fetchLibraryData, setOnUserStoryCreated, setOnUserStoryUpdated, setOnCollectionsUpdated]);
 
   const handleDelete = async (id: string) => {
     try {
@@ -351,10 +352,10 @@ export default function LibraryPage() {
             </Button>
           </div>
         </div>
-        <div className="flex flex-col md:flex-row gap-6 flex-1">
-          <div className="w-full md:w-1/4 md:min-w-[250px]">
-            <Card className="bg-muted/50 h-full">
-              <ScrollArea className="h-full">
+        <div className="flex flex-col md:grid md:grid-cols-12 gap-6 flex-1">
+          <div className="md:col-span-3">
+            <Card className="bg-muted/50 h-full flex flex-col">
+              <ScrollArea className="flex-1">
                 <CardHeader>
                   <div className="flex justify-between items-center">
                     <CardTitle className="text-base flex items-center gap-2">
@@ -411,21 +412,21 @@ export default function LibraryPage() {
                 </div>
                 </CardContent>
                 <Separator className="my-4" />
-                <CardHeader>
-                  <div className="flex justify-between items-center">
-                    <CardTitle className="text-base flex items-center gap-2">
-                      <BookCopy className="h-4 w-4" />
-                      Collections
-                    </CardTitle>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-6 w-6"
-                      onClick={() => openManageCollectionsDialog()}
-                    >
-                      <Pencil className="h-3 w-3" />
-                    </Button>
-                  </div>
+                 <CardHeader>
+                    <div className="flex justify-between items-center">
+                        <CardTitle className="text-base flex items-center gap-2">
+                        <BookCopy className="h-4 w-4" />
+                        Collections
+                        </CardTitle>
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6"
+                            onClick={() => openManageCollectionsDialog()}
+                        >
+                            <Pencil className="h-3 w-3" />
+                        </Button>
+                    </div>
                 </CardHeader>
                 <CardContent className="pt-0 pr-2">
                 <div className="space-y-1">
@@ -455,7 +456,7 @@ export default function LibraryPage() {
               </ScrollArea>
             </Card>
           </div>
-          <div className="md:col-span-3 flex-1">
+          <div className="md:col-span-9 min-w-0">
             <ScrollArea className="h-[calc(100vh-18rem)]">
                 <div className="pr-4 space-y-4">
                     {loading ? (
@@ -567,8 +568,8 @@ export default function LibraryPage() {
         onTagsUpdated={fetchLibraryData}
       />
       <ManageCollectionsDialog
-        isOpen={isManageCollectionsOpen}
-        onOpenChange={setIsManageCollectionsOpen}
+        isOpen={false}
+        onOpenChange={() => {}}
         onCollectionsUpdated={fetchLibraryData}
       />
     </>
