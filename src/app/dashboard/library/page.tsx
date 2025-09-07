@@ -49,7 +49,7 @@ export default function LibraryPage() {
   const [isManageTagsOpen, setIsManageTagsOpen] = React.useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
   
-  const { openNewUserStoryDialog, setOnUserStoryCreated, openEditUserStoryDialog, setOnUserStoryUpdated, openManageCollectionsDialog, onCollectionsUpdated, setOnCollectionsUpdated } = useQuickAction();
+  const { openNewUserStoryDialog, setOnUserStoryCreated, openEditUserStoryDialog, setOnUserStoryUpdated, openManageCollectionsDialog, isManageCollectionsDialogOpen, closeManageCollectionsDialog, onCollectionsUpdated, setOnCollectionsUpdated } = useQuickAction();
   const { toast } = useToast();
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   const [isUploadResultDialogOpen, setIsUploadResultDialogOpen] = React.useState(false);
@@ -352,8 +352,8 @@ export default function LibraryPage() {
             </Button>
           </div>
         </div>
-        <div className="flex flex-col md:grid md:grid-cols-12 gap-6 flex-1">
-          <div className="md:col-span-3">
+        <div className="grid grid-cols-12 gap-6 flex-1">
+          <div className="col-span-3">
             <Card className="bg-muted/50 h-full flex flex-col">
               <ScrollArea className="flex-1">
                 <CardHeader>
@@ -412,13 +412,13 @@ export default function LibraryPage() {
                 </div>
                 </CardContent>
                 <Separator className="my-4" />
-                 <CardHeader>
+                <CardHeader>
                     <div className="flex justify-between items-center">
                         <CardTitle className="text-base flex items-center gap-2">
                         <BookCopy className="h-4 w-4" />
                         Collections
                         </CardTitle>
-                        <Button
+                         <Button
                             variant="ghost"
                             size="icon"
                             className="h-6 w-6"
@@ -568,8 +568,8 @@ export default function LibraryPage() {
         onTagsUpdated={fetchLibraryData}
       />
       <ManageCollectionsDialog
-        isOpen={false}
-        onOpenChange={() => {}}
+        isOpen={isManageCollectionsDialogOpen}
+        onOpenChange={closeManageCollectionsDialog}
         onCollectionsUpdated={fetchLibraryData}
       />
     </>
