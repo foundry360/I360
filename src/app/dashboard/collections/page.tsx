@@ -19,6 +19,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { tagConfig } from '@/lib/tag-config';
+import { cn } from '@/lib/utils';
+import { BookCopy } from 'lucide-react';
 
 // TODO: Implement dialogs for new/edit collection
 
@@ -102,27 +105,34 @@ export default function CollectionsPage() {
                     </Card>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                        {collections.map(collection => (
-                            <Card key={collection.id} className="flex flex-col">
-                                <CardHeader>
-                                    <CardTitle>{collection.name}</CardTitle>
-                                    <CardDescription className="line-clamp-2">{collection.description}</CardDescription>
-                                </CardHeader>
-                                <CardContent className="flex-grow">
-                                    <p className="text-sm text-muted-foreground">
-                                        Contains <strong>{collection.userStoryIds.length}</strong> user stories
-                                    </p>
-                                </CardContent>
-                                <CardFooter className="flex justify-end gap-2">
-                                     <Button variant="ghost" size="icon">
-                                        <Edit className="h-4 w-4" />
-                                    </Button>
-                                    <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => setCollectionToDelete(collection)}>
-                                        <Trash2 className="h-4 w-4" />
-                                    </Button>
-                                </CardFooter>
-                            </Card>
-                        ))}
+                        {collections.map(collection => {
+                            const config = tagConfig.find(c => c.iconName === collection.icon) || { icon: BookCopy, color: 'text-foreground' };
+                            const Icon = config.icon;
+                            return (
+                                <Card key={collection.id} className="flex flex-col">
+                                    <CardHeader>
+                                        <CardTitle className="flex items-center gap-2">
+                                            <Icon className={cn("h-5 w-5", config.color)} />
+                                            <span>{collection.name}</span>
+                                        </CardTitle>
+                                        <CardDescription className="line-clamp-2 pt-2">{collection.description}</CardDescription>
+                                    </CardHeader>
+                                    <CardContent className="flex-grow">
+                                        <p className="text-sm text-muted-foreground">
+                                            Contains <strong>{collection.userStoryIds.length}</strong> user stories
+                                        </p>
+                                    </CardContent>
+                                    <CardFooter className="flex justify-end gap-2">
+                                         <Button variant="ghost" size="icon">
+                                            <Edit className="h-4 w-4" />
+                                        </Button>
+                                        <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => setCollectionToDelete(collection)}>
+                                            <Trash2 className="h-4 w-4" />
+                                        </Button>
+                                    </CardFooter>
+                                </Card>
+                            )
+                        })}
                     </div>
                 )}
             </div>
