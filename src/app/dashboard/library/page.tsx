@@ -351,7 +351,7 @@ export default function LibraryPage() {
             </Button>
           </div>
         </div>
-        <div className="flex-1 grid grid-cols-12 gap-6 overflow-hidden">
+        <div className="flex-1 grid grid-cols-12 gap-6">
           <div className="col-span-3">
              <Card className="h-full bg-muted/50 flex flex-col">
                 <CardHeader>
@@ -400,8 +400,8 @@ export default function LibraryPage() {
                             )}
                         </div>
                         <Separator className="my-4" />
-                        <CardHeader className="p-0 mb-2">
-                            <div className="flex justify-between items-center">
+                        <CardHeader className="p-0">
+                           <div className="flex justify-between items-center">
                                 <CardTitle className="text-base flex items-center gap-2">
                                     <BookCopy className="h-4 w-4" />
                                     Collections
@@ -553,5 +553,3 @@ export default function LibraryPage() {
     </>
   );
 }
-
-
