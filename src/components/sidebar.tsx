@@ -127,8 +127,8 @@ function StarredItemsPopoverContent({ isOpen }: { isOpen: boolean }) {
                                 onClick={() => handleItemClick(item)}
                             >
                                 {item.itemType === 'Engagement' ? 
-                                    <FolderKanban className="h-5 w-5 text-primary" /> : 
-                                    <ClipboardList className="h-5 w-5 text-primary" />
+                                    <FolderKanban className="h-4 w-4 text-primary" /> : 
+                                    <ClipboardList className="h-4 w-4 text-primary" />
                                 }
                                 <div className="flex-1">
                                     <p className="text-sm font-medium">{item.name}</p>
@@ -215,9 +215,9 @@ function RecentItemsPopoverContent({ isOpen }: { isOpen: boolean }) {
                                 className="flex items-center gap-3 p-2 rounded-md hover:bg-muted cursor-pointer"
                                 onClick={() => handleItemClick(item)}
                             >
-                                {item.itemType === 'Engagement' ? <FolderKanban className="h-5 w-5 text-primary" /> : 
-                                 item.itemType === 'Assessment' ? <ClipboardList className="h-5 w-5 text-primary" /> :
-                                 <BookCopy className="h-5 w-5 text-primary" />
+                                {item.itemType === 'Engagement' ? <FolderKanban className="h-4 w-4 text-primary" /> : 
+                                 item.itemType === 'Assessment' ? <ClipboardList className="h-4 w-4 text-primary" /> :
+                                 <BookCopy className="h-4 w-4 text-primary" />
                                 }
                                 <div className="flex-1">
                                     <p className="text-sm font-medium">{item.name}</p>
@@ -289,15 +289,15 @@ export function Sidebar() {
                         <PopoverTrigger asChild>
                              <Button
                                 variant="sidebar"
-                                className='w-full justify-start relative'
+                                className='w-full justify-start relative h-9'
                                 >
                                 <div className="flex items-center flex-1">
                                     <Icon
-                                    className={cn('h-5 w-5', {
+                                    className={cn('h-4 w-4', {
                                         'mr-2': !isCollapsed,
                                     })}
                                     />
-                                    {!isCollapsed && item.label}
+                                    {!isCollapsed && <span className="text-sm">{item.label}</span>}
                                 </div>
                                 {!isCollapsed && <ChevronRightIcon className="h-4 w-4" />}
                             </Button>
@@ -322,15 +322,15 @@ export function Sidebar() {
                         <PopoverTrigger asChild>
                              <Button
                                 variant="sidebar"
-                                className='w-full justify-start relative'
+                                className='w-full justify-start relative h-9'
                                 >
                                 <div className="flex items-center flex-1">
                                     <Icon
-                                    className={cn('h-5 w-5', {
+                                    className={cn('h-4 w-4', {
                                         'mr-2': !isCollapsed,
                                     })}
                                     />
-                                    {!isCollapsed && item.label}
+                                    {!isCollapsed && <span className="text-sm">{item.label}</span>}
                                 </div>
                                 {!isCollapsed && <ChevronRightIcon className="h-4 w-4" />}
                             </Button>
@@ -354,21 +354,21 @@ export function Sidebar() {
                 asChild
                 variant="sidebar"
                 className={cn(
-                    'w-full justify-start relative',
+                    'w-full justify-start relative h-9',
                     isActive &&
                     'bg-sidebar-accent text-sidebar-accent-foreground'
                 )}
                 >
                     <Link href={item.href}>
                         {isActive && (
-                        <div className="absolute left-0 top-0 h-full w-1.5 bg-primary" />
+                        <div className="absolute left-0 top-0 h-full w-1 bg-primary" />
                         )}
                         <Icon
-                        className={cn('h-5 w-5', {
+                        className={cn('h-4 w-4', {
                             'mr-2': !isCollapsed,
                         })}
                         />
-                        {!isCollapsed && item.label}
+                        {!isCollapsed && <span className="text-sm">{item.label}</span>}
                     </Link>
                 </Button>
             </TooltipTrigger>
@@ -388,7 +388,7 @@ export function Sidebar() {
           className={cn(
             'relative h-full bg-sidebar text-sidebar-foreground transition-all duration-300 ease-in-out border-r border-sidebar-border',
             {
-              'w-64': !isCollapsed,
+              'w-60': !isCollapsed,
               'w-16': isCollapsed,
             }
           )}
@@ -416,7 +416,7 @@ export function Sidebar() {
                                 asChild
                                 variant="sidebar"
                                 className={cn(
-                                  'w-full justify-start relative',
+                                  'w-full justify-start relative h-9',
                                   isActive &&
                                     'bg-sidebar-accent text-sidebar-accent-foreground'
                                 )}
@@ -424,14 +424,14 @@ export function Sidebar() {
                                 
                                     <Link href={'href' in item ? item.href : '#'}>
                                     {isActive && (
-                                        <div className="absolute left-0 top-0 h-full w-1.5 bg-primary" />
+                                        <div className="absolute left-0 top-0 h-full w-1 bg-primary" />
                                     )}
                                     <Icon
-                                        className={cn('h-5 w-5', {
+                                        className={cn('h-4 w-4', {
                                         'mr-2': !isCollapsed,
                                         })}
                                     />
-                                    {!isCollapsed && item.label}
+                                    {!isCollapsed && <span className="text-sm">{item.label}</span>}
                                     </Link>
                                 
                               </Button>
