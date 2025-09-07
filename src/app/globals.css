@@ -78,9 +78,9 @@ body {
   .dark {
     --background: 0 0% 2%;
     --foreground: 210 40% 98%;
-    --card: 0 0% 5%;
+    --card: 0 0% 6%;
     --card-foreground: 210 40% 98%;
-    --popover: 0 0% 5%;
+    --popover: 0 0% 6%;
     --popover-foreground: 210 40% 98%;
     --primary: 259 82% 56%;
     --primary-hover: 259 82% 50%;
@@ -112,7 +112,7 @@ body {
     --danger: 358 100% 64%; /* #FF474C */
     --danger-foreground: 0 0% 98%;
 
-    --sidebar-background: 0 0% 5%;
+    --sidebar-background: 0 0% 6%;
     --sidebar-foreground: 210 40% 98%;
     --sidebar-primary: 256 96% 63%;
     --sidebar-primary-foreground: 210 40% 98%;
