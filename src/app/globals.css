@@ -75,7 +75,7 @@ body {
     --sidebar-ring: 256 96% 63%;
   }
   .dark {
-    --background: 0 0% 0%;
+    --background: 0 0% 1%;
     --foreground: 210 40% 98%;
     --card: 0 0% 4%;
     --card-foreground: 210 40% 98%;
