@@ -132,16 +132,20 @@ export function ManageCollectionsDialog({ isOpen, onOpenChange, onCollectionsUpd
                         rows={1}
                     />
                     <Select onValueChange={(value) => setNewCollectionIcon(value as TagConfig['iconName'])} value={newCollectionIcon}>
-                        <SelectTrigger className="w-full sm:w-[180px]">
-                            <SelectValue placeholder="Select icon" />
+                        <SelectTrigger className="w-[60px] shrink-0">
+                            <SelectValue>
+                                {(() => {
+                                    const Icon = tagConfig.find(c => c.iconName === newCollectionIcon)?.icon || 'BookCopy';
+                                    const color = tagConfig.find(c => c.iconName === newCollectionIcon)?.color;
+                                    return <Icon className={cn("h-4 w-4", color)} />;
+                                })()}
+                            </SelectValue>
                         </SelectTrigger>
                         <SelectContent>
                             {tagConfig.map(config => {
                                 const Icon = config.icon;
                                 return <SelectItem key={config.iconName} value={config.iconName}>
-                                    <div className="flex items-center gap-2">
-                                       <Icon className={cn("h-4 w-4", config.color)} /> {config.iconName}
-                                    </div>
+                                    <Icon className={cn("h-4 w-4", config.color)} />
                                 </SelectItem>
                             })}
                         </SelectContent>
