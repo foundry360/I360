@@ -154,7 +154,7 @@ export function AddFromCollectionDialog() {
                                             <CollectionItem key={collection.id} collection={collection} onMove={() => handleMoveCollection(collection, 'remove')} moveDirection="remove" />
                                         ))}
                                         {selectedCollections.length === 0 && (
-                                            <div className="h-full flex items-center justify-center text-center text-foreground/60 border-2 border-dashed border-border/80 rounded-lg p-4">
+                                            <div className="h-full flex items-center justify-center text-center text-muted-foreground bg-muted/50 border-2 border-dashed border-border rounded-lg p-4">
                                                 <p>Move collections from the left here to add them to the backlog.</p>
                                             </div>
                                         )}
