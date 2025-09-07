@@ -213,33 +213,35 @@ export default function DashboardPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-0">
+            <div className="relative space-y-0">
               {recentActivity.map((item, index) => {
                 const Icon = item.icon;
                 return (
                   <div
                     key={item.id}
-                    className="flex items-start gap-4 cursor-pointer hover:bg-muted p-2 rounded-md -m-2"
+                    className="flex gap-4 cursor-pointer group"
                     onClick={() => router.push(item.link)}
                   >
-                    <div className="flex flex-col items-center">
-                      <div className="bg-primary/10 p-2 rounded-full z-10">
+                    <div className="relative">
+                       {index < recentActivity.length - 1 && (
+                         <div className="absolute top-10 left-1/2 -translate-x-1/2 h-[calc(100%-2.5rem)] w-px bg-primary/20" />
+                       )}
+                       <div className="bg-primary/10 p-2 rounded-full z-10 relative">
                         <Icon className="h-5 w-5 text-primary" />
                       </div>
-                      {index < recentActivity.length - 1 && (
-                        <div className="w-px h-full bg-primary/20 -mt-1" />
-                      )}
                     </div>
-
-                    <div className="flex-1 pb-4">
-                      <p className="text-sm">{item.message}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {formatDistanceToNow(parseISO(item.timestamp), {
-                          addSuffix: true,
-                        })}
-                      </p>
+                    
+                    <div className="flex-1 pb-8 pt-1 group-hover:bg-muted rounded-md px-2 -mx-2 flex justify-between items-start">
+                      <div>
+                        <p className="text-sm">{item.message}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {formatDistanceToNow(parseISO(item.timestamp), {
+                            addSuffix: true,
+                          })}
+                        </p>
+                      </div>
+                       <ArrowRight className="h-4 w-4 text-muted-foreground mt-1 opacity-0 group-hover:opacity-100 transition-opacity" />
                     </div>
-                    <ArrowRight className="h-4 w-4 text-muted-foreground mt-1" />
                   </div>
                 );
               })}
