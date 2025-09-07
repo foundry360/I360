@@ -866,7 +866,7 @@ export default function ProjectDetailsPage() {
                         </TabsTrigger>
                     </TabsList>
                      <div className="flex items-center gap-2">
-                        {(activeTab === 'backlog' || activeTab === 'epics') && (
+                        {(activeTab === 'backlog' || activeTab === 'epics') && unassignedBacklogItems.length > 0 && (
                              <div className="flex items-center gap-2">
                                 <DropdownMenu>
                                   <TooltipProvider>
@@ -1450,7 +1450,7 @@ export default function ProjectDetailsPage() {
                                                 <Link href={`/dashboard/library?projectId=${projectId}`}><Library className="h-4 w-4 mr-2" /> Add from Library</Link>
                                             </Button>
                                             <Button variant="secondary" onClick={() => openNewBacklogItemDialog(projectId, project.companyId, epics)}>
-                                                Create New Item
+                                                <FilePlus className="mr-2 h-4 w-4" /> Create New Item
                                             </Button>
                                         </div>
                                     </CardContent>
