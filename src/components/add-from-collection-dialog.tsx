@@ -140,9 +140,15 @@ export function AddFromCollectionDialog() {
                             <CardContent className="flex-1 overflow-hidden">
                                 <ScrollArea className="h-full">
                                     <div className="p-1 rounded-md h-full">
-                                        {filteredAvailableCollections.map((collection) => (
-                                            <CollectionItem key={collection.id} collection={collection} onMove={() => handleMoveCollection(collection, 'add')} moveDirection="add" />
-                                        ))}
+                                        {filteredAvailableCollections.length > 0 ? (
+                                            filteredAvailableCollections.map((collection) => (
+                                                <CollectionItem key={collection.id} collection={collection} onMove={() => handleMoveCollection(collection, 'add')} moveDirection="add" />
+                                            ))
+                                        ) : (
+                                            <div className="h-full flex items-center justify-center text-center bg-muted/20 text-foreground border-2 border-dashed border-border/80 rounded-lg p-4">
+                                                <p>No available collections to add.</p>
+                                            </div>
+                                        )}
                                     </div>
                                 </ScrollArea>
                             </CardContent>
