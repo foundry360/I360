@@ -869,9 +869,20 @@ export default function ProjectDetailsPage() {
                         {(activeTab === 'backlog' || activeTab === 'epics') && (
                              <div className="flex items-center gap-2">
                                 <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                         <Button variant="outline"><BookCopy className="mr-2 h-4 w-4" /> Add from Collection</Button>
-                                    </DropdownMenuTrigger>
+                                  <TooltipProvider>
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <DropdownMenuTrigger asChild>
+                                          <Button variant="outline" size="icon">
+                                            <BookCopy className="h-4 w-4" />
+                                          </Button>
+                                        </DropdownMenuTrigger>
+                                      </TooltipTrigger>
+                                      <TooltipContent>
+                                        <p>Add from Collection</p>
+                                      </TooltipContent>
+                                    </Tooltip>
+                                  </TooltipProvider>
                                     <DropdownMenuContent>
                                         {collections.map(collection => (
                                             <DropdownMenuItem key={collection.id} onSelect={() => handleAddToBacklogFromCollection(collection.id)}>
@@ -1707,5 +1718,3 @@ export default function ProjectDetailsPage() {
         </div>
     );
 }
-
-    
