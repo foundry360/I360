@@ -182,8 +182,8 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card className="h-full">
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+        <Card className="h-full lg:col-span-3">
           <CardHeader>
             <CardTitle>Global Search</CardTitle>
             <CardDescription>
@@ -205,7 +205,7 @@ export default function DashboardPage() {
             </p>
           </CardContent>
         </Card>
-        <Card className="h-full">
+        <Card className="h-full lg:col-span-2">
           <CardHeader>
             <CardTitle>Recent Activity</CardTitle>
             <CardDescription>
@@ -218,20 +218,20 @@ export default function DashboardPage() {
                 const Icon = item.icon;
                 return (
                   <div
-                    key={item.id}
-                    className="flex gap-4 cursor-pointer group"
-                    onClick={() => router.push(item.link)}
+                    key={`${item.id}-${index}`}
+                    className="flex gap-4 group"
+                    onClick={() => item.link && router.push(item.link)}
                   >
-                    <div className="relative">
-                       {index < recentActivity.length - 1 && (
-                         <div className="absolute top-10 left-1/2 -translate-x-1/2 h-[calc(100%-2.5rem)] w-px bg-primary/20" />
-                       )}
+                    <div className="relative flex flex-col items-center">
                        <div className="bg-primary/10 p-2 rounded-full z-10 relative">
                         <Icon className="h-5 w-5 text-primary" />
                       </div>
+                      {index < recentActivity.length - 1 && (
+                         <div className="flex-grow w-px bg-primary/20" />
+                       )}
                     </div>
                     
-                    <div className="flex-1 pb-8 pt-1 group-hover:bg-muted rounded-md px-2 -mx-2 flex justify-between items-start">
+                    <div className="flex-1 pb-8 pt-1 group-hover:bg-muted rounded-md px-2 -mx-2 flex justify-between items-start cursor-pointer">
                       <div>
                         <p className="text-sm">{item.message}</p>
                         <p className="text-xs text-muted-foreground">
