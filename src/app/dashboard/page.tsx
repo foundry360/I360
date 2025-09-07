@@ -13,7 +13,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useUser } from '@/contexts/user-context';
 import { Input } from '@/components/ui/input';
 import {
-  Search,
+  ScanSearch,
   FolderKanban,
   ClipboardList,
   UserPlus,
@@ -221,13 +221,13 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
               <Input
                 placeholder="Search everything..."
-                className="pl-10 text-base"
+                className="pr-10 text-base"
                 value={globalSearchTerm}
                 onChange={(e) => setGlobalSearchTerm(e.target.value)}
               />
+              <ScanSearch className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
             </div>
             <p className="text-xs text-muted-foreground mt-2">
               Start typing to see results across the entire application.
