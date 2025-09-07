@@ -104,7 +104,7 @@ function StarredItemsPopoverContent({ isOpen }: { isOpen: boolean }) {
     };
 
     return (
-        <PopoverContent className="w-80 sidebar-popover" side="right" align="start">
+        <PopoverContent className="w-96 sidebar-popover" side="right" align="start">
             <h4 className="font-medium text-sm mb-2">Starred Items</h4>
             <div className="relative mb-4">
                 <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -156,15 +156,15 @@ function RecentItemsPopoverContent({ isOpen }: { isOpen: boolean }) {
             setLoading(true);
             const [projects, assessments, collections] = await Promise.all([getProjects(), getAssessments(), getCollections()]);
             
-            const engagementItems = projects.map(p => ({ ...p, itemType: 'Engagement' as const }));
-            const assessmentItems = assessments.map(a => ({ ...a, itemType: 'Assessment' as const }));
-            const collectionItems = collections.map(c => ({ ...c, itemType: 'Collection' as const }));
+            const engagementItems = projects.map(p => ({ ...p, itemType: 'Engagement' as const, date: p.lastActivity }));
+            const assessmentItems = assessments.map(a => ({ ...a, itemType: 'Assessment' as const, date: a.lastActivity || a.startDate }));
+            const collectionItems = collections.map(c => ({ ...c, itemType: 'Collection' as const, date: c.createdAt }));
 
-            const allItems = [...engagementItems, ...assessmentItems, ...collectionItems];
+            const allItems: (CombinedItem & {date?: string})[] = [...engagementItems, ...assessmentItems, ...collectionItems];
             
             const sortedItems = allItems.sort((a,b) => {
-                const dateA = new Date((a as Project | Assessment).lastActivity || (a as StoryCollection).createdAt).getTime();
-                const dateB = new Date((b as Project | Assessment).lastActivity || (b as StoryCollection).createdAt).getTime();
+                const dateA = new Date(a.date || 0).getTime();
+                const dateB = new Date(b.date || 0).getTime();
                 return dateB - dateA;
             });
 
@@ -193,7 +193,7 @@ function RecentItemsPopoverContent({ isOpen }: { isOpen: boolean }) {
     };
 
     return (
-        <PopoverContent className="w-80 sidebar-popover" side="right" align="start">
+        <PopoverContent className="w-96 sidebar-popover" side="right" align="start">
             <h4 className="font-medium text-sm mb-2">Recent Items</h4>
             <div className="relative mb-4">
                 <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
