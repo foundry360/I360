@@ -21,6 +21,7 @@ import { tagConfig, type TagConfig } from '@/lib/tag-config';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { Textarea } from './ui/textarea';
+import { Label } from './ui/label';
 
 interface ManageCollectionsDialogProps {
   isOpen: boolean;
@@ -115,8 +116,8 @@ export function ManageCollectionsDialog({ isOpen, onOpenChange, onCollectionsUpd
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4 py-4">
+            <Label>New Collection</Label>
             <div className="p-4 border rounded-lg space-y-4">
-                 <h3 className="text-sm font-medium">New Collection</h3>
                 <div className="flex flex-col sm:flex-row gap-2">
                     <Input 
                         value={newCollectionName}
@@ -156,7 +157,7 @@ export function ManageCollectionsDialog({ isOpen, onOpenChange, onCollectionsUpd
                 </div>
             </div>
 
-            <h3 className="text-sm font-medium pt-2">Existing Collections</h3>
+            <Label className="pt-2 block">Existing Collections</Label>
             <ScrollArea className="h-72 border rounded-md p-2">
                 {collections.map(collection => {
                     const collectionIconConfig = tagConfig.find(c => c.iconName === collection.icon) || tagConfig.find(c => c.iconName === 'BookCopy');
@@ -179,7 +180,6 @@ export function ManageCollectionsDialog({ isOpen, onOpenChange, onCollectionsUpd
                              <Select 
                                 onValueChange={(value) => {
                                     handleFieldChange(collection.id, 'icon', value);
-                                    // Also trigger update on change
                                     const updatedCollection = { ...collection, icon: value as TagConfig['iconName'] };
                                     handleUpdateCollection(updatedCollection);
                                 }}
