@@ -35,14 +35,18 @@ import { Separator } from '@/components/ui/separator';
 import Link from 'next/link';
 import { useQuickAction } from '@/contexts/quick-action-context';
 import { getProjects, deleteProject, deleteProjects, Project, updateProject } from '@/services/project-service';
+import { getBacklogItemsForProject } from '@/services/backlog-item-service';
+import { getEpicsForProject } from '@/services/epic-service';
+import { getSprintsForProject } from '@/services/sprint-service';
 import { useUser } from '@/contexts/user-context';
 import { cn } from '@/lib/utils';
 import { Checkbox } from '@/components/ui/checkbox';
-import { TablePagination } from '@/components/table-pagination';
+import { TablePagination } from '@/components/ui/table-pagination';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { format, formatDistanceToNow, parseISO } from 'date-fns';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
+import { useToast } from '@/hooks/use-toast';
 
 type SortKey = keyof Project;
 type ProjectStatus = 'Active' | 'Inactive' | 'Completed' | 'On Hold';
@@ -58,10 +62,13 @@ export default function ProjectsPage() {
   const [rowsPerPage, setRowsPerPage] = React.useState(25);
   const [sortConfig, setSortConfig] = React.useState<{ key: SortKey; direction: 'ascending' | 'descending' } | null>({ key: 'lastActivity', direction: 'descending' });
   const [activeTab, setActiveTab] = React.useState<TabValue>('active');
+  const [isDependencyErrorDialogOpen, setIsDependencyErrorDialogOpen] = React.useState(false);
+  const [dependencyErrorDialogMessage, setDependencyErrorDialogMessage] = React.useState('');
 
   const { openNewProjectDialog, setOnProjectCreated, openEditProjectDialog, setOnProjectUpdated, globalSearchTerm, setGlobalSearchTerm } = useQuickAction();
   const { user } = useUser();
   const [isSearchVisible, setIsSearchVisible] = React.useState(false);
+  const { toast } = useToast();
 
   const fetchProjects = React.useCallback(async () => {
     try {
@@ -103,7 +110,16 @@ export default function ProjectsPage() {
       }
     };
   }, [setGlobalSearchTerm]);
-  
+
+  const hasDependencies = async (projectId: string) => {
+    const [backlogItems, epics, sprints] = await Promise.all([
+      getBacklogItemsForProject(projectId),
+      getEpicsForProject(projectId),
+      getSprintsForProject(projectId),
+    ]);
+    return backlogItems.length > 0 || epics.length > 0 || sprints.length > 0;
+  };
+
   const openDeleteDialog = (project: Project) => {
     setProjectToDelete(project);
     setIsDeleteDialogOpen(true);
@@ -111,13 +127,24 @@ export default function ProjectsPage() {
   
   const handleDeleteProject = async () => {
     if (!projectToDelete) return;
+    const dependenciesExist = await hasDependencies(projectToDelete.id);
+    if (dependenciesExist) {
+        setDependencyErrorDialogMessage(`The engagement "${projectToDelete.name}" cannot be deleted because it has associated epics, waves, or backlog items. Please remove these items before deleting the engagement.`);
+        setIsDependencyErrorDialogOpen(true);
+        setIsDeleteDialogOpen(false);
+        return;
+    }
+
     try {
       await deleteProject(projectToDelete.id);
-      setIsDeleteDialogOpen(false);
+      toast({ title: "Engagement Deleted", description: `"${projectToDelete.name}" has been deleted.`});
       setProjectToDelete(null);
       await fetchProjects();
     } catch (error) {
       console.error('Failed to delete project:', error);
+      toast({ variant: "destructive", title: "Error", description: "There was a problem deleting the engagement."});
+    } finally {
+        setIsDeleteDialogOpen(false);
     }
   };
 
@@ -141,13 +168,33 @@ export default function ProjectsPage() {
   };
 
   const handleBulkDelete = async () => {
+    const projectsWithDeps = [];
+    for (const projectId of selectedProjects) {
+      if (await hasDependencies(projectId)) {
+        const project = projects.find(p => p.id === projectId);
+        if (project) {
+            projectsWithDeps.push(project.name);
+        }
+      }
+    }
+    
+    if (projectsWithDeps.length > 0) {
+        setDependencyErrorDialogMessage(`The following engagements cannot be deleted because they have associated items: ${projectsWithDeps.join(', ')}. Please clear their items first.`);
+        setIsDependencyErrorDialogOpen(true);
+        setIsDeleteDialogOpen(false);
+        return;
+    }
+
     try {
       await deleteProjects(selectedProjects);
+      toast({ title: "Engagements Deleted", description: `${selectedProjects.length} engagements have been deleted.`});
       setSelectedProjects([]);
-      setIsDeleteDialogOpen(true); 
       await fetchProjects();
     } catch (error) {
       console.error('Failed to delete projects:', error);
+      toast({ variant: "destructive", title: "Error", description: "There was a problem deleting the selected engagements."});
+    } finally {
+      setIsDeleteDialogOpen(false);
     }
   };
   
@@ -499,6 +546,21 @@ export default function ProjectsPage() {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
+        
+        <AlertDialog open={isDependencyErrorDialogOpen} onOpenChange={setIsDependencyErrorDialogOpen}>
+            <AlertDialogContent>
+                <AlertDialogHeader>
+                    <AlertDialogTitle>Cannot Delete Engagement</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        {dependencyErrorDialogMessage}
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                    <AlertDialogAction onClick={() => setIsDependencyErrorDialogOpen(false)}>OK</AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
+
       </div>
     </>
   );
