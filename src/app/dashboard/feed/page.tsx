@@ -107,7 +107,7 @@ export default function FeedPage() {
             </div>
             <Separator />
              <div className="grid grid-cols-12 gap-8">
-                <div className="col-span-3">
+                <div className="col-span-3 bg-muted/50 p-4 rounded-lg">
                     <nav className="space-y-1">
                         {filterConfig.map(filter => {
                             const Icon = filter.icon;
@@ -117,7 +117,7 @@ export default function FeedPage() {
                                     variant="ghost" 
                                     className={cn(
                                         "w-full justify-start",
-                                        activeFilter === filter.id && "bg-muted font-bold"
+                                        activeFilter === filter.id && "bg-background font-bold"
                                     )}
                                     onClick={() => setActiveFilter(filter.id)}
                                 >
