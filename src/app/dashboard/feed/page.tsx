@@ -22,9 +22,9 @@ type FilterType = 'all' | NotificationType | 'mention' | 'thread' | 'saved';
 
 const filterConfig: { id: FilterType; label: string; icon: React.ElementType, color: string }[] = [
     { id: 'all', label: 'All', icon: Inbox, color: 'text-slate-500' },
+    { id: 'activity', label: 'Notifications', icon: Bell, color: 'text-orange-500' },
     { id: 'mention', label: '@Mentions', icon: AtSign, color: 'text-blue-500' },
     { id: 'thread', label: 'Threads', icon: MessageSquare, color: 'text-green-500' },
-    { id: 'activity', label: 'Notifications', icon: Bell, color: 'text-orange-500' },
     { id: 'alert', label: 'Alerts', icon: AlertTriangle, color: 'text-red-500' },
     { id: 'system', label: 'System', icon: MonitorCog, color: 'text-purple-500' },
 ];
