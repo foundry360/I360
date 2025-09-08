@@ -310,7 +310,7 @@ export default function ProjectDetailsPage() {
                 const companyContacts = await getContactsForCompany(projectData.companyId);
                 setContacts(companyContacts);
             }
-        } catch (error) {
+        } catch (error) => {
             console.error("Failed to fetch project data:", error);
         } finally {
             setLoading(false);
@@ -920,6 +920,205 @@ export default function ProjectDetailsPage() {
                     <TabsContent value="summary">
                        <div className="grid grid-cols-10 gap-6">
                             <div className="col-span-3 space-y-6">
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle>Velocity</CardTitle>
+                                        {velocityData.length > 0 && <CardDescription>Story points completed per wave</CardDescription>}
+                                    </CardHeader>
+                                    <CardContent>
+                                        {velocityData.length > 0 ? (
+                                            <ChartContainer config={chartConfig} className="h-[150px] w-full">
+                                                <LineChart
+                                                    data={velocityData}
+                                                    margin={{ top: 5, right: 20, left: 0, bottom: 5 }}
+                                                >
+                                                    <CartesianGrid vertical={false} />
+                                                    <XAxis
+                                                        dataKey="name"
+                                                        tickLine={false}
+                                                        axisLine={false}
+                                                        tickMargin={8}
+                                                        tickFormatter={() => ""}
+                                                    />
+                                                    <YAxis
+                                                        tickLine={false}
+                                                        axisLine={false}
+                                                        tickMargin={8}
+                                                        width={30}
+                                                    />
+                                                    <RechartsTooltip cursor={false} content={<ChartTooltipContent indicator="line" />} />
+                                                    <defs>
+                                                        <linearGradient id="fillVelocity" x1="0" y1="0" x2="0" y2="1">
+                                                            <stop offset="5%" stopColor="var(--color-velocity)" stopOpacity={0.8} />
+                                                            <stop offset="95%" stopColor="var(--color-velocity)" stopOpacity={0.1} />
+                                                        </linearGradient>
+                                                    </defs>
+                                                    <Area
+                                                        dataKey="velocity"
+                                                        type="natural"
+                                                        fill="url(#fillVelocity)"
+                                                        fillOpacity={0.4}
+                                                        stroke="var(--color-velocity)"
+                                                        stackId="a"
+                                                    />
+                                                    <Line
+                                                        dataKey="velocity"
+                                                        type="natural"
+                                                        stroke="var(--color-velocity)"
+                                                        strokeWidth={2}
+                                                        dot={
+                                                            <Dot
+                                                                r={4}
+                                                                fill="var(--background)"
+                                                                stroke="var(--color-velocity)"
+                                                                strokeWidth={2}
+                                                            />
+                                                        }
+                                                    />
+                                                </LineChart>
+                                            </ChartContainer>
+                                        ) : (
+                                            <div className="h-[150px] flex flex-col gap-4 items-center justify-center text-center text-muted-foreground text-sm">
+                                                <CircleGauge className="h-10 w-10" />
+                                                <p>Complete a wave to see your team's velocity.</p>
+                                            </div>
+                                        )}
+                                    </CardContent>
+                                </Card>
+                                 <Card>
+                                    <CardHeader>
+                                        <CardTitle>Burndown</CardTitle>
+                                        {burndownData.length > 0 && <CardDescription>Ideal vs actual work remaining</CardDescription>}
+                                    </CardHeader>
+                                    <CardContent>
+                                        {burndownData.length > 0 ? (
+                                            <ChartContainer config={chartConfig} className="h-[150px] w-full">
+                                                <LineChart
+                                                    data={burndownData}
+                                                    margin={{ top: 5, right: 10, left: 0, bottom: 5 }}
+                                                >
+                                                    <CartesianGrid vertical={false} />
+                                                    <XAxis
+                                                        dataKey="name"
+                                                        tickLine={false}
+                                                        axisLine={false}
+                                                        tickMargin={8}
+                                                        tickFormatter={() => ""}
+                                                    />
+                                                    <YAxis
+                                                        tickLine={false}
+                                                        axisLine={false}
+                                                        tickMargin={8}
+                                                        width={30}
+                                                    />
+                                                     <ChartLegend content={<ChartLegendContent />} />
+                                                    <RechartsTooltip cursor={false} content={<ChartTooltipContent hideIndicator />} />
+                                                    <Line
+                                                        dataKey="actual"
+                                                        type="natural"
+                                                        stroke="var(--color-actual)"
+                                                        strokeWidth={2}
+                                                        dot
+                                                    />
+                                                     <Line
+                                                        dataKey="ideal"
+                                                        type="natural"
+                                                        stroke="hsl(142 71% 45%)"
+                                                        strokeWidth={2}
+                                                        strokeDasharray="3 3"
+                                                        dot={false}
+                                                    />
+                                                </LineChart>
+                                            </ChartContainer>
+                                        ) : (
+                                             <div className="h-[150px] flex flex-col gap-4 items-center justify-center text-center text-muted-foreground text-sm p-4">
+                                                <CloudDownload className="h-10 w-10" />
+                                                <p>Complete a wave with estimated story points to generate a burndown chart.</p>
+                                            </div>
+                                        )}
+                                    </CardContent>
+                                </Card>
+                            </div>
+                            <div className="col-span-4 space-y-6">
+                                {activeSprintHealthData && (
+                                    <Card>
+                                        <CardHeader>
+                                            <CardTitle>Active Wave Health</CardTitle>
+                                            <CardDescription>{activeSprint?.name}</CardDescription>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <TooltipProvider>
+                                                <div className="flex w-full h-3 rounded-full overflow-hidden bg-muted mb-2">
+                                                    {activeSprintHealthData.segments.map(segment => (
+                                                        <Tooltip key={segment.status}>
+                                                            <TooltipTrigger asChild>
+                                                                <div 
+                                                                    className="h-full"
+                                                                    style={{ width: `${segment.percentage}%`, backgroundColor: segment.color }}
+                                                                />
+                                                            </TooltipTrigger>
+                                                            <TooltipContent>
+                                                                <p>{segment.status}: {segment.count} item(s) ({Math.round(segment.percentage)}%)</p>
+                                                            </TooltipContent>
+                                                        </Tooltip>
+                                                    ))}
+                                                </div>
+                                            </TooltipProvider>
+                                            <div className="flex justify-between text-xs text-muted-foreground">
+                                                {activeSprintHealthData.segments.map(segment => (
+                                                    <div key={segment.status} className="flex items-center gap-1">
+                                                        <div className="h-2 w-2 rounded-full" style={{ backgroundColor: segment.color }} />
+                                                        <span>{segment.status}</span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </CardContent>
+                                        <CardFooter>
+                                            <p className="text-sm text-muted-foreground w-full text-center">
+                                                <span className="font-bold">{activeSprintHealthData.daysLeft}</span> days remaining
+                                            </p>
+                                        </CardFooter>
+                                    </Card>
+                                )}
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle>Epic Progress</CardTitle>
+                                        <CardDescription>A summary of completion for each engagement epic</CardDescription>
+                                    </CardHeader>
+                                    <CardContent>
+                                         {epicProgressData.length > 0 ? (
+                                            <Accordion type="multiple" className="w-full">
+                                                {epicProgressData.map((epic, index) => {
+                                                    const config = tagConfig.find(c => c.iconName === epic.category) || tagConfig.find(t => t.iconName === 'Layers');
+                                                    const IconComponent = config?.icon || Layers;
+                                                    const color = config?.color || 'text-foreground';
+                                                    return (
+                                                        <AccordionItem value={epic.id} key={epic.id} className="border-none mb-2">
+                                                            <AccordionTrigger className="text-base font-normal no-underline hover:no-underline p-2 -m-2 rounded-md hover:bg-muted" noChevron>
+                                                                <div className="space-y-2 w-full">
+                                                                    <div className="flex justify-between items-baseline w-full">
+                                                                        <div className="flex items-center gap-2">
+                                                                            <IconComponent className={cn("h-4 w-4", color)} />
+                                                                            <p className="text-sm font-medium">{epic.name}</p>
+                                                                        </div>
+                                                                        <p className="text-sm text-muted-foreground">{epic.progress}% complete</p>
+                                                                    </div>
+                                                                    <Progress value={epic.progress} />
+                                                                </div>
+                                                            </AccordionTrigger>
+                                                        </AccordionItem>
+                                                    )
+                                                })}
+                                            </Accordion>
+                                        ) : (
+                                            <div className="h-[150px] flex items-center justify-center text-center text-muted-foreground text-sm p-4">
+                                               No epic progress to display. Add items with points to epics.
+                                            </div>
+                                        )}
+                                    </CardContent>
+                                </Card>
+                            </div>
+                            <div className="col-span-3 space-y-6">
                                 <div className="grid grid-cols-2 gap-6">
                                     <Card>
                                         <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -947,6 +1146,8 @@ export default function ProjectDetailsPage() {
                                             <Progress value={completedPercentage} />
                                         </CardFooter>
                                     </Card>
+                                </div>
+                                <div className="grid grid-cols-2 gap-6">
                                     <Card>
                                         <CardHeader className="flex flex-row items-center justify-between pb-2">
                                             <CardTitle className="text-sm font-medium text-muted-foreground">Overdue Items</CardTitle>
@@ -1024,205 +1225,6 @@ export default function ProjectDetailsPage() {
                                             })
                                         ) : (
                                             <p className="text-sm text-muted-foreground text-center py-4">No at-risk items. Great job!</p>
-                                        )}
-                                    </CardContent>
-                                </Card>
-                            </div>
-                            <div className="col-span-7 space-y-6">
-                                {activeSprintHealthData && (
-                                    <Card>
-                                        <CardHeader>
-                                            <CardTitle>Active Wave Health</CardTitle>
-                                            <CardDescription>{activeSprint?.name}</CardDescription>
-                                        </CardHeader>
-                                        <CardContent>
-                                            <TooltipProvider>
-                                                <div className="flex w-full h-3 rounded-full overflow-hidden bg-muted mb-2">
-                                                    {activeSprintHealthData.segments.map(segment => (
-                                                        <Tooltip key={segment.status}>
-                                                            <TooltipTrigger asChild>
-                                                                <div 
-                                                                    className="h-full"
-                                                                    style={{ width: `${segment.percentage}%`, backgroundColor: segment.color }}
-                                                                />
-                                                            </TooltipTrigger>
-                                                            <TooltipContent>
-                                                                <p>{segment.status}: {segment.count} item(s) ({Math.round(segment.percentage)}%)</p>
-                                                            </TooltipContent>
-                                                        </Tooltip>
-                                                    ))}
-                                                </div>
-                                            </TooltipProvider>
-                                            <div className="flex justify-between text-xs text-muted-foreground">
-                                                {activeSprintHealthData.segments.map(segment => (
-                                                    <div key={segment.status} className="flex items-center gap-1">
-                                                        <div className="h-2 w-2 rounded-full" style={{ backgroundColor: segment.color }} />
-                                                        <span>{segment.status}</span>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </CardContent>
-                                        <CardFooter>
-                                            <p className="text-sm text-muted-foreground w-full text-center">
-                                                <span className="font-bold">{activeSprintHealthData.daysLeft}</span> days remaining
-                                            </p>
-                                        </CardFooter>
-                                    </Card>
-                                )}
-                                <div className="grid grid-cols-2 gap-6">
-                                    <Card>
-                                        <CardHeader>
-                                            <CardTitle>Velocity</CardTitle>
-                                            {velocityData.length > 0 && <CardDescription>Story points completed per wave</CardDescription>}
-                                        </CardHeader>
-                                        <CardContent>
-                                            {velocityData.length > 0 ? (
-                                                <ChartContainer config={chartConfig} className="h-[150px] w-full">
-                                                    <LineChart
-                                                        data={velocityData}
-                                                        margin={{ top: 5, right: 20, left: 0, bottom: 5 }}
-                                                    >
-                                                        <CartesianGrid vertical={false} />
-                                                        <XAxis
-                                                            dataKey="name"
-                                                            tickLine={false}
-                                                            axisLine={false}
-                                                            tickMargin={8}
-                                                            tickFormatter={() => ""}
-                                                        />
-                                                        <YAxis
-                                                            tickLine={false}
-                                                            axisLine={false}
-                                                            tickMargin={8}
-                                                            width={30}
-                                                        />
-                                                        <RechartsTooltip cursor={false} content={<ChartTooltipContent indicator="line" />} />
-                                                        <defs>
-                                                            <linearGradient id="fillVelocity" x1="0" y1="0" x2="0" y2="1">
-                                                                <stop offset="5%" stopColor="var(--color-velocity)" stopOpacity={0.8} />
-                                                                <stop offset="95%" stopColor="var(--color-velocity)" stopOpacity={0.1} />
-                                                            </linearGradient>
-                                                        </defs>
-                                                        <Area
-                                                            dataKey="velocity"
-                                                            type="natural"
-                                                            fill="url(#fillVelocity)"
-                                                            fillOpacity={0.4}
-                                                            stroke="var(--color-velocity)"
-                                                            stackId="a"
-                                                        />
-                                                        <Line
-                                                            dataKey="velocity"
-                                                            type="natural"
-                                                            stroke="var(--color-velocity)"
-                                                            strokeWidth={2}
-                                                            dot={
-                                                                <Dot
-                                                                    r={4}
-                                                                    fill="var(--background)"
-                                                                    stroke="var(--color-velocity)"
-                                                                    strokeWidth={2}
-                                                                />
-                                                            }
-                                                        />
-                                                    </LineChart>
-                                                </ChartContainer>
-                                            ) : (
-                                                <div className="h-[150px] flex flex-col gap-4 items-center justify-center text-center text-muted-foreground text-sm">
-                                                    <CircleGauge className="h-10 w-10" />
-                                                    <p>Complete a wave to see your team's velocity.</p>
-                                                </div>
-                                            )}
-                                        </CardContent>
-                                    </Card>
-                                     <Card>
-                                        <CardHeader>
-                                            <CardTitle>Burndown</CardTitle>
-                                            {burndownData.length > 0 && <CardDescription>Ideal vs actual work remaining</CardDescription>}
-                                        </CardHeader>
-                                        <CardContent>
-                                            {burndownData.length > 0 ? (
-                                                <ChartContainer config={chartConfig} className="h-[150px] w-full">
-                                                    <LineChart
-                                                        data={burndownData}
-                                                        margin={{ top: 5, right: 10, left: 0, bottom: 5 }}
-                                                    >
-                                                        <CartesianGrid vertical={false} />
-                                                        <XAxis
-                                                            dataKey="name"
-                                                            tickLine={false}
-                                                            axisLine={false}
-                                                            tickMargin={8}
-                                                            tickFormatter={() => ""}
-                                                        />
-                                                        <YAxis
-                                                            tickLine={false}
-                                                            axisLine={false}
-                                                            tickMargin={8}
-                                                            width={30}
-                                                        />
-                                                         <ChartLegend content={<ChartLegendContent />} />
-                                                        <RechartsTooltip cursor={false} content={<ChartTooltipContent hideIndicator />} />
-                                                        <Line
-                                                            dataKey="actual"
-                                                            type="natural"
-                                                            stroke="var(--color-actual)"
-                                                            strokeWidth={2}
-                                                            dot
-                                                        />
-                                                         <Line
-                                                            dataKey="ideal"
-                                                            type="natural"
-                                                            stroke="hsl(142 71% 45%)"
-                                                            strokeWidth={2}
-                                                            strokeDasharray="3 3"
-                                                            dot={false}
-                                                        />
-                                                    </LineChart>
-                                                </ChartContainer>
-                                            ) : (
-                                                 <div className="h-[150px] flex flex-col gap-4 items-center justify-center text-center text-muted-foreground text-sm p-4">
-                                                    <CloudDownload className="h-10 w-10" />
-                                                    <p>Complete a wave with estimated story points to generate a burndown chart.</p>
-                                                </div>
-                                            )}
-                                        </CardContent>
-                                    </Card>
-                                </div>
-                                <Card>
-                                    <CardHeader>
-                                        <CardTitle>Epic Progress</CardTitle>
-                                        <CardDescription>A summary of completion for each engagement epic</CardDescription>
-                                    </CardHeader>
-                                    <CardContent>
-                                         {epicProgressData.length > 0 ? (
-                                            <Accordion type="multiple" className="w-full">
-                                                {epicProgressData.map((epic, index) => {
-                                                    const config = tagConfig.find(c => c.iconName === epic.category) || tagConfig.find(t => t.iconName === 'Layers');
-                                                    const IconComponent = config?.icon || Layers;
-                                                    const color = config?.color || 'text-foreground';
-                                                    return (
-                                                        <AccordionItem value={epic.id} key={epic.id} className="border-none mb-2">
-                                                            <AccordionTrigger className="text-base font-normal no-underline hover:no-underline p-2 -m-2 rounded-md hover:bg-muted" noChevron>
-                                                                <div className="space-y-2 w-full">
-                                                                    <div className="flex justify-between items-baseline w-full">
-                                                                        <div className="flex items-center gap-2">
-                                                                            <IconComponent className={cn("h-4 w-4", color)} />
-                                                                            <p className="text-sm font-medium">{epic.name}</p>
-                                                                        </div>
-                                                                        <p className="text-sm text-muted-foreground">{epic.progress}% complete</p>
-                                                                    </div>
-                                                                    <Progress value={epic.progress} />
-                                                                </div>
-                                                            </AccordionTrigger>
-                                                        </AccordionItem>
-                                                    )
-                                                })}
-                                            </Accordion>
-                                        ) : (
-                                            <div className="h-[150px] flex items-center justify-center text-center text-muted-foreground text-sm p-4">
-                                               No epic progress to display. Add items with points to epics.
-                                            </div>
                                         )}
                                     </CardContent>
                                 </Card>
@@ -1677,4 +1679,5 @@ export default function ProjectDetailsPage() {
         </div>
     );
 }
+
 
