@@ -211,19 +211,19 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
 
   const [globalSearchTerm, setGlobalSearchTerm] = React.useState('');
   
-  const [refreshListener, setRefreshListener] = React.useState<(() => void) | null>(null);
+  const refreshListenersRef = React.useRef<Set<() => void>>(new Set());
 
   const requestDataRefresh = React.useCallback(() => {
-    if (refreshListener) {
-      refreshListener();
-    }
-  }, [refreshListener]);
+    refreshListenersRef.current.forEach(listener => listener());
+  }, []);
 
   const useDataRefresh = React.useCallback((callback: () => void) => {
     React.useEffect(() => {
-      setRefreshListener(() => callback);
-      // Cleanup the listener when the component unmounts
-      return () => setRefreshListener(null);
+      const listeners = refreshListenersRef.current;
+      listeners.add(callback);
+      return () => {
+        listeners.delete(callback);
+      };
     }, [callback]);
   }, []);
 
