@@ -40,7 +40,6 @@ import {
   Waves,
   LayoutList,
   Trello,
-  LayoutDashboard,
   Table2,
 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -813,7 +812,7 @@ export default function ProjectDetailsPage() {
                             value="summary"
                             className="pb-3 rounded-none data-[state=active]:shadow-none data-[state=active]:border-primary data-[state=active]:border-b-4 data-[state=active]:text-foreground data-[state=active]:font-bold flex items-center gap-2"
                         >
-                            <LayoutDashboard className="h-4 w-4" />
+                            <Table2 className="h-4 w-4" />
                             Summary
                         </TabsTrigger>
                          <TabsTrigger 
@@ -827,7 +826,7 @@ export default function ProjectDetailsPage() {
                             value="board"
                             className="pb-3 rounded-none data-[state=active]:shadow-none data-[state=active]:border-primary data-[state=active]:border-b-4 data-[state=active]:text-foreground data-[state=active]:font-bold flex items-center gap-2"
                         >
-                            <Table2 className="h-4 w-4" />
+                            <Trello className="h-4 w-4" />
                             Board
                         </TabsTrigger>
                         <TabsTrigger 
@@ -1408,7 +1407,7 @@ export default function ProjectDetailsPage() {
                     </TabsContent>
                     <TabsContent value="backlog">
                         <div className="space-y-6">
-                            {unassignedAndUnscheduledBacklogItems.length === 0 ? (
+                             {unassignedAndUnscheduledBacklogItems.length === 0 ? (
                                 <div className="p-10 text-center rounded-lg border-2 border-dashed border-border bg-transparent shadow-none">
                                     <div className="flex justify-center mb-4">
                                         <div className="flex justify-center items-center h-16 w-16 text-muted-foreground">
@@ -1500,7 +1499,25 @@ export default function ProjectDetailsPage() {
                     </TabsContent>
                     <TabsContent value="sprints">
                         <div className="space-y-8">
-                             {hasUpcomingOrActiveWaves ? (['Active', 'Not Started'] as SprintStatus[]).map(status => {
+                             {!hasUpcomingOrActiveWaves && (
+                                <div className="p-10 text-center rounded-lg border-2 border-dashed border-border bg-transparent shadow-none">
+                                    <div className="flex justify-center mb-4">
+                                        <div className="flex items-center justify-center h-16 w-16 text-muted-foreground">
+                                           <Waves className="h-8 w-8" />
+                                        </div>
+                                    </div>
+                                    <h3 className="text-lg font-semibold text-foreground">No Upcoming Waves</h3>
+                                    <p className="text-muted-foreground mt-2 mb-4">
+                                        Plan your next cycle of work by creating a new wave.
+                                    </p>
+                                    <Button onClick={() => openNewSprintDialog(projectId)}>
+                                        <Plus className="h-4 w-4 mr-2" />
+                                        New Wave
+                                    </Button>
+                                </div>
+                            )}
+
+                            {(['Active', 'Not Started'] as SprintStatus[]).map(status => {
                                 const sprintsByStatus = sprints.filter(s => s.status === status);
                                 if (sprintsByStatus.length === 0) return null;
                                 
@@ -1601,24 +1618,8 @@ export default function ProjectDetailsPage() {
                                         </Accordion>
                                     </div>
                                 )
-                            }) : (
-                                <div className="p-10 text-center rounded-lg border-2 border-dashed border-border bg-transparent shadow-none">
-                                    <div className="flex justify-center mb-4">
-                                        <div className="flex items-center justify-center h-16 w-16 text-muted-foreground">
-                                            <Waves className="h-8 w-8" />
-                                        </div>
-                                    </div>
-                                    <h3 className="text-lg font-semibold text-foreground">No Upcoming Waves</h3>
-                                    <p className="text-muted-foreground mt-2 mb-4">
-                                        Plan your next cycle of work by creating a new wave.
-                                    </p>
-                                    <Button onClick={() => openNewSprintDialog(projectId)}>
-                                        <Plus className="h-4 w-4 mr-2" />
-                                        New Wave
-                                    </Button>
-                                </div>
-                            )}
-
+                            })}
+                            
                             {sprints.filter(sprint => sprint.status === 'Completed').length > 0 && (
                                 <div>
                                     <h2 className="text-lg font-semibold mb-2">Completed Waves</h2>
@@ -1792,9 +1793,3 @@ export default function ProjectDetailsPage() {
         </div>
     );
 }
-
-
-
-
-
-    
