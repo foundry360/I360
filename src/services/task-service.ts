@@ -2,7 +2,7 @@
 'use client';
 
 import { db } from '@/lib/firebase';
-import { collection, doc, getDocs, setDoc, updateDoc, query, where, writeBatch, runTransaction, DocumentReference, WriteBatch, addDoc, deleteDoc, getDoc, deleteField } from 'firebase/firestore';
+import { collection, doc, getDocs, setDoc, updateDoc, query, where, writeBatch, runTransaction, DocumentReference, WriteBatch, addDoc, deleteDoc, getDoc, deleteField, onSnapshot } from 'firebase/firestore';
 import type { BacklogItem } from './backlog-item-service';
 import { updateProjectLastActivity } from './project-service';
 import { createNotification } from './notification-service';
@@ -43,14 +43,15 @@ export interface Task {
 
 const tasksCollection = collection(db, 'tasks');
 
-export async function getTasks(): Promise<Task[]> {
-    try {
-        const snapshot = await getDocs(tasksCollection);
-        return snapshot.docs.map(doc => doc.data() as Task);
-    } catch (error) {
-        console.error("Error fetching all tasks:", error);
-        return [];
-    }
+export function getTasks(onUpdate: (tasks: Task[]) => void): () => void {
+    const q = query(tasksCollection);
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+        const tasks = snapshot.docs.map(doc => doc.data() as Task);
+        onUpdate(tasks);
+    }, (error) => {
+        console.error("Error fetching tasks in real-time:", error);
+    });
+    return unsubscribe;
 }
 
 export async function getTasksForProject(projectId: string): Promise<Task[]> {
@@ -217,3 +218,5 @@ export async function updateTaskOrderAndStatus(taskId: string, newStatus: TaskSt
     
     await updateProjectLastActivity(projectId);
 }
+
+    

@@ -85,12 +85,12 @@ const statusColors: Record<TaskStatus, string> = {
 export default function DashboardPage() {
   const { user } = useUser();
   const router = useRouter();
-  const { setOnTaskUpdated } = useQuickAction();
   const [greeting, setGreeting] = React.useState('');
   const [loading, setLoading] = React.useState(true);
   const [recentEngagements, setRecentEngagements] = React.useState<ProjectWithProgress[]>(
     []
   );
+  const [allTasks, setAllTasks] = React.useState<Task[]>([]);
   const [thisWeeksTasks, setThisWeeksTasks] = React.useState<Task[]>([]);
   const [allRecentActivity, setAllRecentActivity] = React.useState<ActivityItem[]>(
     []
@@ -99,20 +99,20 @@ export default function DashboardPage() {
   const [isActivityExpanded, setIsActivityExpanded] = React.useState(false);
   const [isTasksExpanded, setIsTasksExpanded] = React.useState(false);
 
-  const loadDashboardData = React.useCallback(async () => {
+  const loadDashboardData = React.useCallback(async (tasks: Task[]) => {
     setLoading(true);
     try {
-      const [projects, assessments, contacts, allTasks, notificationsData] = await Promise.all([
+      const [projects, assessments, contacts, notificationsData] = await Promise.all([
         getProjects(),
         getAssessments(),
         getContacts(),
-        getTasks(),
         getNotifications(),
       ]);
       setNotifications(notificationsData);
       
       const projectIds = new Set(projects.map(p => p.id));
-      const validTasks = allTasks.filter(task => projectIds.has(task.projectId));
+      const validTasks = tasks.filter(task => projectIds.has(task.projectId));
+      setAllTasks(validTasks);
 
       const tasksByProject = validTasks.reduce((acc, task) => {
           if (!acc[task.projectId]) {
@@ -191,26 +191,15 @@ export default function DashboardPage() {
   }, []);
 
   React.useEffect(() => {
-    // This effect runs only on the client, after hydration
     const hour = new Date().getHours();
-    if (hour < 12) {
-      setGreeting('Good morning');
-    } else if (hour < 18) {
-      setGreeting('Good afternoon');
-    } else {
-      setGreeting('Good evening');
-    }
-    loadDashboardData();
-  }, [loadDashboardData]);
+    if (hour < 12) setGreeting('Good morning');
+    else if (hour < 18) setGreeting('Good afternoon');
+    else setGreeting('Good evening');
 
-  React.useEffect(() => {
-    const unsubscribe = setOnTaskUpdated(loadDashboardData);
-    return () => {
-      if (unsubscribe) {
-        unsubscribe();
-      }
-    };
-  }, [loadDashboardData, setOnTaskUpdated]);
+    const unsubscribe = getTasks(loadDashboardData);
+    
+    return () => unsubscribe();
+  }, [loadDashboardData]);
   
   const recentActivity = isActivityExpanded ? allRecentActivity : allRecentActivity.slice(0, 5);
   const visibleTasks = isTasksExpanded ? thisWeeksTasks : thisWeeksTasks.slice(0, 5);
@@ -258,10 +247,11 @@ export default function DashboardPage() {
 
   const handleMarkAllRead = async () => {
     await markAllNotificationsAsRead();
-    await loadDashboardData();
+    const newNotifications = await getNotifications();
+    setNotifications(newNotifications);
   }
 
-  if (loading) {
+  if (loading && allTasks.length === 0) {
     return (
       <div className="space-y-6">
         <div className="space-y-2">
@@ -429,7 +419,7 @@ export default function DashboardPage() {
                           notification={note}
                           isSelected={selectedNotifications.includes(note.id)}
                           onSelect={handleSelectNotification}
-                          onUpdate={loadDashboardData}
+                          onUpdate={() => getNotifications().then(setNotifications)}
                           showActions={false}
                       />
                   ))}
@@ -512,5 +502,8 @@ export default function DashboardPage() {
       </div>
     </div>
   );
+
+    
+
 
     
