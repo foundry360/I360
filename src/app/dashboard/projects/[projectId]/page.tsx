@@ -1116,14 +1116,14 @@ export default function ProjectDetailsPage() {
                                     </Card>
                                </div>
                                <div className="col-span-1 space-y-6">
-                                    {activeSprintHealthData && (
+                                    {activeSprint && (
                                         <Card>
                                             <CardHeader>
                                                 <CardTitle>Active Wave Health</CardTitle>
                                                 <CardDescription>{activeSprint?.name}</CardDescription>
                                             </CardHeader>
                                             <CardContent>
-                                                {activeSprintHealthData.totalItems > 0 ? (
+                                                {activeSprintHealthData && activeSprintHealthData.totalItems > 0 ? (
                                                     <>
                                                         <TooltipProvider>
                                                             <div className="flex w-full h-3 rounded-full overflow-hidden bg-muted mb-2">
@@ -1157,11 +1157,13 @@ export default function ProjectDetailsPage() {
                                                     </div>
                                                 )}
                                             </CardContent>
-                                            <CardFooter>
-                                                <p className="text-sm text-muted-foreground w-full text-center">
-                                                    <span className="font-bold">{activeSprintHealthData.daysLeft}</span> days remaining
-                                                </p>
-                                            </CardFooter>
+                                            {activeSprintHealthData && (
+                                                <CardFooter>
+                                                    <p className="text-sm text-muted-foreground w-full text-center">
+                                                        <span className="font-bold">{activeSprintHealthData.daysLeft}</span> days remaining
+                                                    </p>
+                                                </CardFooter>
+                                            )}
                                         </Card>
                                     )}
                                     <Card className={cn(epicProgressData.length === 0 && 'border-dashed border-2 bg-transparent shadow-none')}>
@@ -1436,8 +1438,49 @@ export default function ProjectDetailsPage() {
                             ) : (
                                 <Card>
                                     <CardHeader>
-                                        <CardTitle>Unassigned Backlog Items</CardTitle>
-                                        <CardDescription>Items that are not yet assigned to an epic or wave.</CardDescription>
+                                        <div className="flex justify-between items-center">
+                                            <div>
+                                                <CardTitle>Unassigned Backlog Items</CardTitle>
+                                                <CardDescription>Items that are not yet assigned to an epic or wave.</CardDescription>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                 <TooltipProvider>
+                                                    <Tooltip>
+                                                        <TooltipTrigger asChild>
+                                                           <Button variant="outline" size="icon" onClick={() => openAddFromCollectionDialog(projectId, collections)}><BookCopy className="h-4 w-4" /></Button>
+                                                        </TooltipTrigger>
+                                                        <TooltipContent>
+                                                            <p>Add from Collection</p>
+                                                        </TooltipContent>
+                                                    </Tooltip>
+                                                </TooltipProvider>
+
+                                                <TooltipProvider>
+                                                    <Tooltip>
+                                                        <TooltipTrigger asChild>
+                                                            <Button asChild variant="outline" size="icon">
+                                                                <Link href={`/dashboard/library?projectId=${projectId}`}>
+                                                                    <Library className="h-4 w-4" />
+                                                                </Link>
+                                                            </Button>
+                                                        </TooltipTrigger>
+                                                        <TooltipContent>
+                                                            <p>Add from Library</p>
+                                                        </TooltipContent>
+                                                    </Tooltip>
+                                                </TooltipProvider>
+                                                <TooltipProvider>
+                                                    <Tooltip>
+                                                        <TooltipTrigger asChild>
+                                                            <Button size="icon" onClick={() => openNewBacklogItemDialog(projectId, project.companyId, epics)}><FilePlus className="h-4 w-4" /></Button>
+                                                        </TooltipTrigger>
+                                                        <TooltipContent>
+                                                            <p>Add Backlog Item</p>
+                                                        </TooltipContent>
+                                                    </Tooltip>
+                                                </TooltipProvider>
+                                            </div>
+                                        </div>
                                     </CardHeader>
                                     <CardContent>
                                         <div className="border rounded-lg">
@@ -1798,3 +1841,4 @@ export default function ProjectDetailsPage() {
         </div>
     );
 }
+
