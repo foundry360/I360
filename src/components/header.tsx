@@ -208,7 +208,7 @@ export function Header() {
             </div>
             <DropdownMenuSeparator className="my-2" />
             <Button variant="outline" className="w-full" size="sm" asChild>
-                <Link href="/dashboard/notifications">View all notifications</Link>
+                <Link href="/dashboard/feed">View all notifications</Link>
             </Button>
           </PopoverContent>
         </Popover>
