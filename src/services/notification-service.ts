@@ -46,11 +46,10 @@ export async function getNotifications(): Promise<Notification[]> {
     }
 
     try {
-        // Simplified query to avoid composite index requirement.
-        // Filtering on snoozedUntil will now be handled client-side.
+        // Removed all `where` clauses to avoid needing a composite index.
+        // Filtering will happen on the client.
         const q = query(
             notificationsCollection, 
-            where('isArchived', '==', false),
             orderBy('createdAt', 'desc'), 
             limit(50)
         );
@@ -62,8 +61,9 @@ export async function getNotifications(): Promise<Notification[]> {
             ...docSnapshot.data()
         } as Notification));
         
-        // Filter snoozed notifications on the client
+        // Filter snoozed and archived notifications on the client
         return notifications.filter(n => {
+            if (n.isArchived) return false;
             if (!n.snoozedUntil) return true;
             return new Date(n.snoozedUntil) <= now;
         });
@@ -106,3 +106,4 @@ export async function markAllNotificationsAsRead(): Promise<void> {
 
   await batch.commit();
 }
+
