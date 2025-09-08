@@ -838,8 +838,9 @@ export default function ProjectDetailsPage() {
                         </TabsTrigger>
                          <TabsTrigger 
                             value="timeline"
-                            className="pb-3 rounded-none data-[state=active]:shadow-none data-[state=active]:border-primary data-[state=active]:border-b-4 data-[state=active]:text-foreground data-[state=active]:font-bold"
+                            className="pb-3 rounded-none data-[state=active]:shadow-none data-[state=active]:border-primary data-[state=active]:border-b-4 data-[state=active]:text-foreground data-[state=active]:font-bold flex items-center gap-2"
                         >
+                            <GanttChartSquare className="h-4 w-4" />
                             Timeline
                         </TabsTrigger>
                         <TabsTrigger 
@@ -1182,7 +1183,7 @@ export default function ProjectDetailsPage() {
                                                 </Accordion>
                                             ) : (
                                                  <div className="h-[150px] flex flex-col items-center justify-center text-center text-muted-foreground text-sm p-4">
-                                                    <Loader className="h-10 w-10" />
+                                                    <Loader className="h-10 w-10 mb-2" />
                                                     No epic progress to display. Add items with points to epics.
                                                 </div>
                                             )}
@@ -1490,23 +1491,7 @@ export default function ProjectDetailsPage() {
                     </TabsContent>
                     <TabsContent value="sprints">
                         <div className="space-y-8">
-                            {!hasUpcomingOrActiveWaves ? (
-                                <div className="p-10 text-center rounded-lg border-2 border-dashed border-border bg-transparent shadow-none">
-                                    <div className="flex justify-center mb-4">
-                                        <div className="flex items-center justify-center h-16 w-16 text-muted-foreground">
-                                           <Waves className="h-8 w-8" />
-                                        </div>
-                                    </div>
-                                    <h3 className="text-lg font-semibold text-foreground">No Upcoming Waves</h3>
-                                    <p className="text-muted-foreground mt-2 mb-4">
-                                        Plan your next cycle of work by creating a new wave.
-                                    </p>
-                                    <Button onClick={() => openNewSprintDialog(projectId)}>
-                                        <Plus className="h-4 w-4 mr-2" />
-                                        New Wave
-                                    </Button>
-                                </div>
-                            ) : (
+                             {sprints.filter(s => s.status !== 'Completed').length > 0 ? (
                                 (['Active', 'Not Started'] as SprintStatus[]).map(status => {
                                     const sprintsByStatus = sprints.filter(s => s.status === status);
                                     if (sprintsByStatus.length === 0) return null;
@@ -1514,6 +1499,7 @@ export default function ProjectDetailsPage() {
                                     return (
                                         <div key={status}>
                                             <h2 className="text-lg font-semibold mb-2">{status === 'Not Started' ? 'Upcoming Waves' : `${status} Waves`}</h2>
+                                            
                                             <Accordion type="single" collapsible className="w-full space-y-4" defaultValue={status === 'Active' && activeSprint ? activeSprint.id : undefined}>
                                                 {sprintsByStatus.map(sprint => {
                                                     const itemsInSprint = projectBacklogItems.filter(item => item.sprintId === sprint.id);
@@ -1609,7 +1595,23 @@ export default function ProjectDetailsPage() {
                                         </div>
                                     )
                                 })
-                            )}
+                             ) : (
+                                <div className="p-10 text-center rounded-lg border-2 border-dashed border-border bg-transparent shadow-none">
+                                    <div className="flex justify-center mb-4">
+                                        <div className="flex items-center justify-center h-16 w-16 text-muted-foreground">
+                                           <Waves className="h-8 w-8" />
+                                        </div>
+                                    </div>
+                                    <h3 className="text-lg font-semibold text-foreground">No Upcoming Waves</h3>
+                                    <p className="text-muted-foreground mt-2 mb-4">
+                                        Plan your next cycle of work by creating a new wave.
+                                    </p>
+                                    <Button onClick={() => openNewSprintDialog(projectId)}>
+                                        <Plus className="h-4 w-4 mr-2" />
+                                        New Wave
+                                    </Button>
+                                </div>
+                             )}
                             
                             {sprints.filter(sprint => sprint.status === 'Completed').length > 0 && (
                                 <div>
