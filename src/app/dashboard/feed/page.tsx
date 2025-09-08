@@ -89,8 +89,8 @@ export default function FeedPage() {
                             ))
                         ) : (
                              <div className="text-center py-12 text-muted-foreground">
-                                <p>Your feed is empty.</p>
-                                <p>Important updates and notifications will appear here.</p>
+                                <p>Your feed is empty</p>
+                                <p>Important updates and notifications will appear here</p>
                             </div>
                         )}
                     </div>
