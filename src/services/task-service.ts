@@ -162,20 +162,38 @@ export async function updateTaskStatus(id: string, status: TaskStatus): Promise<
 }
 
 export async function updateTaskOrderAndStatus(taskId: string, newStatus: TaskStatus, newIndex: number, projectId: string): Promise<void> {
+    console.log('🔄 Starting updateTaskOrderAndStatus', { taskId, newStatus, newIndex, projectId });
+    
     const tasksQuery = query(tasksCollection, where("projectId", "==", projectId));
     let oldStatus: TaskStatus | null = null;
     let taskTitle = '';
+    let taskDueDate: string | null = null;
     
     await runTransaction(db, async (transaction) => {
+        console.log('📦 Inside transaction');
         const tasksSnapshot = await getDocs(tasksQuery);
         const tasks = tasksSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Task));
         const taskToMove = tasks.find(t => t.id === taskId);
-        if (!taskToMove) throw new Error("Task not found!");
+        
+        if (!taskToMove) {
+            console.error('❌ Task not found!', taskId);
+            throw new Error("Task not found!");
+        }
 
-        oldStatus = taskToMove.status; // Store for later comparison
+        oldStatus = taskToMove.status;
         taskTitle = taskToMove.title;
+        taskDueDate = taskToMove.dueDate || null;
         const oldIndex = taskToMove.order;
 
+        console.log('📊 Task details:', { 
+            oldStatus, 
+            newStatus, 
+            taskTitle, 
+            taskDueDate,
+            statusChanging: oldStatus !== newStatus 
+        });
+
+        // Update order for tasks in old column
         tasks
             .filter(t => t.id !== taskId && t.status === oldStatus && t.order > oldIndex)
             .forEach(t => {
@@ -183,6 +201,7 @@ export async function updateTaskOrderAndStatus(taskId: string, newStatus: TaskSt
                 transaction.update(taskRef, { order: t.order - 1 });
             });
 
+        // Update order for tasks in new column
         tasks
             .filter(t => t.id !== taskId && t.status === newStatus && t.order >= newIndex)
             .forEach(t => {
@@ -190,10 +209,13 @@ export async function updateTaskOrderAndStatus(taskId: string, newStatus: TaskSt
                 transaction.update(taskRef, { order: t.order + 1 });
             });
 
+        // Update the moved task
         const movedTaskRef = doc(db, "tasks", taskId);
         transaction.update(movedTaskRef, { status: newStatus, order: newIndex });
         
+        // Update linked backlog item
         if (taskToMove.backlogId) {
+            console.log('🔗 Updating linked backlog item:', taskToMove.backlogId);
             const backlogQuery = query(collection(db, 'backlogItems'), where("projectId", "==", projectId), where("backlogId", "==", taskToMove.backlogId));
             const backlogSnapshot = await getDocs(backlogQuery);
             if (!backlogSnapshot.empty) {
@@ -203,19 +225,37 @@ export async function updateTaskOrderAndStatus(taskId: string, newStatus: TaskSt
         }
     });
 
-    // Now check if status changed and send notification AFTER transaction
+    console.log('✅ Transaction completed');
+
+    // Check if status changed and send notification
     if (oldStatus && oldStatus !== newStatus) {
+        console.log('📢 Status changed - creating notification');
+        
         let message = `Task "${taskTitle}" was moved to ${newStatus}.`;
         if (newStatus === 'Complete') {
             message = `Task "${taskTitle}" has been completed.`;
         }
 
-        await createNotification({
-            message,
-            link: `/dashboard/projects/${projectId}`,
-            type: newStatus === 'Complete' ? 'activity' : 'system'
-        });
+        try {
+            await createNotification({
+                message,
+                link: `/dashboard/projects/${projectId}`,
+                type: newStatus === 'Complete' ? 'activity' : 'system'
+            });
+            console.log('✅ Notification created successfully');
+        } catch (error) {
+            console.error('❌ Failed to create notification:', error);
+        }
+    } else {
+        console.log('ℹ️ No status change detected', { oldStatus, newStatus });
     }
     
-    await updateProjectLastActivity(projectId);
+    try {
+        await updateProjectLastActivity(projectId);
+        console.log('✅ Project last activity updated');
+    } catch (error) {
+        console.error('❌ Failed to update project activity:', error);
+    }
+
+    console.log('🏁 updateTaskOrderAndStatus completed');
 }
