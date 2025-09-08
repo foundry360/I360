@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import * as React from 'react';
@@ -993,12 +992,12 @@ export default function ProjectDetailsPage() {
 
                             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                                <div className="col-span-1 space-y-6">
-                                    <Card>
+                                    <Card className={cn(velocityData.length === 0 && 'border-dashed bg-transparent shadow-none')}>
                                         <CardHeader>
                                             <CardTitle>Velocity</CardTitle>
                                             {velocityData.length > 0 && <CardDescription>Story points completed per wave</CardDescription>}
                                         </CardHeader>
-                                        <CardContent className={cn(velocityData.length === 0 && "p-0")}>
+                                        <CardContent>
                                             {velocityData.length > 0 ? (
                                                 <ChartContainer config={chartConfig} className="h-[150px] w-full">
                                                     <LineChart
@@ -1051,19 +1050,19 @@ export default function ProjectDetailsPage() {
                                                     </LineChart>
                                                 </ChartContainer>
                                             ) : (
-                                                <div className="h-[150px] flex flex-col items-center justify-center text-center text-muted-foreground text-sm p-4 border-2 border-dashed border-border rounded-lg">
-                                                    <CircleGauge className="h-10 w-10 mb-2 text-muted-foreground" />
+                                                <div className="h-[150px] flex flex-col items-center justify-center text-center text-muted-foreground text-sm">
+                                                    <CircleGauge className="h-10 w-10 mb-2" />
                                                     Complete a wave to see your team's velocity.
                                                 </div>
                                             )}
                                         </CardContent>
                                     </Card>
-                                    <Card>
+                                    <Card className={cn(burndownData.length === 0 && 'border-dashed bg-transparent shadow-none')}>
                                         <CardHeader>
                                             <CardTitle>Burndown</CardTitle>
                                             {burndownData.length > 0 && <CardDescription>Ideal vs actual work remaining</CardDescription>}
                                         </CardHeader>
-                                        <CardContent className={cn(burndownData.length === 0 && "p-0")}>
+                                        <CardContent>
                                             {burndownData.length > 0 ? (
                                                 <ChartContainer config={chartConfig} className="h-[150px] w-full">
                                                     <LineChart
@@ -1104,8 +1103,8 @@ export default function ProjectDetailsPage() {
                                                     </LineChart>
                                                 </ChartContainer>
                                             ) : (
-                                                <div className="h-[150px] flex flex-col items-center justify-center text-center text-muted-foreground text-sm p-4 border-2 border-dashed border-border rounded-lg">
-                                                    <CloudDownload className="h-10 w-10 mb-2 text-muted-foreground" />
+                                                <div className="h-[150px] flex flex-col items-center justify-center text-center text-muted-foreground text-sm">
+                                                    <CloudDownload className="h-10 w-10 mb-2" />
                                                     Complete a wave with estimated story points to generate a burndown chart.
                                                 </div>
                                             )}
@@ -1153,12 +1152,12 @@ export default function ProjectDetailsPage() {
                                             </CardFooter>
                                         </Card>
                                     )}
-                                    <Card>
+                                    <Card className={cn(epicProgressData.length === 0 && 'border-dashed bg-transparent shadow-none')}>
                                         <CardHeader>
                                             <CardTitle>Epic Progress</CardTitle>
                                             {epicProgressData.length > 0 && <CardDescription>A summary of completion for each engagement epic</CardDescription>}
                                         </CardHeader>
-                                        <CardContent className={cn(epicProgressData.length === 0 && "p-0")}>
+                                        <CardContent>
                                             {epicProgressData.length > 0 ? (
                                                 <Accordion type="multiple" className="w-full">
                                                     {epicProgressData.map((epic, index) => {
@@ -1184,8 +1183,8 @@ export default function ProjectDetailsPage() {
                                                     })}
                                                 </Accordion>
                                             ) : (
-                                                <div className="h-[150px] flex flex-col items-center justify-center text-center text-muted-foreground text-sm p-4 border-2 border-dashed border-border rounded-lg">
-                                                    <Loader className="h-10 w-10 mb-2 text-muted-foreground" />
+                                                 <div className="h-[150px] flex flex-col items-center justify-center text-center text-muted-foreground text-sm">
+                                                    <Loader className="h-10 w-10 mb-2" />
                                                     No epic progress to display. Add items with points to epics.
                                                 </div>
                                             )}
@@ -1193,12 +1192,12 @@ export default function ProjectDetailsPage() {
                                     </Card>
                                </div>
                                <div className="col-span-1 space-y-6">
-                                     <Card>
+                                     <Card className={cn(atRiskItems.length === 0 && 'border-dashed bg-transparent shadow-none')}>
                                         <CardHeader>
                                             <CardTitle>At-Risk Items</CardTitle>
                                             {atRiskItems.length > 0 && <CardDescription>Items that are overdue or due within 3 days.</CardDescription>}
                                         </CardHeader>
-                                        <CardContent className={cn(atRiskItems.length === 0 && "p-0")}>
+                                        <CardContent>
                                             {atRiskItems.length > 0 ? (
                                                 atRiskItems.map(item => {
                                                     const dueDate = parseISO(item.dueDate!);
@@ -1242,8 +1241,8 @@ export default function ProjectDetailsPage() {
                                                     )
                                                 })
                                             ) : (
-                                                <div className="h-[150px] flex flex-col items-center justify-center text-center text-muted-foreground text-sm p-4 border-2 border-dashed border-border rounded-lg">
-                                                    <AlertTriangle className="h-10 w-10 mb-2 text-muted-foreground" />
+                                                 <div className="h-[150px] flex flex-col items-center justify-center text-center text-muted-foreground text-sm">
+                                                    <AlertTriangle className="h-10 w-10 mb-2" />
                                                     No at-risk items. Great job!
                                                 </div>
                                             )}
@@ -1497,11 +1496,11 @@ export default function ProjectDetailsPage() {
                         <div className="space-y-8">
                              {(['Active', 'Not Started', 'Completed'] as SprintStatus[]).map(status => {
                                 const sprintsByStatus = sprints.filter(s => s.status === status);
-                                if (status === 'Not Started' && sprintsByStatus.length === 0) return null;
-                                
+                                const isHidden = sprintsByStatus.length === 0 && status !== 'Not Started';
+
                                 return (
-                                <div key={status}>
-                                    {(status === 'Active' && sprintsByStatus.length > 0) || status !== 'Active' ? (
+                                <div key={status} className={cn(isHidden && 'hidden')}>
+                                    {(status === 'Not Started' && sprintsByStatus.length > 0) || status !== 'Not Started' ? (
                                         <h2 className="text-lg font-semibold mb-2">{status === 'Not Started' ? 'Upcoming Waves' : `${status} Waves`}</h2>
                                     ) : null}
                                     
@@ -1714,5 +1713,4 @@ export default function ProjectDetailsPage() {
         </div>
     );
 }
-
 
