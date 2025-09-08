@@ -1155,7 +1155,7 @@ export default function ProjectDetailsPage() {
                                     <Card>
                                         <CardHeader>
                                             <CardTitle>Epic Progress</CardTitle>
-                                            {epicProgressData.length > 0 && <CardDescription>A summary of completion for each engagement epic</CardDescription>}
+                                            {epicProgressData.length === 0 ? null : <CardDescription>A summary of completion for each engagement epic</CardDescription>}
                                         </CardHeader>
                                         <CardContent>
                                             {epicProgressData.length > 0 ? (
@@ -1184,7 +1184,7 @@ export default function ProjectDetailsPage() {
                                                 </Accordion>
                                             ) : (
                                                 <div className="h-[150px] flex flex-col items-center justify-center text-center text-muted-foreground text-sm p-4">
-                                                    <Loader className="h-10 w-10 mb-2 text-muted-foreground" />
+                                                    <Loader className="h-10 w-10 mb-2 text-muted-foreground animate-spin" />
                                                     No epic progress to display. Add items with points to epics.
                                                 </div>
                                             )}
@@ -1195,7 +1195,7 @@ export default function ProjectDetailsPage() {
                                      <Card>
                                         <CardHeader>
                                             <CardTitle>At-Risk Items</CardTitle>
-                                            {atRiskItems.length > 0 && <CardDescription>Items that are overdue or due within 3 days.</CardDescription>}
+                                            {atRiskItems.length === 0 ? null : <CardDescription>Items that are overdue or due within 3 days.</CardDescription>}
                                         </CardHeader>
                                         <CardContent className="space-y-1">
                                             {atRiskItems.length > 0 ? (
@@ -1496,14 +1496,14 @@ export default function ProjectDetailsPage() {
                         <div className="space-y-8">
                              {(['Active', 'Not Started', 'Completed'] as SprintStatus[]).map(status => {
                                 const sprintsByStatus = sprints.filter(s => s.status === status);
-                                if (sprintsByStatus.length === 0 && status !== 'Active' && status !== 'Completed' && status !== 'Not Started') return null;
-
+                                if (sprintsByStatus.length === 0 && status === 'Active') return null;
+                                
                                 return (
                                 <div key={status}>
-                                    {sprintsByStatus.length > 0 && (
+                                    { (status !== 'Active' || sprintsByStatus.length > 0) &&
                                         <h2 className="text-lg font-semibold mb-2">{status === 'Not Started' ? 'Upcoming Waves' : `${status} Waves`}</h2>
-                                    )}
-                                    {sprintsByStatus.length === 0 ? (
+                                    }
+                                    {sprintsByStatus.length === 0 && (status === 'Not Started' || status === 'Completed') ? (
                                         <div className="p-10 text-center rounded-lg border-2 border-dashed border-border">
                                             <div className="flex justify-center mb-4">
                                                 <div className="flex items-center justify-center h-16 w-16 text-muted-foreground">
