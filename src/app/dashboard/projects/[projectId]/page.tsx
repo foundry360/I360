@@ -605,10 +605,7 @@ export default function ProjectDetailsPage() {
         if (!activeSprint) return null;
 
         const sprintItems = projectBacklogItems.filter(item => item.sprintId === activeSprint.id);
-        if (sprintItems.length === 0) return null;
-        
         const totalItems = sprintItems.length;
-        if (totalItems === 0) return null;
 
         const statusCounts = sprintItems.reduce((acc, item) => {
             acc[item.status] = (acc[item.status] || 0) + 1;
@@ -624,7 +621,7 @@ export default function ProjectDetailsPage() {
         
         const daysLeft = differenceInDays(parseISO(activeSprint.endDate), new Date());
 
-        return { segments, daysLeft: Math.max(0, daysLeft) };
+        return { segments, daysLeft: Math.max(0, daysLeft), totalItems };
 
     }, [activeSprint, projectBacklogItems]);
     
@@ -1126,31 +1123,39 @@ export default function ProjectDetailsPage() {
                                                 <CardDescription>{activeSprint?.name}</CardDescription>
                                             </CardHeader>
                                             <CardContent>
-                                                <TooltipProvider>
-                                                    <div className="flex w-full h-3 rounded-full overflow-hidden bg-muted mb-2">
-                                                        {activeSprintHealthData.segments.map(segment => (
-                                                            <Tooltip key={segment.status}>
-                                                                <TooltipTrigger asChild>
-                                                                    <div 
-                                                                        className="h-full"
-                                                                        style={{ width: `${segment.percentage}%`, backgroundColor: segment.color }}
-                                                                    />
-                                                                </TooltipTrigger>
-                                                                <TooltipContent>
-                                                                    <p>{segment.status}: {segment.count} item(s) ({Math.round(segment.percentage)}%)</p>
-                                                                </TooltipContent>
-                                                            </Tooltip>
-                                                        ))}
-                                                    </div>
-                                                </TooltipProvider>
-                                                <div className="flex justify-between text-xs text-muted-foreground">
-                                                    {activeSprintHealthData.segments.map(segment => (
-                                                        <div key={segment.status} className="flex items-center gap-1">
-                                                            <div className="h-2 w-2 rounded-full" style={{ backgroundColor: segment.color }} />
-                                                            <span>{segment.status}</span>
+                                                {activeSprintHealthData.totalItems > 0 ? (
+                                                    <>
+                                                        <TooltipProvider>
+                                                            <div className="flex w-full h-3 rounded-full overflow-hidden bg-muted mb-2">
+                                                                {activeSprintHealthData.segments.map(segment => (
+                                                                    <Tooltip key={segment.status}>
+                                                                        <TooltipTrigger asChild>
+                                                                            <div 
+                                                                                className="h-full"
+                                                                                style={{ width: `${segment.percentage}%`, backgroundColor: segment.color }}
+                                                                            />
+                                                                        </TooltipTrigger>
+                                                                        <TooltipContent>
+                                                                            <p>{segment.status}: {segment.count} item(s) ({Math.round(segment.percentage)}%)</p>
+                                                                        </TooltipContent>
+                                                                    </Tooltip>
+                                                                ))}
+                                                            </div>
+                                                        </TooltipProvider>
+                                                        <div className="flex justify-between text-xs text-muted-foreground">
+                                                            {activeSprintHealthData.segments.map(segment => (
+                                                                <div key={segment.status} className="flex items-center gap-1">
+                                                                    <div className="h-2 w-2 rounded-full" style={{ backgroundColor: segment.color }} />
+                                                                    <span>{segment.status}</span>
+                                                                </div>
+                                                            ))}
                                                         </div>
-                                                    ))}
-                                                </div>
+                                                    </>
+                                                ) : (
+                                                    <div className="text-center text-sm text-muted-foreground py-4">
+                                                        This wave has no items.
+                                                    </div>
+                                                )}
                                             </CardContent>
                                             <CardFooter>
                                                 <p className="text-sm text-muted-foreground w-full text-center">
