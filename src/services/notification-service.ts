@@ -46,19 +46,27 @@ export async function getNotifications(): Promise<Notification[]> {
     }
 
     try {
+        // Simplified query to avoid composite index requirement.
+        // Filtering on snoozedUntil will now be handled client-side.
         const q = query(
             notificationsCollection, 
             where('isArchived', '==', false),
-            where('snoozedUntil', '==', null),
             orderBy('createdAt', 'desc'), 
             limit(50)
         );
         const snapshot = await getDocs(q);
         
-        return snapshot.docs.map(docSnapshot => ({
+        const now = new Date();
+        const notifications = snapshot.docs.map(docSnapshot => ({
             id: docSnapshot.id,
             ...docSnapshot.data()
         } as Notification));
+        
+        // Filter snoozed notifications on the client
+        return notifications.filter(n => {
+            if (!n.snoozedUntil) return true;
+            return new Date(n.snoozedUntil) <= now;
+        });
 
     } catch (error) {
         console.error("Error fetching notifications:", error);
