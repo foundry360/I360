@@ -813,19 +813,19 @@ export default function ProjectDetailsPage() {
                             <Table2 className="h-4 w-4" />
                             Summary
                         </TabsTrigger>
-                         <TabsTrigger 
-                            value="backlog"
-                            className="pb-3 rounded-none data-[state=active]:shadow-none data-[state=active]:border-primary data-[state=active]:border-b-4 data-[state=active]:text-foreground data-[state=active]:font-bold flex items-center gap-2"
-                        >
-                            <Inbox className="h-4 w-4" />
-                            Backlog
-                        </TabsTrigger>
                         <TabsTrigger 
                             value="board"
                             className="pb-3 rounded-none data-[state=active]:shadow-none data-[state=active]:border-primary data-[state=active]:border-b-4 data-[state=active]:text-foreground data-[state=active]:font-bold flex items-center gap-2"
                         >
                             <Trello className="h-4 w-4" />
                             Board
+                        </TabsTrigger>
+                         <TabsTrigger 
+                            value="backlog"
+                            className="pb-3 rounded-none data-[state=active]:shadow-none data-[state=active]:border-primary data-[state=active]:border-b-4 data-[state=active]:text-foreground data-[state=active]:font-bold flex items-center gap-2"
+                        >
+                            <Inbox className="h-4 w-4" />
+                            Backlog
                         </TabsTrigger>
                         <TabsTrigger 
                             value="epics"
@@ -896,7 +896,7 @@ export default function ProjectDetailsPage() {
                                 </TooltipProvider>
                             </div>
                         )}
-                        {activeTab === 'epics' && epics.length > 0 && (
+                        {activeTab === 'epics' && (epics.length > 0 || unassignedBacklogItems.length > 0) && (
                             <div className="flex items-center gap-2">
                                 <TooltipProvider>
                                     <Tooltip>
@@ -1134,7 +1134,9 @@ export default function ProjectDetailsPage() {
                                      <Card className={cn(!activeSprint && 'border-dashed border-2 bg-transparent shadow-none')}>
                                         <CardHeader>
                                             <CardTitle>Active Wave Health</CardTitle>
-                                            {activeSprint && <CardDescription>{activeSprint.name}</CardDescription>}
+                                            {activeSprint ? (
+                                                <CardDescription>{activeSprint.name}</CardDescription>
+                                            ) : null }
                                         </CardHeader>
                                         <CardContent>
                                             {activeSprint ? (
@@ -1168,7 +1170,7 @@ export default function ProjectDetailsPage() {
                                                     </>
                                                 ) : (
                                                     <div className="text-center text-sm text-muted-foreground py-4 h-[90px] flex flex-col items-center justify-center">
-                                                      'This wave has no items.'
+                                                      This wave has no items.
                                                     </div>
                                                 )
                                             ) : (
