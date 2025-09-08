@@ -6,10 +6,6 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
-  // Disable static generation to avoid Firebase init during build
-  experimental: {
-    staticWorkerRequestDeduping: false,
-  },
   async headers() {
     return [
       {
