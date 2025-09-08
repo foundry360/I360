@@ -21,7 +21,6 @@ import { Card } from '@/components/ui/card';
 type FilterType = 'all' | NotificationType | 'mention' | 'thread' | 'saved';
 
 const filterConfig: { id: FilterType; label: string; icon: React.ElementType }[] = [
-    { id: 'saved', label: 'Saved', icon: Star },
     { id: 'all', label: 'All', icon: Inbox },
     { id: 'mention', label: '@Mentions', icon: AtSign },
     { id: 'thread', label: 'Threads', icon: MessageSquare },
@@ -29,6 +28,8 @@ const filterConfig: { id: FilterType; label: string; icon: React.ElementType }[]
     { id: 'alert', label: 'Alerts', icon: AlertCircle },
     { id: 'system', label: 'System', icon: Info },
 ];
+
+const savedFilter = { id: 'saved' as const, label: 'Saved', icon: Star };
 
 export default function FeedPage() {
     const { user } = useUser();
@@ -76,10 +77,31 @@ export default function FeedPage() {
             return n.isArchived;
         }
         if (activeFilter === 'all') return !n.isArchived;
+        if (activeFilter === 'mention' || activeFilter === 'thread') {
+             return n.type === activeFilter && !n.isArchived;
+        }
         return n.type === activeFilter && !n.isArchived;
     });
 
     const unreadCount = notifications.filter(n => !n.isRead && !n.isArchived).length;
+    
+    const renderFilterButton = (filter: { id: FilterType; label: string; icon: React.ElementType }) => {
+        const Icon = filter.icon;
+        return (
+            <Button 
+                key={filter.id} 
+                variant="ghost" 
+                className={cn(
+                    "w-full justify-start",
+                    activeFilter === filter.id && "bg-muted font-bold"
+                )}
+                onClick={() => setActiveFilter(filter.id)}
+            >
+                <Icon className="mr-3 h-4 w-4" />
+                {filter.label}
+            </Button>
+        );
+    };
 
     return (
         <div className="space-y-6">
@@ -115,25 +137,13 @@ export default function FeedPage() {
              <div className="grid grid-cols-12 gap-8">
                 <div className="col-span-2">
                     <div className="p-4 rounded-lg">
+                        <nav className="space-y-1">
+                            {renderFilterButton(savedFilter)}
+                        </nav>
+                        <Separator className="my-4" />
                         <h4 className="text-xs font-semibold uppercase text-muted-foreground tracking-wider px-2 mb-4">Filters</h4>
                         <nav className="space-y-1">
-                            {filterConfig.map(filter => {
-                                const Icon = filter.icon;
-                                return (
-                                    <Button 
-                                        key={filter.id} 
-                                        variant="ghost" 
-                                        className={cn(
-                                            "w-full justify-start",
-                                            activeFilter === filter.id && "bg-muted font-bold"
-                                        )}
-                                        onClick={() => setActiveFilter(filter.id)}
-                                    >
-                                        <Icon className="mr-3 h-4 w-4" />
-                                        {filter.label}
-                                    </Button>
-                                )
-                            })}
+                            {filterConfig.map(renderFilterButton)}
                         </nav>
                     </div>
                 </div>
