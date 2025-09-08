@@ -103,6 +103,7 @@ export const FeedItem: React.FC<FeedItemProps> = ({
       }
       if (!notification.isRead) {
           updateNotification(notification.id, { isRead: true });
+          onUpdate();
       }
   }
 
@@ -110,7 +111,6 @@ export const FeedItem: React.FC<FeedItemProps> = ({
     <div
       className={cn(
         'flex items-start gap-4 p-4 border-b transition-all cursor-pointer group border-l-4',
-        !notification.isRead && 'bg-primary/5 dark:bg-primary/10',
         isSelected && 'bg-primary/10 dark:bg-primary/20',
         config.border
       )}
