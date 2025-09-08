@@ -5,6 +5,7 @@ import * as React from 'react';
 import { SheetHeader, SheetTitle, SheetDescription } from './ui/sheet';
 import type { Project } from '@/services/project-service';
 import { ScrollArea } from './ui/scroll-area';
+import { cn } from '@/lib/utils';
 
 interface EngagementInsightsPanelProps {
     projects: Project[];
@@ -15,7 +16,7 @@ export function EngagementInsightsPanel({ projects }: EngagementInsightsPanelPro
     return (
         <div className="flex flex-col h-full">
             <SheetHeader className="p-6 border-b border-sidebar-border">
-                <SheetTitle>Active Engagement Insights</SheetTitle>
+                <SheetTitle className="text-sidebar-foreground">Active Engagement Insights</SheetTitle>
                 <SheetDescription className="text-sidebar-foreground/80">
                     AI-powered summary of trends, risks, and opportunities across your active engagements.
                 </SheetDescription>
