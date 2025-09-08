@@ -2,11 +2,11 @@
 'use client';
 
 import * as React from 'react';
-import { getNotifications, bulkUpdateNotifications, type Notification } from '@/services/notification-service';
+import { getNotifications, bulkUpdateNotifications, type Notification, NotificationType } from '@/services/notification-service';
 import { useUser } from '@/contexts/user-context';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { CheckCheck, Archive, Inbox, Bell } from 'lucide-react';
+import { CheckCheck, Archive, Inbox, Bell, AtSign, MessageSquare, AlertCircle, Info } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { FeedItem } from '@/components/feed-item';
 import {
@@ -15,13 +15,25 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { cn } from '@/lib/utils';
+
+type FilterType = 'all' | NotificationType | 'mention' | 'thread';
+
+const filterConfig: { id: FilterType; label: string; icon: React.ElementType }[] = [
+    { id: 'all', label: 'All', icon: Inbox },
+    { id: 'mention', label: '@Mentions', icon: AtSign },
+    { id: 'thread', label: 'Threads', icon: MessageSquare },
+    { id: 'activity', label: 'Notifications', icon: Bell },
+    { id: 'alert', label: 'Alerts', icon: AlertCircle },
+    { id: 'system', label: 'System', icon: Info },
+];
 
 export default function FeedPage() {
     const { user } = useUser();
     const [notifications, setNotifications] = React.useState<Notification[]>([]);
     const [loading, setLoading] = React.useState(true);
     const [selectedNotifications, setSelectedNotifications] = React.useState<string[]>([]);
-    const [filter, setFilter] = React.useState<'all' | 'unread'>('all');
+    const [activeFilter, setActiveFilter] = React.useState<FilterType>('all');
 
     const fetchNotifications = React.useCallback(async () => {
         if (user) {
@@ -56,7 +68,11 @@ export default function FeedPage() {
         );
     };
     
-    const filteredNotifications = notifications.filter(n => filter === 'all' || !n.isRead);
+    const filteredNotifications = notifications.filter(n => {
+        if (activeFilter === 'all') return true;
+        return n.type === activeFilter;
+    });
+
     const unreadCount = notifications.filter(n => !n.isRead).length;
 
     return (
@@ -90,31 +106,55 @@ export default function FeedPage() {
                 </div>
             </div>
             <Separator />
-
-             <div className="space-y-4">
-                {loading ? (
-                    Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-20 w-full rounded-lg" />)
-                ) : filteredNotifications.length > 0 ? (
-                    filteredNotifications.map(note => (
-                        <FeedItem 
-                            key={note.id}
-                            notification={note}
-                            isSelected={selectedNotifications.includes(note.id)}
-                            onSelect={handleSelectNotification}
-                            onUpdate={fetchNotifications}
-                        />
-                    ))
-                ) : (
-                    <div className="text-center py-24 text-muted-foreground border-2 border-dashed rounded-lg">
-                        <div className="flex justify-center mb-4">
-                            <div className="bg-primary/10 rounded-full p-3">
-                                <Bell className="h-8 w-8 text-primary" />
+             <div className="grid grid-cols-12 gap-8">
+                <div className="col-span-3">
+                    <nav className="space-y-1">
+                        {filterConfig.map(filter => {
+                            const Icon = filter.icon;
+                            return (
+                                <Button 
+                                    key={filter.id} 
+                                    variant="ghost" 
+                                    className={cn(
+                                        "w-full justify-start",
+                                        activeFilter === filter.id && "bg-muted font-bold"
+                                    )}
+                                    onClick={() => setActiveFilter(filter.id)}
+                                >
+                                    <Icon className="mr-3 h-4 w-4" />
+                                    {filter.label}
+                                </Button>
+                            )
+                        })}
+                    </nav>
+                </div>
+                <div className="col-span-9">
+                    <div className="space-y-4">
+                        {loading ? (
+                            Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-20 w-full rounded-lg" />)
+                        ) : filteredNotifications.length > 0 ? (
+                            filteredNotifications.map(note => (
+                                <FeedItem 
+                                    key={note.id}
+                                    notification={note}
+                                    isSelected={selectedNotifications.includes(note.id)}
+                                    onSelect={handleSelectNotification}
+                                    onUpdate={fetchNotifications}
+                                />
+                            ))
+                        ) : (
+                            <div className="text-center py-24 text-muted-foreground border-2 border-dashed rounded-lg">
+                                <div className="flex justify-center mb-4">
+                                    <div className="bg-primary/10 rounded-full p-3">
+                                        <Bell className="h-8 w-8 text-primary" />
+                                    </div>
+                                </div>
+                                <h3 className="text-lg font-semibold">All caught up!</h3>
+                                <p>Your feed is empty. New updates will appear here</p>
                             </div>
-                        </div>
-                        <h3 className="text-lg font-semibold">All caught up!</h3>
-                        <p>Your feed is empty. New updates will appear here.</p>
+                        )}
                     </div>
-                )}
+                </div>
             </div>
         </div>
     );

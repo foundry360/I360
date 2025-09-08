@@ -14,6 +14,8 @@ import {
   MoreHorizontal,
   Reply,
   Undo2,
+  AtSign,
+  MessageSquare
 } from 'lucide-react';
 import type { Notification, NotificationType } from '@/services/notification-service';
 import { updateNotification } from '@/services/notification-service';
@@ -50,6 +52,8 @@ const notificationTypeConfig: Record<
   system: { icon: Info, color: 'text-sky-500', border: 'border-sky-500/50' },
   alert: { icon: CircleAlert, color: 'text-destructive', border: 'border-destructive/50' },
   activity: { icon: Bell, color: 'text-foreground', border: 'border-transparent' },
+  mention: { icon: AtSign, color: 'text-primary', border: 'border-primary/50' },
+  thread: { icon: MessageSquare, color: 'text-green-500', border: 'border-green-500/50' },
 };
 
 export const FeedItem: React.FC<FeedItemProps> = ({

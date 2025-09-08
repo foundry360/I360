@@ -3,7 +3,7 @@
 import { db, auth } from '@/lib/firebase';
 import { collection, doc, addDoc, getDocs, writeBatch, serverTimestamp, query, orderBy, limit, where, updateDoc } from 'firebase/firestore';
 
-export type NotificationType = 'system' | 'alert' | 'activity';
+export type NotificationType = 'system' | 'alert' | 'activity' | 'mention' | 'thread';
 
 export interface Notification {
   id: string;
@@ -46,8 +46,6 @@ export async function getNotifications(): Promise<Notification[]> {
     }
 
     try {
-        // Removed all `where` clauses to avoid needing a composite index.
-        // Filtering will happen on the client.
         const q = query(
             notificationsCollection, 
             orderBy('createdAt', 'desc'), 
@@ -106,4 +104,3 @@ export async function markAllNotificationsAsRead(): Promise<void> {
 
   await batch.commit();
 }
-
