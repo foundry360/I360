@@ -203,15 +203,11 @@ export default function DashboardPage() {
 
     loadDashboardData();
     
-    // Add a listener to refetch data when the window gets focus
-    window.addEventListener('focus', loadDashboardData);
-    
     // Add a listener for when tasks are updated
     const unsubscribeTaskUpdates = setOnTaskUpdated(loadDashboardData);
 
     // Cleanup listeners on component unmount
     return () => {
-      window.removeEventListener('focus', loadDashboardData);
       if (unsubscribeTaskUpdates) unsubscribeTaskUpdates();
     };
   }, [loadDashboardData, setOnTaskUpdated]);
