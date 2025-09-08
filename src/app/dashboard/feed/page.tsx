@@ -26,7 +26,7 @@ const filterConfig: { id: FilterType; label: string; icon: React.ElementType, co
     { id: 'thread', label: 'Threads', icon: MessageSquare, color: 'text-green-500' },
     { id: 'activity', label: 'Notifications', icon: Bell, color: 'text-orange-500' },
     { id: 'alert', label: 'Alerts', icon: AlertTriangle, color: 'text-red-500' },
-    { id: 'system', label: 'System', icon: MonitorCog, color: 'text-sky-500' },
+    { id: 'system', label: 'System', icon: MonitorCog, color: 'text-purple-500' },
 ];
 
 const savedFilter = { id: 'saved' as const, label: 'Saved', icon: Star, color: 'text-yellow-500' };
