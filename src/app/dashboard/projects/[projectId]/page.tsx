@@ -36,6 +36,8 @@ import {
   Inbox,
   Rocket,
   BookCopy,
+  CircleGauge,
+  CloudDownload,
 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
@@ -916,67 +918,162 @@ export default function ProjectDetailsPage() {
 
                 <div className="flex-1 overflow-y-auto pt-6">
                     <TabsContent value="summary">
-                       <div className="space-y-6">
-                            <div className="grid grid-cols-4 gap-6">
+                       <div className="grid grid-cols-10 gap-6">
+                            <div className="col-span-3 space-y-6">
+                                <div className="grid grid-cols-2 gap-6">
+                                    <Card>
+                                        <CardHeader className="flex flex-row items-center justify-between pb-2">
+                                            <CardTitle className="text-sm font-medium text-muted-foreground">In Progress</CardTitle>
+                                            <Loader className="h-4 w-4 text-muted-foreground" />
+                                        </CardHeader>
+                                        <CardContent>
+                                            <p className="text-2xl font-bold">{inProgressItems}</p>
+                                        </CardContent>
+                                        <CardFooter className="flex-col items-start gap-1 p-4 pt-0">
+                                            <p className="text-xs text-muted-foreground">{Math.round(inProgressPercentage)}% of total</p>
+                                            <Progress value={inProgressPercentage} />
+                                        </CardFooter>
+                                    </Card>
+                                    <Card>
+                                        <CardHeader className="flex flex-row items-center justify-between pb-2">
+                                            <CardTitle className="text-sm font-medium text-muted-foreground">Completed</CardTitle>
+                                            <CheckCircle2 className="h-4 w-4 text-muted-foreground" />
+                                        </CardHeader>
+                                        <CardContent>
+                                            <p className="text-2xl font-bold">{completedItemsCount}</p>
+                                        </CardContent>
+                                         <CardFooter className="flex-col items-start gap-1 p-4 pt-0">
+                                            <p className="text-xs text-muted-foreground">{Math.round(completedPercentage)}% of total</p>
+                                            <Progress value={completedPercentage} />
+                                        </CardFooter>
+                                    </Card>
+                                    <Card>
+                                        <CardHeader className="flex flex-row items-center justify-between pb-2">
+                                            <CardTitle className="text-sm font-medium text-muted-foreground">Overdue Items</CardTitle>
+                                            <AlertTriangle className="h-4 w-4 text-muted-foreground" />
+                                        </CardHeader>
+                                        <CardContent>
+                                            <p className="text-2xl font-bold text-danger">{overdueItemsCount}</p>
+                                        </CardContent>
+                                        <CardFooter className="flex-col items-start gap-1 p-4 pt-0">
+                                            <p className="text-xs text-muted-foreground">{Math.round(overduePercentage)}% of total</p>
+                                            <Progress value={overduePercentage} className="[&>div]:bg-danger" />
+                                        </CardFooter>
+                                    </Card>
+                                    <Card>
+                                        <CardHeader className="flex flex-row items-center justify-between pb-2">
+                                            <CardTitle className="text-sm font-medium text-muted-foreground">Engagement Health</CardTitle>
+                                            <HealthIcon className="h-4 w-4 text-muted-foreground" />
+                                        </CardHeader>
+                                        <CardContent>
+                                            <p className={cn("text-xl font-bold", projectHealth.color)}>{projectHealth.status}</p>
+                                        </CardContent>
+                                        <CardFooter className="flex-col items-start gap-1 p-4 pt-0">
+                                            <p className="text-xs text-muted-foreground">{Math.round(projectHealth.itemsCompletedPercent)}% complete</p>
+                                            <Progress value={projectHealth.itemsCompletedPercent} className={cn("[&>div]:bg-success", projectHealth.status === 'At Risk' && "[&>div]:bg-warning", projectHealth.status === 'Needs Attention' && "[&>div]:bg-danger")} />
+                                        </CardFooter>
+                                    </Card>
+                                </div>
                                 <Card>
-                                    <CardHeader className="flex flex-row items-center justify-between pb-2">
-                                        <CardTitle className="text-sm font-medium text-muted-foreground">In Progress</CardTitle>
-                                        <Loader className="h-4 w-4 text-muted-foreground" />
+                                    <CardHeader>
+                                        <CardTitle>At-Risk Items</CardTitle>
+                                        <CardDescription>Items that are overdue or due within 3 days.</CardDescription>
                                     </CardHeader>
-                                    <CardContent>
-                                        <p className="text-2xl font-bold">{inProgressItems}</p>
+                                    <CardContent className="space-y-1">
+                                        {atRiskItems.length > 0 ? (
+                                            atRiskItems.map(item => {
+                                                const dueDate = parseISO(item.dueDate!);
+                                                const now = new Date();
+                                                const daysDiff = differenceInDays(dueDate, now);
+                                                const isOverdue = daysDiff < 0;
+
+                                                let statusText = '';
+                                                let statusColor = 'text-warning';
+
+                                                if (isOverdue) {
+                                                    statusText = `Overdue by ${Math.abs(daysDiff)} day(s)`;
+                                                    statusColor = 'text-danger';
+                                                } else {
+                                                    statusText = `Due in ${daysDiff + 1} day(s)`;
+                                                }
+
+                                                return (
+                                                <div 
+                                                    key={item.id} 
+                                                    className="flex justify-between items-center text-sm p-2 -mx-2 rounded-md hover:bg-muted cursor-pointer"
+                                                    onClick={() => openEditBacklogItemDialog(item, epics, sprints, contacts)}
+                                                >
+                                                    <div className="flex items-center gap-2 overflow-hidden">
+                                                        <Avatar className="h-6 w-6">
+                                                          <AvatarImage src={item.ownerAvatarUrl} />
+                                                          <AvatarFallback className="text-xs">{getInitials(item.owner)}</AvatarFallback>
+                                                        </Avatar>
+                                                        <div className="flex-1 overflow-hidden">
+                                                            <p className="font-medium truncate">
+                                                                <span className="text-muted-foreground mr-2">{projectPrefix}-{item.backlogId}</span>
+                                                                {item.title}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                    <div className={cn("flex items-center gap-2 text-xs font-semibold shrink-0 ml-2", statusColor)}>
+                                                       <Calendar className="h-4 w-4" />
+                                                        <span className="truncate">Due {format(dueDate, 'MMM dd')}</span>
+                                                    </div>
+                                                </div>
+                                                )
+                                            })
+                                        ) : (
+                                            <p className="text-sm text-muted-foreground text-center py-4">No at-risk items. Great job!</p>
+                                        )}
                                     </CardContent>
-                                    <CardFooter className="flex-col items-start gap-1 p-4 pt-0">
-                                        <p className="text-xs text-muted-foreground">{Math.round(inProgressPercentage)}% of total</p>
-                                        <Progress value={inProgressPercentage} />
-                                    </CardFooter>
-                                </Card>
-                                <Card>
-                                    <CardHeader className="flex flex-row items-center justify-between pb-2">
-                                        <CardTitle className="text-sm font-medium text-muted-foreground">Completed</CardTitle>
-                                        <CheckCircle2 className="h-4 w-4 text-muted-foreground" />
-                                    </CardHeader>
-                                    <CardContent>
-                                        <p className="text-2xl font-bold">{completedItemsCount}</p>
-                                    </CardContent>
-                                     <CardFooter className="flex-col items-start gap-1 p-4 pt-0">
-                                        <p className="text-xs text-muted-foreground">{Math.round(completedPercentage)}% of total</p>
-                                        <Progress value={completedPercentage} />
-                                    </CardFooter>
-                                </Card>
-                                <Card>
-                                    <CardHeader className="flex flex-row items-center justify-between pb-2">
-                                        <CardTitle className="text-sm font-medium text-muted-foreground">Overdue Items</CardTitle>
-                                        <AlertTriangle className="h-4 w-4 text-muted-foreground" />
-                                    </CardHeader>
-                                    <CardContent>
-                                        <p className="text-2xl font-bold text-danger">{overdueItemsCount}</p>
-                                    </CardContent>
-                                    <CardFooter className="flex-col items-start gap-1 p-4 pt-0">
-                                        <p className="text-xs text-muted-foreground">{Math.round(overduePercentage)}% of total</p>
-                                        <Progress value={overduePercentage} className="[&>div]:bg-danger" />
-                                    </CardFooter>
-                                </Card>
-                                <Card>
-                                    <CardHeader className="flex flex-row items-center justify-between pb-2">
-                                        <CardTitle className="text-sm font-medium text-muted-foreground">Engagement Health</CardTitle>
-                                        <HealthIcon className="h-4 w-4 text-muted-foreground" />
-                                    </CardHeader>
-                                    <CardContent>
-                                        <p className={cn("text-xl font-bold", projectHealth.color)}>{projectHealth.status}</p>
-                                    </CardContent>
-                                    <CardFooter className="flex-col items-start gap-1 p-4 pt-0">
-                                        <p className="text-xs text-muted-foreground">{Math.round(projectHealth.itemsCompletedPercent)}% complete</p>
-                                        <Progress value={projectHealth.itemsCompletedPercent} className={cn("[&>div]:bg-success", projectHealth.status === 'At Risk' && "[&>div]:bg-warning", projectHealth.status === 'Needs Attention' && "[&>div]:bg-danger")} />
-                                    </CardFooter>
                                 </Card>
                             </div>
-                            <div className="grid grid-cols-10 gap-6">
-                                <div className="col-span-3 space-y-6">
+                            <div className="col-span-7 space-y-6">
+                                {activeSprintHealthData && (
+                                    <Card>
+                                        <CardHeader>
+                                            <CardTitle>Active Wave Health</CardTitle>
+                                            <CardDescription>{activeSprint?.name}</CardDescription>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <TooltipProvider>
+                                                <div className="flex w-full h-3 rounded-full overflow-hidden bg-muted mb-2">
+                                                    {activeSprintHealthData.segments.map(segment => (
+                                                        <Tooltip key={segment.status}>
+                                                            <TooltipTrigger asChild>
+                                                                <div 
+                                                                    className="h-full"
+                                                                    style={{ width: `${segment.percentage}%`, backgroundColor: segment.color }}
+                                                                />
+                                                            </TooltipTrigger>
+                                                            <TooltipContent>
+                                                                <p>{segment.status}: {segment.count} item(s) ({Math.round(segment.percentage)}%)</p>
+                                                            </TooltipContent>
+                                                        </Tooltip>
+                                                    ))}
+                                                </div>
+                                            </TooltipProvider>
+                                            <div className="flex justify-between text-xs text-muted-foreground">
+                                                {activeSprintHealthData.segments.map(segment => (
+                                                    <div key={segment.status} className="flex items-center gap-1">
+                                                        <div className="h-2 w-2 rounded-full" style={{ backgroundColor: segment.color }} />
+                                                        <span>{segment.status}</span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </CardContent>
+                                        <CardFooter>
+                                            <p className="text-sm text-muted-foreground w-full text-center">
+                                                <span className="font-bold">{activeSprintHealthData.daysLeft}</span> days remaining
+                                            </p>
+                                        </CardFooter>
+                                    </Card>
+                                )}
+                                <div className="grid grid-cols-2 gap-6">
                                     <Card>
                                         <CardHeader>
                                             <CardTitle>Velocity</CardTitle>
-                                            <CardDescription>Story points completed per wave</CardDescription>
+                                            {velocityData.length > 0 && <CardDescription>Story points completed per wave</CardDescription>}
                                         </CardHeader>
                                         <CardContent>
                                             {velocityData.length > 0 ? (
@@ -1031,8 +1128,9 @@ export default function ProjectDetailsPage() {
                                                     </LineChart>
                                                 </ChartContainer>
                                             ) : (
-                                                <div className="h-[150px] flex items-center justify-center text-center text-muted-foreground text-sm">
-                                                    Complete a wave to see your team's velocity.
+                                                <div className="h-[150px] flex flex-col gap-4 items-center justify-center text-center text-muted-foreground text-sm">
+                                                    <CircleGauge className="h-10 w-10" />
+                                                    <p>Complete a wave to see your team's velocity.</p>
                                                 </div>
                                             )}
                                         </CardContent>
@@ -1040,7 +1138,7 @@ export default function ProjectDetailsPage() {
                                      <Card>
                                         <CardHeader>
                                             <CardTitle>Burndown</CardTitle>
-                                            <CardDescription>Ideal vs actual work remaining</CardDescription>
+                                            {burndownData.length > 0 && <CardDescription>Ideal vs actual work remaining</CardDescription>}
                                         </CardHeader>
                                         <CardContent>
                                             {burndownData.length > 0 ? (
@@ -1083,148 +1181,52 @@ export default function ProjectDetailsPage() {
                                                     </LineChart>
                                                 </ChartContainer>
                                             ) : (
-                                                 <div className="h-[150px] flex items-center justify-center text-center text-muted-foreground text-sm p-4">
-                                                    Complete a wave with estimated story points to generate a burndown chart.
+                                                 <div className="h-[150px] flex flex-col gap-4 items-center justify-center text-center text-muted-foreground text-sm p-4">
+                                                    <CloudDownload className="h-10 w-10" />
+                                                    <p>Complete a wave with estimated story points to generate a burndown chart.</p>
                                                 </div>
                                             )}
                                         </CardContent>
                                     </Card>
                                 </div>
-                                <div className="col-span-4 space-y-6">
-                                    {activeSprintHealthData && (
-                                        <Card>
-                                            <CardHeader>
-                                                <CardTitle>Active Wave Health</CardTitle>
-                                                <CardDescription>{activeSprint?.name}</CardDescription>
-                                            </CardHeader>
-                                            <CardContent>
-                                                <TooltipProvider>
-                                                    <div className="flex w-full h-3 rounded-full overflow-hidden bg-muted mb-2">
-                                                        {activeSprintHealthData.segments.map(segment => (
-                                                            <Tooltip key={segment.status}>
-                                                                <TooltipTrigger asChild>
-                                                                    <div 
-                                                                        className="h-full"
-                                                                        style={{ width: `${segment.percentage}%`, backgroundColor: segment.color }}
-                                                                    />
-                                                                </TooltipTrigger>
-                                                                <TooltipContent>
-                                                                    <p>{segment.status}: {segment.count} item(s) ({Math.round(segment.percentage)}%)</p>
-                                                                </TooltipContent>
-                                                            </Tooltip>
-                                                        ))}
-                                                    </div>
-                                                </TooltipProvider>
-                                                <div className="flex justify-between text-xs text-muted-foreground">
-                                                    {activeSprintHealthData.segments.map(segment => (
-                                                        <div key={segment.status} className="flex items-center gap-1">
-                                                            <div className="h-2 w-2 rounded-full" style={{ backgroundColor: segment.color }} />
-                                                            <span>{segment.status}</span>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            </CardContent>
-                                            <CardFooter>
-                                                <p className="text-sm text-muted-foreground w-full text-center">
-                                                    <span className="font-bold">{activeSprintHealthData.daysLeft}</span> days remaining
-                                                </p>
-                                            </CardFooter>
-                                        </Card>
-                                    )}
-                                    <Card>
-                                        <CardHeader>
-                                            <CardTitle>Epic Progress</CardTitle>
-                                            <CardDescription>A summary of completion for each engagement epic</CardDescription>
-                                        </CardHeader>
-                                        <CardContent>
-                                             {epicProgressData.length > 0 ? (
-                                                <Accordion type="multiple" className="w-full">
-                                                    {epicProgressData.map((epic, index) => {
-                                                        const config = tagConfig.find(c => c.iconName === epic.category) || tagConfig.find(t => t.iconName === 'Layers');
-                                                        const IconComponent = config?.icon || Layers;
-                                                        const color = config?.color || 'text-foreground';
-                                                        return (
-                                                            <AccordionItem value={epic.id} key={epic.id} className="border-none mb-2">
-                                                                <AccordionTrigger className="text-base font-normal no-underline hover:no-underline p-2 -m-2 rounded-md hover:bg-muted" noChevron>
-                                                                    <div className="space-y-2 w-full">
-                                                                        <div className="flex justify-between items-baseline w-full">
-                                                                            <div className="flex items-center gap-2">
-                                                                                <IconComponent className={cn("h-4 w-4", color)} />
-                                                                                <p className="text-sm font-medium">{epic.name}</p>
-                                                                            </div>
-                                                                            <p className="text-sm text-muted-foreground">{epic.progress}% complete</p>
-                                                                        </div>
-                                                                        <Progress value={epic.progress} />
-                                                                    </div>
-                                                                </AccordionTrigger>
-                                                            </AccordionItem>
-                                                        )
-                                                    })}
-                                                </Accordion>
-                                            ) : (
-                                                <div className="h-[150px] flex items-center justify-center text-center text-muted-foreground text-sm p-4">
-                                                   No epic progress to display. Add items with points to epics.
-                                                </div>
-                                            )}
-                                        </CardContent>
-                                    </Card>
-                                </div>
-                                <div className="col-span-3 space-y-6">
-                                    <Card>
-                                        <CardHeader>
-                                            <CardTitle>At-Risk Items</CardTitle>
-                                            <CardDescription>Items that are overdue or due within 3 days.</CardDescription>
-                                        </CardHeader>
-                                        <CardContent className="space-y-1">
-                                            {atRiskItems.length > 0 ? (
-                                                atRiskItems.map(item => {
-                                                    const dueDate = parseISO(item.dueDate!);
-                                                    const now = new Date();
-                                                    const daysDiff = differenceInDays(dueDate, now);
-                                                    const isOverdue = daysDiff < 0;
-
-                                                    let statusText = '';
-                                                    let statusColor = 'text-warning';
-
-                                                    if (isOverdue) {
-                                                        statusText = `Overdue by ${Math.abs(daysDiff)} day(s)`;
-                                                        statusColor = 'text-danger';
-                                                    } else {
-                                                        statusText = `Due in ${daysDiff + 1} day(s)`;
-                                                    }
-
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle>Epic Progress</CardTitle>
+                                        <CardDescription>A summary of completion for each engagement epic</CardDescription>
+                                    </CardHeader>
+                                    <CardContent>
+                                         {epicProgressData.length > 0 ? (
+                                            <Accordion type="multiple" className="w-full">
+                                                {epicProgressData.map((epic, index) => {
+                                                    const config = tagConfig.find(c => c.iconName === epic.category) || tagConfig.find(t => t.iconName === 'Layers');
+                                                    const IconComponent = config?.icon || Layers;
+                                                    const color = config?.color || 'text-foreground';
                                                     return (
-                                                    <div 
-                                                        key={item.id} 
-                                                        className="flex justify-between items-center text-sm p-2 -mx-2 rounded-md hover:bg-muted cursor-pointer"
-                                                        onClick={() => openEditBacklogItemDialog(item, epics, sprints, contacts)}
-                                                    >
-                                                        <div className="flex items-center gap-2 overflow-hidden">
-                                                            <Avatar className="h-6 w-6">
-                                                              <AvatarImage src={item.ownerAvatarUrl} />
-                                                              <AvatarFallback className="text-xs">{getInitials(item.owner)}</AvatarFallback>
-                                                            </Avatar>
-                                                            <div className="flex-1 overflow-hidden">
-                                                                <p className="font-medium truncate">
-                                                                    <span className="text-muted-foreground mr-2">{projectPrefix}-{item.backlogId}</span>
-                                                                    {item.title}
-                                                                </p>
-                                                            </div>
-                                                        </div>
-                                                        <div className={cn("flex items-center gap-2 text-xs font-semibold shrink-0 ml-2", statusColor)}>
-                                                           <Calendar className="h-4 w-4" />
-                                                            <span className="truncate">Due {format(dueDate, 'MMM dd')}</span>
-                                                        </div>
-                                                    </div>
+                                                        <AccordionItem value={epic.id} key={epic.id} className="border-none mb-2">
+                                                            <AccordionTrigger className="text-base font-normal no-underline hover:no-underline p-2 -m-2 rounded-md hover:bg-muted" noChevron>
+                                                                <div className="space-y-2 w-full">
+                                                                    <div className="flex justify-between items-baseline w-full">
+                                                                        <div className="flex items-center gap-2">
+                                                                            <IconComponent className={cn("h-4 w-4", color)} />
+                                                                            <p className="text-sm font-medium">{epic.name}</p>
+                                                                        </div>
+                                                                        <p className="text-sm text-muted-foreground">{epic.progress}% complete</p>
+                                                                    </div>
+                                                                    <Progress value={epic.progress} />
+                                                                </div>
+                                                            </AccordionTrigger>
+                                                        </AccordionItem>
                                                     )
-                                                })
-                                            ) : (
-                                                <p className="text-sm text-muted-foreground text-center py-4">No at-risk items. Great job!</p>
-                                            )}
-                                        </CardContent>
-                                    </Card>
-                                </div>
-                           </div>
+                                                })}
+                                            </Accordion>
+                                        ) : (
+                                            <div className="h-[150px] flex items-center justify-center text-center text-muted-foreground text-sm p-4">
+                                               No epic progress to display. Add items with points to epics.
+                                            </div>
+                                        )}
+                                    </CardContent>
+                                </Card>
+                            </div>
                        </div>
                     </TabsContent>
                     <TabsContent value="board">
