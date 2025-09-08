@@ -284,9 +284,11 @@ export default function DashboardPage() {
         <Card className="h-full">
            <CardHeader>
                 <CardTitle>Items Due This Week</CardTitle>
-                <CardDescription>
-                    Your immediate priorities for the next 7 days
-                </CardDescription>
+                {thisWeeksItems.length > 0 && (
+                    <CardDescription>
+                        Your immediate priorities for the next 7 days
+                    </CardDescription>
+                )}
             </CardHeader>
             <CardContent>
                 {thisWeeksItems.length > 0 ? (
@@ -327,7 +329,11 @@ export default function DashboardPage() {
                     </div>
                 ) : (
                     <div className="flex flex-col items-center justify-center h-48 text-center text-muted-foreground">
-                        <CalendarCheck className="h-12 w-12 mb-4" />
+                        <div className="flex justify-center mb-4">
+                            <div className="bg-primary/10 rounded-full p-3">
+                                <CalendarCheck className="h-8 w-8 text-primary" />
+                            </div>
+                        </div>
                         <h3 className="font-semibold">All clear for the week!</h3>
                         <p>No items are due in the next 7 days.</p>
                     </div>
