@@ -19,13 +19,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { updateTask, type Task, TaskPriority, TaskStatus, deleteTask } from '@/services/task-service';
+import { updateTask, type Task, TaskPriority, TaskStatus, deleteTask, updateTaskDueDate } from '@/services/task-service';
 import { useQuickAction } from '@/contexts/quick-action-context';
 import { useUser } from '@/contexts/user-context';
 import { Contact } from '@/services/contact-service';
 import { Textarea } from './ui/textarea';
 import { format, parseISO } from 'date-fns';
 import { useRouter } from 'next/navigation';
+import { useToast } from '@/hooks/use-toast';
 
 export function EditTaskDialog() {
   const {
@@ -36,6 +37,7 @@ export function EditTaskDialog() {
   } = useQuickAction();
   const { user } = useUser();
   const router = useRouter();
+  const { toast } = useToast();
   
   const [task, setTask] = React.useState<Task | null>(null);
 
@@ -56,6 +58,31 @@ export function EditTaskDialog() {
     setTask((prev) => ({ ...prev!, [id]: value }));
   };
 
+  const handleDateChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!task) return;
+    const { value } = e.target;
+    setTask(prev => ({...prev!, dueDate: value }));
+    try {
+        await updateTaskDueDate(task.id, value || null);
+        toast({
+            title: "Due Date Updated",
+            description: `The due date for "${task.title}" has been changed.`,
+        });
+        if (onTaskUpdated) {
+            onTaskUpdated();
+        }
+    } catch (error) {
+        console.error("Failed to update due date:", error);
+        toast({
+            variant: "destructive",
+            title: "Error",
+            description: "Could not update the due date.",
+        });
+        // Optionally revert local state
+        setTask(prev => ({...prev!, dueDate: task.dueDate }));
+    }
+  }
+
   const handleSelectChange = (field: 'priority' | 'type' | 'status') => (value: string) => {
      if (!task) return;
      setTask((prev) => ({ ...prev!, [field]: value }));
@@ -66,11 +93,15 @@ export function EditTaskDialog() {
     if (!task) return;
     try {
       const { id, ...updateData } = task;
-       const dataToSave = {
-        ...updateData,
-        dueDate: task.dueDate || undefined,
-      };
-      await updateTask(id, dataToSave);
+      
+      await updateTask(id, {
+        title: updateData.title,
+        description: updateData.description,
+        status: updateData.status,
+        priority: updateData.priority,
+        type: updateData.type,
+      });
+
       if (onTaskUpdated) {
         onTaskUpdated();
       }
@@ -149,12 +180,12 @@ export function EditTaskDialog() {
             </div>
              <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="dueDate" className="text-right">Due Date</Label>
-              <Input id="dueDate" type="date" value={task.dueDate || ''} onChange={handleInputChange} className="col-span-3" />
+              <Input id="dueDate" type="date" value={task.dueDate || ''} onChange={handleDateChange} className="col-span-3" />
             </div>
           </div>
           <DialogFooter className="pt-4 flex justify-between items-center w-full">
             <Button type="button" variant="outline" onClick={() => handleOpenChange(false)}>
-              Cancel
+              Close
             </Button>
             <div className="flex items-center gap-2">
                 <Button type="submit">Save Changes</Button>
@@ -165,3 +196,5 @@ export function EditTaskDialog() {
     </Dialog>
   );
 }
+
+    
