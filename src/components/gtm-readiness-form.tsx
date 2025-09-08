@@ -583,7 +583,7 @@ export function GtmReadinessForm({ onComplete, assessmentToResume }: GtmReadines
                         </Card>
                     </div>
                    )}
-                    <div className="flex justify-between items-center p-6 border-t bg-background">
+                    <div className="flex justify-between items-center p-6 border-t bg-card">
                         <div>
                              <Button type="button" variant="link" onClick={handleSaveForLater}>
                                 Save for Later
