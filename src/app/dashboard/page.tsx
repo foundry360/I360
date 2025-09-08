@@ -337,53 +337,69 @@ export default function DashboardPage() {
         <Card className="h-full">
           <CardHeader>
             <CardTitle>Recent Activity</CardTitle>
-            <CardDescription>
-              The latest updates from your workspace
-            </CardDescription>
+            {recentActivity.length > 0 && (
+                <CardDescription>
+                The latest updates from your workspace
+                </CardDescription>
+            )}
           </CardHeader>
           <CardContent>
-            <div className="relative space-y-0">
-              {recentActivity.map((item, index) => {
-                const config = activityTypeConfig[item.type];
-                const Icon = config.icon;
-                return (
-                  <div
-                    key={`${item.id}-${index}`}
-                    className="flex gap-4 group"
-                    onClick={() => item.link && router.push(item.link)}
-                  >
-                    <div className="relative flex flex-col items-center">
-                       <div className={cn("p-2 rounded-full z-10 relative", config.bg)}>
-                        <Icon className={cn("h-5 w-5", config.color)} />
-                      </div>
-                      {index < recentActivity.length - 1 && (
-                         <div className="flex-grow w-px bg-primary/20" />
-                       )}
+            {recentActivity.length > 0 ? (
+                <>
+                    <div className="relative space-y-0">
+                    {recentActivity.map((item, index) => {
+                        const config = activityTypeConfig[item.type];
+                        const Icon = config.icon;
+                        return (
+                        <div
+                            key={`${item.id}-${index}`}
+                            className="flex gap-4 group"
+                            onClick={() => item.link && router.push(item.link)}
+                        >
+                            <div className="relative flex flex-col items-center">
+                            <div className={cn("p-2 rounded-full z-10 relative", config.bg)}>
+                                <Icon className={cn("h-5 w-5", config.color)} />
+                            </div>
+                            {index < recentActivity.length - 1 && (
+                                <div className="flex-grow w-px bg-primary/20" />
+                            )}
+                            </div>
+                            
+                            <div className="flex-1 pb-8 pt-1 group-hover:bg-muted rounded-md px-2 -mx-2 flex justify-between items-start cursor-pointer">
+                            <div>
+                                <p className="text-sm">{item.message}</p>
+                                <p className="text-xs text-muted-foreground">
+                                {formatDistanceToNow(parseISO(item.timestamp), {
+                                    addSuffix: true,
+                                })}
+                                </p>
+                            </div>
+                            <ArrowRight className="h-4 w-4 text-muted-foreground mt-1 opacity-0 group-hover:opacity-100 transition-opacity" />
+                            </div>
+                        </div>
+                        );
+                    })}
                     </div>
-                    
-                    <div className="flex-1 pb-8 pt-1 group-hover:bg-muted rounded-md px-2 -mx-2 flex justify-between items-start cursor-pointer">
-                      <div>
-                        <p className="text-sm">{item.message}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {formatDistanceToNow(parseISO(item.timestamp), {
-                            addSuffix: true,
-                          })}
-                        </p>
-                      </div>
-                       <ArrowRight className="h-4 w-4 text-muted-foreground mt-1 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    {allRecentActivity.length > 5 && (
+                        <Button 
+                            variant="link" 
+                            className="p-0 h-auto text-sm mt-4"
+                            onClick={() => setIsActivityExpanded(!isActivityExpanded)}
+                        >
+                            {isActivityExpanded ? 'View less' : 'View all'}
+                        </Button>
+                    )}
+                </>
+            ) : (
+                <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground">
+                    <div className="flex justify-center mb-4">
+                        <div className="bg-primary/10 rounded-full p-3">
+                            <FolderKanban className="h-8 w-8 text-primary" />
+                        </div>
                     </div>
-                  </div>
-                );
-              })}
-            </div>
-            {allRecentActivity.length > 5 && (
-                <Button 
-                    variant="link" 
-                    className="p-0 h-auto text-sm mt-4"
-                    onClick={() => setIsActivityExpanded(!isActivityExpanded)}
-                >
-                    {isActivityExpanded ? 'View less' : 'View all'}
-                </Button>
+                    <h3 className="font-semibold">No recent activity</h3>
+                    <p>Updates from your workspace will appear here.</p>
+                </div>
             )}
           </CardContent>
         </Card>
