@@ -106,6 +106,23 @@ const statusHexColors: Record<BacklogItemStatus, string> = {
     'Complete': '#22c55e', // green-500
 };
 
+const WavesIcon = (props: React.SVGProps<SVGSVGElement>) => (
+    <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        {...props}
+    >
+        <path d="M2 6c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2s5 2 5 2c1.3 0 1.9-.5 2.5-1" />
+        <path d="M2 12c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2s5 2 5 2c1.3 0 1.9-.5 2.5-1" />
+        <path d="M2 18c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2s5 2 5 2c1.3 0 1.9-.5 2.5-1" />
+    </svg>
+);
+
 
 const BacklogItemTypeIcon = ({ type }: { type: BacklogItemType }) => {
     const Icon = type ? backlogItemTypeIcons[type] : Wrench;
@@ -1494,7 +1511,7 @@ export default function ProjectDetailsPage() {
                                             <CardContent className="p-10 text-center">
                                                 <div className="flex justify-center mb-4">
                                                     <div className="flex items-center justify-center h-16 w-16 rounded-full bg-muted text-muted-foreground">
-                                                        <Rocket className="h-8 w-8" />
+                                                        <WavesIcon className="h-8 w-8" />
                                                     </div>
                                                 </div>
                                                 <h3 className="text-lg font-semibold">{status === 'Completed' ? 'No Waves Completed Yet' : 'No Upcoming Waves'}</h3>
