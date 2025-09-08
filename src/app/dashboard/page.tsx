@@ -206,7 +206,9 @@ export default function DashboardPage() {
   React.useEffect(() => {
     const unsubscribe = setOnTaskUpdated(loadDashboardData);
     return () => {
-      if (unsubscribe) unsubscribe();
+      if (unsubscribe) {
+        unsubscribe();
+      }
     };
   }, [loadDashboardData, setOnTaskUpdated]);
   
