@@ -12,6 +12,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { formatDistanceToNow, parseISO } from 'date-fns';
 import { CheckCheck } from 'lucide-react';
+import { Separator } from '@/components/ui/separator';
 
 export default function FeedPage() {
     const router = useRouter();
@@ -45,12 +46,14 @@ export default function FeedPage() {
 
     return (
         <div className="space-y-6">
+            <div>
+                <h1 className="text-2xl font-bold">Communications Feed</h1>
+                <p className="text-muted-foreground">All notifications, messages, and alerts in one place.</p>
+            </div>
+            <Separator />
             <Card>
                 <CardHeader className="flex flex-row items-center justify-between">
-                    <div>
-                        <CardTitle>Communications Feed</CardTitle>
-                        <CardDescription>All notifications, messages, and alerts in one place.</CardDescription>
-                    </div>
+                    <CardTitle>All Updates</CardTitle>
                     {unreadCount > 0 && (
                         <Button variant="ghost" onClick={handleMarkAllRead}>
                             <CheckCheck className="mr-2 h-4 w-4" />
