@@ -302,11 +302,11 @@ export default function DashboardPage() {
                         {visibleTasks.map((task, index) => {
                             const riskStatus = getTaskRiskStatus(task);
                             return (
-                                <div key={task.id} className={cn("flex items-center justify-between py-2 rounded-md hover:bg-muted cursor-pointer", index !== visibleTasks.length - 1 && 'border-b dark:border-white/10')} onClick={() => router.push(`/dashboard/projects/${task.projectId}`)}>
+                                <div key={task.id} className={cn("flex items-start justify-between py-2 rounded-md hover:bg-muted cursor-pointer", index !== visibleTasks.length - 1 && 'border-b dark:border-white/10')} onClick={() => router.push(`/dashboard/projects/${task.projectId}`)}>
                                     <div className="flex items-center gap-3">
                                         <div 
                                           className={cn(
-                                            "h-2.5 w-2.5 rounded-full",
+                                            "h-2.5 w-2.5 rounded-full mt-1.5",
                                             riskStatus === 'at-risk' && 'bg-red-500',
                                             riskStatus === 'due-soon' && 'bg-yellow-500',
                                             riskStatus === 'on-track' && 'bg-green-500'
@@ -314,12 +314,12 @@ export default function DashboardPage() {
                                         />
                                         <div>
                                             <p className="font-medium text-sm">{task.title}</p>
-                                            <p className="text-xs text-muted-foreground">Due: {format(parseISO(task.dueDate!), 'EEE, MMM dd')}</p>
+                                            <p className="text-xs text-muted-foreground">Due on {format(parseISO(task.dueDate!), 'EEE, MMM dd')}</p>
+                                             <div className="flex items-center gap-2 mt-1">
+                                                 <Badge variant="outline" className="font-normal">{task.status}</Badge>
+                                                 <Badge variant="secondary">{task.priority}</Badge>
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                         <Badge variant="outline" className="font-normal">{task.status}</Badge>
-                                         <Badge variant="secondary">{task.priority}</Badge>
                                     </div>
                                 </div>
                             )
@@ -506,6 +506,7 @@ export default function DashboardPage() {
   );
 
     
+
 
 
 
