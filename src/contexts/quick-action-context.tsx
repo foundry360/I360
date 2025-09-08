@@ -6,7 +6,6 @@ import type { Assessment } from '@/services/assessment-service';
 import type { Epic } from '@/services/epic-service';
 import type { BacklogItem } from '@/services/backlog-item-service';
 import type { Sprint } from '@/services/sprint-service';
-import { getTasks, type Task } from '@/services/task-service';
 import type { Contact } from '@/services/contact-service';
 import type { Project } from '@/services/project-service';
 import type { UserStory } from '@/services/user-story-service';
@@ -17,8 +16,6 @@ type StoryForEdit = Omit<UserStory, 'createdAt'> & { createdAt: string };
 
 
 type QuickActionContextType = {
-  allTasks: Task[];
-
   isNewCompanyDialogOpen: boolean;
   openNewCompanyDialog: () => void;
   closeNewCompanyDialog: () => void;
@@ -93,13 +90,6 @@ type QuickActionContextType = {
   setOnSprintUpdated: (callback: (() => void) | null) => (() => void) | void;
   editSprintData: Sprint | null;
 
-  isEditTaskDialogOpen: boolean;
-  openEditTaskDialog: (task: Task, contacts: Contact[]) => void;
-  closeEditTaskDialog: () => void;
-  onTaskUpdated: (() => void) | null;
-  setOnTaskUpdated: (callback: (() => void) | null) => (() => void) | void;
-  editTaskData: { task: Task, contacts: Contact[] } | null;
-
   isNewUserStoryDialogOpen: boolean;
   openNewUserStoryDialog: () => void;
   closeNewUserStoryDialog: () => void;
@@ -144,7 +134,6 @@ const QuickActionContext = React.createContext<
 >(undefined);
 
 export function QuickActionProvider({ children }: { children: React.ReactNode }) {
-  const [allTasks, setAllTasks] = React.useState<Task[]>([]);
   const [isNewCompanyDialogOpen, setIsNewCompanyDialogOpen] = React.useState(false);
   const onCompanyCreatedRef = React.useRef<(() => void) | null>(null);
 
@@ -186,10 +175,6 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
   const onSprintUpdatedRef = React.useRef<(() => void) | null>(null);
   const [editSprintData, setEditSprintData] = React.useState<Sprint | null>(null);
 
-  const [isEditTaskDialogOpen, setIsEditTaskDialogOpen] = React.useState(false);
-  const onTaskUpdatedRef = React.useRef<(() => void) | null>(null);
-  const [editTaskData, setEditTaskData] = React.useState<{ task: Task, contacts: Contact[] } | null>(null);
-
   const [isNewUserStoryDialogOpen, setIsNewUserStoryDialogOpen] = React.useState(false);
   const onUserStoryCreatedRef = React.useRef<(() => void) | null>(null);
   
@@ -210,11 +195,6 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
   const onAddFromLibraryRef = React.useRef<(() => void) | null>(null);
 
   const [globalSearchTerm, setGlobalSearchTerm] = React.useState('');
-
-  React.useEffect(() => {
-    const unsubscribe = getTasks(setAllTasks);
-    return () => unsubscribe();
-  }, []);
 
   const openNewCompanyDialog = React.useCallback(() => setIsNewCompanyDialogOpen(true), []);
   const closeNewCompanyDialog = React.useCallback(() => setIsNewCompanyDialogOpen(false), []);
@@ -341,22 +321,6 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
     return () => { onSprintUpdatedRef.current = null; };
   }, []);
 
-  const openEditTaskDialog = React.useCallback((task: Task, contacts: Contact[]) => {
-    setEditTaskData({ task, contacts });
-    setIsEditTaskDialogOpen(true);
-  }, []);
-  const closeEditTaskDialog = React.useCallback(() => {
-    setIsEditTaskDialogOpen(false);
-    setEditTaskData(null);
-  }, []);
-  const setOnTaskUpdated = React.useCallback((callback: (() => void) | null) => {
-    onTaskUpdatedRef.current = callback;
-    if (callback) {
-      callback();
-    }
-    return () => { onTaskUpdatedRef.current = null; };
-  }, []);
-
   const openNewUserStoryDialog = React.useCallback(() => setIsNewUserStoryDialogOpen(true), []);
   const closeNewUserStoryDialog = React.useCallback(() => setIsNewUserStoryDialogOpen(false), []);
   const setOnUserStoryCreated = React.useCallback((callback: (() => void) | null) => {
@@ -410,7 +374,6 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
   }, []);
 
   const contextValue = React.useMemo(() => ({
-    allTasks,
     isNewCompanyDialogOpen,
     openNewCompanyDialog,
     closeNewCompanyDialog,
@@ -484,13 +447,6 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
     onSprintUpdated: onSprintUpdatedRef.current,
     setOnSprintUpdated,
     editSprintData,
-
-    isEditTaskDialogOpen,
-    openEditTaskDialog,
-    closeEditTaskDialog,
-    onTaskUpdated: onTaskUpdatedRef.current,
-    setOnTaskUpdated,
-    editTaskData,
     
     isNewUserStoryDialogOpen,
     openNewUserStoryDialog,
@@ -530,7 +486,6 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
     globalSearchTerm,
     setGlobalSearchTerm,
   }), [
-    allTasks,
     isNewCompanyDialogOpen, openNewCompanyDialog, closeNewCompanyDialog, setOnCompanyCreated,
     isNewContactDialogOpen, openNewContactDialog, closeNewContactDialog, setOnContactCreated,
     isAssessmentModalOpen, openAssessmentModal, closeAssessmentModal, assessmentToResume, setOnAssessmentCompleted,
@@ -542,7 +497,6 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
     isEditBacklogItemDialogOpen, openEditBacklogItemDialog, closeEditBacklogItemDialog, editBacklogItemData, setOnBacklogItemUpdated,
     isNewSprintDialogOpen, openNewSprintDialog, closeNewSprintDialog, newSprintData, setOnSprintCreated,
     isEditSprintDialogOpen, openEditSprintDialog, closeEditSprintDialog, editSprintData, setOnSprintUpdated,
-    isEditTaskDialogOpen, openEditTaskDialog, closeEditTaskDialog, editTaskData, setOnTaskUpdated,
     isNewUserStoryDialogOpen, openNewUserStoryDialog, closeNewUserStoryDialog, setOnUserStoryCreated,
     isEditUserStoryDialogOpen, openEditUserStoryDialog, closeEditUserStoryDialog, editUserStoryData, setOnUserStoryUpdated,
     isNewCollectionDialogOpen, openNewCollectionDialog, closeNewCollectionDialog, setOnCollectionCreated,

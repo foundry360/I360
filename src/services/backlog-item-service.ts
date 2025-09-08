@@ -3,13 +3,33 @@
 
 import { db } from '@/lib/firebase';
 import { collection, query, where, getDocs, doc, setDoc, addDoc, getDoc, updateDoc, deleteDoc, deleteField, writeBatch } from 'firebase/firestore';
-import { createTask, deleteTaskByBacklogId, type TaskPriority, type TaskStatus, getTasksForProject } from './task-service';
 import { updateProjectLastActivity } from './project-service';
 import { parseISO } from 'date-fns';
 import type { UserStory } from './user-story-service';
 import { getProject } from './project-service';
 import { getDoc as getStoryDoc } from 'firebase/firestore';
 import type { StoryCollection } from './collection-service';
+
+export const BacklogItemStatus = {
+  ToDo: 'To Do',
+  InProgress: 'In Progress',
+  InReview: 'In Review',
+  NeedsRevision: 'Needs Revision',
+  FinalApproval: 'Final Approval',
+  Complete: 'Complete'
+} as const;
+export type BacklogItemStatus = typeof BacklogItemStatus[keyof typeof BacklogItemStatus];
+
+export enum BacklogItemPriority {
+  Low = 'Low',
+  Medium = 'Medium',
+  High = 'High'
+}
+export type BacklogItemPriorityType = `${BacklogItemPriority}`;
+
+
+export type BacklogItemType = 'Assessment' | 'Workshop' | 'Enablement' | 'Planning' | 'Execution' | 'Review';
+
 
 export interface BacklogItem {
   id: string;
@@ -19,12 +39,14 @@ export interface BacklogItem {
   backlogId: number;
   title: string;
   description: string;
-  status: TaskStatus;
+  status: BacklogItemStatus;
   points: number;
-  priority: TaskPriority;
+  priority: BacklogItemPriorityType;
   owner: string;
   ownerAvatarUrl?: string;
   dueDate?: string | null;
+  order: number;
+  type: BacklogItemType;
 }
 
 const backlogItemsCollection = collection(db, 'backlogItems');
@@ -52,7 +74,7 @@ export async function getBacklogItemsForProject(projectId: string): Promise<Back
     }
 }
 
-export async function createBacklogItem(itemData: Omit<BacklogItem, 'id' | 'backlogId'>): Promise<string> {
+export async function createBacklogItem(itemData: Omit<BacklogItem, 'id' | 'backlogId' | 'order' | 'type'>): Promise<string> {
     const docRef = await addDoc(backlogItemsCollection, {});
     const nextId = await getNextBacklogId(itemData.projectId);
     const newItem = { 
@@ -62,7 +84,9 @@ export async function createBacklogItem(itemData: Omit<BacklogItem, 'id' | 'back
         epicId: itemData.epicId || null,
         owner: itemData.owner || 'Unassigned',
         ownerAvatarUrl: itemData.ownerAvatarUrl || '',
-        dueDate: itemData.dueDate ? parseISO(itemData.dueDate).toISOString() : null
+        dueDate: itemData.dueDate ? parseISO(itemData.dueDate).toISOString() : null,
+        order: 999, // Default order
+        type: 'Execution' as BacklogItemType, // Default type
     };
     await setDoc(docRef, newItem);
     await updateProjectLastActivity(itemData.projectId);
@@ -91,6 +115,8 @@ export async function bulkCreateBacklogItems(projectId: string, epicId: string |
             owner: project.owner,
             ownerAvatarUrl: project.ownerAvatarUrl,
             dueDate: null,
+            order: 999,
+            type: 'Execution',
         };
         batch.set(docRef, newItem);
     }
@@ -139,6 +165,8 @@ export async function addCollectionToProjectBacklog(projectId: string, collectio
             owner: project.owner,
             ownerAvatarUrl: project.ownerAvatarUrl,
             dueDate: null,
+            order: 999,
+            type: 'Execution',
         };
         batch.set(docRef, newItem);
     }
@@ -185,6 +213,8 @@ export async function addCollectionsToProjectBacklog(projectId: string, collecti
                     owner: project.owner,
                     ownerAvatarUrl: project.ownerAvatarUrl,
                     dueDate: null,
+                    order: 999,
+                    type: 'Execution',
                 };
                 batch.set(docRef, newItem);
             }
@@ -202,32 +232,6 @@ export async function updateBacklogItem(id: string, data: Partial<BacklogItem>):
     if (!docSnap.exists()) return;
     
     const originalData = docSnap.data() as BacklogItem;
-    const wasInSprint = !!originalData.sprintId;
-    const isInSprint = !!data.sprintId;
-
-    // Handle task creation/deletion based on sprint assignment change
-    if (!wasInSprint && isInSprint) {
-        // Moved TO a sprint: Create a task if it doesn't exist
-        const allTasks = await getTasksForProject(originalData.projectId);
-        const taskExists = allTasks.some(t => t.backlogId === originalData.backlogId);
-        if (!taskExists) {
-            await createTask({
-                projectId: originalData.projectId,
-                title: originalData.title,
-                status: 'To Do',
-                order: 999, // Will be reordered by other logic if needed
-                owner: originalData.owner,
-                ownerAvatarUrl: originalData.ownerAvatarUrl,
-                priority: originalData.priority,
-                type: 'Execution',
-                backlogId: originalData.backlogId,
-                dueDate: originalData.dueDate,
-            });
-        }
-    } else if (wasInSprint && !isInSprint) {
-        // Moved FROM a sprint (back to backlog): Delete the task
-        await deleteTaskByBacklogId(originalData.projectId, originalData.backlogId);
-    }
     
     const { dueDate, ...restOfData } = data;
     const finalData: any = { ...restOfData };
@@ -242,12 +246,46 @@ export async function updateBacklogItem(id: string, data: Partial<BacklogItem>):
     await updateProjectLastActivity(originalData.projectId);
 }
 
+export async function updateBacklogItemOrderAndStatus(itemId: string, newStatus: BacklogItemStatus, newIndex: number, projectId: string): Promise<void> {
+    await runTransaction(db, async (transaction) => {
+        const allItems = await getBacklogItemsForProject(projectId);
+        const itemToMove = allItems.find(i => i.id === itemId);
+
+        if (!itemToMove) {
+            throw new Error("Backlog item not found");
+        }
+
+        const oldStatus = itemToMove.status;
+
+        // Decrement order for items in old column
+        allItems
+            .filter(i => i.id !== itemId && i.status === oldStatus && i.order > itemToMove.order)
+            .forEach(i => {
+                const itemRef = doc(db, 'backlogItems', i.id);
+                transaction.update(itemRef, { order: i.order - 1 });
+            });
+
+        // Increment order for items in new column
+        allItems
+            .filter(i => i.status === newStatus && i.order >= newIndex)
+            .forEach(i => {
+                const itemRef = doc(db, 'backlogItems', i.id);
+                transaction.update(itemRef, { order: i.order + 1 });
+            });
+        
+        // Update the moved item
+        const movedItemRef = doc(db, 'backlogItems', itemId);
+        transaction.update(movedItemRef, { status: newStatus, order: newIndex });
+    });
+    await updateProjectLastActivity(projectId);
+}
+
+
 export async function deleteBacklogItem(id: string): Promise<void> {
     const docRef = doc(db, 'backlogItems', id);
     const docSnap = await getDoc(docRef);
     if (docSnap.exists()) {
         const item = docSnap.data() as BacklogItem;
-        await deleteTaskByBacklogId(item.projectId, item.backlogId); // Also delete associated task
         await deleteDoc(docRef);
         await updateProjectLastActivity(item.projectId);
     }

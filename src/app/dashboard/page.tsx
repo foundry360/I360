@@ -30,7 +30,7 @@ import {
 import { getProjects, type Project } from '@/services/project-service';
 import { getAssessments, type Assessment } from '@/services/assessment-service';
 import { getContacts, type Contact } from '@/services/contact-service';
-import type { Task, TaskStatus, TaskType } from '@/services/task-service';
+import { getBacklogItemsForProject, type BacklogItem, BacklogItemStatus } from '@/services/backlog-item-service';
 import { formatDistanceToNow, parseISO, isWithinInterval, addDays, format, differenceInDays, isPast } from 'date-fns';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
@@ -42,7 +42,6 @@ import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { EngagementInsightsPanel } from '@/components/engagement-insights-panel';
 import { getNotifications, markAllNotificationsAsRead, type Notification } from '@/services/notification-service';
 import { FeedItem } from '@/components/feed-item';
-import { useQuickAction } from '@/contexts/quick-action-context';
 
 type ActivityItem = {
   id: string;
@@ -55,22 +54,13 @@ type ActivityItem = {
 
 type ProjectWithProgress = Project & { progress: number };
 
-const taskTypeIcons: Record<TaskType, React.ElementType> = {
-    Assessment: ClipboardList,
-    Workshop: Presentation,
-    Enablement: Zap,
-    Planning: GanttChartSquare,
-    Execution: Wrench,
-    Review: SearchCheck,
-};
-
 const activityTypeConfig: Record<ActivityItem['type'], { icon: React.ElementType, color: string, bg: string }> = {
   Engagement: { icon: FolderKanban, color: 'text-blue-500', bg: 'bg-blue-500/10' },
   Assessment: { icon: ClipboardList, color: 'text-purple-500', bg: 'bg-purple-500/10' },
   Contact: { icon: UserPlus, color: 'text-green-500', bg: 'bg-green-500/10' },
 };
 
-const statusColors: Record<TaskStatus, string> = {
+const statusColors: Record<BacklogItemStatus, string> = {
     'To Do': 'bg-muted-foreground/20 text-muted-foreground',
     'In Progress': 'bg-blue-500/20 text-blue-600 dark:text-blue-400',
     'In Review': 'bg-purple-500/20 text-purple-600 dark:text-purple-400',
@@ -88,14 +78,13 @@ export default function DashboardPage() {
   const [recentEngagements, setRecentEngagements] = React.useState<ProjectWithProgress[]>(
     []
   );
-  const [thisWeeksTasks, setThisWeeksTasks] = React.useState<Task[]>([]);
+  const [thisWeeksItems, setThisWeeksItems] = React.useState<BacklogItem[]>([]);
   const [allRecentActivity, setAllRecentActivity] = React.useState<ActivityItem[]>(
     []
   );
   const [notifications, setNotifications] = React.useState<Notification[]>([]);
   const [isActivityExpanded, setIsActivityExpanded] = React.useState(false);
   const [isTasksExpanded, setIsTasksExpanded] = React.useState(false);
-  const { allTasks } = useQuickAction();
 
   const loadDashboardData = React.useCallback(async () => {
     try {
@@ -145,39 +134,55 @@ export default function DashboardPage() {
         );
         setAllRecentActivity(allActivities);
         
-         const tasksByProject = allTasks.reduce((acc, task) => {
-                if (!acc[task.projectId]) {
-                    acc[task.projectId] = [];
-                }
-                acc[task.projectId].push(task);
-                return acc;
-            }, {} as Record<string, Task[]>);
+        const itemsByProjectPromises = projects.map(p => getBacklogItemsForProject(p.id));
+        const allItemsByProject = await Promise.all(itemsByProjectPromises);
+        const allItems = allItemsByProject.flat();
 
-            const projectsWithProgress: ProjectWithProgress[] = projects.map(project => {
-                const projectTasks = tasksByProject[project.id] || [];
-                const totalTasks = projectTasks.length;
-                const completedTasks = projectTasks.filter(t => t.status === 'Complete').length;
-                const progress = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
-                return { ...project, progress };
-            });
+        const projectsWithProgress: ProjectWithProgress[] = projects.map((project, index) => {
+            const projectItems = allItemsByProject[index] || [];
+            const totalItems = projectItems.length;
+            const completedItems = projectItems.filter(t => t.status === 'Complete').length;
+            const progress = totalItems > 0 ? (completedItems / totalItems) * 100 : 0;
+            return { ...project, progress };
+        });
 
-            const sortedProjects = projectsWithProgress.sort(
-                (a, b) =>
-                    parseISO(b.lastActivity || '1970-01-01').getTime() -
-                    parseISO(a.lastActivity || '1970-01-01').getTime()
-            );
-            setRecentEngagements(sortedProjects.slice(0, 10));
+        const sortedProjects = projectsWithProgress.sort(
+            (a, b) =>
+                parseISO(b.lastActivity || '1970-01-01').getTime() -
+                parseISO(a.lastActivity || '1970-01-01').getTime()
+        );
+        setRecentEngagements(sortedProjects.slice(0, 10));
+
+        const now = new Date();
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const sevenDaysFromNow = addDays(today, 7);
+        sevenDaysFromNow.setHours(23, 59, 59, 999);
+
+        const upcomingItems = allItems.filter(item => {
+            if (!item.dueDate) return false;
+            let dueDate;
+            if (item.dueDate.includes('T')) {
+                dueDate = new Date(item.dueDate);
+            } else {
+                dueDate = new Date(item.dueDate + 'T00:00:00');
+            }
+            if (isNaN(dueDate.getTime())) return false;
+            const dueDateOnly = new Date(dueDate.getFullYear(), dueDate.getMonth(), dueDate.getDate());
+            return dueDateOnly >= today && dueDateOnly <= sevenDaysFromNow;
+        });
+        setThisWeeksItems(upcomingItems);
+
 
     } catch (error) {
         console.error('Failed to fetch dashboard metadata', error);
     } finally {
         setLoading(false);
     }
-  }, [allTasks]);
+  }, []);
 
   React.useEffect(() => {
     loadDashboardData();
-  }, [allTasks, loadDashboardData]);
+  }, [loadDashboardData]);
 
   React.useEffect(() => {
     const hour = new Date().getHours();
@@ -186,40 +191,8 @@ export default function DashboardPage() {
     else setGreeting('Good evening');
   }, []);
   
-  React.useEffect(() => {
-    const now = new Date();
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    
-    const sevenDaysFromNow = new Date(today);
-    sevenDaysFromNow.setDate(today.getDate() + 7);
-    sevenDaysFromNow.setHours(23, 59, 59, 999);
-    
-    const upcomingTasks = allTasks.filter(task => {
-      if (!task.dueDate) {
-        return false;
-      }
-      
-      let dueDate;
-      if (task.dueDate.includes('T')) {
-        dueDate = new Date(task.dueDate);
-      } else {
-        dueDate = new Date(task.dueDate + 'T00:00:00');
-      }
-      
-      if (isNaN(dueDate.getTime())) {
-        return false;
-      }
-      
-      const dueDateOnly = new Date(dueDate.getFullYear(), dueDate.getMonth(), dueDate.getDate());
-      
-      return dueDateOnly >= today && dueDateOnly <= sevenDaysFromNow;
-    });
-    
-    setThisWeeksTasks(upcomingTasks);
-  }, [allTasks]);
-  
   const recentActivity = isActivityExpanded ? allRecentActivity : allRecentActivity.slice(0, 5);
-  const visibleTasks = isTasksExpanded ? thisWeeksTasks : thisWeeksTasks.slice(0, 5);
+  const visibleItems = isTasksExpanded ? thisWeeksItems : thisWeeksItems.slice(0, 5);
   const [selectedNotifications, setSelectedNotifications] = React.useState<string[]>([]);
   const handleSelectNotification = (id: string) => {
     setSelectedNotifications(prev => 
@@ -251,9 +224,9 @@ export default function DashboardPage() {
     }
   };
   
-  const getTaskRiskStatus = (task: Task): 'at-risk' | 'due-soon' | 'on-track' => {
-      if (!task.dueDate) return 'on-track';
-      const dueDate = parseISO(task.dueDate);
+  const getItemRiskStatus = (item: BacklogItem): 'at-risk' | 'due-soon' | 'on-track' => {
+      if (!item.dueDate) return 'on-track';
+      const dueDate = parseISO(item.dueDate);
       if (isPast(dueDate)) return 'at-risk';
       const daysUntilDue = differenceInDays(dueDate, new Date());
       if (daysUntilDue <= 3) return 'due-soon';
@@ -268,7 +241,7 @@ export default function DashboardPage() {
     setNotifications(newNotifications);
   }
 
-  if (loading && allTasks.length === 0) {
+  if (loading) {
     return (
       <div className="space-y-6">
         <div className="space-y-2">
@@ -307,18 +280,18 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Card className="h-full">
            <CardHeader>
-                <CardTitle>Tasks Due This Week</CardTitle>
+                <CardTitle>Items Due This Week</CardTitle>
                 <CardDescription>
                     Your immediate priorities for the next 7 days
                 </CardDescription>
             </CardHeader>
             <CardContent>
-                {thisWeeksTasks.length > 0 ? (
+                {thisWeeksItems.length > 0 ? (
                     <div className="space-y-0">
-                        {visibleTasks.map((task, index) => {
-                            const riskStatus = getTaskRiskStatus(task);
+                        {visibleItems.map((item, index) => {
+                            const riskStatus = getItemRiskStatus(item);
                             return (
-                                <div key={task.id} className={cn("flex items-start justify-between py-2 rounded-md hover:bg-muted cursor-pointer", index !== visibleTasks.length - 1 && 'border-b dark:border-white/10')} onClick={() => router.push(`/dashboard/projects/${task.projectId}`)}>
+                                <div key={item.id} className={cn("flex items-start justify-between py-2 rounded-md hover:bg-muted cursor-pointer", index !== visibleItems.length - 1 && 'border-b dark:border-white/10')} onClick={() => router.push(`/dashboard/projects/${item.projectId}`)}>
                                     <div className="flex items-center gap-3 w-full">
                                         <div 
                                           className={cn(
@@ -330,16 +303,16 @@ export default function DashboardPage() {
                                         />
                                         <div className="flex-1 overflow-hidden">
                                             <div className="flex justify-between items-center gap-2">
-                                                <p className="font-medium text-sm truncate">{task.title}</p>
-                                                <Badge variant="outline" className={cn("font-normal whitespace-nowrap", statusColors[task.status])}>{task.status}</Badge>
+                                                <p className="font-medium text-sm truncate">{item.title}</p>
+                                                <Badge variant="outline" className={cn("font-normal whitespace-nowrap", statusColors[item.status])}>{item.status}</Badge>
                                             </div>
-                                            <p className="text-xs text-muted-foreground">Due on {format(parseISO(task.dueDate!), 'EEE, MMM dd')}</p>
+                                            <p className="text-xs text-muted-foreground">Due on {format(parseISO(item.dueDate!), 'EEE, MMM dd')}</p>
                                         </div>
                                     </div>
                                 </div>
                             )
                         })}
-                        {thisWeeksTasks.length > 5 && (
+                        {thisWeeksItems.length > 5 && (
                              <Button 
                                 variant="link" 
                                 className="p-0 h-auto text-sm mt-2"
@@ -353,7 +326,7 @@ export default function DashboardPage() {
                     <div className="flex flex-col items-center justify-center h-48 text-center text-muted-foreground">
                         <CalendarCheck className="h-12 w-12 mb-4" />
                         <h3 className="font-semibold">All clear for the week!</h3>
-                        <p>No tasks are due in the next 7 days.</p>
+                        <p>No items are due in the next 7 days.</p>
                     </div>
                 )}
             </CardContent>
