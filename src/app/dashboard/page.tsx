@@ -30,7 +30,7 @@ import {
 import { getProjects, type Project } from '@/services/project-service';
 import { getAssessments, type Assessment } from '@/services/assessment-service';
 import { getContacts, type Contact } from '@/services/contact-service';
-import { getTasks, type Task } from '@/services/task-service';
+import { getTasks, type Task, type TaskStatus } from '@/services/task-service';
 import { useQuickAction } from '@/contexts/quick-action-context';
 import { formatDistanceToNow, parseISO, isWithinInterval, addDays, format, differenceInDays, isPast } from 'date-fns';
 import { useRouter } from 'next/navigation';
@@ -70,6 +70,15 @@ const activityTypeConfig: Record<ActivityItem['type'], { icon: React.ElementType
   Engagement: { icon: FolderKanban, color: 'text-blue-500', bg: 'bg-blue-500/10' },
   Assessment: { icon: ClipboardList, color: 'text-purple-500', bg: 'bg-purple-500/10' },
   Contact: { icon: UserPlus, color: 'text-green-500', bg: 'bg-green-500/10' },
+};
+
+const statusColors: Record<TaskStatus, string> = {
+    'To Do': 'bg-muted-foreground/20 text-muted-foreground',
+    'In Progress': 'bg-blue-500/20 text-blue-600 dark:text-blue-400',
+    'In Review': 'bg-purple-500/20 text-purple-600 dark:text-purple-400',
+    'Needs Revision': 'bg-orange-500/20 text-orange-600 dark:text-orange-400',
+    'Final Approval': 'bg-yellow-500/20 text-yellow-600 dark:text-yellow-400',
+    'Complete': 'bg-green-500/20 text-green-600 dark:text-green-400',
 };
 
 
@@ -315,7 +324,7 @@ export default function DashboardPage() {
                                         <div className="flex-1 overflow-hidden">
                                             <div className="flex justify-between items-center gap-2">
                                                 <p className="font-medium text-sm truncate">{task.title}</p>
-                                                <Badge variant="outline" className="font-normal whitespace-nowrap">{task.status}</Badge>
+                                                <Badge variant="outline" className={cn("font-normal whitespace-nowrap", statusColors[task.status])}>{task.status}</Badge>
                                             </div>
                                             <p className="text-xs text-muted-foreground">Due on {format(parseISO(task.dueDate!), 'EEE, MMM dd')}</p>
                                         </div>
@@ -513,3 +522,6 @@ export default function DashboardPage() {
 
 
 
+
+
+    
