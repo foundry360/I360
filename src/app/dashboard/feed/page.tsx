@@ -48,7 +48,7 @@ export default function FeedPage() {
         <div className="space-y-6">
             <div>
                 <h1 className="text-2xl font-bold">Communications Feed</h1>
-                <p className="text-muted-foreground">All notifications, messages, and alerts in one place.</p>
+                <p className="text-muted-foreground">All notifications, messages, and alerts in one place</p>
             </div>
             <Separator />
             <Card>
