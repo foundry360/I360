@@ -6,7 +6,7 @@ import { getNotifications, bulkUpdateNotifications, type Notification, Notificat
 import { useUser } from '@/contexts/user-context';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { CheckCheck, Archive, Inbox, Bell, AtSign, MessageSquare, AlertCircle, Info, Star } from 'lucide-react';
+import { CheckCheck, Archive, Inbox, Bell, AtSign, MessageSquare, AlertCircle, Info, Star, MonitorCog } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { FeedItem } from '@/components/feed-item';
 import {
@@ -26,7 +26,7 @@ const filterConfig: { id: FilterType; label: string; icon: React.ElementType, co
     { id: 'thread', label: 'Threads', icon: MessageSquare, color: 'text-green-500' },
     { id: 'activity', label: 'Notifications', icon: Bell, color: 'text-orange-500' },
     { id: 'alert', label: 'Alerts', icon: AlertCircle, color: 'text-red-500' },
-    { id: 'system', label: 'System', icon: Info, color: 'text-sky-500' },
+    { id: 'system', label: 'System', icon: MonitorCog, color: 'text-sky-500' },
 ];
 
 const savedFilter = { id: 'saved' as const, label: 'Saved', icon: Star, color: 'text-yellow-500' };
