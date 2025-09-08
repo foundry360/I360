@@ -44,31 +44,18 @@ export interface Task {
 const tasksCollection = collection(db, 'tasks');
 
 export function getTasks(onUpdate: (tasks: Task[]) => void): () => void {
-    console.log('🎯 Setting up getTasks listener...');
-    
     const q = query(tasksCollection);
-    console.log('📋 Query created:', q);
     
     const unsubscribe = onSnapshot(q, (snapshot) => {
-        console.log('📨 Firestore snapshot received at:', new Date().toISOString());
-        console.log('📊 Snapshot metadata:', {
-            hasPendingWrites: snapshot.metadata.hasPendingWrites,
-            isFromCache: snapshot.metadata.isFromCache,
-            docCount: snapshot.docs.length
-        });
-        
         const tasks = snapshot.docs.map(doc => {
             const data = doc.data() as Task;
             return data;
         });
-        
-        console.log('✅ Calling onUpdate with', tasks.length, 'tasks');
         onUpdate(tasks);
     }, (error) => {
         console.error("❌ Error in getTasks listener:", error);
     });
     
-    console.log('✅ onSnapshot setup complete, returning unsubscribe function');
     return unsubscribe;
 }
 
@@ -108,91 +95,95 @@ export async function createTask(taskData: Omit<Task, 'id'>): Promise<string> {
 
 
 export async function updateTask(id: string, taskData: Partial<Omit<Task, 'id'>>): Promise<void> {
-    console.log('🔄 Updating task:', id, 'with data:', taskData);
+    console.log('🔄 updateTask called:', { id, taskData });
     
-    const docRef = doc(db, 'tasks', id);
-    const taskDoc = await getDoc(docRef);
-    if (!taskDoc.exists()) {
-        throw new Error("Task not found");
-    }
+    try {
+        const docRef = doc(db, 'tasks', id);
+        const taskDoc = await getDoc(docRef);
+        if (!taskDoc.exists()) {
+            console.error('❌ Task not found:', id);
+            throw new Error("Task not found");
+        }
 
-    const originalTask = taskDoc.data() as Task;
-    const projectId = taskData.projectId || originalTask.projectId;
-    
-    // Capture original due date for comparison
-    const originalDueDate = originalTask.dueDate;
-    const newDueDate = taskData.dueDate;
-    
-    console.log('📅 Due date comparison:', { 
-        originalDueDate, 
-        newDueDate, 
-        dueDateChanging: originalDueDate !== newDueDate 
-    });
-    
-    // Update the task itself
-    await updateDoc(docRef, taskData);
-    console.log('✅ Task document updated');
+        const originalTask = taskDoc.data() as Task;
+        const projectId = taskData.projectId || originalTask.projectId;
+        
+        console.log('📋 Original task data:', originalTask);
+        console.log('📝 Update data:', taskData);
+        
+        // Update the task itself
+        await updateDoc(docRef, taskData);
+        console.log('✅ Task document updated in Firestore');
 
-    // If the task is linked to a backlog item, update the backlog item too
-    if (originalTask.backlogId) {
-        console.log('🔗 Updating linked backlog item:', originalTask.backlogId);
-        const backlogQuery = query(collection(db, 'backlogItems'), where("projectId", "==", projectId), where("backlogId", "==", originalTask.backlogId));
-        const backlogSnapshot = await getDocs(backlogQuery);
-        if (!backlogSnapshot.empty) {
-            const backlogItemRef = backlogSnapshot.docs[0].ref;
-            const backlogUpdateData: Partial<Omit<BacklogItem, 'id'>> = {};
+        // If the task is linked to a backlog item, update the backlog item too
+        if (originalTask.backlogId) {
+            console.log('🔗 Updating linked backlog item:', originalTask.backlogId);
+            const backlogQuery = query(collection(db, 'backlogItems'), where("projectId", "==", projectId), where("backlogId", "==", originalTask.backlogId));
+            const backlogSnapshot = await getDocs(backlogQuery);
+            if (!backlogSnapshot.empty) {
+                const backlogItemRef = backlogSnapshot.docs[0].ref;
+                const backlogUpdateData: Partial<Omit<BacklogItem, 'id'>> = {};
+                if (taskData.status) backlogUpdateData.status = taskData.status;
+
+                if ('dueDate' in taskData) {
+                    backlogUpdateData.dueDate = taskData.dueDate || null;
+                    console.log('📅 Updating backlog due date to:', backlogUpdateData.dueDate);
+                }
+
+                if (taskData.description) backlogUpdateData.description = taskData.description;
+                if (taskData.owner) backlogUpdateData.owner = taskData.owner;
+                if (taskData.ownerAvatarUrl) backlogUpdateData.ownerAvatarUrl = taskData.ownerAvatarUrl;
+
+                if (Object.keys(backlogUpdateData).length > 0) {
+                     await updateDoc(backlogItemRef, backlogUpdateData);
+                     console.log('✅ Backlog item updated');
+                }
+            }
+        }
+        
+        // Send notification for due date changes
+        if ('dueDate' in taskData && originalTask.dueDate !== taskData.dueDate) {
+            console.log('📢 Due date changed - creating notification');
             
-            if (taskData.status) backlogUpdateData.status = taskData.status;
-            if (taskData.description) backlogUpdateData.description = taskData.description;
-            if (taskData.owner) backlogUpdateData.owner = taskData.owner;
-            if (taskData.ownerAvatarUrl) backlogUpdateData.ownerAvatarUrl = taskData.ownerAvatarUrl;
-
-            // Handle due date updates properly
-            if ('dueDate' in taskData) {
-                backlogUpdateData.dueDate = taskData.dueDate || null;
-                console.log('📅 Updating backlog due date to:', backlogUpdateData.dueDate);
+            let message;
+            if (taskData.dueDate) {
+                const dueDate = new Date(taskData.dueDate);
+                message = `Due date for "${originalTask.title}" updated to ${dueDate.toLocaleDateString()}.`;
+            } else {
+                message = `Due date removed from "${originalTask.title}".`;
             }
-
-            if (Object.keys(backlogUpdateData).length > 0) {
-                await updateDoc(backlogItemRef, backlogUpdateData);
-                console.log('✅ Backlog item updated');
+            
+            try {
+                await createNotification({
+                    message,
+                    link: `/dashboard/projects/${projectId}`,
+                    type: 'activity'
+                });
+                console.log('✅ Due date notification created');
+            } catch (error) {
+                console.error('❌ Failed to create due date notification:', error);
             }
-        }
-    }
-    
-    // Send notification for due date changes
-    if ('dueDate' in taskData && originalDueDate !== newDueDate) {
-        console.log('📢 Due date changed - creating notification');
-        
-        let message;
-        if (newDueDate) {
-            const dueDate = new Date(newDueDate);
-            message = `Due date for "${originalTask.title}" updated to ${dueDate.toLocaleDateString()}.`;
-        } else {
-            message = `Due date removed from "${originalTask.title}".`;
         }
         
-        try {
-            await createNotification({
-                message,
-                link: `/dashboard/projects/${projectId}`,
-                type: 'activity'
-            });
-            console.log('✅ Due date notification created');
-        } catch (error) {
-            console.error('❌ Failed to create due date notification:', error);
-        }
+        await updateProjectLastActivity(projectId);
+        console.log('✅ updateTask completed successfully');
+        
+    } catch (error) {
+        console.error('❌ Error in updateTask:', error);
+        throw error;
     }
-    
-    await updateProjectLastActivity(projectId);
-    console.log('🏁 Task update completed');
 }
 
-// Also add a specific function for due date updates
 export async function updateTaskDueDate(id: string, dueDate: string | null): Promise<void> {
-    console.log('📅 Updating task due date:', { id, dueDate });
+    console.log('📅 updateTaskDueDate called:', { id, dueDate });
     
-    await updateTask(id, { dueDate });
+    try {
+        await updateTask(id, { dueDate });
+        console.log('✅ updateTaskDueDate completed successfully');
+    } catch (error) {
+        console.error('❌ updateTaskDueDate failed:', error);
+        throw error;
+    }
 }
 
 export async function deleteTask(id: string): Promise<void> {
