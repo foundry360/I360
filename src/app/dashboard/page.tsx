@@ -300,7 +300,6 @@ export default function DashboardPage() {
                 {thisWeeksTasks.length > 0 ? (
                     <div className="space-y-0">
                         {visibleTasks.map((task, index) => {
-                            const Icon = taskTypeIcons[task.type];
                             const riskStatus = getTaskRiskStatus(task);
                             return (
                                 <div key={task.id} className={cn("flex items-center justify-between py-2 rounded-md hover:bg-muted cursor-pointer", index !== visibleTasks.length - 1 && 'border-b dark:border-white/10')} onClick={() => router.push(`/dashboard/projects/${task.projectId}`)}>
@@ -313,14 +312,13 @@ export default function DashboardPage() {
                                             riskStatus === 'on-track' && 'bg-green-500'
                                           )}
                                         />
-                                        <Icon className="h-4 w-4 text-muted-foreground" />
                                         <div>
                                             <p className="font-medium text-sm">{task.title}</p>
                                             <p className="text-xs text-muted-foreground">Due: {format(parseISO(task.dueDate!), 'EEE, MMM dd')}</p>
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-2">
-                                         <Badge variant="outline">{task.status}</Badge>
+                                         <Badge variant="outline" className="font-normal">{task.status}</Badge>
                                          <Badge variant="secondary">{task.priority}</Badge>
                                     </div>
                                 </div>
@@ -508,6 +506,7 @@ export default function DashboardPage() {
   );
 
     
+
 
 
 
