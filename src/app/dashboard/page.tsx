@@ -85,7 +85,7 @@ const statusColors: Record<TaskStatus, string> = {
 export default function DashboardPage() {
   const { user } = useUser();
   const router = useRouter();
-  const { globalSearchTerm, setGlobalSearchTerm } = useQuickAction();
+  const { globalSearchTerm, setGlobalSearchTerm, setOnTaskUpdated } = useQuickAction();
   const [greeting, setGreeting] = React.useState('');
   const [loading, setLoading] = React.useState(true);
   const [recentEngagements, setRecentEngagements] = React.useState<ProjectWithProgress[]>(
@@ -206,11 +206,15 @@ export default function DashboardPage() {
     // Add a listener to refetch data when the window gets focus
     window.addEventListener('focus', loadDashboardData);
     
-    // Cleanup listener on component unmount
+    // Add a listener for when tasks are updated
+    const unsubscribeTaskUpdates = setOnTaskUpdated(loadDashboardData);
+
+    // Cleanup listeners on component unmount
     return () => {
       window.removeEventListener('focus', loadDashboardData);
+      if (unsubscribeTaskUpdates) unsubscribeTaskUpdates();
     };
-  }, [loadDashboardData]);
+  }, [loadDashboardData, setOnTaskUpdated]);
   
   const recentActivity = isActivityExpanded ? allRecentActivity : allRecentActivity.slice(0, 5);
   const visibleTasks = isTasksExpanded ? thisWeeksTasks : thisWeeksTasks.slice(0, 5);
@@ -523,5 +527,7 @@ export default function DashboardPage() {
 
 
 
+
+    
 
     
