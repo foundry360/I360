@@ -1139,7 +1139,7 @@ export default function ProjectDetailsPage() {
                                     <Card>
                                         <CardHeader>
                                             <CardTitle>Epic Progress</CardTitle>
-                                            <CardDescription>A summary of completion for each engagement epic</CardDescription>
+                                            {epicProgressData.length > 0 && <CardDescription>A summary of completion for each engagement epic</CardDescription>}
                                         </CardHeader>
                                         <CardContent>
                                             {epicProgressData.length > 0 ? (
@@ -1167,8 +1167,9 @@ export default function ProjectDetailsPage() {
                                                     })}
                                                 </Accordion>
                                             ) : (
-                                                <div className="h-[150px] flex items-center justify-center text-center text-muted-foreground text-sm p-4">
-                                                No epic progress to display. Add items with points to epics.
+                                                <div className="h-[150px] flex flex-col items-center justify-center text-center text-muted-foreground text-sm p-4">
+                                                    <Loader className="h-10 w-10 mb-2 text-muted-foreground" />
+                                                    No epic progress to display. Add items with points to epics.
                                                 </div>
                                             )}
                                         </CardContent>
