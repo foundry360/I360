@@ -848,7 +848,7 @@ export default function ProjectDetailsPage() {
                         </TabsTrigger>
                     </TabsList>
                      <div className="flex items-center gap-2">
-                        {(activeTab === 'backlog' || activeTab === 'epics') && (
+                        {(activeTab === 'backlog' || activeTab === 'epics') && unassignedAndUnscheduledBacklogItems.length > 0 && (
                              <div className="flex items-center gap-2">
                                  <TooltipProvider>
                                     <Tooltip>
@@ -899,7 +899,7 @@ export default function ProjectDetailsPage() {
                                 </TooltipProvider>
                             </div>
                         )}
-                         {activeTab === 'sprints' && sprints.length > 0 && (
+                        {activeTab === 'sprints' && sprints.length > 0 && (
                             <TooltipProvider>
                                 <Tooltip>
                                     <TooltipTrigger asChild>
@@ -912,7 +912,7 @@ export default function ProjectDetailsPage() {
                                     </TooltipContent>
                                 </Tooltip>
                             </TooltipProvider>
-                         )}
+                        )}
                     </div>
                 </div>
 
@@ -976,7 +976,7 @@ export default function ProjectDetailsPage() {
 
                             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                                <div className="col-span-1 space-y-6">
-                                    <Card className={cn(velocityData.length === 0 && 'border-2 border-dashed bg-transparent shadow-none')}>
+                                    <Card className={cn(velocityData.length === 0 && 'border-2 border-dashed border-border bg-transparent shadow-none')}>
                                         <CardHeader>
                                             <CardTitle>Velocity</CardTitle>
                                             {velocityData.length > 0 && <CardDescription>Story points completed per wave</CardDescription>}
@@ -1041,7 +1041,7 @@ export default function ProjectDetailsPage() {
                                             )}
                                         </CardContent>
                                     </Card>
-                                    <Card className={cn(burndownData.length === 0 && 'border-dashed bg-transparent shadow-none')}>
+                                    <Card className={cn(burndownData.length === 0 && 'border-2 border-dashed border-border bg-transparent shadow-none')}>
                                         <CardHeader>
                                             <CardTitle>Burndown</CardTitle>
                                             {burndownData.length > 0 && <CardDescription>Ideal vs actual work remaining</CardDescription>}
@@ -1136,7 +1136,7 @@ export default function ProjectDetailsPage() {
                                             </CardFooter>
                                         </Card>
                                     )}
-                                    <Card className={cn(epicProgressData.length === 0 && 'border-dashed bg-transparent shadow-none')}>
+                                    <Card className={cn(epicProgressData.length === 0 && 'border-2 border-dashed border-border bg-transparent shadow-none')}>
                                         <CardHeader>
                                             <CardTitle>Epic Progress</CardTitle>
                                             {epicProgressData.length > 0 && <CardDescription>A summary of completion for each engagement epic</CardDescription>}
@@ -1168,7 +1168,7 @@ export default function ProjectDetailsPage() {
                                                 </Accordion>
                                             ) : (
                                                  <div className="h-[150px] flex flex-col items-center justify-center text-center text-muted-foreground text-sm">
-                                                    <Loader className="h-10 w-10 mb-2 animate-spin" />
+                                                    <Loader className="h-10 w-10 mb-2" />
                                                     No epic progress to display. Add items with points to epics.
                                                 </div>
                                             )}
@@ -1176,7 +1176,7 @@ export default function ProjectDetailsPage() {
                                     </Card>
                                </div>
                                <div className="col-span-1 space-y-6">
-                                     <Card className={cn(atRiskItems.length === 0 && 'border-dashed bg-transparent shadow-none')}>
+                                     <Card className={cn(atRiskItems.length === 0 && 'border-2 border-dashed border-border bg-transparent shadow-none')}>
                                         <CardHeader>
                                             <CardTitle>At-Risk Items</CardTitle>
                                             {atRiskItems.length > 0 && <CardDescription>Items that are overdue or due within 3 days.</CardDescription>}
@@ -1599,6 +1599,7 @@ export default function ProjectDetailsPage() {
                                 </div>
                                 )
                             })}
+                            
                             {sprints.filter(s => s.status === 'Completed').length > 0 && (
                                 <div>
                                     <h2 className="text-lg font-semibold mb-2">Completed Waves</h2>
