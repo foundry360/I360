@@ -103,6 +103,31 @@ export default function FeedPage() {
         );
     };
 
+    const getEmptyStateContent = () => {
+        const currentFilterConfig = filterConfig.find(f => f.id === activeFilter) || savedFilter;
+        const filterName = currentFilterConfig.label.toLowerCase();
+
+        switch (activeFilter) {
+            case 'saved':
+                return {
+                    title: "No saved items",
+                    message: "Archived notifications will appear here"
+                };
+            case 'all':
+                return {
+                    title: "All caught up!",
+                    message: "Your feed is empty. Important updates will appear here"
+                };
+            default:
+                return {
+                    title: "All caught up!",
+                    message: `Your ${filterName} are empty. Important updates will appear here`
+                };
+        }
+    };
+    
+    const emptyState = getEmptyStateContent();
+
     return (
         <div className="space-y-6">
             <div className="flex justify-between items-center">
@@ -136,16 +161,14 @@ export default function FeedPage() {
             <Separator />
              <div className="grid grid-cols-12 gap-8">
                 <div className="col-span-2">
-                    <div className="p-4 rounded-lg">
-                        <nav className="space-y-1">
-                            {renderFilterButton(savedFilter)}
-                        </nav>
-                        <Separator className="my-4" />
-                        <h4 className="text-xs font-semibold uppercase text-muted-foreground tracking-wider px-2 mb-4">FILTERS</h4>
-                        <nav className="space-y-1">
-                            {filterConfig.map(renderFilterButton)}
-                        </nav>
-                    </div>
+                    <nav className="space-y-1">
+                        {renderFilterButton(savedFilter)}
+                    </nav>
+                    <Separator className="my-4" />
+                    <h4 className="text-xs font-semibold uppercase text-muted-foreground tracking-wider px-2 mb-4">FILTERS</h4>
+                    <nav className="space-y-1">
+                        {filterConfig.map(renderFilterButton)}
+                    </nav>
                 </div>
                 <div className="col-span-10">
                     <Card className="overflow-hidden">
@@ -169,12 +192,10 @@ export default function FeedPage() {
                                     </div>
                                 </div>
                                 <h3 className="text-lg font-semibold">
-                                  {activeFilter === 'saved' ? "No saved items" : "All caught up!"}
+                                  {emptyState.title}
                                 </h3>
                                 <p>
-                                  {activeFilter === 'saved'
-                                    ? 'Archived notifications will appear here'
-                                    : 'Your feed is empty. Important updates will appear here'}
+                                  {emptyState.message}
                                 </p>
                             </div>
                         )}
