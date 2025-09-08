@@ -220,7 +220,11 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
   }, [refreshListener]);
 
   const useDataRefresh = React.useCallback((callback: () => void) => {
-    setRefreshListener(() => callback);
+    React.useEffect(() => {
+      setRefreshListener(() => callback);
+      // Cleanup the listener when the component unmounts
+      return () => setRefreshListener(null);
+    }, [callback]);
   }, []);
 
   const openNewCompanyDialog = React.useCallback(() => setIsNewCompanyDialogOpen(true), []);
