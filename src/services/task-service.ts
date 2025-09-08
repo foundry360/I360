@@ -44,13 +44,31 @@ export interface Task {
 const tasksCollection = collection(db, 'tasks');
 
 export function getTasks(onUpdate: (tasks: Task[]) => void): () => void {
+    console.log('🎯 Setting up getTasks listener...');
+    
     const q = query(tasksCollection);
+    console.log('📋 Query created:', q);
+    
     const unsubscribe = onSnapshot(q, (snapshot) => {
-        const tasks = snapshot.docs.map(doc => doc.data() as Task);
+        console.log('📨 Firestore snapshot received at:', new Date().toISOString());
+        console.log('📊 Snapshot metadata:', {
+            hasPendingWrites: snapshot.metadata.hasPendingWrites,
+            isFromCache: snapshot.metadata.isFromCache,
+            docCount: snapshot.docs.length
+        });
+        
+        const tasks = snapshot.docs.map(doc => {
+            const data = doc.data() as Task;
+            return data;
+        });
+        
+        console.log('✅ Calling onUpdate with', tasks.length, 'tasks');
         onUpdate(tasks);
     }, (error) => {
-        console.error("Error fetching tasks in real-time:", error);
+        console.error("❌ Error in getTasks listener:", error);
     });
+    
+    console.log('✅ onSnapshot setup complete, returning unsubscribe function');
     return unsubscribe;
 }
 
