@@ -473,7 +473,7 @@ export function Sidebar() {
                 <TooltipTrigger asChild>
                   <Button
                     variant="ghost"
-                    className="w-full justify-center"
+                    className="w-full justify-end"
                     onClick={toggleSidebar}
                     aria-label={
                       isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'
