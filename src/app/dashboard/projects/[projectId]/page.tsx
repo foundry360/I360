@@ -1035,7 +1035,7 @@ export default function ProjectDetailsPage() {
                                                 </ChartContainer>
                                             ) : (
                                                 <div className="h-[150px] flex flex-col items-center justify-center text-center text-muted-foreground text-sm">
-                                                    <CircleGauge className="h-10 w-10 mb-2 text-primary/50" />
+                                                    <CircleGauge className="h-10 w-10 mb-2 text-muted-foreground" />
                                                     Complete a wave to see your team's velocity.
                                                 </div>
                                             )}
@@ -1088,7 +1088,7 @@ export default function ProjectDetailsPage() {
                                                 </ChartContainer>
                                             ) : (
                                                 <div className="h-[150px] flex flex-col items-center justify-center text-center text-muted-foreground text-sm p-4">
-                                                <CloudDownload className="h-10 w-10 mb-2 text-primary/50" />
+                                                <CloudDownload className="h-10 w-10 mb-2 text-muted-foreground" />
                                                 Complete a wave with estimated story points to generate a burndown chart.
                                                 </div>
                                             )}
