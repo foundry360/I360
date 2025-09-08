@@ -1176,7 +1176,7 @@ export default function ProjectDetailsPage() {
                                         <CardTitle>At-Risk Items</CardTitle>
                                         <CardDescription>Items that are overdue or due within 3 days.</CardDescription>
                                     </CardHeader>
-                                    <CardContent className="space-y-3">
+                                    <CardContent className="space-y-2">
                                         {atRiskItems.length > 0 ? (
                                             atRiskItems.map(item => {
                                                 const dueDate = parseISO(item.dueDate!);
