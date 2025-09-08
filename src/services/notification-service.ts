@@ -82,3 +82,19 @@ export async function bulkUpdateNotifications(updates: { ids: string[], data: Pa
     });
     await batch.commit();
 }
+
+export async function markAllNotificationsAsRead(): Promise<void> {
+  if (!auth.currentUser) return;
+  
+  const q = query(notificationsCollection, where('isRead', '==', false));
+  const snapshot = await getDocs(q);
+
+  if (snapshot.empty) return;
+
+  const batch = writeBatch(db);
+  snapshot.docs.forEach(docSnapshot => {
+      batch.update(docSnapshot.ref, { isRead: true });
+  });
+
+  await batch.commit();
+}
