@@ -4,7 +4,6 @@
 import * as React from 'react';
 import { useRouter } from 'next/navigation';
 import {
-  Archive,
   Bell,
   Check,
   ChevronDown,
@@ -17,7 +16,8 @@ import {
   AtSign,
   MessageSquare,
   AlertTriangle,
-  MonitorCog
+  MonitorCog,
+  Star,
 } from 'lucide-react';
 import type { Notification, NotificationType } from '@/services/notification-service';
 import { updateNotification } from '@/services/notification-service';
@@ -51,7 +51,7 @@ const notificationTypeConfig: Record<
   NotificationType,
   { icon: React.ElementType; color: string; border: string }
 > = {
-  system: { icon: MonitorCog, color: 'text-sky-500', border: 'border-l-sky-500' },
+  system: { icon: MonitorCog, color: 'text-purple-500', border: 'border-l-purple-500' },
   alert: { icon: AlertTriangle, color: 'text-destructive', border: 'border-l-destructive' },
   activity: { icon: Bell, color: 'text-orange-500', border: 'border-l-orange-500' },
   mention: { icon: AtSign, color: 'text-blue-500', border: 'border-l-blue-500' },
@@ -86,10 +86,10 @@ export const FeedItem: React.FC<FeedItemProps> = ({
     onUpdate();
   };
   
-  const handleArchive = async () => {
+  const handleSave = async () => {
     await updateNotification(notification.id, { isArchived: true });
     toast({
-        title: "Notification Archived",
+        title: "Notification Saved",
     });
     onUpdate();
   }
@@ -162,8 +162,8 @@ export const FeedItem: React.FC<FeedItemProps> = ({
                     </DropdownMenuPortal>
                 </DropdownMenuSub>
                 <DropdownMenuSeparator />
-                 <DropdownMenuItem onClick={handleArchive}>
-                    <Archive className="mr-2 h-4 w-4" /> Archive
+                 <DropdownMenuItem onClick={handleSave}>
+                    <Star className="mr-2 h-4 w-4" /> Save
                 </DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>

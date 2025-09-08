@@ -59,7 +59,7 @@ export default function FeedPage() {
         setSelectedNotifications([]);
     };
 
-    const handleBulkArchive = async () => {
+    const handleBulkSave = async () => {
         const idsToUpdate = selectedNotifications.length > 0 ? selectedNotifications : notifications.filter(n => n.isRead).map(n => n.id);
         await bulkUpdateNotifications({ ids: idsToUpdate, data: { isArchived: true }});
         await fetchNotifications();
@@ -111,7 +111,7 @@ export default function FeedPage() {
             case 'saved':
                 return {
                     title: "No saved items",
-                    message: "Archived notifications will appear here"
+                    message: "Saved notifications will appear here"
                 };
             case 'all':
                 return {
@@ -149,7 +149,7 @@ export default function FeedPage() {
                     {selectedNotifications.length > 0 ? (
                         <>
                             <Button variant="outline" onClick={handleBulkMarkRead}>Mark as Read ({selectedNotifications.length})</Button>
-                            <Button variant="outline" onClick={handleBulkArchive}>Archive ({selectedNotifications.length})</Button>
+                            <Button variant="outline" onClick={handleBulkSave}>Save ({selectedNotifications.length})</Button>
                         </>
                     ) : (
                          <DropdownMenu>
@@ -160,8 +160,8 @@ export default function FeedPage() {
                                 <DropdownMenuItem onClick={handleBulkMarkRead} disabled={unreadCount === 0}>
                                     <CheckCheck className="mr-2 h-4 w-4" /> Mark all as read
                                 </DropdownMenuItem>
-                                <DropdownMenuItem onClick={handleBulkArchive} disabled={notifications.length === unreadCount}>
-                                    <Archive className="mr-2 h-4 w-4" /> Archive all read
+                                <DropdownMenuItem onClick={handleBulkSave} disabled={notifications.length === unreadCount}>
+                                    <Star className="mr-2 h-4 w-4" /> Save all read
                                 </DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
@@ -177,7 +177,12 @@ export default function FeedPage() {
                     <Separator className="my-4" />
                     <h4 className="text-xs font-semibold uppercase text-muted-foreground tracking-wider px-2 mb-4">FILTERS</h4>
                     <nav className="space-y-1">
-                        {filterConfig.map(renderFilterButton)}
+                        {renderFilterButton(filterConfig.find(f => f.id === 'all')!)}
+                        {renderFilterButton(filterConfig.find(f => f.id === 'activity')!)}
+                        {renderFilterButton(filterConfig.find(f => f.id === 'mention')!)}
+                        {renderFilterButton(filterConfig.find(f => f.id === 'thread')!)}
+                        {renderFilterButton(filterConfig.find(f => f.id === 'alert')!)}
+                        {renderFilterButton(filterConfig.find(f => f.id === 'system')!)}
                     </nav>
                 </div>
                 <div className="col-span-10">
