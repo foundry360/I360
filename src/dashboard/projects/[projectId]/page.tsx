@@ -859,7 +859,7 @@ export default function ProjectDetailsPage() {
                         </TabsTrigger>
                     </TabsList>
                      <div className="flex items-center gap-2">
-                        {activeTab === 'backlog' && unassignedAndUnscheduledBacklogItems.length > 0 && (
+                        {activeTab === 'backlog' && unassignedAndUnscheduledBacklogItems.length === 0 && (
                              <div className="flex items-center gap-2">
                                  <TooltipProvider>
                                     <Tooltip>
@@ -922,7 +922,7 @@ export default function ProjectDetailsPage() {
                                 </TooltipProvider>
                             </div>
                         )}
-                         {activeTab === 'sprints' && hasUpcomingOrActiveWaves && (
+                         {activeTab === 'sprints' && sprints.length > 0 && (
                             <TooltipProvider>
                                 <Tooltip>
                                     <TooltipTrigger asChild>
@@ -1408,7 +1408,7 @@ export default function ProjectDetailsPage() {
                     <TabsContent value="backlog">
                         <div className="space-y-6">
                              {unassignedAndUnscheduledBacklogItems.length === 0 ? (
-                                <div className="p-10 text-center rounded-lg border-2 border-dashed border-border bg-transparent shadow-none">
+                                <div className="p-10 text-center rounded-lg border-2 border-dashed border-border bg-muted/20">
                                     <div className="flex justify-center mb-4">
                                         <div className="flex justify-center items-center h-16 w-16 text-muted-foreground">
                                             <Inbox className="h-8 w-8" />
