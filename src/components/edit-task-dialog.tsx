@@ -71,7 +71,6 @@ export function EditTaskDialog() {
       };
       await updateTask(id, dataToSave);
       handleOpenChange(false);
-      // Instead of a specific callback, we just rely on page re-fetching.
       router.refresh(); 
     } catch (error) {
       console.error('Failed to update task:', error);

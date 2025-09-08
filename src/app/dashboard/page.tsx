@@ -43,7 +43,6 @@ import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { EngagementInsightsPanel } from '@/components/engagement-insights-panel';
 import { getNotifications, markAllNotificationsAsRead, type Notification } from '@/services/notification-service';
 import { FeedItem } from '@/components/feed-item';
-import eventBus from '@/lib/event-bus';
 
 type ActivityItem = {
   id: string;
@@ -86,7 +85,6 @@ const statusColors: Record<TaskStatus, string> = {
 export default function DashboardPage() {
   const { user } = useUser();
   const router = useRouter();
-  const { setOnProjectUpdated, setOnBacklogItemCreated, setOnEpicCreated, setOnSprintCreated } = useQuickAction();
   const [greeting, setGreeting] = React.useState('');
   const [loading, setLoading] = React.useState(true);
   const [recentEngagements, setRecentEngagements] = React.useState<ProjectWithProgress[]>(
@@ -203,15 +201,6 @@ export default function DashboardPage() {
     }
     
     loadDashboardData();
-    
-    const handleDataChanged = () => {
-        loadDashboardData();
-    };
-    eventBus.on('data-changed', handleDataChanged);
-
-    return () => {
-        eventBus.off('data-changed', handleDataChanged);
-    }
   }, [loadDashboardData]);
   
   const recentActivity = isActivityExpanded ? allRecentActivity : allRecentActivity.slice(0, 5);
@@ -514,9 +503,4 @@ export default function DashboardPage() {
       </div>
     </div>
   );
-
     
-
-
-
-

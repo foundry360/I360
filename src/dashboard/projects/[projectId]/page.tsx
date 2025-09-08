@@ -65,7 +65,6 @@ import { TimelineView } from '@/components/timeline-view';
 import Link from 'next/link';
 import { getTags, type Tag } from '@/services/user-story-service';
 import { tagConfig } from '@/lib/tag-config';
-import eventBus from '@/lib/event-bus';
 
 type TaskType = Task['type'];
 type BoardColumns = Record<TaskStatus, Task[]>;
@@ -273,9 +272,6 @@ export default function ProjectDetailsPage() {
         openEditSprintDialog,
         openEditTaskDialog,
         openAddFromCollectionDialog,
-        setOnBacklogItemCreated,
-        setOnEpicCreated,
-        setOnSprintCreated
     } = useQuickAction();
     const { toast } = useToast();
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
@@ -351,16 +347,7 @@ export default function ProjectDetailsPage() {
     
     React.useEffect(() => {
         fetchData();
-        const unsubscribeBacklog = setOnBacklogItemCreated(fetchData);
-        const unsubscribeEpic = setOnEpicCreated(fetchData);
-        const unsubscribeSprint = setOnSprintCreated(fetchData);
-
-        return () => {
-            if (unsubscribeBacklog) unsubscribeBacklog();
-            if (unsubscribeEpic) unsubscribeEpic();
-            if (unsubscribeSprint) unsubscribeSprint();
-        }
-    }, [fetchData, setOnBacklogItemCreated, setOnEpicCreated, setOnSprintCreated]);
+    }, [fetchData]);
 
     const projectPrefix = project ? project.name.substring(0, project.name.indexOf('-')) : '';
     
@@ -393,7 +380,7 @@ export default function ProjectDetailsPage() {
         try {
             await updateTaskOrderAndStatus(taskId, destColId, destination.index, projectId);
             await fetchData();
-            eventBus.dispatch('data-changed');
+            router.refresh();
         } catch (error) {
             console.error("Failed to update task:", error);
             // Revert optimistic update on failure by re-fetching
@@ -413,7 +400,7 @@ export default function ProjectDetailsPage() {
                 await deleteSprint(itemToDelete.id);
             }
             fetchData();
-            eventBus.dispatch('data-changed');
+            router.refresh();
         } catch (error) {
             console.error(`Failed to delete ${itemToDelete.type}:`, error);
         } finally {
@@ -426,7 +413,7 @@ export default function ProjectDetailsPage() {
         try {
             await updateBacklogItem(backlogItemId, { sprintId });
             await fetchData();
-            eventBus.dispatch('data-changed');
+            router.refresh();
         } catch (error) {
             console.error("Failed to move item to sprint:", error);
         }
@@ -451,7 +438,7 @@ export default function ProjectDetailsPage() {
                 description: 'Tasks have been created on the board.',
             });
             await fetchData();
-            eventBus.dispatch('data-changed');
+            router.refresh();
         } catch (error) {
             console.error('Failed to start wave:', error);
             toast({
@@ -473,7 +460,7 @@ export default function ProjectDetailsPage() {
                 description: 'Completed tasks have been archived.',
             });
             await fetchData();
-            eventBus.dispatch('data-changed');
+            router.refresh();
         } catch (error) {
             console.error('Failed to complete wave:', error);
             const errorMessage = (error instanceof Error) ? error.message : 'There was a problem completing the wave.';
@@ -1708,6 +1695,4 @@ export default function ProjectDetailsPage() {
         </div>
     );
 }
-
-
 
