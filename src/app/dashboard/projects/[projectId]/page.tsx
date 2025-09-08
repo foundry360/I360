@@ -1510,7 +1510,7 @@ export default function ProjectDetailsPage() {
                                         <Card className="border-dashed">
                                             <CardContent className="p-10 text-center">
                                                 <div className="flex justify-center mb-4">
-                                                    <div className="flex items-center justify-center h-16 w-16 rounded-full bg-muted text-muted-foreground">
+                                                    <div className="flex items-center justify-center h-16 w-16 rounded-full text-muted-foreground">
                                                         <WavesIcon className="h-8 w-8" />
                                                     </div>
                                                 </div>
