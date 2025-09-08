@@ -1271,22 +1271,20 @@ export default function ProjectDetailsPage() {
                     <TabsContent value="epics">
                         <div className="space-y-6">
                             {epics.length === 0 && unassignedBacklogItems.length === 0 ? (
-                                 <Card className="border-dashed">
-                                    <CardContent className="p-10 text-center">
-                                        <div className="flex justify-center mb-4">
-                                            <div className="bg-primary rounded-full p-3">
-                                                <Layers className="h-8 w-8 text-primary-foreground" />
-                                            </div>
+                                 <div className="p-10 text-center rounded-lg border-2 border-dashed border-border">
+                                    <div className="flex justify-center mb-4">
+                                        <div className="flex items-center justify-center h-16 w-16 text-muted-foreground">
+                                            <Layers className="h-8 w-8" />
                                         </div>
-                                        <h3 className="text-lg font-semibold">No Epics Yet!</h3>
-                                        <p className="text-muted-foreground mt-2 mb-4">
-                                            Epics are large bodies of work that can be broken down into smaller stories. Get started by creating your first one.
-                                        </p>
-                                        <div className="flex justify-center gap-4">
-                                            <Button onClick={() => openNewEpicDialog(projectId)}><Plus className="h-4 w-4 mr-2" /> Create Epic</Button>
-                                        </div>
-                                    </CardContent>
-                                </Card>
+                                    </div>
+                                    <h3 className="text-lg font-semibold text-foreground">No Epics Yet!</h3>
+                                    <p className="text-muted-foreground mt-2 mb-4">
+                                        Epics are large bodies of work that can be broken down into smaller stories. Get started by creating your first one.
+                                    </p>
+                                    <div className="flex justify-center gap-4">
+                                        <Button onClick={() => openNewEpicDialog(projectId)}><Plus className="h-4 w-4 mr-2" /> Create Epic</Button>
+                                    </div>
+                                </div>
                             ) : (
                                 <>
                                     {epics.map(epic => {
