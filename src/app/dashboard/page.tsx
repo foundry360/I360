@@ -18,7 +18,12 @@ import {
   FolderKanban,
   ClipboardList,
   CalendarCheck,
-  Clock
+  Clock,
+  Presentation,
+  Zap,
+  GanttChartSquare,
+  Wrench,
+  SearchCheck,
 } from 'lucide-react';
 import { getProjects, type Project } from '@/services/project-service';
 import { getAssessments, type Assessment } from '@/services/assessment-service';
@@ -43,6 +48,17 @@ type ActivityItem = {
 };
 
 type ProjectWithProgress = Project & { progress: number };
+
+type TaskType = Task['type'];
+
+const taskTypeIcons: Record<TaskType, React.ElementType> = {
+    Assessment: ClipboardList,
+    Workshop: Presentation,
+    Enablement: Zap,
+    Planning: GanttChartSquare,
+    Execution: Wrench,
+    Review: SearchCheck,
+};
 
 export default function DashboardPage() {
   const { user } = useUser();
@@ -234,18 +250,24 @@ export default function DashboardPage() {
             <CardContent>
                 {thisWeeksTasks.length > 0 ? (
                     <div className="space-y-0">
-                        {visibleTasks.map((task, index) => (
-                            <div key={task.id} className={cn("flex items-center justify-between py-2 rounded-md hover:bg-muted cursor-pointer", index !== visibleTasks.length - 1 && 'border-b dark:border-white/10')} onClick={() => router.push(`/dashboard/projects/${task.projectId}`)}>
-                                <div>
-                                    <p className="font-medium text-sm">{task.title}</p>
-                                    <p className="text-xs text-muted-foreground">Due: {format(parseISO(task.dueDate!), 'EEE, MMM dd')}</p>
+                        {visibleTasks.map((task, index) => {
+                            const Icon = taskTypeIcons[task.type];
+                            return (
+                                <div key={task.id} className={cn("flex items-center justify-between py-2 rounded-md hover:bg-muted cursor-pointer", index !== visibleTasks.length - 1 && 'border-b dark:border-white/10')} onClick={() => router.push(`/dashboard/projects/${task.projectId}`)}>
+                                    <div className="flex items-center gap-3">
+                                        <Icon className="h-4 w-4 text-muted-foreground" />
+                                        <div>
+                                            <p className="font-medium text-sm">{task.title}</p>
+                                            <p className="text-xs text-muted-foreground">Due: {format(parseISO(task.dueDate!), 'EEE, MMM dd')}</p>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                         <Badge variant="outline">{task.status}</Badge>
+                                         <Badge variant="secondary">{task.priority}</Badge>
+                                    </div>
                                 </div>
-                                <div className="flex items-center gap-2">
-                                     <Badge variant="outline">{task.status}</Badge>
-                                     <Badge variant="secondary">{task.priority}</Badge>
-                                </div>
-                            </div>
-                        ))}
+                            )
+                        })}
                         {thisWeeksTasks.length > 5 && (
                              <Button 
                                 variant="link" 
@@ -368,6 +390,8 @@ export default function DashboardPage() {
       </div>
     </div>
   );
+
+    
 
     
 
