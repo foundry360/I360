@@ -108,8 +108,8 @@ const statusHexColors: Record<BacklogItemStatus, string> = {
 
 
 const BacklogItemTypeIcon = ({ type }: { type: BacklogItemType }) => {
-    const Icon = backlogItemTypeIcons[type] || Wrench;
-    const colorClass = backlogItemTypeColors[type] || 'bg-primary';
+    const Icon = type ? backlogItemTypeIcons[type] : Wrench;
+    const colorClass = type ? backlogItemTypeColors[type] : 'bg-primary';
     return (
         <div className={cn("flex items-center justify-center h-6 w-6 rounded-full", colorClass)}>
             <Icon className="h-4 w-4 text-white" />
@@ -310,7 +310,7 @@ export default function ProjectDetailsPage() {
                 const companyContacts = await getContactsForCompany(projectData.companyId);
                 setContacts(companyContacts);
             }
-        } catch (error) => {
+        } catch (error) {
             console.error("Failed to fetch project data:", error);
         } finally {
             setLoading(false);
@@ -923,7 +923,7 @@ export default function ProjectDetailsPage() {
                                 <Card>
                                     <CardHeader>
                                         <CardTitle>Velocity</CardTitle>
-                                        {velocityData.length > 0 && <CardDescription>Story points completed per wave</CardDescription>}
+                                        <CardDescription>Story points completed per wave</CardDescription>
                                     </CardHeader>
                                     <CardContent>
                                         {velocityData.length > 0 ? (
@@ -978,9 +978,8 @@ export default function ProjectDetailsPage() {
                                                 </LineChart>
                                             </ChartContainer>
                                         ) : (
-                                            <div className="h-[150px] flex flex-col gap-4 items-center justify-center text-center text-muted-foreground text-sm">
-                                                <CircleGauge className="h-10 w-10" />
-                                                <p>Complete a wave to see your team's velocity.</p>
+                                            <div className="h-[150px] flex items-center justify-center text-center text-muted-foreground text-sm">
+                                                Complete a wave to see your team's velocity.
                                             </div>
                                         )}
                                     </CardContent>
@@ -988,7 +987,7 @@ export default function ProjectDetailsPage() {
                                  <Card>
                                     <CardHeader>
                                         <CardTitle>Burndown</CardTitle>
-                                        {burndownData.length > 0 && <CardDescription>Ideal vs actual work remaining</CardDescription>}
+                                        <CardDescription>Ideal vs actual work remaining</CardDescription>
                                     </CardHeader>
                                     <CardContent>
                                         {burndownData.length > 0 ? (
@@ -1031,9 +1030,8 @@ export default function ProjectDetailsPage() {
                                                 </LineChart>
                                             </ChartContainer>
                                         ) : (
-                                             <div className="h-[150px] flex flex-col gap-4 items-center justify-center text-center text-muted-foreground text-sm p-4">
-                                                <CloudDownload className="h-10 w-10" />
-                                                <p>Complete a wave with estimated story points to generate a burndown chart.</p>
+                                             <div className="h-[150px] flex items-center justify-center text-center text-muted-foreground text-sm p-4">
+                                                Complete a wave with estimated story points to generate a burndown chart.
                                             </div>
                                         )}
                                     </CardContent>
@@ -1679,5 +1677,4 @@ export default function ProjectDetailsPage() {
         </div>
     );
 }
-
 
