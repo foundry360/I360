@@ -6,7 +6,7 @@ import type { Assessment } from '@/services/assessment-service';
 import type { Epic } from '@/services/epic-service';
 import type { BacklogItem } from '@/services/backlog-item-service';
 import type { Sprint } from '@/services/sprint-service';
-import type { Task } from '@/services/task-service';
+import { getTasks, type Task } from '@/services/task-service';
 import type { Contact } from '@/services/contact-service';
 import type { Project } from '@/services/project-service';
 import type { UserStory } from '@/services/user-story-service';
@@ -17,6 +17,8 @@ type StoryForEdit = Omit<UserStory, 'createdAt'> & { createdAt: string };
 
 
 type QuickActionContextType = {
+  allTasks: Task[];
+
   isNewCompanyDialogOpen: boolean;
   openNewCompanyDialog: () => void;
   closeNewCompanyDialog: () => void;
@@ -142,6 +144,7 @@ const QuickActionContext = React.createContext<
 >(undefined);
 
 export function QuickActionProvider({ children }: { children: React.ReactNode }) {
+  const [allTasks, setAllTasks] = React.useState<Task[]>([]);
   const [isNewCompanyDialogOpen, setIsNewCompanyDialogOpen] = React.useState(false);
   const onCompanyCreatedRef = React.useRef<(() => void) | null>(null);
 
@@ -207,6 +210,11 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
   const onAddFromLibraryRef = React.useRef<(() => void) | null>(null);
 
   const [globalSearchTerm, setGlobalSearchTerm] = React.useState('');
+
+  React.useEffect(() => {
+    const unsubscribe = getTasks(setAllTasks);
+    return () => unsubscribe();
+  }, []);
 
   const openNewCompanyDialog = React.useCallback(() => setIsNewCompanyDialogOpen(true), []);
   const closeNewCompanyDialog = React.useCallback(() => setIsNewCompanyDialogOpen(false), []);
@@ -343,6 +351,9 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
   }, []);
   const setOnTaskUpdated = React.useCallback((callback: (() => void) | null) => {
     onTaskUpdatedRef.current = callback;
+    if (callback) {
+      callback();
+    }
     return () => { onTaskUpdatedRef.current = null; };
   }, []);
 
@@ -399,6 +410,7 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
   }, []);
 
   const contextValue = React.useMemo(() => ({
+    allTasks,
     isNewCompanyDialogOpen,
     openNewCompanyDialog,
     closeNewCompanyDialog,
@@ -518,6 +530,7 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
     globalSearchTerm,
     setGlobalSearchTerm,
   }), [
+    allTasks,
     isNewCompanyDialogOpen, openNewCompanyDialog, closeNewCompanyDialog, setOnCompanyCreated,
     isNewContactDialogOpen, openNewContactDialog, closeNewContactDialog, setOnContactCreated,
     isAssessmentModalOpen, openAssessmentModal, closeAssessmentModal, assessmentToResume, setOnAssessmentCompleted,

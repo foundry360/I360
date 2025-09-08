@@ -264,6 +264,7 @@ export default function ProjectDetailsPage() {
     const [loading, setLoading] = React.useState(true);
     const [activeTab, setActiveTab] = React.useState('summary');
     const { 
+        allTasks,
         openNewBacklogItemDialog,
         openNewEpicDialog,
         openEditEpicDialog,
@@ -290,9 +291,8 @@ export default function ProjectDetailsPage() {
         if (!projectId) return;
         setLoading(true);
         try {
-            const [projectData, tasksData, epicsData, backlogItemsData, sprintsData, tagsData, collectionsData] = await Promise.all([
+            const [projectData, epicsData, backlogItemsData, sprintsData, tagsData, collectionsData] = await Promise.all([
                 getProject(projectId),
-                getTasksForProject(projectId),
                 getEpicsForProject(projectId),
                 getBacklogItemsForProject(projectId),
                 getSprintsForProject(projectId),
@@ -300,7 +300,6 @@ export default function ProjectDetailsPage() {
                 getCollections(),
             ]);
             setProject(projectData);
-            setTasks(tasksData);
             setEpics(epicsData);
             setBacklogItems(backlogItemsData);
             setSprints(sprintsData);
@@ -311,46 +310,49 @@ export default function ProjectDetailsPage() {
                 const companyContacts = await getContactsForCompany(projectData.companyId);
                 setContacts(companyContacts);
             }
-
-            const activeOrCompletedSprintIds = sprintsData
-                .filter(s => s.status === 'Active' || s.status === 'Completed')
-                .map(s => s.id);
-            
-            const backlogItemsForBoard = backlogItemsData.filter(item => 
-                item.sprintId && activeOrCompletedSprintIds.includes(item.sprintId)
-            );
-            const backlogIdsForBoard = new Set(backlogItemsForBoard.map(item => item.backlogId));
-            
-            const tasksForBoard = tasksData.filter(task => 
-                task.backlogId && backlogIdsForBoard.has(task.backlogId)
-            );
-            
-            const sortedTasks = tasksForBoard.sort((a, b) => a.order - b.order);
-            
-            const newColumns = sortedTasks.reduce((acc, task) => {
-                const status = task.status;
-                if (!acc[status]) {
-                    acc[status] = [];
-                }
-                acc[status].push(task);
-                return acc;
-            }, JSON.parse(JSON.stringify(initialColumns)) as BoardColumns);
-
-            // Ensure all columns are present, even if empty
-            for (const status in initialColumns) {
-                if (!newColumns[status as TaskStatus]) {
-                    newColumns[status as TaskStatus] = [];
-                }
-            }
-
-            setColumns(newColumns);
-
         } catch (error) {
             console.error("Failed to fetch project data:", error);
         } finally {
             setLoading(false);
         }
     }, [projectId]);
+
+    React.useEffect(() => {
+        const tasksForProject = allTasks.filter(t => t.projectId === projectId);
+        setTasks(tasksForProject);
+
+        const activeOrCompletedSprintIds = sprints
+            .filter(s => s.status === 'Active' || s.status === 'Completed')
+            .map(s => s.id);
+        
+        const backlogItemsForBoard = backlogItems.filter(item => 
+            item.sprintId && activeOrCompletedSprintIds.includes(item.sprintId)
+        );
+        const backlogIdsForBoard = new Set(backlogItemsForBoard.map(item => item.backlogId));
+        
+        const tasksForBoard = tasksForProject.filter(task => 
+            task.backlogId && backlogIdsForBoard.has(task.backlogId)
+        );
+        
+        const sortedTasks = tasksForBoard.sort((a, b) => a.order - b.order);
+        
+        const newColumns = sortedTasks.reduce((acc, task) => {
+            const status = task.status;
+            if (!acc[status]) {
+                acc[status] = [];
+            }
+            acc[status].push(task);
+            return acc;
+        }, JSON.parse(JSON.stringify(initialColumns)) as BoardColumns);
+
+        for (const status in initialColumns) {
+            if (!newColumns[status as TaskStatus]) {
+                newColumns[status as TaskStatus] = [];
+            }
+        }
+
+        setColumns(newColumns);
+    }, [allTasks, projectId, sprints, backlogItems]);
     
     React.useEffect(() => {
         fetchData();
@@ -411,7 +413,7 @@ export default function ProjectDetailsPage() {
         // Persist changes to Firestore
         try {
             await updateTaskOrderAndStatus(taskId, destColId, destination.index, projectId);
-            await fetchData();
+            // No need to fetch data here, as the listener will pick up changes
         } catch (error) {
             console.error("Failed to update task:", error);
             // Revert optimistic update on failure by re-fetching

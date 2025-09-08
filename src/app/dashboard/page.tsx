@@ -30,7 +30,7 @@ import {
 import { getProjects, type Project } from '@/services/project-service';
 import { getAssessments, type Assessment } from '@/services/assessment-service';
 import { getContacts, type Contact } from '@/services/contact-service';
-import { getTasks, type Task, type TaskStatus } from '@/services/task-service';
+import type { Task, TaskStatus, TaskType } from '@/services/task-service';
 import { formatDistanceToNow, parseISO, isWithinInterval, addDays, format, differenceInDays, isPast } from 'date-fns';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
@@ -54,8 +54,6 @@ type ActivityItem = {
 };
 
 type ProjectWithProgress = Project & { progress: number };
-
-type TaskType = Task['type'];
 
 const taskTypeIcons: Record<TaskType, React.ElementType> = {
     Assessment: ClipboardList,
@@ -90,7 +88,6 @@ export default function DashboardPage() {
   const [recentEngagements, setRecentEngagements] = React.useState<ProjectWithProgress[]>(
     []
   );
-  const [allTasks, setAllTasks] = React.useState<Task[]>([]);
   const [thisWeeksTasks, setThisWeeksTasks] = React.useState<Task[]>([]);
   const [allRecentActivity, setAllRecentActivity] = React.useState<ActivityItem[]>(
     []
@@ -98,7 +95,7 @@ export default function DashboardPage() {
   const [notifications, setNotifications] = React.useState<Notification[]>([]);
   const [isActivityExpanded, setIsActivityExpanded] = React.useState(false);
   const [isTasksExpanded, setIsTasksExpanded] = React.useState(false);
-  const { setOnTaskUpdated } = useQuickAction();
+  const { allTasks } = useQuickAction();
 
   const loadDashboardData = React.useCallback(async () => {
     try {
@@ -187,78 +184,39 @@ export default function DashboardPage() {
     if (hour < 12) setGreeting('Good morning');
     else if (hour < 18) setGreeting('Good afternoon');
     else setGreeting('Good evening');
-
-    const unsubscribe = getTasks((tasks) => {
-        setAllTasks(tasks);
-    });
-
-    return unsubscribe;
   }, []);
   
   React.useEffect(() => {
-    const unsubscribe = getTasks((allTasks) => {
-        console.log('🔄 Dashboard received task update, total tasks:', allTasks.length);
-        
-        // Get current date at start of day (local timezone)
-        const now = new Date();
-        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()); // Start of today
-        
-        // Get end of 7 days from now
-        const sevenDaysFromNow = new Date(today);
-        sevenDaysFromNow.setDate(today.getDate() + 7);
-        sevenDaysFromNow.setHours(23, 59, 59, 999); // End of 7th day
-        
-        console.log('📆 Date range for filtering:', {
-          today: today.toISOString(),
-          sevenDaysFromNow: sevenDaysFromNow.toISOString()
-        });
-        
-        const upcomingTasks = allTasks.filter(task => {
-          if (!task.dueDate) {
-            return false;
-          }
-          
-          // Parse the due date properly
-          let dueDate;
-          if (task.dueDate.includes('T')) {
-            // Full datetime string
-            dueDate = new Date(task.dueDate);
-          } else {
-            // Date-only string (like '2025-09-08')
-            dueDate = new Date(task.dueDate + 'T00:00:00'); // Treat as start of day local time
-          }
-          
-          // Check if date is valid
-          if (isNaN(dueDate.getTime())) {
-            console.warn('Invalid due date:', task.dueDate);
-            return false;
-          }
-          
-          // Get start of due date (ignore time portion)
-          const dueDateOnly = new Date(dueDate.getFullYear(), dueDate.getMonth(), dueDate.getDate());
-          
-          // Check if due date is between today and 7 days from now (inclusive)
-          const isUpcoming = dueDateOnly >= today && dueDateOnly <= sevenDaysFromNow;
-          
-          const daysDiff = Math.ceil((dueDateOnly.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-          
-          console.log(`📋 Task "${task.title}":`, {
-            originalDueDate: task.dueDate,
-            parsedDueDate: dueDate.toISOString(),
-            dueDateOnly: dueDateOnly.toISOString(),
-            isUpcoming,
-            daysDiff
-          });
-          
-          return isUpcoming;
-        });
-        
-        console.log('✅ Final upcoming tasks:', upcomingTasks.length, upcomingTasks.map(t => t.title));
-        setThisWeeksTasks(upcomingTasks);
-      });
-
-    return unsubscribe;
-  }, []);
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    
+    const sevenDaysFromNow = new Date(today);
+    sevenDaysFromNow.setDate(today.getDate() + 7);
+    sevenDaysFromNow.setHours(23, 59, 59, 999);
+    
+    const upcomingTasks = allTasks.filter(task => {
+      if (!task.dueDate) {
+        return false;
+      }
+      
+      let dueDate;
+      if (task.dueDate.includes('T')) {
+        dueDate = new Date(task.dueDate);
+      } else {
+        dueDate = new Date(task.dueDate + 'T00:00:00');
+      }
+      
+      if (isNaN(dueDate.getTime())) {
+        return false;
+      }
+      
+      const dueDateOnly = new Date(dueDate.getFullYear(), dueDate.getMonth(), dueDate.getDate());
+      
+      return dueDateOnly >= today && dueDateOnly <= sevenDaysFromNow;
+    });
+    
+    setThisWeeksTasks(upcomingTasks);
+  }, [allTasks]);
   
   const recentActivity = isActivityExpanded ? allRecentActivity : allRecentActivity.slice(0, 5);
   const visibleTasks = isTasksExpanded ? thisWeeksTasks : thisWeeksTasks.slice(0, 5);
