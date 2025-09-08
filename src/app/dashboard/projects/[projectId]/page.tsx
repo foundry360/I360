@@ -512,6 +512,7 @@ export default function ProjectDetailsPage() {
     };
 
     const upcomingSprints = sprints.filter(s => s.status === 'Not Started' || s.status === 'Active');
+    const hasUpcomingOrActiveWaves = sprints.some(s => s.status === 'Active' || s.status === 'Not Started');
 
     const allSprintItems = React.useMemo(() => {
         if (!projectBacklogItems) return [];
@@ -748,10 +749,8 @@ export default function ProjectDetailsPage() {
     }
     
     const unassignedBacklogItems = projectBacklogItems.filter(item => !item.epicId);
-    const unassignedAndUnscheduledBacklogItems = unassignedBacklogItems.filter(item => !item.sprintId);
+    const unassignedAndUnscheduledBacklogItems = projectBacklogItems.filter(item => !item.sprintId);
     
-    const hasUpcomingOrActiveWaves = sprints.some(s => s.status === 'Active' || s.status === 'Not Started');
-
     if (loading) {
         return (
              <div className="space-y-4">
@@ -1491,7 +1490,7 @@ export default function ProjectDetailsPage() {
                     </TabsContent>
                     <TabsContent value="sprints">
                         <div className="space-y-8">
-                             {sprints.filter(s => s.status !== 'Completed').length > 0 ? (
+                             {hasUpcomingOrActiveWaves ? (
                                 (['Active', 'Not Started'] as SprintStatus[]).map(status => {
                                     const sprintsByStatus = sprints.filter(s => s.status === status);
                                     if (sprintsByStatus.length === 0) return null;
