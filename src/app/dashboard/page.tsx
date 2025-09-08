@@ -85,7 +85,7 @@ const statusColors: Record<TaskStatus, string> = {
 export default function DashboardPage() {
   const { user } = useUser();
   const router = useRouter();
-  const { globalSearchTerm, setGlobalSearchTerm, useDataRefresh } = useQuickAction();
+  const { setOnProjectUpdated } = useQuickAction();
   const [greeting, setGreeting] = React.useState('');
   const [loading, setLoading] = React.useState(true);
   const [recentEngagements, setRecentEngagements] = React.useState<ProjectWithProgress[]>(
@@ -200,13 +200,13 @@ export default function DashboardPage() {
     } else {
       setGreeting('Good evening');
     }
-  }, []);
-
-  useDataRefresh(loadDashboardData);
-  
-  React.useEffect(() => {
+    
     loadDashboardData();
-  }, [loadDashboardData]);
+    const unsubscribe = setOnProjectUpdated(loadDashboardData);
+    return () => {
+        if (unsubscribe) unsubscribe();
+    }
+  }, [loadDashboardData, setOnProjectUpdated]);
   
   const recentActivity = isActivityExpanded ? allRecentActivity : allRecentActivity.slice(0, 5);
   const visibleTasks = isTasksExpanded ? thisWeeksTasks : thisWeeksTasks.slice(0, 5);
@@ -510,5 +510,6 @@ export default function DashboardPage() {
   );
 
     
+
 
 

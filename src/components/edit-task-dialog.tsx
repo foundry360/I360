@@ -25,15 +25,16 @@ import { useUser } from '@/contexts/user-context';
 import { Contact } from '@/services/contact-service';
 import { Textarea } from './ui/textarea';
 import { format, parseISO } from 'date-fns';
+import { useRouter } from 'next/navigation';
 
 export function EditTaskDialog() {
   const {
     isEditTaskDialogOpen,
     closeEditTaskDialog,
-    requestDataRefresh,
     editTaskData,
   } = useQuickAction();
   const { user } = useUser();
+  const router = useRouter();
   
   const [task, setTask] = React.useState<Task | null>(null);
 
@@ -70,7 +71,8 @@ export function EditTaskDialog() {
       };
       await updateTask(id, dataToSave);
       handleOpenChange(false);
-      requestDataRefresh();
+      // Instead of a specific callback, we just rely on page re-fetching.
+      router.refresh(); 
     } catch (error) {
       console.error('Failed to update task:', error);
     }

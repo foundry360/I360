@@ -135,9 +135,6 @@ type QuickActionContextType = {
   
   globalSearchTerm: string;
   setGlobalSearchTerm: (term: string) => void;
-
-  requestDataRefresh: () => void;
-  useDataRefresh: (callback: () => void) => void;
 };
 
 const QuickActionContext = React.createContext<
@@ -210,22 +207,6 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
   const onAddFromLibraryRef = React.useRef<(() => void) | null>(null);
 
   const [globalSearchTerm, setGlobalSearchTerm] = React.useState('');
-  
-  const refreshListenersRef = React.useRef<Set<() => void>>(new Set());
-
-  const requestDataRefresh = React.useCallback(() => {
-    refreshListenersRef.current.forEach(listener => listener());
-  }, []);
-
-  const useDataRefresh = React.useCallback((callback: () => void) => {
-    React.useEffect(() => {
-      const listeners = refreshListenersRef.current;
-      listeners.add(callback);
-      return () => {
-        listeners.delete(callback);
-      };
-    }, [callback]);
-  }, []);
 
   const openNewCompanyDialog = React.useCallback(() => setIsNewCompanyDialogOpen(true), []);
   const closeNewCompanyDialog = React.useCallback(() => setIsNewCompanyDialogOpen(false), []);
@@ -536,8 +517,6 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
     
     globalSearchTerm,
     setGlobalSearchTerm,
-    requestDataRefresh,
-    useDataRefresh,
   }), [
     isNewCompanyDialogOpen, openNewCompanyDialog, closeNewCompanyDialog, setOnCompanyCreated,
     isNewContactDialogOpen, openNewContactDialog, closeNewContactDialog, setOnContactCreated,
@@ -558,8 +537,6 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
     isManageCollectionsDialogOpen, openManageCollectionsDialog, closeManageCollectionsDialog, setOnCollectionsUpdated,
     setOnAddFromLibrary,
     globalSearchTerm,
-    requestDataRefresh,
-    useDataRefresh,
   ]);
 
   return (

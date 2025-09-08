@@ -116,8 +116,8 @@ export async function updateTask(id: string, taskData: Partial<Omit<Task, 'id'>>
 
             if (taskData.description) backlogUpdateData.description = taskData.description;
             
-            backlogUpdateData.owner = taskData.owner || originalTask.owner;
-            backlogUpdateData.ownerAvatarUrl = taskData.ownerAvatarUrl || originalTask.ownerAvatarUrl;
+            if (taskData.owner) backlogUpdateData.owner = taskData.owner;
+            if (taskData.ownerAvatarUrl) backlogUpdateData.ownerAvatarUrl = taskData.ownerAvatarUrl;
 
 
             if (Object.keys(backlogUpdateData).length > 0) {
@@ -162,12 +162,13 @@ export async function updateTaskStatus(id: string, status: TaskStatus): Promise<
 
 export async function updateTaskOrderAndStatus(taskId: string, newStatus: TaskStatus, newIndex: number, projectId: string): Promise<void> {
     const tasksQuery = query(tasksCollection, where("projectId", "==", projectId));
-    const tasksSnapshot = await getDocs(tasksQuery);
-    const tasks = tasksSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Task));
-    const taskToMove = tasks.find(t => t.id === taskId);
-    if (!taskToMove) throw new Error("Task not found!");
     
     await runTransaction(db, async (transaction) => {
+        const tasksSnapshot = await getDocs(tasksQuery);
+        const tasks = tasksSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Task));
+        const taskToMove = tasks.find(t => t.id === taskId);
+        if (!taskToMove) throw new Error("Task not found!");
+
         const oldStatus = taskToMove.status;
         const oldIndex = taskToMove.order;
 
@@ -198,7 +199,10 @@ export async function updateTaskOrderAndStatus(taskId: string, newStatus: TaskSt
         }
     });
 
-    if (taskToMove.status !== newStatus) {
+    const taskToMoveDoc = await getDoc(doc(db, "tasks", taskId));
+    const taskToMove = taskToMoveDoc.data() as Task | undefined;
+
+    if (taskToMove && taskToMove.status !== newStatus) {
         let message = `Task "${taskToMove.title}" was moved to ${newStatus}.`;
         if (newStatus === 'Complete') {
             message = `Task "${taskToMove.title}" has been completed.`;
