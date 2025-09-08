@@ -25,6 +25,7 @@ import {
   Wrench,
   SearchCheck,
   Bell,
+  CheckCheck,
 } from 'lucide-react';
 import { getProjects, type Project } from '@/services/project-service';
 import { getAssessments, type Assessment } from '@/services/assessment-service';
@@ -40,7 +41,7 @@ import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { EngagementInsightsPanel } from '@/components/engagement-insights-panel';
-import { getNotifications, type Notification } from '@/services/notification-service';
+import { getNotifications, markAllNotificationsAsRead, type Notification } from '@/services/notification-service';
 import { FeedItem } from '@/components/feed-item';
 
 type ActivityItem = {
@@ -162,7 +163,8 @@ export default function DashboardPage() {
         ...contactActivities,
       ].sort(
         (a, b) =>
-          parseISO(b.timestamp).getTime() - parseISO(a.timestamp).getTime()
+          parseISO(b.timestamp).getTime() -
+          parseISO(a.timestamp).getTime()
       );
       setAllRecentActivity(allActivities);
 
@@ -241,6 +243,13 @@ export default function DashboardPage() {
       const daysUntilDue = differenceInDays(dueDate, new Date());
       if (daysUntilDue <= 3) return 'due-soon';
       return 'on-track';
+  }
+  
+  const unreadCount = notifications.filter(n => !n.isRead).length;
+
+  const handleMarkAllRead = async () => {
+    await markAllNotificationsAsRead();
+    await loadDashboardData();
   }
 
   if (loading) {
@@ -391,10 +400,20 @@ export default function DashboardPage() {
         </Card>
         <Card className="h-full flex flex-col">
           <CardHeader>
-              <CardTitle>Communications Feed</CardTitle>
-              <CardDescription>
-                A live feed of all notifications and alerts
-              </CardDescription>
+            <div className="flex justify-between items-center">
+              <div>
+                <CardTitle>Communications Feed</CardTitle>
+                <CardDescription>
+                  A live feed of all notifications and alerts
+                </CardDescription>
+              </div>
+              {unreadCount > 0 && (
+                <Button variant="outline" size="sm" onClick={handleMarkAllRead}>
+                  <CheckCheck className="mr-2 h-4 w-4" />
+                  Mark all as read
+                </Button>
+              )}
+            </div>
           </CardHeader>
           <CardContent className="flex-1 -mt-4">
               <div className="space-y-0">
@@ -489,5 +508,6 @@ export default function DashboardPage() {
   );
 
     
+
 
 
