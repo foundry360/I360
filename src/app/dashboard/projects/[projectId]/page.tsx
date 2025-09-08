@@ -1271,10 +1271,8 @@ export default function ProjectDetailsPage() {
                         <div className="space-y-6">
                             {epics.length === 0 && unassignedBacklogItems.length === 0 ? (
                                  <div className="p-10 text-center rounded-lg border-2 border-dashed border-border">
-                                    <div className="flex justify-center mb-4">
-                                        <div className="flex items-center justify-center h-16 w-16 text-muted-foreground">
-                                            <Layers className="h-8 w-8" />
-                                        </div>
+                                     <div className="flex justify-center mb-4">
+                                        <Layers className="h-8 w-8 text-muted-foreground" />
                                     </div>
                                     <h3 className="text-lg font-semibold text-foreground">No Epics Yet!</h3>
                                     <p className="text-muted-foreground mt-2 mb-4">
@@ -1494,35 +1492,40 @@ export default function ProjectDetailsPage() {
                     </TabsContent>
                     <TabsContent value="sprints">
                         <div className="space-y-8">
-                             {(['Active', 'Not Started', 'Completed'] as SprintStatus[]).map(status => {
+                            {(['Active', 'Not Started', 'Completed'] as SprintStatus[]).map(status => {
                                 const sprintsByStatus = sprints.filter(s => s.status === status);
-                                if (sprintsByStatus.length === 0 && status === 'Active') return null;
-                                
+                                if (sprintsByStatus.length === 0 && status === 'Active') {
+                                    return null;
+                                }
+
                                 return (
                                 <div key={status}>
-                                    { (status !== 'Active' || sprintsByStatus.length > 0) &&
-                                        <h2 className="text-lg font-semibold mb-2">{status === 'Not Started' ? 'Upcoming Waves' : `${status} Waves`}</h2>
-                                    }
-                                    {sprintsByStatus.length === 0 && (status === 'Not Started' || status === 'Completed') ? (
-                                        <div className="p-10 text-center rounded-lg border-2 border-dashed border-border">
-                                            <div className="flex justify-center mb-4">
-                                                <div className="flex items-center justify-center h-16 w-16 text-muted-foreground">
-                                                    {status === 'Not Started' ? <Rocket className="h-8 w-8" /> : <WavesIcon className="h-8 w-8" />}
+                                    {sprintsByStatus.length > 0 && <h2 className="text-lg font-semibold mb-2">{status === 'Not Started' ? 'Upcoming Waves' : `${status} Waves`}</h2>}
+                                    {sprintsByStatus.length === 0 ? (
+                                        status !== 'Active' && (
+                                            <>
+                                            <h2 className="text-lg font-semibold mb-2">{status === 'Not Started' ? 'Upcoming Waves' : `${status} Waves`}</h2>
+                                            <div className="p-10 text-center rounded-lg border-2 border-dashed border-border">
+                                                <div className="flex justify-center mb-4">
+                                                    <div className="flex items-center justify-center h-16 w-16 text-muted-foreground">
+                                                        {status === 'Not Started' ? <WavesIcon className="h-8 w-8" /> : <WavesIcon className="h-8 w-8" />}
+                                                    </div>
                                                 </div>
+                                                <h3 className="text-lg font-semibold text-foreground">{status === 'Completed' ? 'No Waves Completed Yet' : 'No Upcoming Waves'}</h3>
+                                                <p className="text-muted-foreground mt-2 mb-4">
+                                                    {status === 'Completed'
+                                                    ? 'Completed waves and their metrics will appear here.'
+                                                    : 'Plan your next cycle of work by creating a new wave.'}
+                                                </p>
+                                                {status !== 'Completed' && (
+                                                    <Button onClick={() => openNewSprintDialog(projectId)}>
+                                                        <Plus className="h-4 w-4 mr-2" />
+                                                        New Wave
+                                                    </Button>
+                                                )}
                                             </div>
-                                            <h3 className="text-lg font-semibold text-foreground">{status === 'Completed' ? 'No Waves Completed Yet' : 'No Upcoming Waves'}</h3>
-                                            <p className="text-muted-foreground mt-2 mb-4">
-                                                {status === 'Completed'
-                                                ? 'Completed waves and their metrics will appear here.'
-                                                : 'Plan your next cycle of work by creating a new wave.'}
-                                            </p>
-                                            {status !== 'Completed' && (
-                                                <Button onClick={() => openNewSprintDialog(projectId)}>
-                                                    <Plus className="h-4 w-4 mr-2" />
-                                                    New Wave
-                                                </Button>
-                                            )}
-                                        </div>
+                                            </>
+                                        )
                                     ) : (
                                         <Accordion type="single" collapsible className="w-full space-y-4" defaultValue={status === 'Active' && activeSprint ? activeSprint.id : undefined}>
                                             {sprintsByStatus.map(sprint => {
