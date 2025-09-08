@@ -86,7 +86,10 @@ export default function DashboardPage() {
         getTasks(),
       ]);
       
-      const tasksByProject = allTasks.reduce((acc, task) => {
+      const projectIds = new Set(projects.map(p => p.id));
+      const validTasks = allTasks.filter(task => projectIds.has(task.projectId));
+
+      const tasksByProject = validTasks.reduce((acc, task) => {
           if (!acc[task.projectId]) {
               acc[task.projectId] = [];
           }
@@ -96,7 +99,7 @@ export default function DashboardPage() {
       
       const today = new Date();
       const nextWeek = addDays(today, 7);
-      const weeklyTasks = allTasks.filter(task => {
+      const weeklyTasks = validTasks.filter(task => {
           if (!task.dueDate) return false;
           return isWithinInterval(parseISO(task.dueDate), { start: today, end: nextWeek });
       }).sort((a,b) => parseISO(a.dueDate!).getTime() - parseISO(b.dueDate!).getTime());
@@ -425,3 +428,4 @@ export default function DashboardPage() {
     
 
     
+
