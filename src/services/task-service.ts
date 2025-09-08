@@ -163,19 +163,18 @@ export async function updateTaskStatus(id: string, status: TaskStatus): Promise<
 
 export async function updateTaskOrderAndStatus(taskId: string, newStatus: TaskStatus, newIndex: number, projectId: string): Promise<void> {
     const tasksQuery = query(tasksCollection, where("projectId", "==", projectId));
-    
-    // Get original status before transaction
-    const originalTaskDoc = await getDoc(doc(db, "tasks", taskId));
-    const originalStatus = originalTaskDoc.data()?.status;
-    const taskToMoveTitle = originalTaskDoc.data()?.title;
+    let taskToMoveTitle = '';
+    let oldStatus: TaskStatus | undefined;
     
     await runTransaction(db, async (transaction) => {
         const tasksSnapshot = await getDocs(tasksQuery);
         const tasks = tasksSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Task));
         const taskToMove = tasks.find(t => t.id === taskId);
         if (!taskToMove) throw new Error("Task not found!");
-
-        const oldStatus = taskToMove.status;
+        
+        taskToMoveTitle = taskToMove.title;
+        oldStatus = taskToMove.status;
+        
         const oldIndex = taskToMove.order;
 
         // Decrement order for tasks in the old column
@@ -210,8 +209,7 @@ export async function updateTaskOrderAndStatus(taskId: string, newStatus: TaskSt
         }
     });
     
-    // Use original status for comparison to avoid race conditions
-    if (originalStatus && originalStatus !== newStatus) {
+    if (oldStatus && oldStatus !== newStatus) {
         let message = `Task "${taskToMoveTitle}" was moved to ${newStatus}.`;
         if (newStatus === 'Complete') {
             message = `Task "${taskToMoveTitle}" has been completed.`;
