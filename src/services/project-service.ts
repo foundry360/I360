@@ -23,6 +23,11 @@ export interface Project {
 }
 
 const projectsCollection = collection(db, 'projects');
+const backlogItemsCollection = collection(db, 'backlogItems');
+const tasksCollection = collection(db, 'tasks');
+const epicsCollection = collection(db, 'epics');
+const sprintsCollection = collection(db, 'sprints');
+
 
 export async function updateProjectLastActivity(projectId: string): Promise<void> {
     const projectRef = doc(db, 'projects', projectId);
@@ -118,16 +123,30 @@ export async function updateProject(id: string, projectData: Partial<Omit<Projec
     await updateDoc(docRef, dataWithTimestamp);
 }
 
+const deleteProjectAndRelatedData = async (projectId: string, batch: WriteBatch) => {
+    // Delete Project
+    const projectRef = doc(db, 'projects', projectId);
+    batch.delete(projectRef);
+
+    // Delete related items in other collections
+    const collectionsToDelete = [backlogItemsCollection, tasksCollection, epicsCollection, sprintsCollection];
+    for (const coll of collectionsToDelete) {
+        const q = query(coll, where("projectId", "==", projectId));
+        const snapshot = await getDocs(q);
+        snapshot.forEach(doc => batch.delete(doc.ref));
+    }
+}
+
 export async function deleteProject(id: string): Promise<void> {
-    const docRef = doc(db, 'projects', id);
-    await deleteDoc(docRef);
+    const batch = writeBatch(db);
+    await deleteProjectAndRelatedData(id, batch);
+    await batch.commit();
 }
 
 export async function deleteProjects(ids: string[]): Promise<void> {
     const batch = writeBatch(db);
-    ids.forEach(id => {
-      const docRef = doc(db, 'projects', id);
-      batch.delete(docRef);
-    });
+    for (const id of ids) {
+        await deleteProjectAndRelatedData(id, batch);
+    }
     await batch.commit();
 }
