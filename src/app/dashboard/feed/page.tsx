@@ -118,6 +118,16 @@ export default function FeedPage() {
                     title: "All caught up!",
                     message: "Your feed is empty. Important updates will appear here"
                 };
+            case 'system':
+                return {
+                    title: "All caught up!",
+                    message: `Your system notifications are empty. Important updates will appear here`
+                };
+            case 'mention':
+                 return {
+                    title: "All caught up!",
+                    message: `You have no new @mentions. Important updates will appear here`
+                };
             default:
                 return {
                     title: "All caught up!",
