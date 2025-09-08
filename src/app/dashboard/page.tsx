@@ -37,6 +37,8 @@ import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { EngagementInsightsPanel } from '@/components/engagement-insights-panel';
 
 type ActivityItem = {
   id: string;
@@ -373,9 +375,22 @@ export default function DashboardPage() {
       <div>
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-bold">Recent Engagements</h2>
-          <Button variant="outline" onClick={() => router.push('/dashboard/projects')}>
-            View All
-          </Button>
+          <div className="flex items-center gap-2">
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button variant="outline">
+                  <Zap className="mr-2 h-4 w-4"/>
+                  Insights
+                </Button>
+              </SheetTrigger>
+              <SheetContent className="w-[500px] sm:w-[640px] p-0">
+                <EngagementInsightsPanel projects={recentEngagements.filter(p => p.status === 'Active')} />
+              </SheetContent>
+            </Sheet>
+            <Button variant="outline" onClick={() => router.push('/dashboard/projects')}>
+              View All
+            </Button>
+          </div>
         </div>
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {recentEngagements.length > 0 ? (
@@ -427,3 +442,4 @@ export default function DashboardPage() {
     
 
     
+
