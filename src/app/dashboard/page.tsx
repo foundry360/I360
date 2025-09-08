@@ -398,7 +398,7 @@ export default function DashboardPage() {
             )}
           </CardContent>
         </Card>
-        <Card className="h-full flex flex-col">
+        <Card className="h-full flex flex-col group">
           <CardHeader>
             <div className="flex justify-between items-center">
               <div>
@@ -408,7 +408,7 @@ export default function DashboardPage() {
                 </CardDescription>
               </div>
               {unreadCount > 0 && (
-                <Button variant="outline" size="sm" onClick={handleMarkAllRead}>
+                <Button variant="outline" size="sm" onClick={handleMarkAllRead} className="opacity-0 group-hover:opacity-100 transition-opacity">
                   <CheckCheck className="mr-2 h-4 w-4" />
                   Mark all as read
                 </Button>
@@ -508,6 +508,7 @@ export default function DashboardPage() {
   );
 
     
+
 
 
 
