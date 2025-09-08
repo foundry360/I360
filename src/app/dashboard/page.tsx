@@ -391,9 +391,11 @@ export default function DashboardPage() {
             <div className="flex justify-between items-center">
               <div>
                 <CardTitle>Communications Feed</CardTitle>
-                <CardDescription>
-                  A live feed of all notifications and alerts
-                </CardDescription>
+                {notifications.length > 0 && (
+                  <CardDescription>
+                    A live feed of all notifications and alerts
+                  </CardDescription>
+                )}
               </div>
               {unreadCount > 0 && (
                 <Button variant="outline" size="sm" onClick={handleMarkAllRead} className="opacity-0 group-hover:opacity-100 transition-opacity">
