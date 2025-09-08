@@ -164,6 +164,11 @@ export async function updateTaskStatus(id: string, status: TaskStatus): Promise<
 export async function updateTaskOrderAndStatus(taskId: string, newStatus: TaskStatus, newIndex: number, projectId: string): Promise<void> {
     const tasksQuery = query(tasksCollection, where("projectId", "==", projectId));
     
+    // Get original status before transaction
+    const originalTaskDoc = await getDoc(doc(db, "tasks", taskId));
+    const originalStatus = originalTaskDoc.data()?.status;
+    const taskToMoveTitle = originalTaskDoc.data()?.title;
+    
     await runTransaction(db, async (transaction) => {
         const tasksSnapshot = await getDocs(tasksQuery);
         const tasks = tasksSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Task));
@@ -173,6 +178,7 @@ export async function updateTaskOrderAndStatus(taskId: string, newStatus: TaskSt
         const oldStatus = taskToMove.status;
         const oldIndex = taskToMove.order;
 
+        // Decrement order for tasks in the old column
         tasks
             .filter(t => t.id !== taskId && t.status === oldStatus && t.order > oldIndex)
             .forEach(t => {
@@ -180,6 +186,7 @@ export async function updateTaskOrderAndStatus(taskId: string, newStatus: TaskSt
                 transaction.update(taskRef, { order: t.order - 1 });
             });
 
+        // Increment order for tasks in the new column
         tasks
             .filter(t => t.id !== taskId && t.status === newStatus && t.order >= newIndex)
             .forEach(t => {
@@ -187,11 +194,14 @@ export async function updateTaskOrderAndStatus(taskId: string, newStatus: TaskSt
                 transaction.update(taskRef, { order: t.order + 1 });
             });
 
+        // Update the moved task
         const movedTaskRef = doc(db, "tasks", taskId);
         transaction.update(movedTaskRef, { status: newStatus, order: newIndex });
         
+        // Update the related backlog item's status
         if (taskToMove.backlogId) {
             const backlogQuery = query(collection(db, 'backlogItems'), where("projectId", "==", projectId), where("backlogId", "==", taskToMove.backlogId));
+            // This get needs to be inside the transaction
             const backlogSnapshot = await getDocs(backlogQuery);
             if (!backlogSnapshot.empty) {
                 const backlogItemRef = backlogSnapshot.docs[0].ref;
@@ -199,14 +209,12 @@ export async function updateTaskOrderAndStatus(taskId: string, newStatus: TaskSt
             }
         }
     });
-
-    const taskToMoveDoc = await getDoc(doc(db, "tasks", taskId));
-    const taskToMove = taskToMoveDoc.data() as Task | undefined;
-
-    if (taskToMove && taskToMove.status !== newStatus) {
-        let message = `Task "${taskToMove.title}" was moved to ${newStatus}.`;
+    
+    // Use original status for comparison to avoid race conditions
+    if (originalStatus && originalStatus !== newStatus) {
+        let message = `Task "${taskToMoveTitle}" was moved to ${newStatus}.`;
         if (newStatus === 'Complete') {
-            message = `Task "${taskToMove.title}" has been completed.`;
+            message = `Task "${taskToMoveTitle}" has been completed.`;
         }
 
         await createNotification({
@@ -218,5 +226,3 @@ export async function updateTaskOrderAndStatus(taskId: string, newStatus: TaskSt
     
     await updateProjectLastActivity(projectId);
 }
-
-    
