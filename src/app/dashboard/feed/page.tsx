@@ -6,7 +6,7 @@ import { getNotifications, bulkUpdateNotifications, type Notification, Notificat
 import { useUser } from '@/contexts/user-context';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { CheckCheck, Archive, Inbox, Bell, AtSign, MessageSquare, AlertCircle, Info, Star, MonitorCog } from 'lucide-react';
+import { CheckCheck, Archive, Inbox, Bell, AtSign, MessageSquare, AlertTriangle, Info, Star, MonitorCog } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { FeedItem } from '@/components/feed-item';
 import {
@@ -25,7 +25,7 @@ const filterConfig: { id: FilterType; label: string; icon: React.ElementType, co
     { id: 'mention', label: '@Mentions', icon: AtSign, color: 'text-blue-500' },
     { id: 'thread', label: 'Threads', icon: MessageSquare, color: 'text-green-500' },
     { id: 'activity', label: 'Notifications', icon: Bell, color: 'text-orange-500' },
-    { id: 'alert', label: 'Alerts', icon: AlertCircle, color: 'text-red-500' },
+    { id: 'alert', label: 'Alerts', icon: AlertTriangle, color: 'text-red-500' },
     { id: 'system', label: 'System', icon: MonitorCog, color: 'text-sky-500' },
 ];
 
@@ -141,7 +141,7 @@ export default function FeedPage() {
                             {renderFilterButton(savedFilter)}
                         </nav>
                         <Separator className="my-4" />
-                        <h4 className="text-xs font-semibold uppercase text-muted-foreground tracking-wider px-2 mb-4">Filters</h4>
+                        <h4 className="text-xs font-semibold uppercase text-muted-foreground tracking-wider px-2 mb-4">FILTERS</h4>
                         <nav className="space-y-1">
                             {filterConfig.map(renderFilterButton)}
                         </nav>

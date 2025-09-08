@@ -15,7 +15,9 @@ import {
   Reply,
   Undo2,
   AtSign,
-  MessageSquare
+  MessageSquare,
+  AlertTriangle,
+  MonitorCog
 } from 'lucide-react';
 import type { Notification, NotificationType } from '@/services/notification-service';
 import { updateNotification } from '@/services/notification-service';
@@ -49,10 +51,10 @@ const notificationTypeConfig: Record<
   NotificationType,
   { icon: React.ElementType; color: string; border: string }
 > = {
-  system: { icon: Info, color: 'text-sky-500', border: 'border-l-sky-500' },
-  alert: { icon: CircleAlert, color: 'text-destructive', border: 'border-l-destructive' },
-  activity: { icon: Bell, color: 'text-foreground', border: 'border-l-transparent' },
-  mention: { icon: AtSign, color: 'text-primary', border: 'border-l-primary' },
+  system: { icon: MonitorCog, color: 'text-sky-500', border: 'border-l-sky-500' },
+  alert: { icon: AlertTriangle, color: 'text-destructive', border: 'border-l-destructive' },
+  activity: { icon: Bell, color: 'text-orange-500', border: 'border-l-orange-500' },
+  mention: { icon: AtSign, color: 'text-blue-500', border: 'border-l-blue-500' },
   thread: { icon: MessageSquare, color: 'text-green-500', border: 'border-l-green-500' },
 };
 
