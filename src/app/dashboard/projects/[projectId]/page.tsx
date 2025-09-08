@@ -1116,56 +1116,58 @@ export default function ProjectDetailsPage() {
                                     </Card>
                                </div>
                                <div className="col-span-1 space-y-6">
-                                    {activeSprint && (
-                                        <Card>
-                                            <CardHeader>
-                                                <CardTitle>Active Wave Health</CardTitle>
-                                                <CardDescription>{activeSprint?.name}</CardDescription>
-                                            </CardHeader>
-                                            <CardContent>
-                                                {activeSprintHealthData && activeSprintHealthData.totalItems > 0 ? (
-                                                    <>
-                                                        <TooltipProvider>
-                                                            <div className="flex w-full h-3 rounded-full overflow-hidden bg-muted mb-2">
-                                                                {activeSprintHealthData.segments.map(segment => (
-                                                                    <Tooltip key={segment.status}>
-                                                                        <TooltipTrigger asChild>
-                                                                            <div 
-                                                                                className="h-full"
-                                                                                style={{ width: `${segment.percentage}%`, backgroundColor: segment.color }}
-                                                                            />
-                                                                        </TooltipTrigger>
-                                                                        <TooltipContent>
-                                                                            <p>{segment.status}: {segment.count} item(s) ({Math.round(segment.percentage)}%)</p>
-                                                                        </TooltipContent>
-                                                                    </Tooltip>
-                                                                ))}
-                                                            </div>
-                                                        </TooltipProvider>
-                                                        <div className="flex justify-between text-xs text-muted-foreground">
+                                     <Card className={!activeSprint ? 'border-dashed' : ''}>
+                                        <CardHeader>
+                                            <CardTitle>Active Wave Health</CardTitle>
+                                            {activeSprint ? (
+                                                <CardDescription>{activeSprint.name}</CardDescription>
+                                            ) : (
+                                                <CardDescription>No wave is currently active.</CardDescription>
+                                            )}
+                                        </CardHeader>
+                                        <CardContent>
+                                            {activeSprint && activeSprintHealthData && activeSprintHealthData.totalItems > 0 ? (
+                                                <>
+                                                    <TooltipProvider>
+                                                        <div className="flex w-full h-3 rounded-full overflow-hidden bg-muted mb-2">
                                                             {activeSprintHealthData.segments.map(segment => (
-                                                                <div key={segment.status} className="flex items-center gap-1">
-                                                                    <div className="h-2 w-2 rounded-full" style={{ backgroundColor: segment.color }} />
-                                                                    <span>{segment.status}</span>
-                                                                </div>
+                                                                <Tooltip key={segment.status}>
+                                                                    <TooltipTrigger asChild>
+                                                                        <div 
+                                                                            className="h-full"
+                                                                            style={{ width: `${segment.percentage}%`, backgroundColor: segment.color }}
+                                                                        />
+                                                                    </TooltipTrigger>
+                                                                    <TooltipContent>
+                                                                        <p>{segment.status}: {segment.count} item(s) ({Math.round(segment.percentage)}%)</p>
+                                                                    </TooltipContent>
+                                                                </Tooltip>
                                                             ))}
                                                         </div>
-                                                    </>
-                                                ) : (
-                                                    <div className="text-center text-sm text-muted-foreground py-4">
-                                                        This wave has no items.
+                                                    </TooltipProvider>
+                                                    <div className="flex justify-between text-xs text-muted-foreground">
+                                                        {activeSprintHealthData.segments.map(segment => (
+                                                            <div key={segment.status} className="flex items-center gap-1">
+                                                                <div className="h-2 w-2 rounded-full" style={{ backgroundColor: segment.color }} />
+                                                                <span>{segment.status}</span>
+                                                            </div>
+                                                        ))}
                                                     </div>
-                                                )}
-                                            </CardContent>
-                                            {activeSprintHealthData && (
-                                                <CardFooter>
-                                                    <p className="text-sm text-muted-foreground w-full text-center">
-                                                        <span className="font-bold">{activeSprintHealthData.daysLeft}</span> days remaining
-                                                    </p>
-                                                </CardFooter>
+                                                </>
+                                            ) : (
+                                                <div className="text-center text-sm text-muted-foreground py-4">
+                                                    {activeSprint ? 'This wave has no items.' : 'Start a wave to see its health.'}
+                                                </div>
                                             )}
-                                        </Card>
-                                    )}
+                                        </CardContent>
+                                        {activeSprint && activeSprintHealthData && (
+                                            <CardFooter>
+                                                <p className="text-sm text-muted-foreground w-full text-center">
+                                                    <span className="font-bold">{activeSprintHealthData.daysLeft}</span> days remaining
+                                                </p>
+                                            </CardFooter>
+                                        )}
+                                    </Card>
                                     <Card className={cn(epicProgressData.length === 0 && 'border-dashed border-2 bg-transparent shadow-none')}>
                                         <CardHeader>
                                             <CardTitle>Epic Progress</CardTitle>
