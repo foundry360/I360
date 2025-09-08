@@ -330,8 +330,8 @@ export default function DashboardPage() {
                 ) : (
                     <div className="flex flex-col items-center justify-center h-48 text-center text-muted-foreground">
                         <div className="flex justify-center mb-4">
-                            <div className="bg-primary/10 rounded-full p-3">
-                                <CalendarCheck className="h-8 w-8 text-primary" />
+                            <div className="bg-muted rounded-full p-3">
+                                <CalendarCheck className="h-8 w-8 text-muted-foreground" />
                             </div>
                         </div>
                         <h3 className="font-semibold">All clear for the week!</h3>
@@ -399,8 +399,8 @@ export default function DashboardPage() {
             ) : (
                 <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground">
                     <div className="flex justify-center mb-4">
-                        <div className="bg-primary/10 rounded-full p-3">
-                            <FolderKanban className="h-8 w-8 text-primary" />
+                        <div className="bg-muted rounded-full p-3">
+                            <FolderKanban className="h-8 w-8 text-muted-foreground" />
                         </div>
                     </div>
                     <h3 className="font-semibold">No recent activity</h3>
@@ -443,8 +443,8 @@ export default function DashboardPage() {
                   {notifications.length === 0 && (
                       <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground">
                           <div className="flex justify-center mb-4">
-                              <div className="bg-primary/10 rounded-full p-3">
-                                  <MessageCircleMore className="h-8 w-8 text-primary" />
+                              <div className="bg-muted rounded-full p-3">
+                                  <MessageCircleMore className="h-8 w-8 text-muted-foreground" />
                               </div>
                           </div>
                           <h3 className="font-semibold">Inbox Zero!</h3>
