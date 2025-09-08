@@ -98,62 +98,57 @@ export default function DashboardPage() {
   const [notifications, setNotifications] = React.useState<Notification[]>([]);
   const [isActivityExpanded, setIsActivityExpanded] = React.useState(false);
   const [isTasksExpanded, setIsTasksExpanded] = React.useState(false);
+  const { setOnTaskUpdated } = useQuickAction();
 
-  React.useEffect(() => {
-    const hour = new Date().getHours();
-    if (hour < 12) setGreeting('Good morning');
-    else if (hour < 18) setGreeting('Good afternoon');
-    else setGreeting('Good evening');
+  const loadDashboardData = React.useCallback(async () => {
+    try {
+        const [projects, assessments, contacts, notificationsData] = await Promise.all([
+            getProjects(),
+            getAssessments(),
+            getContacts(),
+            getNotifications(),
+        ]);
+        setNotifications(notificationsData);
 
-    const loadOtherData = async () => {
-        try {
-            const [projects, assessments, contacts, notificationsData] = await Promise.all([
-                getProjects(),
-                getAssessments(),
-                getContacts(),
-                getNotifications(),
-            ]);
-            setNotifications(notificationsData);
+        const projectActivities: ActivityItem[] = projects.map((p) => ({
+            id: p.id,
+            type: 'Engagement',
+            message: `Engagement '${p.name}' was updated.`,
+            timestamp: p.lastActivity || new Date().toISOString(),
+            icon: FolderKanban,
+            link: `/dashboard/projects/${p.id}`,
+        }));
 
-            const projectActivities: ActivityItem[] = projects.map((p) => ({
-                id: p.id,
-                type: 'Engagement',
-                message: `Engagement '${p.name}' was updated.`,
-                timestamp: p.lastActivity || new Date().toISOString(),
-                icon: FolderKanban,
-                link: `/dashboard/projects/${p.id}`,
-            }));
+        const assessmentActivities: ActivityItem[] = assessments.map((a) => ({
+            id: a.id,
+            type: 'Assessment',
+            message: `Assessment '${a.name}' status is ${a.status}.`,
+            timestamp: a.lastActivity || a.startDate,
+            icon: ClipboardList,
+            link: a.status === 'Completed' ? `/assessment/${a.id}/report` : `/dashboard/assessments`,
+        }));
 
-            const assessmentActivities: ActivityItem[] = assessments.map((a) => ({
-                id: a.id,
-                type: 'Assessment',
-                message: `Assessment '${a.name}' status is ${a.status}.`,
-                timestamp: a.lastActivity || a.startDate,
-                icon: ClipboardList,
-                link: a.status === 'Completed' ? `/assessment/${a.id}/report` : `/dashboard/assessments`,
-            }));
-
-            const contactActivities: ActivityItem[] = contacts.map((c) => ({
-                id: c.id,
-                type: 'Contact',
-                message: `Contact '${c.name}' was added.`,
-                timestamp: c.lastActivity,
-                icon: UserPlus,
-                link: `/dashboard/companies/${c.companyId}/details`,
-            }));
-            
-            const allActivities = [
-                ...projectActivities,
-                ...assessmentActivities,
-                ...contactActivities,
-            ].sort(
-                (a, b) =>
-                parseISO(b.timestamp).getTime() -
-                parseISO(a.timestamp).getTime()
-            );
-            setAllRecentActivity(allActivities);
-            
-            const tasksByProject = allTasks.reduce((acc, task) => {
+        const contactActivities: ActivityItem[] = contacts.map((c) => ({
+            id: c.id,
+            type: 'Contact',
+            message: `Contact '${c.name}' was added.`,
+            timestamp: c.lastActivity,
+            icon: UserPlus,
+            link: `/dashboard/companies/${c.companyId}/details`,
+        }));
+        
+        const allActivities = [
+            ...projectActivities,
+            ...assessmentActivities,
+            ...contactActivities,
+        ].sort(
+            (a, b) =>
+            parseISO(b.timestamp).getTime() -
+            parseISO(a.timestamp).getTime()
+        );
+        setAllRecentActivity(allActivities);
+        
+         const tasksByProject = allTasks.reduce((acc, task) => {
                 if (!acc[task.projectId]) {
                     acc[task.projectId] = [];
                 }
@@ -176,35 +171,45 @@ export default function DashboardPage() {
             );
             setRecentEngagements(sortedProjects.slice(0, 10));
 
-        } catch (error) {
-            console.error('Failed to fetch dashboard metadata', error);
-        } finally {
-            setLoading(false);
-        }
-    };
-    
-    // Load non-task data once initially
-    if (loading) {
-        loadOtherData();
+    } catch (error) {
+        console.error('Failed to fetch dashboard metadata', error);
+    } finally {
+        setLoading(false);
     }
-    
+  }, [allTasks]);
+
+  React.useEffect(() => {
+    loadDashboardData();
+  }, [allTasks, loadDashboardData]);
+
+  React.useEffect(() => {
+    const hour = new Date().getHours();
+    if (hour < 12) setGreeting('Good morning');
+    else if (hour < 18) setGreeting('Good afternoon');
+    else setGreeting('Good evening');
+
+    const unsubscribe = getTasks((tasks) => {
+        setAllTasks(tasks);
+    });
+
+    return unsubscribe;
+  }, []);
+  
+  React.useEffect(() => {
     const unsubscribe = getTasks((allTasks) => {
         console.log('🔄 Dashboard received task update, total tasks:', allTasks.length);
-    
-        // Log all tasks with due dates
-        const tasksWithDueDates = allTasks.filter(task => task.dueDate);
-        console.log('📅 Tasks with due dates:', tasksWithDueDates.map(t => ({
-          title: t.title,
-          dueDate: t.dueDate,
-          id: t.id
-        })));
         
-        // Your existing filtering logic (add logs to it)
+        // Get current date at start of day (local timezone)
         const now = new Date();
-        const sevenDaysFromNow = addDays(now, 7);
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()); // Start of today
+        
+        // Get end of 7 days from now
+        const sevenDaysFromNow = new Date(today);
+        sevenDaysFromNow.setDate(today.getDate() + 7);
+        sevenDaysFromNow.setHours(23, 59, 59, 999); // End of 7th day
         
         console.log('📆 Date range for filtering:', {
-          now: now.toISOString(),
+          today: today.toISOString(),
           sevenDaysFromNow: sevenDaysFromNow.toISOString()
         });
         
@@ -213,32 +218,46 @@ export default function DashboardPage() {
             return false;
           }
           
-          try {
-            const dueDate = parseISO(task.dueDate);
-            const isUpcoming = isWithinInterval(dueDate, { start: now, end: sevenDaysFromNow });
-            
-            console.log(`📋 Task "${task.title}":`, {
-              dueDate: task.dueDate,
-              dueDateObj: dueDate.toISOString(),
-              isUpcoming,
-              daysDiff: Math.ceil((dueDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
-            });
-            
-            return isUpcoming;
-          } catch(e) {
-            console.error(`Error parsing date for task "${task.title}":`, task.dueDate, e);
+          // Parse the due date properly
+          let dueDate;
+          if (task.dueDate.includes('T')) {
+            // Full datetime string
+            dueDate = new Date(task.dueDate);
+          } else {
+            // Date-only string (like '2025-09-08')
+            dueDate = new Date(task.dueDate + 'T00:00:00'); // Treat as start of day local time
+          }
+          
+          // Check if date is valid
+          if (isNaN(dueDate.getTime())) {
+            console.warn('Invalid due date:', task.dueDate);
             return false;
           }
+          
+          // Get start of due date (ignore time portion)
+          const dueDateOnly = new Date(dueDate.getFullYear(), dueDate.getMonth(), dueDate.getDate());
+          
+          // Check if due date is between today and 7 days from now (inclusive)
+          const isUpcoming = dueDateOnly >= today && dueDateOnly <= sevenDaysFromNow;
+          
+          const daysDiff = Math.ceil((dueDateOnly.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+          
+          console.log(`📋 Task "${task.title}":`, {
+            originalDueDate: task.dueDate,
+            parsedDueDate: dueDate.toISOString(),
+            dueDateOnly: dueDateOnly.toISOString(),
+            isUpcoming,
+            daysDiff
+          });
+          
+          return isUpcoming;
         });
         
         console.log('✅ Final upcoming tasks:', upcomingTasks.length, upcomingTasks.map(t => t.title));
-        setThisWeeksTasks(upcomingTasks.sort((a,b) => parseISO(a.dueDate!).getTime() - parseISO(b.dueDate!).getTime()));
-        setAllTasks(allTasks); // Update the full task list for other calculations
-        setLoading(false);
-    });
+        setThisWeeksTasks(upcomingTasks);
+      });
 
     return unsubscribe;
-
   }, []);
   
   const recentActivity = isActivityExpanded ? allRecentActivity : allRecentActivity.slice(0, 5);
@@ -543,5 +562,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-
-    
