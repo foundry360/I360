@@ -330,9 +330,7 @@ export default function DashboardPage() {
                 ) : (
                     <div className="flex flex-col items-center justify-center h-48 text-center text-muted-foreground">
                         <div className="flex justify-center mb-4">
-                            <div className="bg-muted rounded-full p-3">
-                                <CalendarCheck className="h-8 w-8 text-muted-foreground" />
-                            </div>
+                            <CalendarCheck className="h-8 w-8 text-muted-foreground" />
                         </div>
                         <h3 className="font-semibold">All clear for the week!</h3>
                         <p>No items are due in the next 7 days.</p>
@@ -399,9 +397,7 @@ export default function DashboardPage() {
             ) : (
                 <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground">
                     <div className="flex justify-center mb-4">
-                        <div className="bg-muted rounded-full p-3">
-                            <FolderKanban className="h-8 w-8 text-muted-foreground" />
-                        </div>
+                        <FolderKanban className="h-8 w-8 text-muted-foreground" />
                     </div>
                     <h3 className="font-semibold">No recent activity</h3>
                     <p>Updates from your workspace will appear here.</p>
@@ -412,14 +408,7 @@ export default function DashboardPage() {
         <Card className="h-full flex flex-col group">
           <CardHeader>
             <div className="flex justify-between items-center">
-              <div>
-                <CardTitle>Communications Feed</CardTitle>
-                {notifications.length > 0 && (
-                  <CardDescription>
-                    A live feed of all notifications and alerts
-                  </CardDescription>
-                )}
-              </div>
+              <CardTitle>Communications Feed</CardTitle>
               {unreadCount > 0 && (
                 <Button variant="outline" size="sm" onClick={handleMarkAllRead} className="opacity-0 group-hover:opacity-100 transition-opacity">
                   <CheckCheck className="mr-2 h-4 w-4" />
@@ -427,8 +416,13 @@ export default function DashboardPage() {
                 </Button>
               )}
             </div>
+             {notifications.length > 0 && (
+              <CardDescription>
+                A live feed of all notifications and alerts
+              </CardDescription>
+            )}
           </CardHeader>
-          <CardContent className="flex-1 -mt-4">
+          <CardContent className="flex-1 -mt-4 flex flex-col">
               <div className="space-y-0 h-full">
                   {notifications.slice(0,5).map(note => (
                       <FeedItem
@@ -443,9 +437,7 @@ export default function DashboardPage() {
                   {notifications.length === 0 && (
                       <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground">
                           <div className="flex justify-center mb-4">
-                              <div className="bg-muted rounded-full p-3">
-                                  <MessageCircleMore className="h-8 w-8 text-muted-foreground" />
-                              </div>
+                              <MessageCircleMore className="h-8 w-8 text-muted-foreground" />
                           </div>
                           <h3 className="font-semibold">Inbox Zero!</h3>
                           <p>No new notifications.</p>
