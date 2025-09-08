@@ -90,6 +90,8 @@ export async function createTask(taskData: Omit<Task, 'id'>): Promise<string> {
 
 
 export async function updateTask(id: string, taskData: Partial<Omit<Task, 'id'>>): Promise<void> {
+    console.log('🔄 Updating task:', id, 'with data:', taskData);
+    
     const docRef = doc(db, 'tasks', id);
     const taskDoc = await getDoc(docRef);
     if (!taskDoc.exists()) {
@@ -99,35 +101,80 @@ export async function updateTask(id: string, taskData: Partial<Omit<Task, 'id'>>
     const originalTask = taskDoc.data() as Task;
     const projectId = taskData.projectId || originalTask.projectId;
     
+    // Capture original due date for comparison
+    const originalDueDate = originalTask.dueDate;
+    const newDueDate = taskData.dueDate;
+    
+    console.log('📅 Due date comparison:', { 
+        originalDueDate, 
+        newDueDate, 
+        dueDateChanging: originalDueDate !== newDueDate 
+    });
+    
     // Update the task itself
     await updateDoc(docRef, taskData);
+    console.log('✅ Task document updated');
 
     // If the task is linked to a backlog item, update the backlog item too
     if (originalTask.backlogId) {
+        console.log('🔗 Updating linked backlog item:', originalTask.backlogId);
         const backlogQuery = query(collection(db, 'backlogItems'), where("projectId", "==", projectId), where("backlogId", "==", originalTask.backlogId));
         const backlogSnapshot = await getDocs(backlogQuery);
         if (!backlogSnapshot.empty) {
             const backlogItemRef = backlogSnapshot.docs[0].ref;
             const backlogUpdateData: Partial<Omit<BacklogItem, 'id'>> = {};
-            if (taskData.status) backlogUpdateData.status = taskData.status;
-
-            if (taskData.hasOwnProperty('dueDate')) {
-                backlogUpdateData.dueDate = taskData.dueDate || null;
-            }
-
-            if (taskData.description) backlogUpdateData.description = taskData.description;
             
+            if (taskData.status) backlogUpdateData.status = taskData.status;
+            if (taskData.description) backlogUpdateData.description = taskData.description;
             if (taskData.owner) backlogUpdateData.owner = taskData.owner;
             if (taskData.ownerAvatarUrl) backlogUpdateData.ownerAvatarUrl = taskData.ownerAvatarUrl;
 
+            // Handle due date updates properly
+            if ('dueDate' in taskData) {
+                backlogUpdateData.dueDate = taskData.dueDate || null;
+                console.log('📅 Updating backlog due date to:', backlogUpdateData.dueDate);
+            }
 
             if (Object.keys(backlogUpdateData).length > 0) {
-                 await updateDoc(backlogItemRef, backlogUpdateData);
+                await updateDoc(backlogItemRef, backlogUpdateData);
+                console.log('✅ Backlog item updated');
             }
         }
     }
     
+    // Send notification for due date changes
+    if ('dueDate' in taskData && originalDueDate !== newDueDate) {
+        console.log('📢 Due date changed - creating notification');
+        
+        let message;
+        if (newDueDate) {
+            const dueDate = new Date(newDueDate);
+            message = `Due date for "${originalTask.title}" updated to ${dueDate.toLocaleDateString()}.`;
+        } else {
+            message = `Due date removed from "${originalTask.title}".`;
+        }
+        
+        try {
+            await createNotification({
+                message,
+                link: `/dashboard/projects/${projectId}`,
+                type: 'activity'
+            });
+            console.log('✅ Due date notification created');
+        } catch (error) {
+            console.error('❌ Failed to create due date notification:', error);
+        }
+    }
+    
     await updateProjectLastActivity(projectId);
+    console.log('🏁 Task update completed');
+}
+
+// Also add a specific function for due date updates
+export async function updateTaskDueDate(id: string, dueDate: string | null): Promise<void> {
+    console.log('📅 Updating task due date:', { id, dueDate });
+    
+    await updateTask(id, { dueDate });
 }
 
 export async function deleteTask(id: string): Promise<void> {
