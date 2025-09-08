@@ -919,7 +919,7 @@ export default function ProjectDetailsPage() {
                 <div className="flex-1 overflow-y-auto pt-6">
                     <TabsContent value="summary">
                        <div className="grid grid-cols-10 gap-6">
-                            <div className="col-span-3 space-y-6">
+                           <div className="col-span-3 space-y-6">
                                 <Card>
                                     <CardHeader>
                                         <CardTitle>Velocity</CardTitle>
@@ -978,7 +978,8 @@ export default function ProjectDetailsPage() {
                                                 </LineChart>
                                             </ChartContainer>
                                         ) : (
-                                            <div className="h-[150px] flex items-center justify-center text-center text-muted-foreground text-sm">
+                                            <div className="h-[150px] flex flex-col items-center justify-center text-center text-muted-foreground text-sm">
+                                                <CircleGauge className="h-10 w-10 mb-2 text-primary/50" />
                                                 Complete a wave to see your team's velocity.
                                             </div>
                                         )}
@@ -1030,8 +1031,9 @@ export default function ProjectDetailsPage() {
                                                 </LineChart>
                                             </ChartContainer>
                                         ) : (
-                                             <div className="h-[150px] flex items-center justify-center text-center text-muted-foreground text-sm p-4">
-                                                Complete a wave with estimated story points to generate a burndown chart.
+                                            <div className="h-[150px] flex flex-col items-center justify-center text-center text-muted-foreground text-sm p-4">
+                                               <CloudDownload className="h-10 w-10 mb-2 text-primary/50" />
+                                               Complete a wave with estimated story points to generate a burndown chart.
                                             </div>
                                         )}
                                     </CardContent>
