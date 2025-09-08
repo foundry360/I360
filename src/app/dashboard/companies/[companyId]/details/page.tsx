@@ -554,18 +554,20 @@ export default function CompanyDetailsPage() {
                     )}
                   </TableBody>
                 </Table>
-                <div className="flex justify-end mt-4">
-                    <TablePagination
-                        count={completedAssessments.length}
-                        page={page}
-                        rowsPerPage={rowsPerPage}
-                        onPageChange={(newPage) => setPage(newPage)}
-                        onRowsPerPageChange={(newRowsPerPage) => {
-                            setRowsPerPage(newRowsPerPage);
-                            setPage(0);
-                        }}
-                    />
-                </div>
+                {completedAssessments.length > 0 && (
+                    <div className="flex justify-end mt-4">
+                        <TablePagination
+                            count={completedAssessments.length}
+                            page={page}
+                            rowsPerPage={rowsPerPage}
+                            onPageChange={(newPage) => setPage(newPage)}
+                            onRowsPerPageChange={(newRowsPerPage) => {
+                                setRowsPerPage(newRowsPerPage);
+                                setPage(0);
+                            }}
+                        />
+                    </div>
+                )}
               </CardContent>
             </Card>
           </div>
