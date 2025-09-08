@@ -19,6 +19,7 @@ import {
   Search,
   History,
   ChevronRight as ChevronRightIcon,
+  Rss,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -245,6 +246,7 @@ export function Sidebar() {
         group: 'HOME',
         links: [
             { href: `/dashboard`, label: 'Workspace', icon: LayoutDashboard },
+            { href: `/dashboard/feed`, label: 'Feed', icon: Rss },
             { id: 'starred', label: 'Starred', icon: Star },
             { id: 'recent', label: 'Recent', icon: History }
         ]
