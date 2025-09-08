@@ -46,6 +46,7 @@ interface FeedItemProps {
   isSelected: boolean;
   onSelect: (id: string) => void;
   onUpdate: () => void;
+  showActions?: boolean;
 }
 
 const notificationTypeConfig: Record<
@@ -64,6 +65,7 @@ export const FeedItem: React.FC<FeedItemProps> = ({
   isSelected,
   onSelect,
   onUpdate,
+  showActions = true,
 }) => {
   const router = useRouter();
   const { user } = useUser();
@@ -115,11 +117,13 @@ export const FeedItem: React.FC<FeedItemProps> = ({
       onClick={handleItemClick}
     >
       <div className="flex items-center gap-4" onClick={e => e.stopPropagation()}>
-        <Checkbox
-          checked={isSelected}
-          onCheckedChange={() => onSelect(notification.id)}
-          aria-label={`Select notification: ${notification.message}`}
-        />
+         {showActions && (
+            <Checkbox
+            checked={isSelected}
+            onCheckedChange={() => onSelect(notification.id)}
+            aria-label={`Select notification: ${notification.message}`}
+            />
+         )}
         <Icon className={cn('h-5 w-5 mt-1 shrink-0', config.color)} />
       </div>
 
@@ -132,49 +136,51 @@ export const FeedItem: React.FC<FeedItemProps> = ({
         </p>
       </div>
       
-      <div 
-        className="flex items-center gap-2"
-        onClick={e => e.stopPropagation()}
-      >
-        <Button variant="ghost" size="sm" onClick={handleToggleRead}>
-          {notification.isRead ? <Undo2 className="h-4 w-4 mr-2"/> : <Check className="h-4 w-4 mr-2"/>}
-          {notification.isRead ? 'Mark as Unread' : 'Mark as Read'}
-        </Button>
-        <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-8 w-8">
-                    <MoreHorizontal className="h-4 w-4" />
-                </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
-                <DropdownMenuItem>
-                    <Reply className="mr-2 h-4 w-4" /> Reply
-                </DropdownMenuItem>
-                <DropdownMenuSub>
-                    <DropdownMenuSubTrigger>
-                       <Clock className="mr-2 h-4 w-4" /> Snooze
-                    </DropdownMenuSubTrigger>
-                    <DropdownMenuPortal>
-                        <DropdownMenuSubContent>
-                             <DropdownMenuItem onClick={() => handleSnooze({ hours: 3 })}>For 3 hours</DropdownMenuItem>
-                             <DropdownMenuItem onClick={() => handleSnooze({ days: 1 })}>Until tomorrow</DropdownMenuItem>
-                             <DropdownMenuItem onClick={() => handleSnooze({ weeks: 1 })}>For a week</DropdownMenuItem>
-                        </DropdownMenuSubContent>
-                    </DropdownMenuPortal>
-                </DropdownMenuSub>
-                <DropdownMenuSeparator />
-                 {notification.isArchived ? (
-                    <DropdownMenuItem onClick={() => handleSave(false)}>
-                        <ArchiveX className="mr-2 h-4 w-4" /> Unsave
+      {showActions && (
+        <div 
+            className="flex items-center gap-2"
+            onClick={e => e.stopPropagation()}
+        >
+            <Button variant="ghost" size="sm" onClick={handleToggleRead}>
+            {notification.isRead ? <Undo2 className="h-4 w-4 mr-2"/> : <Check className="h-4 w-4 mr-2"/>}
+            {notification.isRead ? 'Mark as Unread' : 'Mark as Read'}
+            </Button>
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                        <MoreHorizontal className="h-4 w-4" />
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                    <DropdownMenuItem>
+                        <Reply className="mr-2 h-4 w-4" /> Reply
                     </DropdownMenuItem>
-                 ) : (
-                    <DropdownMenuItem onClick={() => handleSave(true)}>
-                        <Star className="mr-2 h-4 w-4" /> Save
-                    </DropdownMenuItem>
-                 )}
-            </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
+                    <DropdownMenuSub>
+                        <DropdownMenuSubTrigger>
+                        <Clock className="mr-2 h-4 w-4" /> Snooze
+                        </DropdownMenuSubTrigger>
+                        <DropdownMenuPortal>
+                            <DropdownMenuSubContent>
+                                <DropdownMenuItem onClick={() => handleSnooze({ hours: 3 })}>For 3 hours</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleSnooze({ days: 1 })}>Until tomorrow</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleSnooze({ weeks: 1 })}>For a week</DropdownMenuItem>
+                            </DropdownMenuSubContent>
+                        </DropdownMenuPortal>
+                    </DropdownMenuSub>
+                    <DropdownMenuSeparator />
+                    {notification.isArchived ? (
+                        <DropdownMenuItem onClick={() => handleSave(false)}>
+                            <ArchiveX className="mr-2 h-4 w-4" /> Unsave
+                        </DropdownMenuItem>
+                    ) : (
+                        <DropdownMenuItem onClick={() => handleSave(true)}>
+                            <Star className="mr-2 h-4 w-4" /> Save
+                        </DropdownMenuItem>
+                    )}
+                </DropdownMenuContent>
+            </DropdownMenu>
+        </div>
+      )}
     </div>
   );
 };

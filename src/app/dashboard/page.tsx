@@ -405,6 +405,7 @@ export default function DashboardPage() {
                           isSelected={selectedNotifications.includes(note.id)}
                           onSelect={handleSelectNotification}
                           onUpdate={loadDashboardData}
+                          showActions={false}
                       />
                   ))}
                   {notifications.length === 0 && (
@@ -488,4 +489,5 @@ export default function DashboardPage() {
   );
 
     
+
 
