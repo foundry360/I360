@@ -992,7 +992,7 @@ export default function ProjectDetailsPage() {
 
                             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                                <div className="col-span-1 space-y-6">
-                                    <Card>
+                                    <Card className={cn(velocityData.length === 0 && 'border-2 border-dashed bg-transparent shadow-none')}>
                                         <CardHeader>
                                             <CardTitle>Velocity</CardTitle>
                                             {velocityData.length > 0 && <CardDescription>Story points completed per wave</CardDescription>}
@@ -1051,13 +1051,13 @@ export default function ProjectDetailsPage() {
                                                 </ChartContainer>
                                             ) : (
                                                 <div className="h-[150px] flex flex-col items-center justify-center text-center text-muted-foreground text-sm">
-                                                    <CircleGauge className="h-10 w-10 mb-2 text-muted-foreground" />
+                                                    <CircleGauge className="h-10 w-10 mb-2" />
                                                     Complete a wave to see your team's velocity.
                                                 </div>
                                             )}
                                         </CardContent>
                                     </Card>
-                                    <Card>
+                                    <Card className={cn(burndownData.length === 0 && 'border-2 border-dashed bg-transparent shadow-none')}>
                                         <CardHeader>
                                             <CardTitle>Burndown</CardTitle>
                                             {burndownData.length > 0 && <CardDescription>Ideal vs actual work remaining</CardDescription>}
@@ -1103,9 +1103,9 @@ export default function ProjectDetailsPage() {
                                                     </LineChart>
                                                 </ChartContainer>
                                             ) : (
-                                                <div className="h-[150px] flex flex-col items-center justify-center text-center text-muted-foreground text-sm p-4">
-                                                <CloudDownload className="h-10 w-10 mb-2 text-muted-foreground" />
-                                                Complete a wave with estimated story points to generate a burndown chart.
+                                                <div className="h-[150px] flex flex-col items-center justify-center text-center text-muted-foreground text-sm">
+                                                    <CloudDownload className="h-10 w-10 mb-2" />
+                                                    Complete a wave with estimated story points to generate a burndown chart.
                                                 </div>
                                             )}
                                         </CardContent>
@@ -1152,10 +1152,10 @@ export default function ProjectDetailsPage() {
                                             </CardFooter>
                                         </Card>
                                     )}
-                                    <Card>
+                                    <Card className={cn(epicProgressData.length === 0 && 'border-2 border-dashed bg-transparent shadow-none')}>
                                         <CardHeader>
                                             <CardTitle>Epic Progress</CardTitle>
-                                            {epicProgressData.length === 0 ? null : <CardDescription>A summary of completion for each engagement epic</CardDescription>}
+                                            {epicProgressData.length > 0 && <CardDescription>A summary of completion for each engagement epic</CardDescription>}
                                         </CardHeader>
                                         <CardContent>
                                             {epicProgressData.length > 0 ? (
@@ -1183,8 +1183,8 @@ export default function ProjectDetailsPage() {
                                                     })}
                                                 </Accordion>
                                             ) : (
-                                                <div className="h-[150px] flex flex-col items-center justify-center text-center text-muted-foreground text-sm p-4">
-                                                    <Loader className="h-10 w-10 mb-2 text-muted-foreground" />
+                                                 <div className="h-[150px] flex flex-col items-center justify-center text-center text-muted-foreground text-sm">
+                                                    <Loader className="h-10 w-10 mb-2" />
                                                     No epic progress to display. Add items with points to epics.
                                                 </div>
                                             )}
@@ -1192,12 +1192,12 @@ export default function ProjectDetailsPage() {
                                     </Card>
                                </div>
                                <div className="col-span-1 space-y-6">
-                                     <Card>
+                                     <Card className={cn(atRiskItems.length === 0 && 'border-2 border-dashed bg-transparent shadow-none')}>
                                         <CardHeader>
                                             <CardTitle>At-Risk Items</CardTitle>
-                                            {atRiskItems.length === 0 ? null : <CardDescription>Items that are overdue or due within 3 days.</CardDescription>}
+                                            {atRiskItems.length > 0 && <CardDescription>Items that are overdue or due within 3 days.</CardDescription>}
                                         </CardHeader>
-                                        <CardContent className="space-y-1">
+                                        <CardContent>
                                             {atRiskItems.length > 0 ? (
                                                 atRiskItems.map(item => {
                                                     const dueDate = parseISO(item.dueDate!);
@@ -1242,7 +1242,7 @@ export default function ProjectDetailsPage() {
                                                 })
                                             ) : (
                                                  <div className="h-[150px] flex flex-col items-center justify-center text-center text-muted-foreground text-sm">
-                                                    <AlertTriangle className="h-10 w-10 mb-2 text-muted-foreground" />
+                                                    <AlertTriangle className="h-10 w-10 mb-2" />
                                                     No at-risk items. Great job!
                                                 </div>
                                             )}
@@ -1270,20 +1270,20 @@ export default function ProjectDetailsPage() {
                     <TabsContent value="epics">
                         <div className="space-y-6">
                             {epics.length === 0 && unassignedBacklogItems.length === 0 ? (
-                                 <div className="p-10 text-center rounded-lg border-2 border-dashed border-border">
-                                     <div className="flex justify-center mb-4">
-                                        <div className="flex justify-center items-center h-16 w-16 bg-muted rounded-full">
-                                            <Layers className="h-8 w-8 text-muted-foreground" />
-                                        </div>
-                                    </div>
-                                    <h3 className="text-lg font-semibold text-foreground">No Epics Yet!</h3>
-                                    <p className="text-muted-foreground mt-2 mb-4">
-                                        Epics are large bodies of work that can be broken down into smaller stories. Get started by creating your first one.
-                                    </p>
-                                    <div className="flex justify-center gap-4">
-                                        <Button onClick={() => openNewEpicDialog(projectId)}><Plus className="h-4 w-4 mr-2" /> Create Epic</Button>
-                                    </div>
-                                </div>
+                                <div className="p-10 text-center rounded-lg border-2 border-dashed border-border">
+                                    <div className="flex justify-center mb-4">
+                                       <div className="flex justify-center items-center h-16 w-16 bg-muted rounded-full">
+                                           <Layers className="h-8 w-8 text-muted-foreground" />
+                                       </div>
+                                   </div>
+                                   <h3 className="text-lg font-semibold text-foreground">No Epics Yet!</h3>
+                                   <p className="text-muted-foreground mt-2 mb-4">
+                                       Epics are large bodies of work that can be broken down into smaller stories. Get started by creating your first one.
+                                   </p>
+                                   <div className="flex justify-center gap-4">
+                                       <Button onClick={() => openNewEpicDialog(projectId)}><Plus className="h-4 w-4 mr-2" /> Create Epic</Button>
+                                   </div>
+                               </div>
                             ) : (
                                 <>
                                     {epics.map(epic => {
@@ -1496,12 +1496,15 @@ export default function ProjectDetailsPage() {
                         <div className="space-y-8">
                              {(['Active', 'Not Started', 'Completed'] as SprintStatus[]).map(status => {
                                 const sprintsByStatus = sprints.filter(s => s.status === status);
-                                const isHidden = sprintsByStatus.length === 0;
+                                const isHidden = sprintsByStatus.length === 0 && status !== 'Not Started'; // Always show upcoming even if empty
+                                
+                                if(isHidden) return null;
 
                                 return (
                                 <div key={status}>
-                                    {!isHidden && <h2 className="text-lg font-semibold mb-2">{status === 'Not Started' ? 'Upcoming Waves' : `${status} Waves`}</h2>}
-                                    
+                                    {(status !== 'Not Started' || sprintsByStatus.length > 0) &&
+                                        <h2 className="text-lg font-semibold mb-2">{status === 'Not Started' ? 'Upcoming Waves' : `${status} Waves`}</h2>
+                                    }
                                     {sprintsByStatus.length > 0 ? (
                                         <Accordion type="single" collapsible className="w-full space-y-4" defaultValue={status === 'Active' && activeSprint ? activeSprint.id : undefined}>
                                             {sprintsByStatus.map(sprint => {
@@ -1596,10 +1599,10 @@ export default function ProjectDetailsPage() {
                                             })}
                                         </Accordion>
                                     ) : (
-                                        <div className="p-10 text-center rounded-lg border-2 border-dashed border-border">
+                                        <div className="p-10 text-center rounded-lg border-2 border-dashed border-border bg-transparent shadow-none">
                                             <div className="flex justify-center mb-4">
                                                 <div className="flex items-center justify-center h-16 w-16 text-muted-foreground">
-                                                   {status === 'Not Started' ? <Rocket className="h-8 w-8" /> : <WavesIcon className="h-8 w-8" />}
+                                                   {status === 'Completed' ? <WavesIcon className="h-8 w-8" /> : <Rocket className="h-8 w-8" />}
                                                 </div>
                                             </div>
                                             <h3 className="text-lg font-semibold text-foreground">{status === 'Completed' ? 'No Waves Completed Yet' : 'No Upcoming Waves'}</h3>
