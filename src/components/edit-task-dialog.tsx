@@ -59,21 +59,45 @@ export function EditTaskDialog() {
   };
 
   const handleDateChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!task) return;
+    console.log('🎯 handleDateChange called!', e.target.value);
+    if (!task) {
+        console.log('❌ No task found');
+        return;
+    }
     const { value } = e.target;
     const originalDueDate = task.dueDate;
+    console.log('📅 Date change details:', { 
+        taskId: task.id,
+        taskTitle: task.title,
+        from: originalDueDate, 
+        to: value,
+        isEmpty: !value,
+        finalValue: value || null
+    });
+    
+    // Update local state first
     setTask(prev => ({...prev!, dueDate: value }));
+    
     try {
-        await updateTaskDueDate(task.id, value || null);
+        console.log('🚀 About to call updateTask directly...');
+        
+        // Call updateTask directly instead of updateTaskDueDate
+        await updateTask(task.id, { dueDate: value || null });
+        
+        console.log('✅ updateTask call completed successfully');
+        
         toast({
             title: "Due Date Updated",
             description: `The due date for "${task.title}" has been changed.`,
         });
+        
         if (onTaskUpdated) {
+            console.log('📞 Calling onTaskUpdated callback');
             onTaskUpdated();
         }
+        
     } catch (error) {
-        console.error("Failed to update due date:", error);
+        console.error("❌ Failed to update due date:", error);
         toast({
             variant: "destructive",
             title: "Error",
@@ -82,7 +106,7 @@ export function EditTaskDialog() {
         // Revert local state on failure
         setTask(prev => ({...prev!, dueDate: originalDueDate }));
     }
-  }
+};
 
   const handleSelectChange = (field: 'priority' | 'type' | 'status') => (value: string) => {
      if (!task) return;
