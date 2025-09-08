@@ -26,6 +26,7 @@ import {
   SearchCheck,
   Bell,
   CheckCheck,
+  MessageCircleMore,
 } from 'lucide-react';
 import { getAssessments, type Assessment } from '@/services/assessment-service';
 import { getContacts, type Contact } from '@/services/contact-service';
@@ -406,7 +407,7 @@ export default function DashboardPage() {
             </div>
           </CardHeader>
           <CardContent className="flex-1 -mt-4">
-              <div className="space-y-0">
+              <div className="space-y-0 h-full">
                   {notifications.slice(0,5).map(note => (
                       <FeedItem
                           key={note.id}
@@ -418,8 +419,12 @@ export default function DashboardPage() {
                       />
                   ))}
                   {notifications.length === 0 && (
-                      <div className="flex flex-col items-center justify-center h-48 text-center text-muted-foreground">
-                          <Bell className="h-12 w-12 mb-4" />
+                      <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground">
+                          <div className="flex justify-center mb-4">
+                              <div className="bg-primary/10 rounded-full p-3">
+                                  <MessageCircleMore className="h-8 w-8 text-primary" />
+                              </div>
+                          </div>
                           <h3 className="font-semibold">Inbox Zero!</h3>
                           <p>No new notifications.</p>
                       </div>
