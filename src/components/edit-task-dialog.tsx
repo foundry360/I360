@@ -61,6 +61,7 @@ export function EditTaskDialog() {
   const handleDateChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!task) return;
     const { value } = e.target;
+    const originalDueDate = task.dueDate;
     setTask(prev => ({...prev!, dueDate: value }));
     try {
         await updateTaskDueDate(task.id, value || null);
@@ -78,8 +79,8 @@ export function EditTaskDialog() {
             title: "Error",
             description: "Could not update the due date.",
         });
-        // Optionally revert local state
-        setTask(prev => ({...prev!, dueDate: task.dueDate }));
+        // Revert local state on failure
+        setTask(prev => ({...prev!, dueDate: originalDueDate }));
     }
   }
 
@@ -196,5 +197,3 @@ export function EditTaskDialog() {
     </Dialog>
   );
 }
-
-    
