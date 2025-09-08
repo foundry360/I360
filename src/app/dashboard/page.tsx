@@ -234,8 +234,7 @@ export default function DashboardPage() {
           <div className="lg:col-span-2"><Skeleton className="h-64 w-full" /></div>
         </div>
         <Skeleton className="h-px w-full" />
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
-          <Skeleton className="h-48 w-full" />
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           <Skeleton className="h-48 w-full" />
           <Skeleton className="h-48 w-full" />
           <Skeleton className="h-48 w-full" />
@@ -378,7 +377,7 @@ export default function DashboardPage() {
             View All
           </Button>
         </div>
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {recentEngagements.length > 0 ? (
             recentEngagements.map((project) => (
               <Card
@@ -428,4 +427,3 @@ export default function DashboardPage() {
     
 
     
-
