@@ -1496,13 +1496,11 @@ export default function ProjectDetailsPage() {
                         <div className="space-y-8">
                              {(['Active', 'Not Started', 'Completed'] as SprintStatus[]).map(status => {
                                 const sprintsByStatus = sprints.filter(s => s.status === status);
-                                const isHidden = sprintsByStatus.length === 0 && status !== 'Not Started';
+                                const isHidden = sprintsByStatus.length === 0;
 
                                 return (
-                                <div key={status} className={cn(isHidden && 'hidden')}>
-                                    {(status === 'Not Started' && sprintsByStatus.length > 0) || status !== 'Not Started' ? (
-                                        <h2 className="text-lg font-semibold mb-2">{status === 'Not Started' ? 'Upcoming Waves' : `${status} Waves`}</h2>
-                                    ) : null}
+                                <div key={status}>
+                                    {!isHidden && <h2 className="text-lg font-semibold mb-2">{status === 'Not Started' ? 'Upcoming Waves' : `${status} Waves`}</h2>}
                                     
                                     {sprintsByStatus.length > 0 ? (
                                         <Accordion type="single" collapsible className="w-full space-y-4" defaultValue={status === 'Active' && activeSprint ? activeSprint.id : undefined}>
