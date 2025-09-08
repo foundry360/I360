@@ -6,7 +6,7 @@ import { getNotifications, bulkUpdateNotifications, type Notification, Notificat
 import { useUser } from '@/contexts/user-context';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { CheckCheck, Archive, Inbox, Bell, AtSign, MessageSquare, AlertTriangle, Info, Star, MonitorCog } from 'lucide-react';
+import { CheckCheck, Archive, Inbox, Bell, AtSign, MessageSquare, AlertTriangle, Info, Star, MonitorCog, ArchiveX } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { FeedItem } from '@/components/feed-item';
 import {
@@ -59,9 +59,9 @@ export default function FeedPage() {
         setSelectedNotifications([]);
     };
 
-    const handleBulkSave = async () => {
-        const idsToUpdate = selectedNotifications.length > 0 ? selectedNotifications : notifications.filter(n => n.isRead).map(n => n.id);
-        await bulkUpdateNotifications({ ids: idsToUpdate, data: { isArchived: true }});
+    const handleBulkSave = async (save: boolean) => {
+        const idsToUpdate = selectedNotifications.length > 0 ? selectedNotifications : (activeFilter === 'saved' ? notifications.map(n => n.id) : notifications.filter(n => n.isRead).map(n => n.id));
+        await bulkUpdateNotifications({ ids: idsToUpdate, data: { isArchived: save }});
         await fetchNotifications();
         setSelectedNotifications([]);
     };
@@ -149,7 +149,11 @@ export default function FeedPage() {
                     {selectedNotifications.length > 0 ? (
                         <>
                             <Button variant="outline" onClick={handleBulkMarkRead}>Mark as Read ({selectedNotifications.length})</Button>
-                            <Button variant="outline" onClick={handleBulkSave}>Save ({selectedNotifications.length})</Button>
+                             {activeFilter === 'saved' ? (
+                                <Button variant="outline" onClick={() => handleBulkSave(false)}>Unsave ({selectedNotifications.length})</Button>
+                            ) : (
+                                <Button variant="outline" onClick={() => handleBulkSave(true)}>Save ({selectedNotifications.length})</Button>
+                            )}
                         </>
                     ) : (
                          <DropdownMenu>
@@ -160,9 +164,15 @@ export default function FeedPage() {
                                 <DropdownMenuItem onClick={handleBulkMarkRead} disabled={unreadCount === 0}>
                                     <CheckCheck className="mr-2 h-4 w-4" /> Mark all as read
                                 </DropdownMenuItem>
-                                <DropdownMenuItem onClick={handleBulkSave} disabled={notifications.length === unreadCount}>
-                                    <Star className="mr-2 h-4 w-4" /> Save all read
-                                </DropdownMenuItem>
+                                {activeFilter === 'saved' ? (
+                                     <DropdownMenuItem onClick={() => handleBulkSave(false)} disabled={notifications.length === 0}>
+                                        <ArchiveX className="mr-2 h-4 w-4" /> Unsave all
+                                    </DropdownMenuItem>
+                                ) : (
+                                     <DropdownMenuItem onClick={() => handleBulkSave(true)} disabled={notifications.length === unreadCount}>
+                                        <Star className="mr-2 h-4 w-4" /> Save all read
+                                    </DropdownMenuItem>
+                                )}
                             </DropdownMenuContent>
                         </DropdownMenu>
                     )}

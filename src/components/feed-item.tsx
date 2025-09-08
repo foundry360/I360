@@ -18,6 +18,7 @@ import {
   AlertTriangle,
   MonitorCog,
   Star,
+  ArchiveX,
 } from 'lucide-react';
 import type { Notification, NotificationType } from '@/services/notification-service';
 import { updateNotification } from '@/services/notification-service';
@@ -86,10 +87,10 @@ export const FeedItem: React.FC<FeedItemProps> = ({
     onUpdate();
   };
   
-  const handleSave = async () => {
-    await updateNotification(notification.id, { isArchived: true });
+  const handleSave = async (save: boolean) => {
+    await updateNotification(notification.id, { isArchived: save });
     toast({
-        title: "Notification Saved",
+        title: save ? "Notification Saved" : "Notification Unsaved",
     });
     onUpdate();
   }
@@ -162,9 +163,15 @@ export const FeedItem: React.FC<FeedItemProps> = ({
                     </DropdownMenuPortal>
                 </DropdownMenuSub>
                 <DropdownMenuSeparator />
-                 <DropdownMenuItem onClick={handleSave}>
-                    <Star className="mr-2 h-4 w-4" /> Save
-                </DropdownMenuItem>
+                 {notification.isArchived ? (
+                    <DropdownMenuItem onClick={() => handleSave(false)}>
+                        <ArchiveX className="mr-2 h-4 w-4" /> Unsave
+                    </DropdownMenuItem>
+                 ) : (
+                    <DropdownMenuItem onClick={() => handleSave(true)}>
+                        <Star className="mr-2 h-4 w-4" /> Save
+                    </DropdownMenuItem>
+                 )}
             </DropdownMenuContent>
         </DropdownMenu>
       </div>
