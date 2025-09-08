@@ -1184,7 +1184,7 @@ export default function ProjectDetailsPage() {
                                                 </Accordion>
                                             ) : (
                                                 <div className="h-[150px] flex flex-col items-center justify-center text-center text-muted-foreground text-sm p-4">
-                                                    <Loader className="h-10 w-10 mb-2 text-muted-foreground animate-spin" />
+                                                    <Loader className="h-10 w-10 mb-2 text-muted-foreground" />
                                                     No epic progress to display. Add items with points to epics.
                                                 </div>
                                             )}
@@ -1272,7 +1272,9 @@ export default function ProjectDetailsPage() {
                             {epics.length === 0 && unassignedBacklogItems.length === 0 ? (
                                  <div className="p-10 text-center rounded-lg border-2 border-dashed border-border">
                                      <div className="flex justify-center mb-4">
-                                        <Layers className="h-8 w-8 text-muted-foreground" />
+                                        <div className="flex justify-center items-center h-16 w-16 bg-muted rounded-full">
+                                            <Layers className="h-8 w-8 text-muted-foreground" />
+                                        </div>
                                     </div>
                                     <h3 className="text-lg font-semibold text-foreground">No Epics Yet!</h3>
                                     <p className="text-muted-foreground mt-2 mb-4">
@@ -1494,13 +1496,11 @@ export default function ProjectDetailsPage() {
                         <div className="space-y-8">
                              {(['Active', 'Not Started', 'Completed'] as SprintStatus[]).map(status => {
                                 const sprintsByStatus = sprints.filter(s => s.status === status);
-                                const isHidden = sprintsByStatus.length === 0 && status === 'Active';
+                                const isHidden = sprintsByStatus.length === 0;
 
-                                if (isHidden) return null;
-                                
                                 return (
                                 <div key={status}>
-                                    {sprintsByStatus.length > 0 && <h2 className="text-lg font-semibold mb-2">{status === 'Not Started' ? 'Upcoming Waves' : `${status} Waves`}</h2>}
+                                    {!isHidden && <h2 className="text-lg font-semibold mb-2">{status === 'Not Started' ? 'Upcoming Waves' : `${status} Waves`}</h2>}
                                     
                                     {sprintsByStatus.length > 0 ? (
                                         <Accordion type="single" collapsible className="w-full space-y-4" defaultValue={status === 'Active' && activeSprint ? activeSprint.id : undefined}>
@@ -1599,7 +1599,7 @@ export default function ProjectDetailsPage() {
                                         <div className="p-10 text-center rounded-lg border-2 border-dashed border-border">
                                             <div className="flex justify-center mb-4">
                                                 <div className="flex items-center justify-center h-16 w-16 text-muted-foreground">
-                                                   {status === 'Not Started' ? <WavesIcon className="h-8 w-8" /> : <WavesIcon className="h-8 w-8" />}
+                                                   {status === 'Not Started' ? <Rocket className="h-8 w-8" /> : <WavesIcon className="h-8 w-8" />}
                                                 </div>
                                             </div>
                                             <h3 className="text-lg font-semibold text-foreground">{status === 'Completed' ? 'No Waves Completed Yet' : 'No Upcoming Waves'}</h3>
