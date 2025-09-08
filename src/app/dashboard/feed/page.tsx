@@ -20,16 +20,16 @@ import { Card } from '@/components/ui/card';
 
 type FilterType = 'all' | NotificationType | 'mention' | 'thread' | 'saved';
 
-const filterConfig: { id: FilterType; label: string; icon: React.ElementType }[] = [
-    { id: 'all', label: 'All', icon: Inbox },
-    { id: 'mention', label: '@Mentions', icon: AtSign },
-    { id: 'thread', label: 'Threads', icon: MessageSquare },
-    { id: 'activity', label: 'Notifications', icon: Bell },
-    { id: 'alert', label: 'Alerts', icon: AlertCircle },
-    { id: 'system', label: 'System', icon: Info },
+const filterConfig: { id: FilterType; label: string; icon: React.ElementType, color: string }[] = [
+    { id: 'all', label: 'All', icon: Inbox, color: 'text-slate-500' },
+    { id: 'mention', label: '@Mentions', icon: AtSign, color: 'text-blue-500' },
+    { id: 'thread', label: 'Threads', icon: MessageSquare, color: 'text-green-500' },
+    { id: 'activity', label: 'Notifications', icon: Bell, color: 'text-orange-500' },
+    { id: 'alert', label: 'Alerts', icon: AlertCircle, color: 'text-red-500' },
+    { id: 'system', label: 'System', icon: Info, color: 'text-sky-500' },
 ];
 
-const savedFilter = { id: 'saved' as const, label: 'Saved', icon: Star };
+const savedFilter = { id: 'saved' as const, label: 'Saved', icon: Star, color: 'text-yellow-500' };
 
 export default function FeedPage() {
     const { user } = useUser();
@@ -85,7 +85,7 @@ export default function FeedPage() {
 
     const unreadCount = notifications.filter(n => !n.isRead && !n.isArchived).length;
     
-    const renderFilterButton = (filter: { id: FilterType; label: string; icon: React.ElementType }) => {
+    const renderFilterButton = (filter: { id: FilterType; label: string; icon: React.ElementType, color: string }) => {
         const Icon = filter.icon;
         return (
             <Button 
@@ -97,7 +97,7 @@ export default function FeedPage() {
                 )}
                 onClick={() => setActiveFilter(filter.id)}
             >
-                <Icon className="mr-3 h-4 w-4" />
+                <Icon className={cn("mr-3 h-4 w-4", filter.color)} />
                 {filter.label}
             </Button>
         );
