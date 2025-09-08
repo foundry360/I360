@@ -1179,7 +1179,7 @@ export default function ProjectDetailsPage() {
                                      <Card>
                                         <CardHeader>
                                             <CardTitle>At-Risk Items</CardTitle>
-                                            <CardDescription>Items that are overdue or due within 3 days.</CardDescription>
+                                            {atRiskItems.length > 0 && <CardDescription>Items that are overdue or due within 3 days.</CardDescription>}
                                         </CardHeader>
                                         <CardContent className="space-y-1">
                                             {atRiskItems.length > 0 ? (
@@ -1225,7 +1225,10 @@ export default function ProjectDetailsPage() {
                                                     )
                                                 })
                                             ) : (
-                                                <p className="text-sm text-muted-foreground text-center py-4">No at-risk items. Great job!</p>
+                                                <div className="h-[150px] flex flex-col items-center justify-center text-center text-muted-foreground text-sm">
+                                                    <AlertTriangle className="h-10 w-10 mb-2 text-muted-foreground" />
+                                                    No at-risk items. Great job!
+                                                </div>
                                             )}
                                         </CardContent>
                                     </Card>
