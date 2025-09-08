@@ -2,23 +2,26 @@
 'use client';
 
 import * as React from 'react';
-import { useRouter } from 'next/navigation';
-import { getNotifications, markAllNotificationsAsRead, type Notification } from '@/services/notification-service';
+import { getNotifications, bulkUpdateNotifications, type Notification } from '@/services/notification-service';
 import { useUser } from '@/contexts/user-context';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { cn } from '@/lib/utils';
-import { formatDistanceToNow, parseISO } from 'date-fns';
-import { CheckCheck } from 'lucide-react';
+import { CheckCheck, Archive, Inbox, Bell } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
+import { FeedItem } from '@/components/feed-item';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 export default function FeedPage() {
-    const router = useRouter();
     const { user } = useUser();
     const [notifications, setNotifications] = React.useState<Notification[]>([]);
     const [loading, setLoading] = React.useState(true);
+    const [selectedNotifications, setSelectedNotifications] = React.useState<string[]>([]);
+    const [filter, setFilter] = React.useState<'all' | 'unread'>('all');
 
     const fetchNotifications = React.useCallback(async () => {
         if (user) {
@@ -33,69 +36,86 @@ export default function FeedPage() {
         fetchNotifications();
     }, [fetchNotifications]);
 
-    const handleMarkAllRead = async () => {
-        await markAllNotificationsAsRead();
-        fetchNotifications();
+    const handleBulkMarkRead = async () => {
+        const idsToUpdate = selectedNotifications.length > 0 ? selectedNotifications : notifications.filter(n => !n.isRead).map(n => n.id);
+        await bulkUpdateNotifications({ ids: idsToUpdate, data: { isRead: true }});
+        await fetchNotifications();
+        setSelectedNotifications([]);
     };
 
-    const handleNotificationClick = (notification: Notification) => {
-        router.push(notification.link);
+    const handleBulkArchive = async () => {
+        const idsToUpdate = selectedNotifications.length > 0 ? selectedNotifications : notifications.filter(n => n.isRead).map(n => n.id);
+        await bulkUpdateNotifications({ ids: idsToUpdate, data: { isArchived: true }});
+        await fetchNotifications();
+        setSelectedNotifications([]);
+    };
+
+    const handleSelectNotification = (id: string) => {
+        setSelectedNotifications(prev => 
+            prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+        );
     };
     
+    const filteredNotifications = notifications.filter(n => filter === 'all' || !n.isRead);
     const unreadCount = notifications.filter(n => !n.isRead).length;
 
     return (
         <div className="space-y-6">
-            <div>
-                <h1 className="text-2xl font-bold">Communications Feed</h1>
-                <p className="text-muted-foreground">All notifications, messages, and alerts in one place</p>
+            <div className="flex justify-between items-center">
+                <div>
+                    <h1 className="text-2xl font-bold">Communications Feed</h1>
+                    <p className="text-muted-foreground">All notifications, messages, and alerts in one place</p>
+                </div>
+                <div className="flex items-center gap-2">
+                    {selectedNotifications.length > 0 ? (
+                        <>
+                            <Button variant="outline" onClick={handleBulkMarkRead}>Mark as Read ({selectedNotifications.length})</Button>
+                            <Button variant="outline" onClick={handleBulkArchive}>Archive ({selectedNotifications.length})</Button>
+                        </>
+                    ) : (
+                         <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="outline">Bulk Actions</Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent>
+                                <DropdownMenuItem onClick={handleBulkMarkRead} disabled={unreadCount === 0}>
+                                    <CheckCheck className="mr-2 h-4 w-4" /> Mark all as read
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={handleBulkArchive} disabled={notifications.length === unreadCount}>
+                                    <Archive className="mr-2 h-4 w-4" /> Archive all read
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    )}
+                </div>
             </div>
             <Separator />
-            <Card>
-                <CardHeader className="flex flex-row items-center justify-between">
-                    <CardTitle>All Updates</CardTitle>
-                    {unreadCount > 0 && (
-                        <Button variant="ghost" onClick={handleMarkAllRead}>
-                            <CheckCheck className="mr-2 h-4 w-4" />
-                            Mark all as read
-                        </Button>
-                    )}
-                </CardHeader>
-                <CardContent>
-                    <div className="space-y-4">
-                        {loading ? (
-                            Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-16 w-full" />)
-                        ) : notifications.length > 0 ? (
-                            notifications.map(note => (
-                                <div 
-                                    key={note.id} 
-                                    className={cn(
-                                        "flex items-start gap-4 p-4 rounded-lg border cursor-pointer hover:bg-muted",
-                                        !note.isRead && "bg-primary-light dark:bg-primary/10 border-primary/20"
-                                    )}
-                                    onClick={() => handleNotificationClick(note)}
-                                >
-                                    <Avatar className="h-8 w-8">
-                                        <AvatarImage src={user?.photoURL || ''} />
-                                        <AvatarFallback>{user?.displayName?.charAt(0) || 'A'}</AvatarFallback>
-                                    </Avatar>
-                                    <div className="flex-1">
-                                        <p className={cn("text-sm", !note.isRead && "font-semibold")}>{note.message}</p>
-                                        <p className="text-xs text-muted-foreground mt-1">
-                                            {formatDistanceToNow(parseISO(note.createdAt), { addSuffix: true })}
-                                        </p>
-                                    </div>
-                                </div>
-                            ))
-                        ) : (
-                             <div className="text-center py-12 text-muted-foreground">
-                                <p>Your feed is empty</p>
-                                <p>Important updates and notifications will appear here</p>
+
+             <div className="space-y-4">
+                {loading ? (
+                    Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-20 w-full rounded-lg" />)
+                ) : filteredNotifications.length > 0 ? (
+                    filteredNotifications.map(note => (
+                        <FeedItem 
+                            key={note.id}
+                            notification={note}
+                            isSelected={selectedNotifications.includes(note.id)}
+                            onSelect={handleSelectNotification}
+                            onUpdate={fetchNotifications}
+                        />
+                    ))
+                ) : (
+                    <div className="text-center py-24 text-muted-foreground border-2 border-dashed rounded-lg">
+                        <div className="flex justify-center mb-4">
+                            <div className="bg-primary/10 rounded-full p-3">
+                                <Bell className="h-8 w-8 text-primary" />
                             </div>
-                        )}
+                        </div>
+                        <h3 className="text-lg font-semibold">All caught up!</h3>
+                        <p>Your feed is empty. New updates will appear here.</p>
                     </div>
-                </CardContent>
-            </Card>
+                )}
+            </div>
         </div>
     );
 }
