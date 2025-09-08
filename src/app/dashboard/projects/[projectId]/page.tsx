@@ -896,7 +896,7 @@ export default function ProjectDetailsPage() {
                                 </TooltipProvider>
                             </div>
                         )}
-                        {activeTab === 'epics' && (
+                        {activeTab === 'epics' && epics.length > 0 && (
                             <div className="flex items-center gap-2">
                                 <TooltipProvider>
                                     <Tooltip>
@@ -963,7 +963,7 @@ export default function ProjectDetailsPage() {
                                         <CardContent>
                                             <p className="text-2xl font-bold">{completedItemsCount}</p>
                                         </CardContent>
-                                        <CardFooter className="flex-col items-start gap-1 p-4 pt-0">
+                                         <CardFooter className="flex-col items-start gap-1 p-4 pt-0">
                                             <p className="text-xs text-muted-foreground">{Math.round(completedPercentage)}% of total</p>
                                             <Progress value={completedPercentage} />
                                         </CardFooter>
