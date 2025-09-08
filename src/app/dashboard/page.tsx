@@ -312,10 +312,10 @@ export default function DashboardPage() {
                                             riskStatus === 'on-track' && 'bg-green-500'
                                           )}
                                         />
-                                        <div className="flex-1">
-                                            <div className="flex justify-between items-center">
-                                                <p className="font-medium text-sm">{task.title}</p>
-                                                <Badge variant="outline" className="font-normal">{task.status}</Badge>
+                                        <div className="flex-1 overflow-hidden">
+                                            <div className="flex justify-between items-center gap-2">
+                                                <p className="font-medium text-sm truncate">{task.title}</p>
+                                                <Badge variant="outline" className="font-normal whitespace-nowrap">{task.status}</Badge>
                                             </div>
                                             <p className="text-xs text-muted-foreground">Due on {format(parseISO(task.dueDate!), 'EEE, MMM dd')}</p>
                                         </div>
@@ -505,6 +505,7 @@ export default function DashboardPage() {
   );
 
     
+
 
 
 
