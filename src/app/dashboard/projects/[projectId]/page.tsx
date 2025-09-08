@@ -1408,7 +1408,7 @@ export default function ProjectDetailsPage() {
                     <TabsContent value="backlog">
                         <div className="space-y-6">
                             {unassignedAndUnscheduledBacklogItems.length === 0 ? (
-                                <div className="p-10 text-center rounded-lg border-2 border-dashed bg-card/50 border-border">
+                                <div className="p-10 text-center rounded-lg border-2 border-dashed border-border bg-transparent shadow-none">
                                     <div className="flex justify-center mb-4">
                                         <div className="flex justify-center items-center h-16 w-16 text-muted-foreground">
                                             <Inbox className="h-8 w-8" />
@@ -1794,5 +1794,6 @@ export default function ProjectDetailsPage() {
         </div>
     );
 }
+
 
 
