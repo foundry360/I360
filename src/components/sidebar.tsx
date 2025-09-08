@@ -20,6 +20,8 @@ import {
   History,
   ChevronRight as ChevronRightIcon,
   Rss,
+  PanelRightClose,
+  PanelRightOpen,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -477,7 +479,7 @@ export function Sidebar() {
                       isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'
                     }
                   >
-                    {isCollapsed ? <ChevronsRight /> : <ChevronsLeft />}
+                    {isCollapsed ? <PanelRightOpen /> : <PanelRightClose />}
                   </Button>
                 </TooltipTrigger>
                 {isCollapsed && (
