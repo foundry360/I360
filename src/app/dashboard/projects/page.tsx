@@ -36,6 +36,7 @@ import Link from 'next/link';
 import { useQuickAction } from '@/contexts/quick-action-context';
 import { getProjects, deleteProject, deleteProjects, Project, updateProject } from '@/services/project-service';
 import { getBacklogItemsForProject } from '@/services/backlog-item-service';
+import { getTasksForProject } from '@/services/task-service';
 import { getEpicsForProject } from '@/services/epic-service';
 import { getSprintsForProject } from '@/services/sprint-service';
 import { useUser } from '@/contexts/user-context';
@@ -47,6 +48,7 @@ import { format, formatDistanceToNow, parseISO } from 'date-fns';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
+import { useRouter } from 'next/navigation';
 
 type SortKey = keyof Project;
 type ProjectStatus = 'Active' | 'Inactive' | 'Completed' | 'On Hold';
@@ -69,6 +71,7 @@ export default function ProjectsPage() {
   const { user } = useUser();
   const [isSearchVisible, setIsSearchVisible] = React.useState(false);
   const { toast } = useToast();
+  const router = useRouter();
 
   const fetchProjects = React.useCallback(async () => {
     try {
@@ -112,12 +115,13 @@ export default function ProjectsPage() {
   }, [setGlobalSearchTerm]);
 
   const hasDependencies = async (projectId: string) => {
-    const [backlogItems, epics, sprints] = await Promise.all([
+    const [backlogItems, epics, sprints, tasks] = await Promise.all([
       getBacklogItemsForProject(projectId),
       getEpicsForProject(projectId),
       getSprintsForProject(projectId),
+      getTasksForProject(projectId),
     ]);
-    return backlogItems.length > 0 || epics.length > 0 || sprints.length > 0;
+    return backlogItems.length > 0 || epics.length > 0 || sprints.length > 0 || tasks.length > 0;
   };
 
   const openDeleteDialog = (project: Project) => {
@@ -129,7 +133,7 @@ export default function ProjectsPage() {
     if (!projectToDelete) return;
     const dependenciesExist = await hasDependencies(projectToDelete.id);
     if (dependenciesExist) {
-        setDependencyErrorDialogMessage(`The engagement "${projectToDelete.name}" cannot be deleted because it has associated epics, waves, or backlog items. Please remove these items before deleting the engagement.`);
+        setDependencyErrorDialogMessage(`The engagement "${projectToDelete.name}" cannot be deleted because it has associated epics, waves, tasks or backlog items. Please remove these items before deleting the engagement.`);
         setIsDependencyErrorDialogOpen(true);
         setIsDeleteDialogOpen(false);
         return;
