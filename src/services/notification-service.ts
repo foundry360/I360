@@ -39,7 +39,7 @@ export async function createNotification(data: { message: string; link: string; 
 }
 
 
-export async function getNotifications(): Promise<Notification[]> {
+export async function getNotifications(includeArchived = false): Promise<Notification[]> {
     if (!auth.currentUser) {
         console.warn("No user logged in, cannot fetch notifications.");
         return [];
@@ -49,7 +49,7 @@ export async function getNotifications(): Promise<Notification[]> {
         const q = query(
             notificationsCollection, 
             orderBy('createdAt', 'desc'), 
-            limit(50)
+            limit(100) // Fetch more to allow for client-side filtering
         );
         const snapshot = await getDocs(q);
         
@@ -59,7 +59,10 @@ export async function getNotifications(): Promise<Notification[]> {
             ...docSnapshot.data()
         } as Notification));
         
-        // Filter snoozed and archived notifications on the client
+        if (includeArchived) {
+            return notifications.filter(n => n.isArchived);
+        }
+
         return notifications.filter(n => {
             if (n.isArchived) return false;
             if (!n.snoozedUntil) return true;

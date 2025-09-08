@@ -6,7 +6,7 @@ import { getNotifications, bulkUpdateNotifications, type Notification, Notificat
 import { useUser } from '@/contexts/user-context';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { CheckCheck, Archive, Inbox, Bell, AtSign, MessageSquare, AlertCircle, Info } from 'lucide-react';
+import { CheckCheck, Archive, Inbox, Bell, AtSign, MessageSquare, AlertCircle, Info, Star } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { FeedItem } from '@/components/feed-item';
 import {
@@ -18,9 +18,10 @@ import {
 import { cn } from '@/lib/utils';
 import { Card } from '@/components/ui/card';
 
-type FilterType = 'all' | NotificationType | 'mention' | 'thread';
+type FilterType = 'all' | NotificationType | 'mention' | 'thread' | 'saved';
 
 const filterConfig: { id: FilterType; label: string; icon: React.ElementType }[] = [
+    { id: 'saved', label: 'Saved', icon: Star },
     { id: 'all', label: 'All', icon: Inbox },
     { id: 'mention', label: '@Mentions', icon: AtSign },
     { id: 'thread', label: 'Threads', icon: MessageSquare },
@@ -39,11 +40,12 @@ export default function FeedPage() {
     const fetchNotifications = React.useCallback(async () => {
         if (user) {
             setLoading(true);
-            const notes = await getNotifications();
+            const includeArchived = activeFilter === 'saved';
+            const notes = await getNotifications(includeArchived);
             setNotifications(notes);
             setLoading(false);
         }
-    }, [user]);
+    }, [user, activeFilter]);
 
     React.useEffect(() => {
         fetchNotifications();
@@ -70,11 +72,14 @@ export default function FeedPage() {
     };
     
     const filteredNotifications = notifications.filter(n => {
-        if (activeFilter === 'all') return true;
-        return n.type === activeFilter;
+        if (activeFilter === 'saved') {
+            return n.isArchived;
+        }
+        if (activeFilter === 'all') return !n.isArchived;
+        return n.type === activeFilter && !n.isArchived;
     });
 
-    const unreadCount = notifications.filter(n => !n.isRead).length;
+    const unreadCount = notifications.filter(n => !n.isRead && !n.isArchived).length;
 
     return (
         <div className="space-y-6">
@@ -135,7 +140,7 @@ export default function FeedPage() {
                 <div className="col-span-10">
                     <Card className="overflow-hidden">
                         {loading ? (
-                            Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-20 w-full" />)
+                            Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-20 w-full border-b" />)
                         ) : filteredNotifications.length > 0 ? (
                             filteredNotifications.map(note => (
                                 <FeedItem 
@@ -153,8 +158,14 @@ export default function FeedPage() {
                                         <Bell className="h-8 w-8 text-primary" />
                                     </div>
                                 </div>
-                                <h3 className="text-lg font-semibold">All caught up!</h3>
-                                <p>Your feed is empty. Important updates and notifications will appear here</p>
+                                <h3 className="text-lg font-semibold">
+                                  {activeFilter === 'saved' ? "No saved items" : "All caught up!"}
+                                </h3>
+                                <p>
+                                  {activeFilter === 'saved'
+                                    ? 'Archived notifications will appear here'
+                                    : 'Your feed is empty. Important updates will appear here'}
+                                </p>
                             </div>
                         )}
                     </Card>
