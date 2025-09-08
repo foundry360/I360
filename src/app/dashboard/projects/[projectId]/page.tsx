@@ -1496,43 +1496,27 @@ export default function ProjectDetailsPage() {
                         <div className="space-y-8">
                              {(['Active', 'Not Started', 'Completed'] as SprintStatus[]).map(status => {
                                 const sprintsByStatus = sprints.filter(s => s.status === status);
+
+                                if (status === 'Completed' && sprintsByStatus.length === 0) {
+                                    return null; // Don't render anything for empty completed waves
+                                }
                                 
                                 if (status === 'Not Started' && sprintsByStatus.length === 0) {
                                     return (
-                                        <div key={status}>
-                                            <div className="p-10 text-center rounded-lg border-2 border-dashed border-border bg-transparent shadow-none">
-                                                <div className="flex justify-center mb-4">
-                                                    <div className="flex items-center justify-center h-16 w-16 text-muted-foreground">
-                                                        <WavesIcon className="h-8 w-8" />
-                                                    </div>
+                                        <div key={status} className="p-10 text-center rounded-lg border-2 border-dashed border-border bg-transparent shadow-none">
+                                            <div className="flex justify-center mb-4">
+                                                <div className="flex items-center justify-center h-16 w-16 text-muted-foreground">
+                                                    <WavesIcon className="h-8 w-8" />
                                                 </div>
-                                                <h3 className="text-lg font-semibold text-foreground">No Upcoming Waves</h3>
-                                                <p className="text-muted-foreground mt-2 mb-4">
-                                                    Plan your next cycle of work by creating a new wave.
-                                                </p>
-                                                <Button onClick={() => openNewSprintDialog(projectId)}>
-                                                    <Plus className="h-4 w-4 mr-2" />
-                                                    New Wave
-                                                </Button>
                                             </div>
-                                        </div>
-                                    )
-                                }
-
-                                if (status === 'Completed' && sprintsByStatus.length === 0) {
-                                    return (
-                                        <div key={status}>
-                                            <div className="p-10 text-center rounded-lg border-2 border-dashed border-border bg-transparent shadow-none">
-                                                <div className="flex justify-center mb-4">
-                                                    <div className="flex items-center justify-center h-16 w-16 text-muted-foreground">
-                                                        <Rocket className="h-8 w-8" />
-                                                    </div>
-                                                </div>
-                                                <h3 className="text-lg font-semibold text-foreground">No Waves Completed Yet</h3>
-                                                <p className="text-muted-foreground mt-2 mb-4">
-                                                    Completed waves and their metrics will appear here.
-                                                </p>
-                                            </div>
+                                            <h3 className="text-lg font-semibold text-foreground">No Upcoming Waves</h3>
+                                            <p className="text-muted-foreground mt-2 mb-4">
+                                                Plan your next cycle of work by creating a new wave.
+                                            </p>
+                                            <Button onClick={() => openNewSprintDialog(projectId)}>
+                                                <Plus className="h-4 w-4 mr-2" />
+                                                New Wave
+                                            </Button>
                                         </div>
                                     )
                                 }
@@ -1731,4 +1715,5 @@ export default function ProjectDetailsPage() {
         </div>
     );
 }
+
 
