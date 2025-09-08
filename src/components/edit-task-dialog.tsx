@@ -203,9 +203,38 @@ export function EditTaskDialog() {
                 </SelectContent>
               </Select>
             </div>
-             <div className="grid grid-cols-4 items-center gap-4">
+            <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="dueDate" className="text-right">Due Date</Label>
-              <Input id="dueDate" type="date" value={task.dueDate || ''} onChange={handleDateChange} className="col-span-3" />
+              <div className="col-span-3 flex gap-2">
+                <Input 
+                  id="dueDate" 
+                  type="date" 
+                  value={task.dueDate || ''} 
+                  onChange={(e) => {
+                    console.log('🎯 Date input onChange fired!', e.target.value);
+                    handleDateChange(e);
+                  }}
+                  className="flex-1" 
+                />
+                <Button 
+                  type="button"
+                  onClick={async () => {
+                    console.log('🧪 Test button clicked!');
+                    if (task) {
+                      try {
+                        await updateTask(task.id, { dueDate: '2025-09-15' });
+                        console.log('✅ Test update successful');
+                      } catch (error) {
+                        console.error('❌ Test update failed:', error);
+                      }
+                    }
+                  }}
+                  variant="outline"
+                  size="sm"
+                >
+                  Test
+                </Button>
+              </div>
             </div>
           </div>
           <DialogFooter className="pt-4 flex justify-between items-center w-full">
