@@ -303,7 +303,7 @@ export default function DashboardPage() {
                             const riskStatus = getTaskRiskStatus(task);
                             return (
                                 <div key={task.id} className={cn("flex items-start justify-between py-2 rounded-md hover:bg-muted cursor-pointer", index !== visibleTasks.length - 1 && 'border-b dark:border-white/10')} onClick={() => router.push(`/dashboard/projects/${task.projectId}`)}>
-                                    <div className="flex items-center gap-3">
+                                    <div className="flex items-center gap-3 w-full">
                                         <div 
                                           className={cn(
                                             "h-2.5 w-2.5 rounded-full mt-1.5",
@@ -312,13 +312,12 @@ export default function DashboardPage() {
                                             riskStatus === 'on-track' && 'bg-green-500'
                                           )}
                                         />
-                                        <div>
-                                            <p className="font-medium text-sm">{task.title}</p>
-                                            <p className="text-xs text-muted-foreground">Due on {format(parseISO(task.dueDate!), 'EEE, MMM dd')}</p>
-                                             <div className="flex items-center gap-2 mt-1">
-                                                 <Badge variant="outline" className="font-normal">{task.status}</Badge>
-                                                 <Badge variant="secondary">{task.priority}</Badge>
+                                        <div className="flex-1">
+                                            <div className="flex justify-between items-center">
+                                                <p className="font-medium text-sm">{task.title}</p>
+                                                <Badge variant="outline" className="font-normal">{task.status}</Badge>
                                             </div>
+                                            <p className="text-xs text-muted-foreground">Due on {format(parseISO(task.dueDate!), 'EEE, MMM dd')}</p>
                                         </div>
                                     </div>
                                 </div>
@@ -506,6 +505,7 @@ export default function DashboardPage() {
   );
 
     
+
 
 
 
