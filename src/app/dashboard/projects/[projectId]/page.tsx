@@ -37,6 +37,7 @@ import {
   BookCopy,
   CircleGauge,
   CloudDownload,
+  Waves,
 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
@@ -104,23 +105,6 @@ const statusHexColors: Record<BacklogItemStatus, string> = {
     'Final Approval': '#eab308', // yellow-500
     'Complete': '#22c55e', // green-500
 };
-
-const WavesIcon = (props: React.SVGProps<SVGSVGElement>) => (
-    <svg
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        {...props}
-    >
-        <path d="M2 6c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2s5 2 5 2c1.3 0 1.9-.5 2.5-1" />
-        <path d="M2 12c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2s5 2 5 2c1.3 0 1.9-.5 2.5-1" />
-        <path d="M2 18c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2s5 2 5 2c1.3 0 1.9-.5 2.5-1" />
-    </svg>
-);
 
 
 const BacklogItemTypeIcon = ({ type }: { type: BacklogItemType }) => {
@@ -920,7 +904,7 @@ export default function ProjectDetailsPage() {
                                 <Tooltip>
                                     <TooltipTrigger asChild>
                                         <Button size="icon" onClick={() => openNewSprintDialog(projectId)}>
-                                            <WavesIcon className="h-4 w-4" />
+                                            <Waves className="h-4 w-4" />
                                         </Button>
                                     </TooltipTrigger>
                                     <TooltipContent>
@@ -1152,7 +1136,7 @@ export default function ProjectDetailsPage() {
                                             </CardFooter>
                                         </Card>
                                     )}
-                                    <Card className={cn(epicProgressData.length === 0 && 'border-2 border-dashed bg-transparent shadow-none')}>
+                                    <Card className={cn(epicProgressData.length === 0 && 'border-dashed bg-transparent shadow-none')}>
                                         <CardHeader>
                                             <CardTitle>Epic Progress</CardTitle>
                                             {epicProgressData.length > 0 && <CardDescription>A summary of completion for each engagement epic</CardDescription>}
@@ -1184,7 +1168,7 @@ export default function ProjectDetailsPage() {
                                                 </Accordion>
                                             ) : (
                                                  <div className="h-[150px] flex flex-col items-center justify-center text-center text-muted-foreground text-sm">
-                                                    <Loader className="h-10 w-10 mb-2" />
+                                                    <Loader className="h-10 w-10 mb-2 animate-spin" />
                                                     No epic progress to display. Add items with points to epics.
                                                 </div>
                                             )}
@@ -1192,7 +1176,7 @@ export default function ProjectDetailsPage() {
                                     </Card>
                                </div>
                                <div className="col-span-1 space-y-6">
-                                     <Card className={cn(atRiskItems.length === 0 && 'border-2 border-dashed bg-transparent shadow-none')}>
+                                     <Card className={cn(atRiskItems.length === 0 && 'border-dashed bg-transparent shadow-none')}>
                                         <CardHeader>
                                             <CardTitle>At-Risk Items</CardTitle>
                                             {atRiskItems.length > 0 && <CardDescription>Items that are overdue or due within 3 days.</CardDescription>}
@@ -1361,7 +1345,7 @@ export default function ProjectDetailsPage() {
                                                                                     <DropdownMenuItem onSelect={(e) => { e.stopPropagation(); openEditBacklogItemDialog(item, epics, sprints, contacts); }}><Pencil className="mr-2 h-4 w-4" />Edit</DropdownMenuItem>
                                                                                     <DropdownMenuSub>
                                                                                         <DropdownMenuSubTrigger>
-                                                                                            <WavesIcon className="mr-2 h-4 w-4" />
+                                                                                            <Waves className="mr-2 h-4 w-4" />
                                                                                             <span>Move to Wave</span>
                                                                                         </DropdownMenuSubTrigger>
                                                                                         <DropdownMenuPortal>
@@ -1462,7 +1446,7 @@ export default function ProjectDetailsPage() {
                                                                 <DropdownMenuItem onSelect={(e) => { e.stopPropagation(); openEditBacklogItemDialog(item, epics, sprints, contacts); }}><Pencil className="mr-2 h-4 w-4" />Edit</DropdownMenuItem>
                                                                 <DropdownMenuSub>
                                                                     <DropdownMenuSubTrigger>
-                                                                        <WavesIcon className="mr-2 h-4 w-4" />
+                                                                        <Waves className="mr-2 h-4 w-4" />
                                                                         <span>Move to Wave</span>
                                                                     </DropdownMenuSubTrigger>
                                                                     <DropdownMenuPortal>
@@ -1496,11 +1480,11 @@ export default function ProjectDetailsPage() {
                         <div className="space-y-8">
                              {(['Active', 'Not Started'] as SprintStatus[]).map(status => {
                                 const sprintsByStatus = sprints.filter(s => s.status === status);
-                                if (sprintsByStatus.length === 0 && status === 'Completed') return null;
+                                if (sprintsByStatus.length === 0) return null;
                                 
                                 return (
                                 <div key={status}>
-                                    {sprintsByStatus.length > 0 && <h2 className="text-lg font-semibold mb-2">{status === 'Not Started' ? 'Upcoming Waves' : `${status} Waves`}</h2>}
+                                    <h2 className="text-lg font-semibold mb-2">{status === 'Not Started' ? 'Upcoming Waves' : `${status} Waves`}</h2>
                                     
                                     {sprintsByStatus.length > 0 ? (
                                         <Accordion type="single" collapsible className="w-full space-y-4" defaultValue={status === 'Active' && activeSprint ? activeSprint.id : undefined}>
@@ -1526,7 +1510,7 @@ export default function ProjectDetailsPage() {
                                                                     <DropdownMenuContent align="end">
                                                                         {sprint.status === 'Not Started' && (
                                                                             <DropdownMenuItem onSelect={() => handleStartSprint(sprint.id)} disabled={loading}>
-                                                                                <WavesIcon className="mr-2 h-4 w-4" /> Start Wave
+                                                                                <Rocket className="mr-2 h-4 w-4" /> Start Wave
                                                                             </DropdownMenuItem>
                                                                         )}
                                                                         {sprint.status === 'Active' && (
@@ -1599,7 +1583,7 @@ export default function ProjectDetailsPage() {
                                         <div className="p-10 text-center rounded-lg border-2 border-dashed border-border bg-transparent shadow-none">
                                             <div className="flex justify-center mb-4">
                                                 <div className="flex items-center justify-center h-16 w-16 text-muted-foreground">
-                                                    <WavesIcon className="h-8 w-8" />
+                                                   <Waves className="h-8 w-8" />
                                                 </div>
                                             </div>
                                             <h3 className="text-lg font-semibold text-foreground">No Upcoming Waves</h3>
@@ -1788,5 +1772,4 @@ export default function ProjectDetailsPage() {
         </div>
     );
 }
-
 
