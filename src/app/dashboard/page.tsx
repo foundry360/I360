@@ -62,10 +62,10 @@ const taskTypeIcons: Record<TaskType, React.ElementType> = {
     Review: SearchCheck,
 };
 
-const activityTypeConfig: Record<ActivityItem['type'], { icon: React.ElementType, color: string }> = {
-  Engagement: { icon: FolderKanban, color: 'text-blue-500' },
-  Assessment: { icon: ClipboardList, color: 'text-purple-500' },
-  Contact: { icon: UserPlus, color: 'text-green-500' },
+const activityTypeConfig: Record<ActivityItem['type'], { icon: React.ElementType, color: string, bg: string }> = {
+  Engagement: { icon: FolderKanban, color: 'text-blue-500', bg: 'bg-blue-500/10' },
+  Assessment: { icon: ClipboardList, color: 'text-purple-500', bg: 'bg-purple-500/10' },
+  Contact: { icon: UserPlus, color: 'text-green-500', bg: 'bg-green-500/10' },
 };
 
 
@@ -342,7 +342,7 @@ export default function DashboardPage() {
                     onClick={() => item.link && router.push(item.link)}
                   >
                     <div className="relative flex flex-col items-center">
-                       <div className={cn("p-2 rounded-full z-10 relative bg-primary/10")}>
+                       <div className={cn("p-2 rounded-full z-10 relative", config.bg)}>
                         <Icon className={cn("h-5 w-5", config.color)} />
                       </div>
                       {index < recentActivity.length - 1 && (
@@ -391,7 +391,7 @@ export default function DashboardPage() {
                   Insights
                 </Button>
               </SheetTrigger>
-              <SheetContent className="w-[1000px] sm:w-[1280px] p-0 bg-sidebar text-sidebar-foreground border-sidebar-border">
+              <SheetContent className="w-[1000px] sm:max-w-none sm:w-[1280px] p-0 bg-sidebar text-sidebar-foreground border-sidebar-border">
                 <EngagementInsightsPanel projects={recentEngagements.filter(p => p.status === 'Active')} />
               </SheetContent>
             </Sheet>
