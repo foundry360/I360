@@ -272,7 +272,13 @@ export default function ProjectDetailsPage() {
         openEditSprintDialog,
         openEditTaskDialog,
         openAddFromCollectionDialog,
-        requestDataRefresh,
+        setOnBacklogItemCreated,
+        setOnEpicCreated,
+        setOnSprintCreated,
+        setOnTaskUpdated,
+        setOnBacklogItemUpdated,
+        setOnEpicUpdated,
+        setOnSprintUpdated,
     } = useQuickAction();
     const { toast } = useToast();
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
@@ -348,7 +354,32 @@ export default function ProjectDetailsPage() {
     
     React.useEffect(() => {
         fetchData();
-    }, [fetchData]);
+        const unsub1 = setOnBacklogItemCreated(fetchData);
+        const unsub2 = setOnEpicCreated(fetchData);
+        const unsub3 = setOnSprintCreated(fetchData);
+        const unsub4 = setOnTaskUpdated(fetchData);
+        const unsub5 = setOnBacklogItemUpdated(fetchData);
+        const unsub6 = setOnEpicUpdated(fetchData);
+        const unsub7 = setOnSprintUpdated(fetchData);
+        return () => {
+            if(unsub1) unsub1();
+            if(unsub2) unsub2();
+            if(unsub3) unsub3();
+            if(unsub4) unsub4();
+            if(unsub5) unsub5();
+            if(unsub6) unsub6();
+            if(unsub7) unsub7();
+        };
+    }, [
+        fetchData, 
+        setOnBacklogItemCreated, 
+        setOnEpicCreated, 
+        setOnSprintCreated, 
+        setOnTaskUpdated,
+        setOnBacklogItemUpdated,
+        setOnEpicUpdated,
+        setOnSprintUpdated,
+    ]);
 
     const projectPrefix = project ? project.name.substring(0, project.name.indexOf('-')) : '';
     
@@ -380,8 +411,7 @@ export default function ProjectDetailsPage() {
         // Persist changes to Firestore
         try {
             await updateTaskOrderAndStatus(taskId, destColId, destination.index, projectId);
-            await fetchData(); // Refresh all data to ensure sync
-            requestDataRefresh();
+            await fetchData();
         } catch (error) {
             console.error("Failed to update task:", error);
             // Revert optimistic update on failure by re-fetching
@@ -401,7 +431,6 @@ export default function ProjectDetailsPage() {
                 await deleteSprint(itemToDelete.id);
             }
             fetchData();
-            requestDataRefresh();
         } catch (error) {
             console.error(`Failed to delete ${itemToDelete.type}:`, error);
         } finally {
@@ -414,7 +443,6 @@ export default function ProjectDetailsPage() {
         try {
             await updateBacklogItem(backlogItemId, { sprintId });
             await fetchData();
-            requestDataRefresh();
         } catch (error) {
             console.error("Failed to move item to sprint:", error);
         }
@@ -439,7 +467,6 @@ export default function ProjectDetailsPage() {
                 description: 'Tasks have been created on the board.',
             });
             await fetchData();
-            requestDataRefresh();
         } catch (error) {
             console.error('Failed to start wave:', error);
             toast({
@@ -461,7 +488,6 @@ export default function ProjectDetailsPage() {
                 description: 'Completed tasks have been archived.',
             });
             await fetchData();
-            requestDataRefresh();
         } catch (error) {
             console.error('Failed to complete wave:', error);
             const errorMessage = (error instanceof Error) ? error.message : 'There was a problem completing the wave.';
@@ -1696,5 +1722,3 @@ export default function ProjectDetailsPage() {
         </div>
     );
 }
-
-

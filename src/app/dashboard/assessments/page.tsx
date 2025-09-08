@@ -87,14 +87,10 @@ export default function AssessmentsPage() {
 
   React.useEffect(() => {
     fetchAssessments();
-    const unsubscribe = setOnAssessmentCompleted(() => fetchAssessments);
-    
-    const handleFocus = () => fetchAssessments();
-    window.addEventListener('focus', handleFocus);
+    const unsubscribe = setOnAssessmentCompleted(fetchAssessments);
     
     return () => {
         if(unsubscribe) unsubscribe();
-        window.removeEventListener('focus', handleFocus);
     }
   }, [fetchAssessments, setOnAssessmentCompleted]);
   

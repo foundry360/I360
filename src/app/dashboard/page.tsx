@@ -42,6 +42,7 @@ import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { EngagementInsightsPanel } from '@/components/engagement-insights-panel';
 import { getNotifications, markAllNotificationsAsRead, type Notification } from '@/services/notification-service';
 import { FeedItem } from '@/components/feed-item';
+import { useQuickAction } from '@/contexts/quick-action-context';
 
 type ActivityItem = {
   id: string;
@@ -84,6 +85,7 @@ const statusColors: Record<TaskStatus, string> = {
 export default function DashboardPage() {
   const { user } = useUser();
   const router = useRouter();
+  const { setOnTaskUpdated } = useQuickAction();
   const [greeting, setGreeting] = React.useState('');
   const [loading, setLoading] = React.useState(true);
   const [recentEngagements, setRecentEngagements] = React.useState<ProjectWithProgress[]>(
@@ -200,13 +202,12 @@ export default function DashboardPage() {
     }
     
     loadDashboardData();
-
-    const handleFocus = () => loadDashboardData();
-    window.addEventListener('focus', handleFocus);
+    
+    const unsubscribe = setOnTaskUpdated(() => loadDashboardData);
     return () => {
-      window.removeEventListener('focus', handleFocus);
+      if (unsubscribe) unsubscribe();
     };
-  }, [loadDashboardData]);
+  }, [loadDashboardData, setOnTaskUpdated]);
   
   const recentActivity = isActivityExpanded ? allRecentActivity : allRecentActivity.slice(0, 5);
   const visibleTasks = isTasksExpanded ? thisWeeksTasks : thisWeeksTasks.slice(0, 5);

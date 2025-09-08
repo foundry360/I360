@@ -97,14 +97,9 @@ export default function CompaniesPage() {
 
   React.useEffect(() => {
     fetchCompanies();
-    const unsubscribe = setOnCompanyCreated(() => fetchCompanies);
-    
-    const handleFocus = () => fetchCompanies();
-    window.addEventListener('focus', handleFocus);
-
+    const unsubscribe = setOnCompanyCreated(fetchCompanies);
     return () => {
       if (unsubscribe) unsubscribe();
-      window.removeEventListener('focus', handleFocus);
     };
   }, [fetchCompanies, setOnCompanyCreated]);
   
