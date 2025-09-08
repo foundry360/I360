@@ -108,7 +108,7 @@ export default function FeedPage() {
             </div>
             <Separator />
              <div className="grid grid-cols-12 gap-8">
-                <div className="col-span-3">
+                <div className="col-span-2">
                     <div className="p-4 rounded-lg">
                         <h4 className="text-xs font-semibold uppercase text-muted-foreground tracking-wider px-2 mb-4">Filters</h4>
                         <nav className="space-y-1">
@@ -132,7 +132,7 @@ export default function FeedPage() {
                         </nav>
                     </div>
                 </div>
-                <div className="col-span-9">
+                <div className="col-span-10">
                     <Card className="overflow-hidden">
                         {loading ? (
                             Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-20 w-full" />)
@@ -154,7 +154,7 @@ export default function FeedPage() {
                                     </div>
                                 </div>
                                 <h3 className="text-lg font-semibold">All caught up!</h3>
-                                <p>Your feed is empty. New updates will appear here</p>
+                                <p>Your feed is empty. Important updates and notifications will appear here</p>
                             </div>
                         )}
                     </Card>
