@@ -24,6 +24,7 @@ import {
   GanttChartSquare,
   Wrench,
   SearchCheck,
+  Bell,
 } from 'lucide-react';
 import { getProjects, type Project } from '@/services/project-service';
 import { getAssessments, type Assessment } from '@/services/assessment-service';
@@ -39,6 +40,8 @@ import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { EngagementInsightsPanel } from '@/components/engagement-insights-panel';
+import { getNotifications, type Notification } from '@/services/notification-service';
+import { FeedItem } from '@/components/feed-item';
 
 type ActivityItem = {
   id: string;
@@ -82,18 +85,21 @@ export default function DashboardPage() {
   const [allRecentActivity, setAllRecentActivity] = React.useState<ActivityItem[]>(
     []
   );
+  const [notifications, setNotifications] = React.useState<Notification[]>([]);
   const [isActivityExpanded, setIsActivityExpanded] = React.useState(false);
   const [isTasksExpanded, setIsTasksExpanded] = React.useState(false);
 
   const loadDashboardData = React.useCallback(async () => {
     setLoading(true);
     try {
-      const [projects, assessments, contacts, allTasks] = await Promise.all([
+      const [projects, assessments, contacts, allTasks, notificationsData] = await Promise.all([
         getProjects(),
         getAssessments(),
         getContacts(),
         getTasks(),
+        getNotifications(),
       ]);
+      setNotifications(notificationsData);
       
       const projectIds = new Set(projects.map(p => p.id));
       const validTasks = allTasks.filter(task => projectIds.has(task.projectId));
@@ -197,6 +203,12 @@ export default function DashboardPage() {
   
   const recentActivity = isActivityExpanded ? allRecentActivity : allRecentActivity.slice(0, 5);
   const visibleTasks = isTasksExpanded ? thisWeeksTasks : thisWeeksTasks.slice(0, 5);
+  const [selectedNotifications, setSelectedNotifications] = React.useState<string[]>([]);
+  const handleSelectNotification = (id: string) => {
+    setSelectedNotifications(prev => 
+        prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+    );
+  };
 
   const getFirstName = () => {
     if (user?.displayName) {
@@ -238,9 +250,10 @@ export default function DashboardPage() {
           <Skeleton className="h-8 w-1/3" />
           <Skeleton className="h-4 w-1/2" />
         </div>
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-5">
-          <div className="lg:col-span-3"><Skeleton className="h-64 w-full" /></div>
-          <div className="lg:col-span-2"><Skeleton className="h-64 w-full" /></div>
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div className="lg:col-span-1"><Skeleton className="h-64 w-full" /></div>
+          <div className="lg:col-span-1"><Skeleton className="h-64 w-full" /></div>
+          <div className="lg:col-span-1"><Skeleton className="h-64 w-full" /></div>
         </div>
         <Skeleton className="h-px w-full" />
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
@@ -266,7 +279,7 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Card className="h-full">
            <CardHeader>
                 <CardTitle>Tasks Due This Week</CardTitle>
@@ -376,6 +389,39 @@ export default function DashboardPage() {
             )}
           </CardContent>
         </Card>
+        <Card className="h-full flex flex-col">
+          <CardHeader>
+              <CardTitle>Communications Feed</CardTitle>
+              <CardDescription>
+                A live feed of all notifications and alerts
+              </CardDescription>
+          </CardHeader>
+          <CardContent className="flex-1 -mt-4">
+              <div className="space-y-0">
+                  {notifications.slice(0,5).map(note => (
+                      <FeedItem
+                          key={note.id}
+                          notification={note}
+                          isSelected={selectedNotifications.includes(note.id)}
+                          onSelect={handleSelectNotification}
+                          onUpdate={loadDashboardData}
+                      />
+                  ))}
+                  {notifications.length === 0 && (
+                      <div className="flex flex-col items-center justify-center h-48 text-center text-muted-foreground">
+                          <Bell className="h-12 w-12 mb-4" />
+                          <h3 className="font-semibold">Inbox Zero!</h3>
+                          <p>No new notifications.</p>
+                      </div>
+                  )}
+              </div>
+          </CardContent>
+          {notifications.length > 5 && (
+            <CardFooter>
+              <Button variant="outline" className="w-full" onClick={() => router.push('/dashboard/feed')}>View all in Feed</Button>
+            </CardFooter>
+          )}
+        </Card>
       </div>
 
       <Separator />
@@ -442,3 +488,4 @@ export default function DashboardPage() {
   );
 
     
+
