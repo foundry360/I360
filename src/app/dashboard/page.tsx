@@ -42,6 +42,7 @@ import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { EngagementInsightsPanel } from '@/components/engagement-insights-panel';
 import { getNotifications, markAllNotificationsAsRead, type Notification } from '@/services/notification-service';
 import { FeedItem } from '@/components/feed-item';
+import { useQuickAction } from '@/contexts/quick-action-context';
 
 type ActivityItem = {
   id: string;
@@ -73,6 +74,7 @@ const statusColors: Record<BacklogItemStatus, string> = {
 export default function DashboardPage() {
   const { user } = useUser();
   const router = useRouter();
+  const { backlogItems, getBacklogItems, projects, getProjects } = useQuickAction();
   const [greeting, setGreeting] = React.useState('');
   const [loading, setLoading] = React.useState(true);
   const [recentEngagements, setRecentEngagements] = React.useState<ProjectWithProgress[]>(
@@ -88,8 +90,7 @@ export default function DashboardPage() {
 
   const loadDashboardData = React.useCallback(async () => {
     try {
-        const [projects, assessments, contacts, notificationsData] = await Promise.all([
-            getProjects(),
+        const [assessments, contacts, notificationsData] = await Promise.all([
             getAssessments(),
             getContacts(),
             getNotifications(),
@@ -134,12 +135,8 @@ export default function DashboardPage() {
         );
         setAllRecentActivity(allActivities);
         
-        const itemsByProjectPromises = projects.map(p => getBacklogItemsForProject(p.id));
-        const allItemsByProject = await Promise.all(itemsByProjectPromises);
-        const allItems = allItemsByProject.flat();
-
-        const projectsWithProgress: ProjectWithProgress[] = projects.map((project, index) => {
-            const projectItems = allItemsByProject[index] || [];
+        const projectsWithProgress: ProjectWithProgress[] = projects.map((project) => {
+            const projectItems = backlogItems.filter(item => item.projectId === project.id);
             const totalItems = projectItems.length;
             const completedItems = projectItems.filter(t => t.status === 'Complete').length;
             const progress = totalItems > 0 ? (completedItems / totalItems) * 100 : 0;
@@ -158,7 +155,7 @@ export default function DashboardPage() {
         const sevenDaysFromNow = addDays(today, 7);
         sevenDaysFromNow.setHours(23, 59, 59, 999);
 
-        const upcomingItems = allItems.filter(item => {
+        const upcomingItems = backlogItems.filter(item => {
             if (!item.dueDate) return false;
             let dueDate;
             if (item.dueDate.includes('T')) {
@@ -178,11 +175,17 @@ export default function DashboardPage() {
     } finally {
         setLoading(false);
     }
-  }, []);
+  }, [projects, backlogItems]);
+
+  React.useEffect(() => {
+    getProjects();
+    getBacklogItems();
+  }, [getProjects, getBacklogItems]);
 
   React.useEffect(() => {
     loadDashboardData();
   }, [loadDashboardData]);
+
 
   React.useEffect(() => {
     const hour = new Date().getHours();

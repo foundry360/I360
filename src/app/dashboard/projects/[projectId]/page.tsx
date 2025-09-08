@@ -1198,22 +1198,22 @@ export default function ProjectDetailsPage() {
                                                     className="flex justify-between items-center text-sm p-2 -mx-2 rounded-md hover:bg-muted cursor-pointer"
                                                     onClick={() => openEditBacklogItemDialog(item, epics, sprints, contacts)}
                                                 >
-                                                    <div className="flex items-center gap-2">
+                                                    <div className="flex items-center gap-2 overflow-hidden">
                                                         <Avatar className="h-6 w-6">
                                                           <AvatarImage src={item.ownerAvatarUrl} />
                                                           <AvatarFallback className="text-xs">{getInitials(item.owner)}</AvatarFallback>
                                                         </Avatar>
-                                                        <div>
-                                                            <p className="font-medium">
+                                                        <div className="flex-1 overflow-hidden">
+                                                            <p className="font-medium truncate">
                                                                 <span className="text-muted-foreground mr-2">{projectPrefix}-{item.backlogId}</span>
                                                                 {item.title}
                                                             </p>
-                                                            <p className="text-xs text-muted-foreground">
+                                                            <p className="text-xs text-muted-foreground truncate">
                                                                 Due on {format(dueDate, 'MMM dd, yyyy')}
                                                             </p>
                                                         </div>
                                                     </div>
-                                                    <div className={cn("flex items-center gap-2 text-xs font-semibold", statusColor)}>
+                                                    <div className={cn("flex items-center gap-2 text-xs font-semibold shrink-0 ml-2", statusColor)}>
                                                        <Calendar className="h-4 w-4" />
                                                         <span>{statusText}</span>
                                                     </div>
