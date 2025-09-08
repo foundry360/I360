@@ -975,11 +975,11 @@ export default function ProjectDetailsPage() {
                             </div>
 
                             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                               <div className="space-y-6">
+                               <div className="col-span-1 space-y-6">
                                     <Card>
                                         <CardHeader>
                                             <CardTitle>Velocity</CardTitle>
-                                            <CardDescription>Story points completed per wave</CardDescription>
+                                            {velocityData.length > 0 && <CardDescription>Story points completed per wave</CardDescription>}
                                         </CardHeader>
                                         <CardContent>
                                             {velocityData.length > 0 ? (
@@ -1044,7 +1044,7 @@ export default function ProjectDetailsPage() {
                                     <Card>
                                         <CardHeader>
                                             <CardTitle>Burndown</CardTitle>
-                                            <CardDescription>Ideal vs actual work remaining</CardDescription>
+                                            {burndownData.length > 0 && <CardDescription>Ideal vs actual work remaining</CardDescription>}
                                         </CardHeader>
                                         <CardContent>
                                             {burndownData.length > 0 ? (
@@ -1095,7 +1095,7 @@ export default function ProjectDetailsPage() {
                                         </CardContent>
                                     </Card>
                                </div>
-                               <div className="space-y-6">
+                               <div className="col-span-1 space-y-6">
                                     {activeSprintHealthData && (
                                         <Card>
                                             <CardHeader>
@@ -1174,7 +1174,7 @@ export default function ProjectDetailsPage() {
                                         </CardContent>
                                     </Card>
                                </div>
-                               <div className="space-y-6">
+                               <div className="col-span-1 space-y-6">
                                      <Card>
                                         <CardHeader>
                                             <CardTitle>At-Risk Items</CardTitle>
