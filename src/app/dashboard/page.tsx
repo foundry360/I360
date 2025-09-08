@@ -203,7 +203,7 @@ export default function DashboardPage() {
     
     loadDashboardData();
     
-    const unsubscribe = setOnTaskUpdated(() => loadDashboardData);
+    const unsubscribe = setOnTaskUpdated(loadDashboardData);
     return () => {
       if (unsubscribe) unsubscribe();
     };
