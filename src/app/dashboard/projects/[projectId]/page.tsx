@@ -1496,18 +1496,18 @@ export default function ProjectDetailsPage() {
                         <div className="space-y-8">
                              {(['Active', 'Not Started', 'Completed'] as SprintStatus[]).map(status => {
                                 const sprintsByStatus = sprints.filter(s => s.status === status);
-                                const isHidden = sprintsByStatus.length === 0 && status === 'Active';
-
-                                if (isHidden) return null;
+                                if (sprintsByStatus.length === 0 && status !== 'Active' && status !== 'Completed' && status !== 'Not Started') return null;
 
                                 return (
                                 <div key={status}>
-                                    <h2 className="text-lg font-semibold mb-2">{status === 'Not Started' ? 'Upcoming Waves' : `${status} Waves`}</h2>
+                                    {sprintsByStatus.length > 0 && (
+                                        <h2 className="text-lg font-semibold mb-2">{status === 'Not Started' ? 'Upcoming Waves' : `${status} Waves`}</h2>
+                                    )}
                                     {sprintsByStatus.length === 0 ? (
                                         <div className="p-10 text-center rounded-lg border-2 border-dashed border-border">
                                             <div className="flex justify-center mb-4">
                                                 <div className="flex items-center justify-center h-16 w-16 text-muted-foreground">
-                                                    <WavesIcon className="h-8 w-8" />
+                                                    {status === 'Not Started' ? <Rocket className="h-8 w-8" /> : <WavesIcon className="h-8 w-8" />}
                                                 </div>
                                             </div>
                                             <h3 className="text-lg font-semibold text-foreground">{status === 'Completed' ? 'No Waves Completed Yet' : 'No Upcoming Waves'}</h3>
@@ -1644,7 +1644,7 @@ export default function ProjectDetailsPage() {
                                 {allSprintItems.length > 0 ? allSprintItems.map(item => {
                                     const epic = epics.find(e => e.id === item.epicId);
                                     const sprint = sprints.find(s => s.id === item.sprintId);
-                                    const config = epic ? (tagConfig.find(c => c.iconName === tag.icon) || tagConfig.find(t => t.iconName === 'Layers')) : tagConfig.find(t => t.iconName === 'Layers');
+                                    const config = epic ? (tagConfig.find(c => c.iconName === epic.category) || tagConfig.find(t => t.iconName === 'Layers')) : tagConfig.find(t => t.iconName === 'Layers');
                                     const IconComponent = config?.icon || Layers;
                                     return (
                                         <div key={item.id} className="flex justify-between items-center p-3 border-b last:border-b-0 hover:bg-muted/50 cursor-pointer"
