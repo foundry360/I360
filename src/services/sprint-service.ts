@@ -6,6 +6,7 @@ import { collection, query, where, getDocs, doc, setDoc, addDoc, updateDoc, dele
 import { deleteTask, type Task } from './task-service';
 import type { BacklogItem } from './backlog-item-service';
 import { updateProjectLastActivity } from './project-service';
+import { createNotification } from './notification-service';
 
 export type SprintStatus = 'Not Started' | 'Active' | 'Completed';
 
@@ -79,6 +80,18 @@ export async function startSprint(sprintId: string, projectId: string, sprintIte
     batch.update(sprintRef, { status: 'Active' });
 
     await batch.commit();
+
+    // 4. Create notification
+    const sprintDoc = await getDoc(sprintRef);
+    if(sprintDoc.exists()) {
+        const sprintName = sprintDoc.data().name;
+        await createNotification({
+            message: `Wave "${sprintName}" has kicked off.`,
+            link: `/dashboard/projects/${projectId}`,
+            type: 'activity',
+        });
+    }
+
     await updateProjectLastActivity(projectId);
 }
 
@@ -114,15 +127,42 @@ export async function completeSprint(sprintId: string, projectId: string): Promi
     });
 
     await batch.commit();
+
+    // 4. Create notification
+    const sprintDoc = await getDoc(sprintRef);
+    if(sprintDoc.exists()) {
+        const sprintName = sprintDoc.data().name;
+        await createNotification({
+            message: `Wave "${sprintName}" has been completed.`,
+            link: `/dashboard/projects/${projectId}`,
+            type: 'activity',
+        });
+    }
+
     await updateProjectLastActivity(projectId);
 }
 
 
 export async function updateSprint(id: string, data: Partial<Omit<Sprint, 'id'>>): Promise<void> {
     const docRef = doc(db, 'sprints', id);
+    const originalSprintDoc = await getDoc(docRef);
+    if (!originalSprintDoc.exists()) return;
+
     await updateDoc(docRef, data);
+    
+    const originalSprint = originalSprintDoc.data();
+    if(data.startDate !== originalSprint.startDate || data.endDate !== originalSprint.endDate) {
+        await createNotification({
+            message: `The timeline for wave "${originalSprint.name}" has been adjusted.`,
+            link: `/dashboard/projects/${originalSprint.projectId}`,
+            type: 'alert',
+        });
+    }
+
     if (data.projectId) {
         await updateProjectLastActivity(data.projectId);
+    } else {
+        await updateProjectLastActivity(originalSprint.projectId);
     }
 }
 

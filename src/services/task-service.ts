@@ -5,6 +5,7 @@ import { db } from '@/lib/firebase';
 import { collection, doc, getDocs, setDoc, updateDoc, query, where, writeBatch, runTransaction, DocumentReference, WriteBatch, addDoc, deleteDoc, getDoc, deleteField } from 'firebase/firestore';
 import type { BacklogItem } from './backlog-item-service';
 import { updateProjectLastActivity } from './project-service';
+import { createNotification } from './notification-service';
 
 export const TaskStatus = {
   ToDo: 'To Do',
@@ -75,6 +76,13 @@ export async function createTask(taskData: Omit<Task, 'id'>): Promise<string> {
   }
   
   await setDoc(docRef, newTask);
+  
+  await createNotification({
+    message: `New task "${newTask.title}" assigned to ${newTask.owner}.`,
+    link: `/dashboard/projects/${newTask.projectId}`,
+    type: 'activity',
+  });
+
   await updateProjectLastActivity(taskData.projectId);
   return docRef.id;
 }
@@ -189,6 +197,19 @@ export async function updateTaskOrderAndStatus(taskId: string, newStatus: TaskSt
             }
         }
     });
+
+    if (taskToMove.status !== newStatus) {
+        let message = `Task "${taskToMove.title}" was moved to ${newStatus}.`;
+        if (newStatus === 'Complete') {
+            message = `Task "${taskToMove.title}" has been completed.`;
+        }
+
+        await createNotification({
+            message,
+            link: `/dashboard/projects/${projectId}`,
+            type: newStatus === 'Complete' ? 'activity' : 'system'
+        });
+    }
     
     await updateProjectLastActivity(projectId);
 }
