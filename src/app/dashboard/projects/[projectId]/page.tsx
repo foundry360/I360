@@ -1507,27 +1507,25 @@ export default function ProjectDetailsPage() {
                                 <div key={status}>
                                     <h2 className="text-lg font-semibold mb-2">{status === 'Not Started' ? 'Upcoming Waves' : `${status} Waves`}</h2>
                                     {sprintsByStatus.length === 0 ? (
-                                        <Card className="border-dashed">
-                                            <CardContent className="p-10 text-center">
-                                                <div className="flex justify-center mb-4">
-                                                    <div className="flex items-center justify-center h-16 w-16 rounded-full text-muted-foreground">
-                                                        <WavesIcon className="h-8 w-8" />
-                                                    </div>
+                                        <div className="p-10 text-center rounded-lg border-2 border-dashed border-border">
+                                            <div className="flex justify-center mb-4">
+                                                <div className="flex items-center justify-center h-16 w-16 text-muted-foreground">
+                                                    <WavesIcon className="h-8 w-8" />
                                                 </div>
-                                                <h3 className="text-lg font-semibold">{status === 'Completed' ? 'No Waves Completed Yet' : 'No Upcoming Waves'}</h3>
-                                                <p className="text-muted-foreground mt-2 mb-4">
-                                                    {status === 'Completed'
-                                                    ? 'Completed waves and their metrics will appear here.'
-                                                    : 'Plan your next cycle of work by creating a new wave.'}
-                                                </p>
-                                                {status !== 'Completed' && (
-                                                    <Button onClick={() => openNewSprintDialog(projectId)}>
-                                                        <Plus className="h-4 w-4 mr-2" />
-                                                        New Wave
-                                                    </Button>
-                                                )}
-                                            </CardContent>
-                                        </Card>
+                                            </div>
+                                            <h3 className="text-lg font-semibold text-foreground">{status === 'Completed' ? 'No Waves Completed Yet' : 'No Upcoming Waves'}</h3>
+                                            <p className="text-muted-foreground mt-2 mb-4">
+                                                {status === 'Completed'
+                                                ? 'Completed waves and their metrics will appear here.'
+                                                : 'Plan your next cycle of work by creating a new wave.'}
+                                            </p>
+                                            {status !== 'Completed' && (
+                                                <Button onClick={() => openNewSprintDialog(projectId)}>
+                                                    <Plus className="h-4 w-4 mr-2" />
+                                                    New Wave
+                                                </Button>
+                                            )}
+                                        </div>
                                     ) : (
                                         <Accordion type="single" collapsible className="w-full space-y-4" defaultValue={status === 'Active' && activeSprint ? activeSprint.id : undefined}>
                                             {sprintsByStatus.map(sprint => {
