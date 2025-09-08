@@ -380,7 +380,6 @@ export default function ProjectDetailsPage() {
         try {
             await updateTaskOrderAndStatus(taskId, destColId, destination.index, projectId);
             await fetchData();
-            router.refresh();
         } catch (error) {
             console.error("Failed to update task:", error);
             // Revert optimistic update on failure by re-fetching
@@ -400,7 +399,6 @@ export default function ProjectDetailsPage() {
                 await deleteSprint(itemToDelete.id);
             }
             fetchData();
-            router.refresh();
         } catch (error) {
             console.error(`Failed to delete ${itemToDelete.type}:`, error);
         } finally {
@@ -413,7 +411,6 @@ export default function ProjectDetailsPage() {
         try {
             await updateBacklogItem(backlogItemId, { sprintId });
             await fetchData();
-            router.refresh();
         } catch (error) {
             console.error("Failed to move item to sprint:", error);
         }
@@ -438,7 +435,6 @@ export default function ProjectDetailsPage() {
                 description: 'Tasks have been created on the board.',
             });
             await fetchData();
-            router.refresh();
         } catch (error) {
             console.error('Failed to start wave:', error);
             toast({
@@ -460,7 +456,6 @@ export default function ProjectDetailsPage() {
                 description: 'Completed tasks have been archived.',
             });
             await fetchData();
-            router.refresh();
         } catch (error) {
             console.error('Failed to complete wave:', error);
             const errorMessage = (error instanceof Error) ? error.message : 'There was a problem completing the wave.';
@@ -1695,4 +1690,5 @@ export default function ProjectDetailsPage() {
         </div>
     );
 }
+
 

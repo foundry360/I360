@@ -48,6 +48,8 @@ import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
 
+export const dynamic = 'force-dynamic';
+
 type SortKey = keyof Assessment;
 
 export default function AssessmentsPage() {

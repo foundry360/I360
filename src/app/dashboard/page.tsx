@@ -31,7 +31,6 @@ import { getProjects, type Project } from '@/services/project-service';
 import { getAssessments, type Assessment } from '@/services/assessment-service';
 import { getContacts, type Contact } from '@/services/contact-service';
 import { getTasks, type Task, type TaskStatus } from '@/services/task-service';
-import { useQuickAction } from '@/contexts/quick-action-context';
 import { formatDistanceToNow, parseISO, isWithinInterval, addDays, format, differenceInDays, isPast } from 'date-fns';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
@@ -43,6 +42,8 @@ import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { EngagementInsightsPanel } from '@/components/engagement-insights-panel';
 import { getNotifications, markAllNotificationsAsRead, type Notification } from '@/services/notification-service';
 import { FeedItem } from '@/components/feed-item';
+
+export const dynamic = 'force-dynamic';
 
 type ActivityItem = {
   id: string;
@@ -504,3 +505,4 @@ export default function DashboardPage() {
     </div>
   );
     
+

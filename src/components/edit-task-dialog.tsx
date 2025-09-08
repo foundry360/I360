@@ -71,7 +71,6 @@ export function EditTaskDialog() {
       };
       await updateTask(id, dataToSave);
       handleOpenChange(false);
-      router.refresh(); 
     } catch (error) {
       console.error('Failed to update task:', error);
     }
