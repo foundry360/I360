@@ -50,8 +50,6 @@ import { useToast } from '@/hooks/use-toast';
 import { formatInTimeZone } from 'date-fns-tz';
 import { Input } from '@/components/ui/input';
 
-export const dynamic = 'force-dynamic';
-
 type SortKey = keyof Company | 'contactName';
 
 export default function CompaniesPage() {
@@ -100,8 +98,13 @@ export default function CompaniesPage() {
   React.useEffect(() => {
     fetchCompanies();
     const unsubscribe = setOnCompanyCreated(() => fetchCompanies);
+    
+    const handleFocus = () => fetchCompanies();
+    window.addEventListener('focus', handleFocus);
+
     return () => {
       if (unsubscribe) unsubscribe();
+      window.removeEventListener('focus', handleFocus);
     };
   }, [fetchCompanies, setOnCompanyCreated]);
   
@@ -482,8 +485,3 @@ export default function CompaniesPage() {
       </AlertDialog>
     </div>
   );
-
-    
-
-    
-

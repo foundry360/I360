@@ -347,6 +347,11 @@ export default function ProjectDetailsPage() {
     
     React.useEffect(() => {
         fetchData();
+        const handleFocus = () => fetchData();
+        window.addEventListener('focus', handleFocus);
+        return () => {
+            window.removeEventListener('focus', handleFocus);
+        };
     }, [fetchData]);
 
     const projectPrefix = project ? project.name.substring(0, project.name.indexOf('-')) : '';
@@ -1690,5 +1695,3 @@ export default function ProjectDetailsPage() {
         </div>
     );
 }
-
-

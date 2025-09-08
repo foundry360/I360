@@ -79,9 +79,14 @@ export default function ProjectsPage() {
     fetchProjects();
     const unsubscribeCreated = setOnProjectCreated(fetchProjects);
     const unsubscribeUpdated = setOnProjectUpdated(fetchProjects);
+
+    const handleFocus = () => fetchProjects();
+    window.addEventListener('focus', handleFocus);
+
     return () => {
       if (unsubscribeCreated) unsubscribeCreated();
       if (unsubscribeUpdated) unsubscribeUpdated();
+      window.removeEventListener('focus', handleFocus);
     };
   }, [fetchProjects, setOnProjectCreated, setOnProjectUpdated]);
 
@@ -498,5 +503,3 @@ export default function ProjectsPage() {
     </>
   );
 }
-
-    

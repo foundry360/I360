@@ -43,8 +43,6 @@ import { EngagementInsightsPanel } from '@/components/engagement-insights-panel'
 import { getNotifications, markAllNotificationsAsRead, type Notification } from '@/services/notification-service';
 import { FeedItem } from '@/components/feed-item';
 
-export const dynamic = 'force-dynamic';
-
 type ActivityItem = {
   id: string;
   type: 'Engagement' | 'Assessment' | 'Contact';
@@ -202,6 +200,12 @@ export default function DashboardPage() {
     }
     
     loadDashboardData();
+
+    const handleFocus = () => loadDashboardData();
+    window.addEventListener('focus', handleFocus);
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+    };
   }, [loadDashboardData]);
   
   const recentActivity = isActivityExpanded ? allRecentActivity : allRecentActivity.slice(0, 5);
@@ -504,5 +508,3 @@ export default function DashboardPage() {
       </div>
     </div>
   );
-    
-

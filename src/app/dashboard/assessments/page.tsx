@@ -48,8 +48,6 @@ import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
 
-export const dynamic = 'force-dynamic';
-
 type SortKey = keyof Assessment;
 
 export default function AssessmentsPage() {
@@ -90,8 +88,13 @@ export default function AssessmentsPage() {
   React.useEffect(() => {
     fetchAssessments();
     const unsubscribe = setOnAssessmentCompleted(() => fetchAssessments);
+    
+    const handleFocus = () => fetchAssessments();
+    window.addEventListener('focus', handleFocus);
+    
     return () => {
         if(unsubscribe) unsubscribe();
+        window.removeEventListener('focus', handleFocus);
     }
   }, [fetchAssessments, setOnAssessmentCompleted]);
   
@@ -512,5 +515,3 @@ export default function AssessmentsPage() {
     </>
   );
 }
-
-    
