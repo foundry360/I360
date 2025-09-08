@@ -22,9 +22,13 @@ import { NewSprintDialog } from '@/components/new-sprint-dialog';
 import { EditSprintDialog } from '@/components/edit-sprint-dialog';
 import { EditTaskDialog } from '@/components/edit-task-dialog';
 import { NewUserStoryDialog } from '@/components/new-user-story-dialog';
+import { EditUserStoryDialog } from '@/components/edit-user-story-dialog';
 import { useIdle } from '@/hooks/use-idle';
 import { signOut } from '@/services/auth-service';
 import { useToast } from '@/hooks/use-toast';
+import { NewCollectionDialog } from '@/components/new-collection-dialog';
+import { AddFromCollectionDialog } from '@/components/add-from-collection-dialog';
+import { ManageCollectionsDialog } from '@/components/manage-collections-dialog';
 
 const unprotectedRoutes = ['/login', '/public/assessment/[companyId]', '/public/assessment/thanks'];
 
@@ -126,6 +130,12 @@ export default function RootLayout({
                   <EditSprintDialog />
                   <EditTaskDialog />
                   <NewUserStoryDialog />
+                  <EditUserStoryDialog />
+                  <NewCollectionDialog />
+                  <ManageCollectionsDialog 
+                    // props are managed by QuickActionProvider
+                  />
+                  <AddFromCollectionDialog />
                   <AssessmentModal 
                     // These props are managed by the QuickActionProvider now
                   />

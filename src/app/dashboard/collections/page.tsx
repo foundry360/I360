@@ -19,6 +19,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { tagConfig } from '@/lib/tag-config';
+import { cn } from '@/lib/utils';
+import { BookCopy } from 'lucide-react';
 
 // TODO: Implement dialogs for new/edit collection
 
@@ -26,6 +29,7 @@ export default function CollectionsPage() {
     const [collections, setCollections] = React.useState<StoryCollection[]>([]);
     const [loading, setLoading] = React.useState(true);
     const [collectionToDelete, setCollectionToDelete] = React.useState<StoryCollection | null>(null);
+    const { openNewCollectionDialog, setOnCollectionCreated } = useQuickAction();
 
     const fetchCollections = React.useCallback(async () => {
         try {
@@ -41,7 +45,11 @@ export default function CollectionsPage() {
 
     React.useEffect(() => {
         fetchCollections();
-    }, [fetchCollections]);
+        const unsubscribe = setOnCollectionCreated(fetchCollections);
+        return () => {
+            if (unsubscribe) unsubscribe();
+        };
+    }, [fetchCollections, setOnCollectionCreated]);
 
     const handleDeleteCollection = async () => {
         if (!collectionToDelete) return;
@@ -59,25 +67,28 @@ export default function CollectionsPage() {
     return (
         <>
             <div className="space-y-6">
-                <div>
-                    <h1 className="text-2xl font-bold">User Story Collections</h1>
-                    <p className="text-muted-foreground">
-                        Create and manage curated collections of user stories to quickly populate engagement backlogs
-                    </p>
+                <div className="flex justify-between items-center">
+                    <div>
+                        <h1 className="text-2xl font-bold">User Story Collections</h1>
+                        <p className="text-muted-foreground">
+                            Create and manage curated collections of user stories to quickly populate engagement backlogs
+                        </p>
+                    </div>
+                    {!loading && collections.length > 0 && (
+                        <Button size="icon" onClick={openNewCollectionDialog}>
+                           <Plus className="h-4 w-4" />
+                           <span className="sr-only">New Collection</span>
+                       </Button>
+                    )}
                 </div>
                 <Separator />
-                 <div className="flex justify-end items-center">
-                     <Button>
-                        <Plus className="h-4 w-4 mr-2" />
-                        New Collection
-                    </Button>
-                </div>
 
                 {loading ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                         <Skeleton className="h-48 w-full" />
                         <Skeleton className="h-48 w-full" />
                         <Skeleton className="h-48 w-full" />
+                         <Skeleton className="h-48 w-full" />
                     </div>
                 ) : collections.length === 0 ? (
                      <Card className="border-dashed col-span-full">
@@ -86,35 +97,42 @@ export default function CollectionsPage() {
                             <p className="text-muted-foreground mt-2 mb-4">
                                 Get started by creating your first collection of user stories
                             </p>
-                             <Button>
+                             <Button onClick={openNewCollectionDialog}>
                                 <Plus className="h-4 w-4 mr-2" />
                                 New Collection
                             </Button>
                         </CardContent>
                     </Card>
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {collections.map(collection => (
-                            <Card key={collection.id} className="flex flex-col">
-                                <CardHeader>
-                                    <CardTitle>{collection.name}</CardTitle>
-                                    <CardDescription className="line-clamp-2">{collection.description}</CardDescription>
-                                </CardHeader>
-                                <CardContent className="flex-grow">
-                                    <p className="text-sm text-muted-foreground">
-                                        Contains <strong>{collection.userStoryIds.length}</strong> user stories
-                                    </p>
-                                </CardContent>
-                                <CardFooter className="flex justify-end gap-2">
-                                     <Button variant="ghost" size="icon">
-                                        <Edit className="h-4 w-4" />
-                                    </Button>
-                                    <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => setCollectionToDelete(collection)}>
-                                        <Trash2 className="h-4 w-4" />
-                                    </Button>
-                                </CardFooter>
-                            </Card>
-                        ))}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        {collections.map(collection => {
+                            const config = tagConfig.find(c => c.iconName === collection.icon) || { icon: BookCopy, color: 'text-foreground' };
+                            const Icon = config.icon;
+                            return (
+                                <Card key={collection.id} className="flex flex-col">
+                                    <CardHeader>
+                                        <CardTitle className="flex items-center gap-2">
+                                            <Icon className={cn("h-5 w-5", config.color)} />
+                                            <span>{collection.name}</span>
+                                        </CardTitle>
+                                        <CardDescription className="line-clamp-2 pt-2">{collection.description}</CardDescription>
+                                    </CardHeader>
+                                    <CardContent className="flex-grow">
+                                        <p className="text-sm text-muted-foreground">
+                                            Contains <strong>{collection.userStoryIds.length}</strong> user stories
+                                        </p>
+                                    </CardContent>
+                                    <CardFooter className="flex justify-end gap-2">
+                                         <Button variant="ghost" size="icon">
+                                            <Edit className="h-4 w-4" />
+                                        </Button>
+                                        <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => setCollectionToDelete(collection)}>
+                                            <Trash2 className="h-4 w-4" />
+                                        </Button>
+                                    </CardFooter>
+                                </Card>
+                            )
+                        })}
                     </div>
                 )}
             </div>

@@ -30,7 +30,7 @@ type NewBacklogItemState = Omit<BacklogItem, 'id' | 'backlogId'>;
 
 const initialNewItemState: NewBacklogItemState = {
   projectId: '',
-  epicId: '',
+  epicId: null,
   title: '',
   description: '',
   status: 'To Do',
@@ -77,13 +77,13 @@ export function NewBacklogItemDialog() {
   };
 
   const handleSelectChange = (field: 'epicId' | 'priority') => (value: string) => {
-    setNewItem((prev) => ({ ...prev, [field]: value }));
+    setNewItem((prev) => ({ ...prev, [field]: value === 'none' ? null : value }));
   };
 
   const handleCreateItem = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newItem.title || !newItem.epicId || !newItem.owner) {
-      alert('Title and Epic are required, and an owner must be set on the project');
+    if (!newItem.title || !newItem.owner) {
+      alert('Title is required, and an owner must be set on the project');
       return;
     }
     try {
@@ -109,7 +109,7 @@ export function NewBacklogItemDialog() {
       <DialogContent className="sm:max-w-[600px]">
         <form onSubmit={handleCreateItem}>
           <DialogHeader>
-            <DialogTitle>Create New Backlog Item</DialogTitle>
+            <DialogTitle>Create new item</DialogTitle>
             <DialogDescription>
               Fill in the details below to add an item to the project backlog. The owner will be automatically assigned from the project.
             </DialogDescription>
@@ -125,11 +125,12 @@ export function NewBacklogItemDialog() {
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="epicId" className="text-right">Epic</Label>
-              <Select onValueChange={handleSelectChange('epicId')} value={newItem.epicId} required>
+              <Select onValueChange={handleSelectChange('epicId')} value={newItem.epicId ?? 'none'}>
                 <SelectTrigger className="col-span-3">
-                  <SelectValue placeholder="Select an epic" />
+                  <SelectValue placeholder="Select an epic (optional)" />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="none">No Epic</SelectItem>
                   {newBacklogItemData?.epics.map((epic) => (
                     <SelectItem key={epic.id} value={epic.id}>{epic.title}</SelectItem>
                   ))}
@@ -153,7 +154,7 @@ export function NewBacklogItemDialog() {
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="dueDate" className="text-right">Due Date</Label>
-              <Input id="dueDate" type="date" value={newItem.dueDate} onChange={handleInputChange} className="col-span-3" />
+              <Input id="dueDate" type="date" value={newItem.dueDate || ''} onChange={handleInputChange} className="col-span-3" />
             </div>
           </div>
           <DialogFooter className="pt-4">

@@ -7,7 +7,7 @@ import Link from 'next/link';
 import {
   ChevronsLeft,
   ChevronsRight,
-  Home,
+  LayoutDashboard,
   User,
   Briefcase,
   Users,
@@ -19,6 +19,7 @@ import {
   Search,
   History,
   ChevronRight as ChevronRightIcon,
+  Rss,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -34,6 +35,7 @@ import { Input } from './ui/input';
 import { ScrollArea } from './ui/scroll-area';
 import { getProjects, Project } from '@/services/project-service';
 import { getAssessments, Assessment } from '@/services/assessment-service';
+import { getCollections, StoryCollection } from '@/services/collection-service';
 import { Skeleton } from './ui/skeleton';
 
 const NavGroup = ({
@@ -49,7 +51,7 @@ const NavGroup = ({
         <div className="space-y-1">
             {!isCollapsed && (
                 <>
-                    <Separator className="my-4 bg-sidebar-border" />
+                    <Separator className="my-4 bg-[hsl(var(--sidebar-divider))]" />
                     <h4 className="text-xs font-semibold text-sidebar-foreground uppercase tracking-wider px-2 pt-2 pb-1">{title}</h4>
                 </>
             )}
@@ -58,7 +60,7 @@ const NavGroup = ({
     )
 }
 
-type CombinedItem = (Project | Assessment) & { itemType: 'Engagement' | 'Assessment' };
+type CombinedItem = (Project | Assessment | StoryCollection) & { itemType: 'Engagement' | 'Assessment' | 'Collection' };
 
 function StarredItemsPopoverContent({ isOpen }: { isOpen: boolean }) {
     const [items, setItems] = React.useState<CombinedItem[]>([]);
@@ -95,13 +97,15 @@ function StarredItemsPopoverContent({ isOpen }: { isOpen: boolean }) {
     const handleItemClick = (item: CombinedItem) => {
         if (item.itemType === 'Engagement') {
             router.push(`/dashboard/projects/${item.id}`);
-        } else {
+        } else if (item.itemType === 'Assessment'){
             router.push(`/assessment/${item.id}/report`);
+        } else {
+             router.push(`/dashboard/library`);
         }
     };
 
     return (
-        <PopoverContent className="w-80" side="right" align="start">
+        <PopoverContent className="w-96 border" side="right" align="start">
             <h4 className="font-medium text-sm mb-2">Starred Items</h4>
             <div className="relative mb-4">
                 <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -124,8 +128,8 @@ function StarredItemsPopoverContent({ isOpen }: { isOpen: boolean }) {
                                 onClick={() => handleItemClick(item)}
                             >
                                 {item.itemType === 'Engagement' ? 
-                                    <FolderKanban className="h-5 w-5 text-primary" /> : 
-                                    <ClipboardList className="h-5 w-5 text-primary" />
+                                    <FolderKanban className="h-4 w-4 text-primary" /> : 
+                                    <ClipboardList className="h-4 w-4 text-primary" />
                                 }
                                 <div className="flex-1">
                                     <p className="text-sm font-medium">{item.name}</p>
@@ -142,7 +146,7 @@ function StarredItemsPopoverContent({ isOpen }: { isOpen: boolean }) {
     )
 }
 
-function RecentItemsPopoverContent() {
+function RecentItemsPopoverContent({ isOpen }: { isOpen: boolean }) {
     const [items, setItems] = React.useState<CombinedItem[]>([]);
     const [loading, setLoading] = React.useState(false);
     const [searchTerm, setSearchTerm] = React.useState('');
@@ -151,24 +155,28 @@ function RecentItemsPopoverContent() {
     React.useEffect(() => {
         const fetchRecentItems = async () => {
             setLoading(true);
-            const [projects, assessments] = await Promise.all([getProjects(), getAssessments()]);
+            const [projects, assessments, collections] = await Promise.all([getProjects(), getAssessments(), getCollections()]);
             
-            const engagementItems = projects.map(p => ({ ...p, itemType: 'Engagement' as const }));
-            const assessmentItems = assessments.map(a => ({ ...a, itemType: 'Assessment' as const }));
+            const engagementItems = projects.map(p => ({ ...p, itemType: 'Engagement' as const, date: p.lastActivity }));
+            const assessmentItems = assessments.map(a => ({ ...a, itemType: 'Assessment' as const, date: a.lastActivity || a.startDate }));
+            const collectionItems = collections.map(c => ({ ...c, itemType: 'Collection' as const, date: c.createdAt }));
 
-            const allItems = [...engagementItems, ...assessmentItems];
+            const allItems: (CombinedItem & {date?: string})[] = [...engagementItems, ...assessmentItems, ...collectionItems];
             
             const sortedItems = allItems.sort((a,b) => {
-                const dateA = new Date(a.lastActivity || a.startDate).getTime();
-                const dateB = new Date(b.lastActivity || b.startDate).getTime();
+                const dateA = new Date(a.date || 0).getTime();
+                const dateB = new Date(b.date || 0).getTime();
                 return dateB - dateA;
             });
 
-            setItems(sortedItems.slice(0, 20)); // Get top 20 recent items
+            setItems(sortedItems.slice(0, 20));
             setLoading(false);
         };
-        fetchRecentItems();
-    }, []);
+
+        if (isOpen) {
+            fetchRecentItems();
+        }
+    }, [isOpen]);
 
     const filteredItems = items.filter(item => 
         item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -178,13 +186,15 @@ function RecentItemsPopoverContent() {
     const handleItemClick = (item: CombinedItem) => {
         if (item.itemType === 'Engagement') {
             router.push(`/dashboard/projects/${item.id}`);
-        } else {
+        } else if (item.itemType === 'Assessment'){
             router.push(`/assessment/${item.id}/report`);
+        } else {
+             router.push(`/dashboard/library`);
         }
     };
 
     return (
-        <PopoverContent className="w-80" side="right" align="start">
+        <PopoverContent className="w-96 border" side="right" align="start">
             <h4 className="font-medium text-sm mb-2">Recent Items</h4>
             <div className="relative mb-4">
                 <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -206,9 +216,9 @@ function RecentItemsPopoverContent() {
                                 className="flex items-center gap-3 p-2 rounded-md hover:bg-muted cursor-pointer"
                                 onClick={() => handleItemClick(item)}
                             >
-                                {item.itemType === 'Engagement' ? 
-                                    <FolderKanban className="h-5 w-5 text-primary" /> : 
-                                    <ClipboardList className="h-5 w-5 text-primary" />
+                                {item.itemType === 'Engagement' ? <FolderKanban className="h-4 w-4 text-primary" /> : 
+                                 item.itemType === 'Assessment' ? <ClipboardList className="h-4 w-4 text-primary" /> :
+                                 <BookCopy className="h-4 w-4 text-primary" />
                                 }
                                 <div className="flex-1">
                                     <p className="text-sm font-medium">{item.name}</p>
@@ -229,12 +239,14 @@ export function Sidebar() {
   const pathname = usePathname();
   const [isCollapsed, setIsCollapsed] = React.useState(false);
   const [isStarredPopoverOpen, setIsStarredPopoverOpen] = React.useState(false);
+  const [isRecentPopoverOpen, setIsRecentPopoverOpen] = React.useState(false);
 
   const navItems = [
     {
         group: 'HOME',
         links: [
-            { href: `/dashboard`, label: 'Dashboard', icon: Home },
+            { href: `/dashboard`, label: 'Workspace', icon: LayoutDashboard },
+            { href: `/dashboard/feed`, label: 'Feed', icon: Rss },
             { id: 'starred', label: 'Starred', icon: Star },
             { id: 'recent', label: 'Recent', icon: History }
         ]
@@ -279,15 +291,15 @@ export function Sidebar() {
                         <PopoverTrigger asChild>
                              <Button
                                 variant="sidebar"
-                                className='w-full justify-start relative'
+                                className='w-full justify-start relative h-9'
                                 >
                                 <div className="flex items-center flex-1">
                                     <Icon
-                                    className={cn('h-5 w-5', {
+                                    className={cn('h-4 w-4', {
                                         'mr-2': !isCollapsed,
                                     })}
                                     />
-                                    {!isCollapsed && item.label}
+                                    {!isCollapsed && <span className="text-sm">{item.label}</span>}
                                 </div>
                                 {!isCollapsed && <ChevronRightIcon className="h-4 w-4" />}
                             </Button>
@@ -305,23 +317,22 @@ export function Sidebar() {
     }
 
     if (item.id === 'recent') {
-        const PopoverContentComponent = RecentItemsPopoverContent;
         return (
-             <Popover key={item.id}>
+             <Popover key={item.id} open={isRecentPopoverOpen} onOpenChange={setIsRecentPopoverOpen}>
                 <Tooltip>
                     <TooltipTrigger asChild>
                         <PopoverTrigger asChild>
                              <Button
                                 variant="sidebar"
-                                className='w-full justify-start relative'
+                                className='w-full justify-start relative h-9'
                                 >
                                 <div className="flex items-center flex-1">
                                     <Icon
-                                    className={cn('h-5 w-5', {
+                                    className={cn('h-4 w-4', {
                                         'mr-2': !isCollapsed,
                                     })}
                                     />
-                                    {!isCollapsed && item.label}
+                                    {!isCollapsed && <span className="text-sm">{item.label}</span>}
                                 </div>
                                 {!isCollapsed && <ChevronRightIcon className="h-4 w-4" />}
                             </Button>
@@ -333,7 +344,7 @@ export function Sidebar() {
                         </TooltipContent>
                     )}
                 </Tooltip>
-                <PopoverContentComponent />
+                <RecentItemsPopoverContent isOpen={isRecentPopoverOpen} />
             </Popover>
         )
     }
@@ -345,21 +356,21 @@ export function Sidebar() {
                 asChild
                 variant="sidebar"
                 className={cn(
-                    'w-full justify-start relative',
+                    'w-full justify-start relative h-9',
                     isActive &&
                     'bg-sidebar-accent text-sidebar-accent-foreground'
                 )}
                 >
                     <Link href={item.href}>
                         {isActive && (
-                        <div className="absolute left-0 top-0 h-full w-1.5 bg-primary" />
+                        <div className="absolute left-0 top-0 h-full w-1 bg-primary" />
                         )}
                         <Icon
-                        className={cn('h-5 w-5', {
+                        className={cn('h-4 w-4', {
                             'mr-2': !isCollapsed,
                         })}
                         />
-                        {!isCollapsed && item.label}
+                        {!isCollapsed && <span className="text-sm">{item.label}</span>}
                     </Link>
                 </Button>
             </TooltipTrigger>
@@ -379,7 +390,7 @@ export function Sidebar() {
           className={cn(
             'relative h-full bg-sidebar text-sidebar-foreground transition-all duration-300 ease-in-out border-r border-sidebar-border',
             {
-              'w-64': !isCollapsed,
+              'w-60': !isCollapsed,
               'w-16': isCollapsed,
             }
           )}
@@ -407,7 +418,7 @@ export function Sidebar() {
                                 asChild
                                 variant="sidebar"
                                 className={cn(
-                                  'w-full justify-start relative',
+                                  'w-full justify-start relative h-9',
                                   isActive &&
                                     'bg-sidebar-accent text-sidebar-accent-foreground'
                                 )}
@@ -415,14 +426,14 @@ export function Sidebar() {
                                 
                                     <Link href={'href' in item ? item.href : '#'}>
                                     {isActive && (
-                                        <div className="absolute left-0 top-0 h-full w-1.5 bg-primary" />
+                                        <div className="absolute left-0 top-0 h-full w-1 bg-primary" />
                                     )}
                                     <Icon
-                                        className={cn('h-5 w-5', {
+                                        className={cn('h-4 w-4', {
                                         'mr-2': !isCollapsed,
                                         })}
                                     />
-                                    {!isCollapsed && item.label}
+                                    {!isCollapsed && <span className="text-sm">{item.label}</span>}
                                     </Link>
                                 
                               </Button>

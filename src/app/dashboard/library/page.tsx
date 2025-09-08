@@ -12,7 +12,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Skeleton } from '@/components/ui/skeleton';
-import { MoreHorizontal, Plus, Trash2, Search, Upload, FilePlus, Layers, Library, Pencil, BookCopy } from 'lucide-react';
+import { MoreHorizontal, Plus, Trash2, Search, Upload, FilePlus, Layers, Library, Pencil, BookCopy, ArrowLeft, Edit } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { useQuickAction } from '@/contexts/quick-action-context';
 import { getUserStories, deleteUserStory, UserStory, bulkCreateUserStories as bulkCreateLibraryStories, getTags, Tag, deleteUserStories } from '@/services/user-story-service';
@@ -27,6 +27,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { tagConfig } from '@/lib/tag-config';
 import { ManageTagsDialog } from '@/components/manage-tags-dialog';
+import { ManageCollectionsDialog } from '@/components/manage-collections-dialog';
 import Link from 'next/link';
 
 
@@ -48,7 +49,7 @@ export default function LibraryPage() {
   const [isManageTagsOpen, setIsManageTagsOpen] = React.useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
   
-  const { openNewUserStoryDialog, setOnUserStoryCreated } = useQuickAction();
+  const { openNewUserStoryDialog, setOnUserStoryCreated, openEditUserStoryDialog, setOnUserStoryUpdated, openManageCollectionsDialog, isManageCollectionsDialogOpen, closeManageCollectionsDialog, onCollectionsUpdated, setOnCollectionsUpdated } = useQuickAction();
   const { toast } = useToast();
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   const [isUploadResultDialogOpen, setIsUploadResultDialogOpen] = React.useState(false);
@@ -86,11 +87,15 @@ export default function LibraryPage() {
 
   React.useEffect(() => {
     fetchLibraryData();
-    const unsubscribe = setOnUserStoryCreated(fetchLibraryData);
+    const unsubscribeCreated = setOnUserStoryCreated(fetchLibraryData);
+    const unsubscribeUpdated = setOnUserStoryUpdated(fetchLibraryData);
+    const unsubscribeCollections = setOnCollectionsUpdated(fetchLibraryData);
     return () => {
-      if (unsubscribe) unsubscribe();
+      if (unsubscribeCreated) unsubscribeCreated();
+      if (unsubscribeUpdated) unsubscribeUpdated();
+      if (unsubscribeCollections) unsubscribeCollections();
     };
-  }, [fetchLibraryData, setOnUserStoryCreated]);
+  }, [fetchLibraryData, setOnUserStoryCreated, setOnUserStoryUpdated, setOnCollectionsUpdated]);
 
   const handleDelete = async (id: string) => {
     try {
@@ -280,14 +285,22 @@ export default function LibraryPage() {
         accept=".csv"
       />
       <div className="flex flex-col h-full space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold">User Story Library</h1>
-          <p className="text-muted-foreground">
-            {projectId 
-                ? "Select stories to add to your project's backlog"
-                : "Browse and manage reusable user stories for your projects"
-            }
-          </p>
+        <div className="flex items-center gap-4">
+            {projectId && (
+                <Button variant="outline" size="icon" onClick={() => router.back()}>
+                    <ArrowLeft className="h-4 w-4" />
+                    <span className="sr-only">Back</span>
+                </Button>
+            )}
+            <div>
+                <h1 className="text-2xl font-bold">User Story Library</h1>
+                <p className="text-muted-foreground">
+                    {projectId 
+                        ? "Select stories to add to your project's backlog"
+                        : "Browse and manage reusable user stories for your projects"
+                    }
+                </p>
+            </div>
         </div>
         <Separator />
         <div className="flex justify-between items-center">
@@ -313,7 +326,7 @@ export default function LibraryPage() {
                   Add to Backlog ({selectedStories.length})
                 </Button>
             )}
-            {!projectId && selectedStories.length > 0 && (
+            {!projectId && selectedStories.length > 0 && !selectedTag?.startsWith('coll:') && (
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button variant="outline">
@@ -339,85 +352,113 @@ export default function LibraryPage() {
             </Button>
           </div>
         </div>
-        <div className="flex-1 grid grid-cols-12 gap-6 overflow-hidden">
+        <div className="grid grid-cols-12 gap-6 flex-1">
           <div className="col-span-3">
-             <Card className="h-full bg-muted/50">
+            <Card className="bg-muted/50 h-full flex flex-col">
+              <ScrollArea className="flex-1">
+                <CardHeader>
+                  <div className="flex justify-between items-center">
+                    <CardTitle className="text-base flex items-center gap-2">
+                      <Layers className="h-4 w-4" />
+                      Tags
+                    </CardTitle>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6"
+                      onClick={() => setIsManageTagsOpen(true)}
+                    >
+                      <Pencil className="h-3 w-3" />
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent className="pt-0 pr-2">
+                <div className="space-y-1">
+                  {loading ? (
+                    Array.from({ length: 5 }).map((_, i) => (
+                      <Skeleton key={i} className="h-8 w-full" />
+                    ))
+                  ) : (
+                    allTags.map((tag) => {
+                      const isActive = selectedTag === tag.name;
+                      const config = tagConfig.find(
+                        (c) => c.iconName === tag.icon
+                      );
+                      let Icon: React.ElementType = Layers; // Default icon
+                      let color = 'text-foreground';
+                      if (tag.name === 'All') {
+                        Icon = Library;
+                      } else if (config) {
+                        Icon = config.icon;
+                        color = config.color;
+                      }
+
+                      return (
+                        <Button
+                          key={tag.id}
+                          variant="ghost"
+                          className={cn(
+                            'w-full justify-start relative',
+                            isActive && 'bg-background font-bold'
+                          )}
+                          onClick={() => setSelectedTag(tag.name)}
+                        >
+                          {isActive && <div className="absolute left-0 top-0 h-full w-1 bg-primary rounded-r-full" />}
+                          <Icon className={cn('h-4 w-4 mr-2', color)} />
+                          {tag.name}
+                        </Button>
+                      );
+                    })
+                  )}
+                </div>
+                </CardContent>
+                <Separator className="my-4" />
                 <CardHeader>
                     <div className="flex justify-between items-center">
                         <CardTitle className="text-base flex items-center gap-2">
-                            <Layers className="h-4 w-4" />
-                            Tags
+                        <BookCopy className="h-4 w-4" />
+                        Collections
                         </CardTitle>
-                        <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setIsManageTagsOpen(true)}>
+                         <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6"
+                            onClick={() => openManageCollectionsDialog()}
+                        >
                             <Pencil className="h-3 w-3" />
                         </Button>
                     </div>
                 </CardHeader>
-                <CardContent>
-                    <ScrollArea className="h-[calc(100vh-28rem)]">
-                        <div className="space-y-1 pr-4">
-                            {loading ? (
-                                Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-8 w-full" />)
-                            ) : (
-                                allTags.map(tag => {
-                                    const config = tagConfig.find(c => c.iconName === tag.icon);
-                                    let Icon: React.ElementType = Layers; // Default icon
-                                    let color = 'text-foreground';
-                                    if(tag.name === 'All') {
-                                        Icon = Library;
-                                    } else if(config) {
-                                        Icon = config.icon;
-                                        color = config.color;
-                                    }
-                                    
-                                    return (
-                                        <Button 
-                                            key={tag.id} 
-                                            variant="ghost" 
-                                            className={cn(
-                                                "w-full justify-start",
-                                                selectedTag === tag.name && "bg-background font-bold"
-                                            )}
-                                            onClick={() => setSelectedTag(tag.name)}
-                                        >
-                                          <Icon className={cn("h-4 w-4 mr-2", color)} />
-                                          {tag.name}
-                                        </Button>
-                                    )
-                                })
-                            )}
-                        </div>
-                        <Separator className="my-4" />
-                        <div className="flex justify-between items-center mb-2">
-                             <h3 className="text-base font-semibold flex items-center gap-2 pl-4">
-                                <BookCopy className="h-4 w-4" />
-                                Collections
-                            </h3>
-                            <Button asChild variant="ghost" size="icon" className="h-6 w-6">
-                                <Link href="/dashboard/collections"><Plus className="h-3 w-3" /></Link>
-                            </Button>
-                        </div>
-                        <div className="space-y-1 pr-4">
-                             {collections.map(collection => (
-                                <Button 
-                                    key={collection.id} 
-                                    variant="ghost" 
-                                    className={cn(
-                                        "w-full justify-start",
-                                        selectedTag === `coll:${collection.id}` && "bg-muted font-bold"
-                                    )}
-                                    onClick={() => setSelectedTag(`coll:${collection.id}`)}
-                                >
-                                  <BookCopy className="h-4 w-4 mr-2" />
-                                  {collection.name}
-                                </Button>
-                            ))}
-                        </div>
-                    </ScrollArea>
+                <CardContent className="pt-0 pr-2">
+                <div className="space-y-1">
+                  {collections.map((collection) => {
+                    const isActive = selectedTag === `coll:${collection.id}`;
+                    const config =
+                      tagConfig.find((c) => c.iconName === collection.icon) ||
+                      tagConfig.find((c) => c.iconName === 'BookCopy');
+                    const Icon = config?.icon || BookCopy;
+                    return (
+                      <Button
+                        key={collection.id}
+                        variant="ghost"
+                        className={cn(
+                          'w-full justify-start relative',
+                          isActive && 'bg-background font-bold'
+                        )}
+                        onClick={() => setSelectedTag(`coll:${collection.id}`)}
+                      >
+                        {isActive && <div className="absolute left-0 top-0 h-full w-1 bg-primary rounded-r-full" />}
+                        <Icon className={cn('h-4 w-4 mr-2', config?.color)} />
+                        {collection.name}
+                      </Button>
+                    );
+                  })}
+                </div>
                 </CardContent>
-             </Card>
+              </ScrollArea>
+            </Card>
           </div>
-          <div className="col-span-9">
+          <div className="md:col-span-9 min-w-0">
             <ScrollArea className="h-[calc(100vh-18rem)]">
                 <div className="pr-4 space-y-4">
                     {loading ? (
@@ -447,7 +488,7 @@ export default function LibraryPage() {
                                <div className="flex-1">
                                   <CardHeader className="py-3">
                                       <div className="flex justify-between items-start">
-                                          <CardTitle className="flex items-center gap-2">
+                                          <CardTitle className="flex items-center gap-2 text-base">
                                               <Icon className={cn("h-4 w-4", color)} />
                                               {story.title}
                                           </CardTitle>
@@ -459,7 +500,7 @@ export default function LibraryPage() {
                                                   </Button>
                                               </DropdownMenuTrigger>
                                               <DropdownMenuContent align="end">
-                                                  <DropdownMenuItem>View/Edit</DropdownMenuItem>
+                                                  <DropdownMenuItem onSelect={() => openEditUserStoryDialog(story)}>View/Edit</DropdownMenuItem>
                                                   <DropdownMenuItem
                                                       onClick={() => handleDelete(story.id)}
                                                       className="text-destructive focus:text-destructive-foreground"
@@ -527,6 +568,11 @@ export default function LibraryPage() {
         isOpen={isManageTagsOpen}
         onOpenChange={setIsManageTagsOpen}
         onTagsUpdated={fetchLibraryData}
+      />
+      <ManageCollectionsDialog
+        isOpen={isManageCollectionsDialogOpen}
+        onOpenChange={closeManageCollectionsDialog}
+        onCollectionsUpdated={fetchLibraryData}
       />
     </>
   );

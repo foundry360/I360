@@ -89,8 +89,16 @@ export default function ContactsPage() {
   }, [fetchContacts, setOnContactCreated]);
 
   React.useEffect(() => {
+    if (globalSearchTerm) {
+      setIsSearchVisible(true);
+    }
+  }, [globalSearchTerm]);
+
+  React.useEffect(() => {
     return () => {
-      setGlobalSearchTerm('');
+      if(window.location.pathname !== '/dashboard') {
+          setGlobalSearchTerm('');
+      }
     };
   }, [setGlobalSearchTerm]);
 
@@ -433,3 +441,5 @@ export default function ContactsPage() {
     </div>
   );
 }
+
+    

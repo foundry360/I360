@@ -94,8 +94,16 @@ export default function AssessmentsPage() {
   }, [fetchAssessments, setOnAssessmentCompleted]);
   
   React.useEffect(() => {
+    if (globalSearchTerm) {
+      setIsSearchVisible(true);
+    }
+  }, [globalSearchTerm]);
+
+  React.useEffect(() => {
     return () => {
-      setGlobalSearchTerm('');
+      if(window.location.pathname !== '/dashboard') {
+          setGlobalSearchTerm('');
+      }
     };
   }, [setGlobalSearchTerm]);
 
@@ -502,3 +510,5 @@ export default function AssessmentsPage() {
     </>
   );
 }
+
+    

@@ -42,6 +42,16 @@ export interface Task {
 
 const tasksCollection = collection(db, 'tasks');
 
+export async function getTasks(): Promise<Task[]> {
+    try {
+        const snapshot = await getDocs(tasksCollection);
+        return snapshot.docs.map(doc => doc.data() as Task);
+    } catch (error) {
+        console.error("Error fetching all tasks:", error);
+        return [];
+    }
+}
+
 export async function getTasksForProject(projectId: string): Promise<Task[]> {
     try {
         const q = query(tasksCollection, where("projectId", "==", projectId));

@@ -102,7 +102,7 @@ export async function updateCompany(id: string, companyData: Partial<Company>): 
             const newProjectName = `${newPrefix}-${oldSuffix}`;
             
             const projectDocRef = doc(db, 'projects', project.id);
-            batch.update(projectDocRef, { name: newProjectName });
+            batch.update(projectDocRef, { name: newProjectName, companyName: companyData.name });
         });
     }
 

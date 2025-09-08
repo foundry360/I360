@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -56,29 +57,30 @@ body {
     --radius: 0.5rem;
     
     /* Custom Status Colors */
-    --success: 142.1 76.2% 36.3%; /* Pastel Green */
-    --success-foreground: 142.1 76.2% 20.3%;
+    --success: 142 71% 45%; /* #22c55e */
+    --success-foreground: 0 0% 98%;
     --warning: 51 86% 64%; /* Pastel Yellow */
     --warning-foreground: 51 50% 20%;
     --danger: 358 100% 64%; /* #FF474C */
     --danger-foreground: 0 0% 98%;
 
 
-    --sidebar-background: 228 70% 10%; /* #090f2a */
+    --sidebar-background: 216 28% 7%;
     --sidebar-foreground: 210 40% 98%;
     --sidebar-primary: 256 96% 63%;
     --sidebar-primary-foreground: 210 40% 98%;
     --sidebar-accent: 217.2 32.6% 17.5%;
     --sidebar-accent-foreground: 210 40% 98%;
     --sidebar-border: 217.2 32.6% 17.5%;
+    --sidebar-divider: 217.2 32.6% 22.5%;
     --sidebar-ring: 256 96% 63%;
   }
   .dark {
-    --background: 220 4% 10%; /* #18191a */
+    --background: 0 0% 2%;
     --foreground: 210 40% 98%;
-    --card: 220 4% 10%;
+    --card: 0 0% 7%;
     --card-foreground: 210 40% 98%;
-    --popover: 220 4% 10%;
+    --popover: 0 0% 7%;
     --popover-foreground: 210 40% 98%;
     --primary: 259 82% 56%;
     --primary-hover: 259 82% 50%;
@@ -86,14 +88,14 @@ body {
     --primary-foreground: 210 40% 98%;
     --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
-    --muted: 240 2% 12%; /* #1f1f21 */
+    --muted: 0 0% 4%;
     --muted-foreground: 215 20.2% 65.1%;
     --accent: 232 78% 71%;
     --accent-foreground: 210 40% 98%;
     --destructive: 358 100% 64%; /* #FF474C */
     --destructive-hover: 358 100% 54%;
     --destructive-foreground: 0 0% 98%;
-    --border: 240 2% 18%;
+    --border: 0 0% 9%;
     --input: 217.2 32.6% 17.5%;
     --ring: 259 82% 56%;
     --chart-1: 256 96% 63%;
@@ -103,21 +105,21 @@ body {
     --chart-5: 340 75% 55%;
 
     /* Custom Status Colors */
-    --success: 142.1 76.2% 46.3%; 
-    --success-foreground: 142.1 76.2% 86.3%;
+    --success: 142 71% 45%; /* #22c55e */
+    --success-foreground: 0 0% 98%;
     --warning: 51 86% 64%; /* Pastel Yellow */
     --warning-foreground: 51 50% 20%;
     --danger: 358 100% 64%; /* #FF474C */
     --danger-foreground: 0 0% 98%;
 
-    --sidebar-background: 240 2% 12%; /* #1f1f21 */
+    --sidebar-background: 0 0% 7%;
     --sidebar-foreground: 210 40% 98%;
     --sidebar-primary: 256 96% 63%;
     --sidebar-primary-foreground: 210 40% 98%;
-    --sidebar-accent: 240 2% 24%;
+    --sidebar-accent: 0 0% 3%;
     --sidebar-accent-foreground: 210 40% 98%;
-    --sidebar-border: 240 2% 18%;
-    --sidebar-ring: 256 96% 63%;
+    --sidebar-border: 0 0% 4%;
+    --sidebar-divider: 0 0% 14%;
   }
 }
 
@@ -128,4 +130,46 @@ body {
   body {
     @apply bg-background text-foreground;
   }
+  .dark .sidebar-popover {
+    --border: var(--sidebar-border);
+  }
+}
+
+@layer utilities {
+    @keyframes spin-slow {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    @keyframes spin-medium {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(-360deg); }
+    }
+    @keyframes spin-fast {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+     @keyframes spin-slower {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(-360deg); }
+    }
+    @keyframes spin-medium-reverse {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    .animate-spin-slow {
+      animation: spin-slow 4s linear infinite;
+    }
+    .animate-spin-medium {
+      animation: spin-medium 3s linear infinite;
+    }
+    .animate-spin-fast {
+      animation: spin-fast 2s linear infinite;
+    }
+    .animate-spin-slower {
+      animation: spin-slower 5s linear infinite;
+    }
+    .animate-spin-medium-reverse {
+      animation: spin-medium-reverse 3.5s linear infinite;
+    }
 }
