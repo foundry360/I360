@@ -848,7 +848,7 @@ export default function ProjectDetailsPage() {
                         </TabsTrigger>
                     </TabsList>
                      <div className="flex items-center gap-2">
-                        {(activeTab === 'backlog' || activeTab === 'epics') && unassignedAndUnscheduledBacklogItems.length > 0 && (
+                        {activeTab === 'backlog' && unassignedAndUnscheduledBacklogItems.length > 0 && (
                              <div className="flex items-center gap-2">
                                  <TooltipProvider>
                                     <Tooltip>
@@ -875,18 +875,6 @@ export default function ProjectDetailsPage() {
                                         </TooltipContent>
                                     </Tooltip>
                                 </TooltipProvider>
-                                {activeTab === 'epics' && (
-                                    <TooltipProvider>
-                                        <Tooltip>
-                                            <TooltipTrigger asChild>
-                                                <Button variant="outline" size="icon" onClick={() => openNewEpicDialog(projectId)}><Layers className="h-4 w-4" /></Button>
-                                            </TooltipTrigger>
-                                            <TooltipContent>
-                                                <p>Add Epic</p>
-                                            </TooltipContent>
-                                        </Tooltip>
-                                    </TooltipProvider>
-                                )}
                                 <TooltipProvider>
                                     <Tooltip>
                                         <TooltipTrigger asChild>
@@ -899,7 +887,31 @@ export default function ProjectDetailsPage() {
                                 </TooltipProvider>
                             </div>
                         )}
-                        {activeTab === 'sprints' && sprints.length > 0 && (
+                        {activeTab === 'epics' && (
+                            <div className="flex items-center gap-2">
+                                <TooltipProvider>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <Button variant="outline" size="icon" onClick={() => openNewEpicDialog(projectId)}><Layers className="h-4 w-4" /></Button>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                            <p>Add Epic</p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                </TooltipProvider>
+                                <TooltipProvider>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <Button size="icon" onClick={() => openNewBacklogItemDialog(projectId, project.companyId, epics)}><FilePlus className="h-4 w-4" /></Button>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                            <p>Add Backlog Item</p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                </TooltipProvider>
+                            </div>
+                        )}
+                         {activeTab === 'sprints' && sprints.length > 0 && (
                             <TooltipProvider>
                                 <Tooltip>
                                     <TooltipTrigger asChild>
@@ -912,7 +924,7 @@ export default function ProjectDetailsPage() {
                                     </TooltipContent>
                                 </Tooltip>
                             </TooltipProvider>
-                        )}
+                         )}
                     </div>
                 </div>
 
@@ -1254,7 +1266,7 @@ export default function ProjectDetailsPage() {
                     <TabsContent value="epics">
                         <div className="space-y-6">
                             {epics.length === 0 && unassignedBacklogItems.length === 0 ? (
-                               <div className="p-10 text-center rounded-lg border-2 border-dashed border-border bg-transparent shadow-none">
+                                <div className="p-10 text-center rounded-lg border-2 border-dashed border-border bg-transparent shadow-none">
                                     <div className="flex justify-center mb-4">
                                        <div className="flex justify-center items-center h-16 w-16 text-muted-foreground">
                                            <Layers className="h-8 w-8" />
@@ -1385,28 +1397,26 @@ export default function ProjectDetailsPage() {
                     <TabsContent value="backlog">
                        <div className="space-y-6">
                             {unassignedAndUnscheduledBacklogItems.length === 0 ? (
-                                <Card className="border-dashed">
-                                    <CardContent className="p-10 text-center">
-                                        <div className="flex justify-center mb-4">
-                                            <div className="bg-primary rounded-full p-3">
-                                                <Inbox className="h-8 w-8 text-primary-foreground" />
-                                            </div>
+                                <div className="p-10 text-center rounded-lg border-2 border-dashed border-border bg-transparent shadow-none">
+                                    <div className="flex justify-center mb-4">
+                                        <div className="flex justify-center items-center h-16 w-16 text-muted-foreground">
+                                            <Inbox className="h-8 w-8" />
                                         </div>
-                                        <h3 className="text-lg font-semibold">The backlog is empty!</h3>
-                                        <p className="text-muted-foreground mt-2 mb-4">
-                                            This space is for user stories that haven't been assigned to an epic or wave yet.
-                                        </p>
-                                         <div className="flex justify-center gap-4">
-                                            <Button variant="outline" onClick={() => openAddFromCollectionDialog(projectId, collections)}><BookCopy className="h-4 w-4 mr-2" /> Add from Collection</Button>
-                                            <Button variant="outline" asChild>
-                                                <Link href={`/dashboard/library?projectId=${projectId}`}><Library className="h-4 w-4 mr-2" /> Add from Library</Link>
-                                            </Button>
-                                            <Button variant="outline" onClick={() => openNewBacklogItemDialog(projectId, project.companyId, epics)}>
-                                                <FilePlus className="mr-2 h-4 w-4" /> Create new item
-                                            </Button>
-                                        </div>
-                                    </CardContent>
-                                </Card>
+                                    </div>
+                                    <h3 className="text-lg font-semibold">The backlog is empty!</h3>
+                                    <p className="text-muted-foreground mt-2 mb-4">
+                                        This space is for user stories that haven't been assigned to an epic or wave yet.
+                                    </p>
+                                    <div className="flex justify-center gap-4">
+                                        <Button variant="outline" onClick={() => openAddFromCollectionDialog(projectId, collections)}><BookCopy className="h-4 w-4 mr-2" /> Add from Collection</Button>
+                                        <Button variant="outline" asChild>
+                                            <Link href={`/dashboard/library?projectId=${projectId}`}><Library className="h-4 w-4 mr-2" /> Add from Library</Link>
+                                        </Button>
+                                        <Button variant="outline" onClick={() => openNewBacklogItemDialog(projectId, project.companyId, epics)}>
+                                            <FilePlus className="mr-2 h-4 w-4" /> Create new item
+                                        </Button>
+                                    </div>
+                                </div>
                             ) : (
                                 <Card>
                                     <CardHeader>
@@ -1600,7 +1610,7 @@ export default function ProjectDetailsPage() {
                                 )
                             })}
                             
-                            {sprints.filter(s => s.status === 'Completed').length > 0 && (
+                            {sprints.filter(sprint => sprint.status === 'Completed').length > 0 && (
                                 <div>
                                     <h2 className="text-lg font-semibold mb-2">Completed Waves</h2>
                                     <Accordion type="single" collapsible className="w-full space-y-4">
