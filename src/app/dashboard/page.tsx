@@ -30,7 +30,7 @@ import { getAssessments, type Assessment } from '@/services/assessment-service';
 import { getContacts, type Contact } from '@/services/contact-service';
 import { getTasks, type Task } from '@/services/task-service';
 import { useQuickAction } from '@/contexts/quick-action-context';
-import { formatDistanceToNow, parseISO, isWithinInterval, addDays, format } from 'date-fns';
+import { formatDistanceToNow, parseISO, isWithinInterval, addDays, format, differenceInDays, isPast } from 'date-fns';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
@@ -202,6 +202,15 @@ export default function DashboardPage() {
         return 'secondary';
     }
   };
+  
+  const getTaskRiskStatus = (task: Task): 'at-risk' | 'due-soon' | 'on-track' => {
+      if (!task.dueDate) return 'on-track';
+      const dueDate = parseISO(task.dueDate);
+      if (isPast(dueDate)) return 'at-risk';
+      const daysUntilDue = differenceInDays(dueDate, new Date());
+      if (daysUntilDue <= 3) return 'due-soon';
+      return 'on-track';
+  }
 
   if (loading) {
     return (
@@ -252,9 +261,18 @@ export default function DashboardPage() {
                     <div className="space-y-0">
                         {visibleTasks.map((task, index) => {
                             const Icon = taskTypeIcons[task.type];
+                            const riskStatus = getTaskRiskStatus(task);
                             return (
                                 <div key={task.id} className={cn("flex items-center justify-between py-2 rounded-md hover:bg-muted cursor-pointer", index !== visibleTasks.length - 1 && 'border-b dark:border-white/10')} onClick={() => router.push(`/dashboard/projects/${task.projectId}`)}>
                                     <div className="flex items-center gap-3">
+                                        <div 
+                                          className={cn(
+                                            "h-2.5 w-2.5 rounded-full",
+                                            riskStatus === 'at-risk' && 'bg-red-500',
+                                            riskStatus === 'due-soon' && 'bg-yellow-500',
+                                            riskStatus === 'on-track' && 'bg-green-500'
+                                          )}
+                                        />
                                         <Icon className="h-4 w-4 text-muted-foreground" />
                                         <div>
                                             <p className="font-medium text-sm">{task.title}</p>
@@ -390,6 +408,8 @@ export default function DashboardPage() {
       </div>
     </div>
   );
+
+    
 
     
 
