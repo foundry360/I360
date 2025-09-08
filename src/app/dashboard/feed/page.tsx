@@ -16,6 +16,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
+import { Card } from '@/components/ui/card';
 
 type FilterType = 'all' | NotificationType | 'mention' | 'thread';
 
@@ -107,31 +108,33 @@ export default function FeedPage() {
             </div>
             <Separator />
              <div className="grid grid-cols-12 gap-8">
-                <div className="col-span-3 bg-muted/50 dark:bg-sidebar p-4 rounded-lg">
-                    <nav className="space-y-1">
-                        {filterConfig.map(filter => {
-                            const Icon = filter.icon;
-                            return (
-                                <Button 
-                                    key={filter.id} 
-                                    variant="ghost" 
-                                    className={cn(
-                                        "w-full justify-start",
-                                        activeFilter === filter.id && "bg-background font-bold"
-                                    )}
-                                    onClick={() => setActiveFilter(filter.id)}
-                                >
-                                    <Icon className="mr-3 h-4 w-4" />
-                                    {filter.label}
-                                </Button>
-                            )
-                        })}
-                    </nav>
+                <div className="col-span-3">
+                    <div className="p-4 rounded-lg bg-muted dark:bg-sidebar">
+                        <nav className="space-y-1">
+                            {filterConfig.map(filter => {
+                                const Icon = filter.icon;
+                                return (
+                                    <Button 
+                                        key={filter.id} 
+                                        variant="ghost" 
+                                        className={cn(
+                                            "w-full justify-start",
+                                            activeFilter === filter.id && "bg-background font-bold"
+                                        )}
+                                        onClick={() => setActiveFilter(filter.id)}
+                                    >
+                                        <Icon className="mr-3 h-4 w-4" />
+                                        {filter.label}
+                                    </Button>
+                                )
+                            })}
+                        </nav>
+                    </div>
                 </div>
                 <div className="col-span-9">
-                    <div className="space-y-4">
+                    <Card className="overflow-hidden">
                         {loading ? (
-                            Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-20 w-full rounded-lg" />)
+                            Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-20 w-full" />)
                         ) : filteredNotifications.length > 0 ? (
                             filteredNotifications.map(note => (
                                 <FeedItem 
@@ -143,7 +146,7 @@ export default function FeedPage() {
                                 />
                             ))
                         ) : (
-                            <div className="text-center py-24 text-muted-foreground border-2 border-dashed rounded-lg">
+                            <div className="text-center py-24 text-muted-foreground">
                                 <div className="flex justify-center mb-4">
                                     <div className="bg-primary/10 rounded-full p-3">
                                         <Bell className="h-8 w-8 text-primary" />
@@ -153,7 +156,7 @@ export default function FeedPage() {
                                 <p>Your feed is empty. New updates will appear here</p>
                             </div>
                         )}
-                    </div>
+                    </Card>
                 </div>
             </div>
         </div>

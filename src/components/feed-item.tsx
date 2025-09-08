@@ -49,11 +49,11 @@ const notificationTypeConfig: Record<
   NotificationType,
   { icon: React.ElementType; color: string; border: string }
 > = {
-  system: { icon: Info, color: 'text-sky-500', border: 'border-sky-500/50' },
-  alert: { icon: CircleAlert, color: 'text-destructive', border: 'border-destructive/50' },
-  activity: { icon: Bell, color: 'text-foreground', border: 'border-transparent' },
-  mention: { icon: AtSign, color: 'text-primary', border: 'border-primary/50' },
-  thread: { icon: MessageSquare, color: 'text-green-500', border: 'border-green-500/50' },
+  system: { icon: Info, color: 'text-sky-500', border: 'border-l-sky-500' },
+  alert: { icon: CircleAlert, color: 'text-destructive', border: 'border-l-destructive' },
+  activity: { icon: Bell, color: 'text-foreground', border: 'border-l-transparent' },
+  mention: { icon: AtSign, color: 'text-primary', border: 'border-l-primary' },
+  thread: { icon: MessageSquare, color: 'text-green-500', border: 'border-l-green-500' },
 };
 
 export const FeedItem: React.FC<FeedItemProps> = ({
@@ -104,9 +104,9 @@ export const FeedItem: React.FC<FeedItemProps> = ({
   return (
     <div
       className={cn(
-        'flex items-start gap-4 p-4 rounded-lg border transition-all cursor-pointer group',
+        'flex items-start gap-4 p-4 border-b transition-all cursor-pointer group border-l-4',
         !notification.isRead && 'bg-primary/5 dark:bg-primary/10',
-        isSelected && 'bg-primary/10 ring-2 ring-primary',
+        isSelected && 'bg-primary/10 dark:bg-primary/20',
         config.border
       )}
       onClick={handleItemClick}
