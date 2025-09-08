@@ -749,6 +749,8 @@ export default function ProjectDetailsPage() {
     
     const unassignedBacklogItems = projectBacklogItems.filter(item => !item.epicId);
     const unassignedAndUnscheduledBacklogItems = unassignedBacklogItems.filter(item => !item.sprintId);
+    
+    const hasUpcomingOrActiveWaves = sprints.some(s => s.status === 'Active' || s.status === 'Not Started');
 
     if (loading) {
         return (
@@ -988,7 +990,7 @@ export default function ProjectDetailsPage() {
 
                             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                                <div className="col-span-1 space-y-6">
-                                    <Card className={cn(velocityData.length === 0 && 'border-2 border-dashed border-border bg-transparent shadow-none')}>
+                                    <Card className={cn(velocityData.length === 0 && 'border-dashed border-2 bg-transparent shadow-none')}>
                                         <CardHeader>
                                             <CardTitle>Velocity</CardTitle>
                                             {velocityData.length > 0 && <CardDescription>Story points completed per wave</CardDescription>}
@@ -1046,14 +1048,14 @@ export default function ProjectDetailsPage() {
                                                     </LineChart>
                                                 </ChartContainer>
                                             ) : (
-                                                <div className="h-[150px] flex flex-col items-center justify-center text-center text-muted-foreground text-sm">
+                                                <div className="h-[150px] flex flex-col items-center justify-center text-center text-muted-foreground text-sm p-4">
                                                     <CircleGauge className="h-10 w-10 mb-2" />
                                                     Complete a wave to see your team's velocity.
                                                 </div>
                                             )}
                                         </CardContent>
                                     </Card>
-                                    <Card className={cn(burndownData.length === 0 && 'border-2 border-dashed border-border bg-transparent shadow-none')}>
+                                    <Card className={cn(burndownData.length === 0 && 'border-dashed border-2 bg-transparent shadow-none')}>
                                         <CardHeader>
                                             <CardTitle>Burndown</CardTitle>
                                             {burndownData.length > 0 && <CardDescription>Ideal vs actual work remaining</CardDescription>}
@@ -1099,7 +1101,7 @@ export default function ProjectDetailsPage() {
                                                     </LineChart>
                                                 </ChartContainer>
                                             ) : (
-                                                <div className="h-[150px] flex flex-col items-center justify-center text-center text-muted-foreground text-sm">
+                                                <div className="h-[150px] flex flex-col items-center justify-center text-center text-muted-foreground text-sm p-4">
                                                     <CloudDownload className="h-10 w-10 mb-2" />
                                                     Complete a wave with estimated story points to generate a burndown chart.
                                                 </div>
@@ -1148,7 +1150,7 @@ export default function ProjectDetailsPage() {
                                             </CardFooter>
                                         </Card>
                                     )}
-                                    <Card className={cn(epicProgressData.length === 0 && 'border-2 border-dashed border-border bg-transparent shadow-none')}>
+                                    <Card className={cn(epicProgressData.length === 0 && 'border-dashed border-2 bg-transparent shadow-none')}>
                                         <CardHeader>
                                             <CardTitle>Epic Progress</CardTitle>
                                             {epicProgressData.length > 0 && <CardDescription>A summary of completion for each engagement epic</CardDescription>}
@@ -1179,8 +1181,8 @@ export default function ProjectDetailsPage() {
                                                     })}
                                                 </Accordion>
                                             ) : (
-                                                 <div className="h-[150px] flex flex-col items-center justify-center text-center text-muted-foreground text-sm">
-                                                    <Loader className="h-10 w-10 mb-2" />
+                                                 <div className="h-[150px] flex flex-col items-center justify-center text-center text-muted-foreground text-sm p-4">
+                                                    <Loader className="h-10 w-10" />
                                                     No epic progress to display. Add items with points to epics.
                                                 </div>
                                             )}
@@ -1188,7 +1190,7 @@ export default function ProjectDetailsPage() {
                                     </Card>
                                </div>
                                <div className="col-span-1 space-y-6">
-                                     <Card className={cn(atRiskItems.length === 0 && 'border-2 border-dashed border-border bg-transparent shadow-none')}>
+                                     <Card className={cn(atRiskItems.length === 0 && 'border-dashed border-2 bg-transparent shadow-none')}>
                                         <CardHeader>
                                             <CardTitle>At-Risk Items</CardTitle>
                                             {atRiskItems.length > 0 && <CardDescription>Items that are overdue or due within 3 days.</CardDescription>}
@@ -1237,7 +1239,7 @@ export default function ProjectDetailsPage() {
                                                     )
                                                 })
                                             ) : (
-                                                 <div className="h-[150px] flex flex-col items-center justify-center text-center text-muted-foreground text-sm">
+                                                 <div className="h-[150px] flex flex-col items-center justify-center text-center text-muted-foreground text-sm p-4">
                                                     <AlertTriangle className="h-10 w-10 mb-2" />
                                                     No at-risk items. Great job!
                                                 </div>
@@ -1396,7 +1398,7 @@ export default function ProjectDetailsPage() {
                     </TabsContent>
                     <TabsContent value="backlog">
                        <div className="space-y-6">
-                            {unassignedAndUnscheduledBacklogItems.length === 0 ? (
+                           {unassignedAndUnscheduledBacklogItems.length === 0 ? (
                                 <div className="p-10 text-center rounded-lg border-2 border-dashed border-border bg-transparent shadow-none">
                                     <div className="flex justify-center mb-4">
                                         <div className="flex justify-center items-center h-16 w-16 text-muted-foreground">
@@ -1488,127 +1490,126 @@ export default function ProjectDetailsPage() {
                     </TabsContent>
                     <TabsContent value="sprints">
                         <div className="space-y-8">
-                             {(['Active', 'Not Started'] as SprintStatus[]).map(status => {
-                                const sprintsByStatus = sprints.filter(s => s.status === status);
-                                if (sprintsByStatus.length === 0) return null;
-                                
-                                return (
-                                <div key={status}>
-                                    <h2 className="text-lg font-semibold mb-2">{status === 'Not Started' ? 'Upcoming Waves' : `${status} Waves`}</h2>
-                                    
-                                    {sprintsByStatus.length > 0 ? (
-                                        <Accordion type="single" collapsible className="w-full space-y-4" defaultValue={status === 'Active' && activeSprint ? activeSprint.id : undefined}>
-                                            {sprintsByStatus.map(sprint => {
-                                                const itemsInSprint = projectBacklogItems.filter(item => item.sprintId === sprint.id);
-                                                return (
-                                                    <AccordionItem key={sprint.id} value={sprint.id} className="border rounded-lg bg-card">
-                                                        <div className="flex items-center p-4">
-                                                            <AccordionTrigger className="p-0 hover:no-underline flex-1 text-sm font-normal" noChevron>
-                                                            <div className='flex items-center flex-1 gap-4'>
-                                                                <h3 className="font-semibold text-sm">{sprint.name}</h3>
-                                                                <p className="text-sm text-muted-foreground">
-                                                                    {format(parseISO(sprint.startDate), 'MMM d')} - {format(parseISO(sprint.endDate), 'MMM d, yyyy')}
-                                                                </p>
-                                                                <Badge variant={sprint.status === 'Active' ? 'success' : sprint.status === 'Completed' ? 'secondary' : 'outline'}>{sprint.status}</Badge>
-                                                            </div>
-                                                            </AccordionTrigger>
-                                                            <div className="flex items-center gap-2 ml-auto shrink-0 pl-4">
-                                                                <DropdownMenu>
-                                                                    <DropdownMenuTrigger asChild>
-                                                                        <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0"><MoreVertical className="h-4 w-4" /></Button>
-                                                                    </DropdownMenuTrigger>
-                                                                    <DropdownMenuContent align="end">
-                                                                        {sprint.status === 'Not Started' && (
-                                                                            <DropdownMenuItem onSelect={() => handleStartSprint(sprint.id)} disabled={loading}>
-                                                                                <Rocket className="mr-2 h-4 w-4" /> Start Wave
-                                                                            </DropdownMenuItem>
-                                                                        )}
-                                                                        {sprint.status === 'Active' && (
-                                                                            <DropdownMenuItem onSelect={() => handleCompleteSprint(sprint.id)} disabled={loading}>
-                                                                                <CheckCircle className="mr-2 h-4 w-4" /> Complete Wave
-                                                                            </DropdownMenuItem>
-                                                                        )}
-                                                                        {sprint.status !== 'Completed' && (
-                                                                        <DropdownMenuItem onSelect={() => openEditSprintDialog(sprint)}>
-                                                                            <Pencil className="mr-2 h-4 w-4" /> Edit
-                                                                        </DropdownMenuItem>
-                                                                        )}
-                                                                        <DropdownMenuSeparator />
-                                                                        <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setItemToDelete({type: 'sprint', id: sprint.id, name: sprint.name}); setIsDeleteDialogOpen(true);}} className="text-destructive focus:bg-destructive/90 focus:text-destructive-foreground">
-                                                                            <Trash2 className="mr-2 h-4 w-4" />
-                                                                            Delete
-                                                                        </DropdownMenuItem>
-                                                                    </DropdownMenuContent>
-                                                                </DropdownMenu>
-                                                            </div>
-                                                        </div>
-                                                        <AccordionContent className="p-4 pt-0">
-                                                            <p className="italic text-muted-foreground mb-4">{sprint.goal}</p>
-                                                            <div className="border rounded-lg">
-                                                                {itemsInSprint.length > 0 ? itemsInSprint.map(item => {
-                                                                    const epic = epics.find(e => e.id === item.epicId);
-                                                                    const tag = epic ? allTags.find(t => t.name === epic.category) : undefined;
-                                                                    const config = tag ? (tagConfig.find(c => c.iconName === tag.icon) || tagConfig.find(t => t.iconName === 'Layers')) : tagConfig.find(t => t.iconName === 'Layers');
-                                                                    const IconComponent = config?.icon || Layers;
-                                                                    return (
-                                                                        <div key={item.id} className="flex justify-between items-center p-3 border-b last:border-b-0 hover:bg-muted/50 cursor-pointer"
-                                                                            onClick={() => openEditBacklogItemDialog(item, epics, sprints, contacts)}
-                                                                        >
-                                                                            <div className="flex items-center gap-3 flex-wrap">
-                                                                                <span className="text-foreground text-sm">{projectPrefix}-{item.backlogId}</span>
-                                                                                <p className="text-sm font-medium">{item.title}</p>
-                                                                                {epic && (
-                                                                                    <Badge variant="secondary" className="cursor-pointer" onClick={(e) => { e.stopPropagation(); setActiveTab('backlog')}}>
-                                                                                        <IconComponent className={cn("h-3 w-3 mr-1", config?.color)} />
-                                                                                        {epic.title}
-                                                                                    </Badge>
-                                                                                )}
-                                                                            </div>
-                                                                            <div className="flex items-center gap-4">
-                                                                                <Badge variant="outline" className={cn(statusColors[item.status])}>{item.status}</Badge>
-                                                                                <Badge variant="secondary">{item.points} Points</Badge>
-                                                                                <TooltipProvider>
-                                                                                    <Tooltip>
-                                                                                        <TooltipTrigger>
-                                                                                            <PriorityIcon priority={item.priority} />
-                                                                                        </TooltipTrigger>
-                                                                                        <TooltipContent>
-                                                                                            <p>Priority: {item.priority}</p>
-                                                                                        </TooltipContent>
-                                                                                    </Tooltip>
-                                                                                </TooltipProvider>
-                                                                            </div>
-                                                                        </div>
-                                                                    )
-                                                                }) : (
-                                                                    <p className="text-sm text-muted-foreground text-center p-4">No items in this wave.</p>
-                                                                )}
-                                                            </div>
-                                                        </AccordionContent>
-                                                    </AccordionItem>
-                                                )
-                                            })}
-                                        </Accordion>
-                                    ) : (
-                                        <div className="p-10 text-center rounded-lg border-2 border-dashed border-border bg-transparent shadow-none">
-                                            <div className="flex justify-center mb-4">
-                                                <div className="flex items-center justify-center h-16 w-16 text-muted-foreground">
-                                                   <Waves className="h-8 w-8" />
-                                                </div>
-                                            </div>
-                                            <h3 className="text-lg font-semibold text-foreground">No Upcoming Waves</h3>
-                                            <p className="text-muted-foreground mt-2 mb-4">
-                                                Plan your next cycle of work by creating a new wave.
-                                            </p>
-                                            <Button onClick={() => openNewSprintDialog(projectId)}>
-                                                <Plus className="h-4 w-4 mr-2" />
-                                                New Wave
-                                            </Button>
+                            {!hasUpcomingOrActiveWaves ? (
+                                <div className="p-10 text-center rounded-lg border-2 border-dashed border-border bg-transparent shadow-none">
+                                    <div className="flex justify-center mb-4">
+                                        <div className="flex items-center justify-center h-16 w-16 text-muted-foreground">
+                                           <Waves className="h-8 w-8" />
                                         </div>
-                                    )}
+                                    </div>
+                                    <h3 className="text-lg font-semibold text-foreground">No Upcoming Waves</h3>
+                                    <p className="text-muted-foreground mt-2 mb-4">
+                                        Plan your next cycle of work by creating a new wave.
+                                    </p>
+                                    <Button onClick={() => openNewSprintDialog(projectId)}>
+                                        <Plus className="h-4 w-4 mr-2" />
+                                        New Wave
+                                    </Button>
                                 </div>
-                                )
-                            })}
+                            ) : (
+                                (['Active', 'Not Started'] as SprintStatus[]).map(status => {
+                                    const sprintsByStatus = sprints.filter(s => s.status === status);
+                                    if (sprintsByStatus.length === 0) return null;
+                                    
+                                    return (
+                                        <div key={status}>
+                                            <h2 className="text-lg font-semibold mb-2">{status === 'Not Started' ? 'Upcoming Waves' : `${status} Waves`}</h2>
+                                            <Accordion type="single" collapsible className="w-full space-y-4" defaultValue={status === 'Active' && activeSprint ? activeSprint.id : undefined}>
+                                                {sprintsByStatus.map(sprint => {
+                                                    const itemsInSprint = projectBacklogItems.filter(item => item.sprintId === sprint.id);
+                                                    return (
+                                                        <AccordionItem key={sprint.id} value={sprint.id} className="border rounded-lg bg-card">
+                                                            <div className="flex items-center p-4">
+                                                                <AccordionTrigger className="p-0 hover:no-underline flex-1 text-sm font-normal" noChevron>
+                                                                <div className='flex items-center flex-1 gap-4'>
+                                                                    <h3 className="font-semibold text-sm">{sprint.name}</h3>
+                                                                    <p className="text-sm text-muted-foreground">
+                                                                        {format(parseISO(sprint.startDate), 'MMM d')} - {format(parseISO(sprint.endDate), 'MMM d, yyyy')}
+                                                                    </p>
+                                                                    <Badge variant={sprint.status === 'Active' ? 'success' : sprint.status === 'Completed' ? 'secondary' : 'outline'}>{sprint.status}</Badge>
+                                                                </div>
+                                                                </AccordionTrigger>
+                                                                <div className="flex items-center gap-2 ml-auto shrink-0 pl-4">
+                                                                    <DropdownMenu>
+                                                                        <DropdownMenuTrigger asChild>
+                                                                            <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0"><MoreVertical className="h-4 w-4" /></Button>
+                                                                        </DropdownMenuTrigger>
+                                                                        <DropdownMenuContent align="end">
+                                                                            {sprint.status === 'Not Started' && (
+                                                                                <DropdownMenuItem onSelect={() => handleStartSprint(sprint.id)} disabled={loading}>
+                                                                                    <Rocket className="mr-2 h-4 w-4" /> Start Wave
+                                                                                </DropdownMenuItem>
+                                                                            )}
+                                                                            {sprint.status === 'Active' && (
+                                                                                <DropdownMenuItem onSelect={() => handleCompleteSprint(sprint.id)} disabled={loading}>
+                                                                                    <CheckCircle className="mr-2 h-4 w-4" /> Complete Wave
+                                                                                </DropdownMenuItem>
+                                                                            )}
+                                                                            {sprint.status !== 'Completed' && (
+                                                                            <DropdownMenuItem onSelect={() => openEditSprintDialog(sprint)}>
+                                                                                <Pencil className="mr-2 h-4 w-4" /> Edit
+                                                                            </DropdownMenuItem>
+                                                                            )}
+                                                                            <DropdownMenuSeparator />
+                                                                            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setItemToDelete({type: 'sprint', id: sprint.id, name: sprint.name}); setIsDeleteDialogOpen(true);}} className="text-destructive focus:bg-destructive/90 focus:text-destructive-foreground">
+                                                                                <Trash2 className="mr-2 h-4 w-4" />
+                                                                                Delete
+                                                                            </DropdownMenuItem>
+                                                                        </DropdownMenuContent>
+                                                                    </DropdownMenu>
+                                                                </div>
+                                                            </div>
+                                                            <AccordionContent className="p-4 pt-0">
+                                                                <p className="italic text-muted-foreground mb-4">{sprint.goal}</p>
+                                                                <div className="border rounded-lg">
+                                                                    {itemsInSprint.length > 0 ? itemsInSprint.map(item => {
+                                                                        const epic = epics.find(e => e.id === item.epicId);
+                                                                        const tag = epic ? allTags.find(t => t.name === epic.category) : undefined;
+                                                                        const config = tag ? (tagConfig.find(c => c.iconName === tag.icon) || tagConfig.find(t => t.iconName === 'Layers')) : tagConfig.find(t => t.iconName === 'Layers');
+                                                                        const IconComponent = config?.icon || Layers;
+                                                                        return (
+                                                                            <div key={item.id} className="flex justify-between items-center p-3 border-b last:border-b-0 hover:bg-muted/50 cursor-pointer"
+                                                                                onClick={() => openEditBacklogItemDialog(item, epics, sprints, contacts)}
+                                                                            >
+                                                                                <div className="flex items-center gap-3 flex-wrap">
+                                                                                    <span className="text-foreground text-sm">{projectPrefix}-{item.backlogId}</span>
+                                                                                    <p className="text-sm font-medium">{item.title}</p>
+                                                                                    {epic && (
+                                                                                        <Badge variant="secondary" className="cursor-pointer" onClick={(e) => { e.stopPropagation(); setActiveTab('backlog')}}>
+                                                                                            <IconComponent className={cn("h-3 w-3 mr-1", config?.color)} />
+                                                                                            {epic.title}
+                                                                                        </Badge>
+                                                                                    )}
+                                                                                </div>
+                                                                                <div className="flex items-center gap-4">
+                                                                                    <Badge variant="outline" className={cn(statusColors[item.status])}>{item.status}</Badge>
+                                                                                    <Badge variant="secondary">{item.points} Points</Badge>
+                                                                                    <TooltipProvider>
+                                                                                        <Tooltip>
+                                                                                            <TooltipTrigger>
+                                                                                                <PriorityIcon priority={item.priority} />
+                                                                                            </TooltipTrigger>
+                                                                                            <TooltipContent>
+                                                                                                <p>Priority: {item.priority}</p>
+                                                                                            </TooltipContent>
+                                                                                        </Tooltip>
+                                                                                    </TooltipProvider>
+                                                                                </div>
+                                                                            </div>
+                                                                        )
+                                                                    }) : (
+                                                                        <p className="text-sm text-muted-foreground text-center p-4">No items in this wave.</p>
+                                                                    )}
+                                                                </div>
+                                                            </AccordionContent>
+                                                        </AccordionItem>
+                                                    )
+                                                })}
+                                            </Accordion>
+                                        </div>
+                                    )
+                                })
+                            )}
                             
                             {sprints.filter(sprint => sprint.status === 'Completed').length > 0 && (
                                 <div>
