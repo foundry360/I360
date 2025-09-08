@@ -14,16 +14,16 @@ export function EngagementInsightsPanel({ projects }: EngagementInsightsPanelPro
     
     return (
         <div className="flex flex-col h-full">
-            <SheetHeader className="p-6 border-b">
+            <SheetHeader className="p-6 border-b border-sidebar-border">
                 <SheetTitle>Active Engagement Insights</SheetTitle>
-                <SheetDescription>
+                <SheetDescription className="text-sidebar-foreground/80">
                     AI-powered summary of trends, risks, and opportunities across your active engagements.
                 </SheetDescription>
             </SheetHeader>
             <ScrollArea className="flex-1">
                 <div className="p-6">
                     {/* Placeholder content. We will implement the AI insights generation next. */}
-                    <p className="text-muted-foreground text-center py-10">
+                    <p className="text-sidebar-foreground/60 text-center py-10">
                         Insights are being generated. This content will be replaced by an AI-powered analysis of your active projects.
                     </p>
                 </div>

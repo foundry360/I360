@@ -383,7 +383,7 @@ export default function DashboardPage() {
                   Insights
                 </Button>
               </SheetTrigger>
-              <SheetContent className="w-[500px] sm:w-[640px] p-0">
+              <SheetContent className="w-[500px] sm:w-[640px] p-0 bg-sidebar text-sidebar-foreground border-sidebar-border">
                 <EngagementInsightsPanel projects={recentEngagements.filter(p => p.status === 'Active')} />
               </SheetContent>
             </Sheet>
@@ -442,4 +442,5 @@ export default function DashboardPage() {
     
 
     
+
 
