@@ -105,100 +105,140 @@ export default function DashboardPage() {
     else if (hour < 18) setGreeting('Good afternoon');
     else setGreeting('Good evening');
 
-    const loadDashboardData = async (tasks: Task[]) => {
-      setLoading(true);
-      try {
-        const [projects, assessments, contacts, notificationsData] = await Promise.all([
-          getProjects(),
-          getAssessments(),
-          getContacts(),
-          getNotifications(),
-        ]);
-        setNotifications(notificationsData);
-        
-        const projectIds = new Set(projects.map(p => p.id));
-        const validTasks = tasks.filter(task => projectIds.has(task.projectId));
-        setAllTasks(validTasks);
+    const loadOtherData = async () => {
+        try {
+            const [projects, assessments, contacts, notificationsData] = await Promise.all([
+                getProjects(),
+                getAssessments(),
+                getContacts(),
+                getNotifications(),
+            ]);
+            setNotifications(notificationsData);
 
-        const tasksByProject = validTasks.reduce((acc, task) => {
-            if (!acc[task.projectId]) {
-                acc[task.projectId] = [];
-            }
-            acc[task.projectId].push(task);
-            return acc;
-        }, {} as Record<string, Task[]>);
-        
-        const today = new Date();
-        const nextWeek = addDays(today, 7);
-        const weeklyTasks = validTasks.filter(task => {
-            if (!task.dueDate) return false;
-            return isWithinInterval(parseISO(task.dueDate), { start: today, end: nextWeek });
-        }).sort((a,b) => parseISO(a.dueDate!).getTime() - parseISO(b.dueDate!).getTime());
-        setThisWeeksTasks(weeklyTasks);
+            const projectActivities: ActivityItem[] = projects.map((p) => ({
+                id: p.id,
+                type: 'Engagement',
+                message: `Engagement '${p.name}' was updated.`,
+                timestamp: p.lastActivity || new Date().toISOString(),
+                icon: FolderKanban,
+                link: `/dashboard/projects/${p.id}`,
+            }));
 
-        const projectsWithProgress: ProjectWithProgress[] = projects.map(project => {
-            const projectTasks = tasksByProject[project.id] || [];
-            const totalTasks = projectTasks.length;
-            const completedTasks = projectTasks.filter(t => t.status === 'Complete').length;
-            const progress = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
-            return { ...project, progress };
-        });
+            const assessmentActivities: ActivityItem[] = assessments.map((a) => ({
+                id: a.id,
+                type: 'Assessment',
+                message: `Assessment '${a.name}' status is ${a.status}.`,
+                timestamp: a.lastActivity || a.startDate,
+                icon: ClipboardList,
+                link: a.status === 'Completed' ? `/assessment/${a.id}/report` : `/dashboard/assessments`,
+            }));
 
+            const contactActivities: ActivityItem[] = contacts.map((c) => ({
+                id: c.id,
+                type: 'Contact',
+                message: `Contact '${c.name}' was added.`,
+                timestamp: c.lastActivity,
+                icon: UserPlus,
+                link: `/dashboard/companies/${c.companyId}/details`,
+            }));
+            
+            const allActivities = [
+                ...projectActivities,
+                ...assessmentActivities,
+                ...contactActivities,
+            ].sort(
+                (a, b) =>
+                parseISO(b.timestamp).getTime() -
+                parseISO(a.timestamp).getTime()
+            );
+            setAllRecentActivity(allActivities);
+            
+            const tasksByProject = allTasks.reduce((acc, task) => {
+                if (!acc[task.projectId]) {
+                    acc[task.projectId] = [];
+                }
+                acc[task.projectId].push(task);
+                return acc;
+            }, {} as Record<string, Task[]>);
 
-        const projectActivities: ActivityItem[] = projects.map((p) => ({
-          id: p.id,
-          type: 'Engagement',
-          message: `Engagement '${p.name}' was updated.`,
-          timestamp: p.lastActivity || new Date().toISOString(),
-          icon: FolderKanban,
-          link: `/dashboard/projects/${p.id}`,
-        }));
+            const projectsWithProgress: ProjectWithProgress[] = projects.map(project => {
+                const projectTasks = tasksByProject[project.id] || [];
+                const totalTasks = projectTasks.length;
+                const completedTasks = projectTasks.filter(t => t.status === 'Complete').length;
+                const progress = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
+                return { ...project, progress };
+            });
 
-        const assessmentActivities: ActivityItem[] = assessments.map((a) => ({
-          id: a.id,
-          type: 'Assessment',
-          message: `Assessment '${a.name}' status is ${a.status}.`,
-          timestamp: a.lastActivity || a.startDate,
-          icon: ClipboardList,
-          link: a.status === 'Completed' ? `/assessment/${a.id}/report` : `/dashboard/assessments`,
-        }));
+            const sortedProjects = projectsWithProgress.sort(
+                (a, b) =>
+                    parseISO(b.lastActivity || '1970-01-01').getTime() -
+                    parseISO(a.lastActivity || '1970-01-01').getTime()
+            );
+            setRecentEngagements(sortedProjects.slice(0, 10));
 
-        const contactActivities: ActivityItem[] = contacts.map((c) => ({
-          id: c.id,
-          type: 'Contact',
-          message: `Contact '${c.name}' was added.`,
-          timestamp: c.lastActivity,
-          icon: UserPlus,
-          link: `/dashboard/companies/${c.companyId}/details`,
-        }));
-
-        const allActivities = [
-          ...projectActivities,
-          ...assessmentActivities,
-          ...contactActivities,
-        ].sort(
-          (a, b) =>
-            parseISO(b.timestamp).getTime() -
-            parseISO(a.timestamp).getTime()
-        );
-        setAllRecentActivity(allActivities);
-
-        const sortedProjects = projectsWithProgress.sort(
-          (a, b) =>
-            parseISO(b.lastActivity || '1970-01-01').getTime() -
-            parseISO(a.lastActivity || '1970-01-01').getTime()
-        );
-        setRecentEngagements(sortedProjects.slice(0, 10)); 
-      } catch (error) {
-        console.error('Failed to fetch dashboard data', error);
-      } finally {
-        setLoading(false);
-      }
+        } catch (error) {
+            console.error('Failed to fetch dashboard metadata', error);
+        } finally {
+            setLoading(false);
+        }
     };
-
-    const unsubscribe = getTasks(loadDashboardData);
     
-    return () => unsubscribe();
+    // Load non-task data once initially
+    if (loading) {
+        loadOtherData();
+    }
+    
+    const unsubscribe = getTasks((allTasks) => {
+        console.log('🔄 Dashboard received task update, total tasks:', allTasks.length);
+    
+        // Log all tasks with due dates
+        const tasksWithDueDates = allTasks.filter(task => task.dueDate);
+        console.log('📅 Tasks with due dates:', tasksWithDueDates.map(t => ({
+          title: t.title,
+          dueDate: t.dueDate,
+          id: t.id
+        })));
+        
+        // Your existing filtering logic (add logs to it)
+        const now = new Date();
+        const sevenDaysFromNow = addDays(now, 7);
+        
+        console.log('📆 Date range for filtering:', {
+          now: now.toISOString(),
+          sevenDaysFromNow: sevenDaysFromNow.toISOString()
+        });
+        
+        const upcomingTasks = allTasks.filter(task => {
+          if (!task.dueDate) {
+            return false;
+          }
+          
+          try {
+            const dueDate = parseISO(task.dueDate);
+            const isUpcoming = isWithinInterval(dueDate, { start: now, end: sevenDaysFromNow });
+            
+            console.log(`📋 Task "${task.title}":`, {
+              dueDate: task.dueDate,
+              dueDateObj: dueDate.toISOString(),
+              isUpcoming,
+              daysDiff: Math.ceil((dueDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+            });
+            
+            return isUpcoming;
+          } catch(e) {
+            console.error(`Error parsing date for task "${task.title}":`, task.dueDate, e);
+            return false;
+          }
+        });
+        
+        console.log('✅ Final upcoming tasks:', upcomingTasks.length, upcomingTasks.map(t => t.title));
+        setThisWeeksTasks(upcomingTasks.sort((a,b) => parseISO(a.dueDate!).getTime() - parseISO(b.dueDate!).getTime()));
+        setAllTasks(allTasks); // Update the full task list for other calculations
+        setLoading(false);
+    });
+
+    return unsubscribe;
+
   }, []);
   
   const recentActivity = isActivityExpanded ? allRecentActivity : allRecentActivity.slice(0, 5);
@@ -502,8 +542,6 @@ export default function DashboardPage() {
       </div>
     </div>
   );
-
-    
-
+}
 
     
