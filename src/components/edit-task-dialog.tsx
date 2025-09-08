@@ -30,7 +30,7 @@ export function EditTaskDialog() {
   const {
     isEditTaskDialogOpen,
     closeEditTaskDialog,
-    onTaskUpdated,
+    requestDataRefresh,
     editTaskData,
   } = useQuickAction();
   const { user } = useUser();
@@ -70,9 +70,7 @@ export function EditTaskDialog() {
       };
       await updateTask(id, dataToSave);
       handleOpenChange(false);
-      if (onTaskUpdated) {
-        onTaskUpdated();
-      }
+      requestDataRefresh();
     } catch (error) {
       console.error('Failed to update task:', error);
     }
