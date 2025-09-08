@@ -27,10 +27,9 @@ import {
   Bell,
   CheckCheck,
 } from 'lucide-react';
-import { getProjects, type Project } from '@/services/project-service';
 import { getAssessments, type Assessment } from '@/services/assessment-service';
 import { getContacts, type Contact } from '@/services/contact-service';
-import { getBacklogItemsForProject, type BacklogItem, BacklogItemStatus } from '@/services/backlog-item-service';
+import { type BacklogItem, BacklogItemStatus } from '@/services/backlog-item-service';
 import { formatDistanceToNow, parseISO, isWithinInterval, addDays, format, differenceInDays, isPast } from 'date-fns';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
@@ -43,6 +42,7 @@ import { EngagementInsightsPanel } from '@/components/engagement-insights-panel'
 import { getNotifications, markAllNotificationsAsRead, type Notification } from '@/services/notification-service';
 import { FeedItem } from '@/components/feed-item';
 import { useQuickAction } from '@/contexts/quick-action-context';
+import type { Project } from '@/services/project-service';
 
 type ActivityItem = {
   id: string;
@@ -74,7 +74,7 @@ const statusColors: Record<BacklogItemStatus, string> = {
 export default function DashboardPage() {
   const { user } = useUser();
   const router = useRouter();
-  const { backlogItems, getBacklogItems, projects, getProjects } = useQuickAction();
+  const { backlogItems, projects, getProjects } = useQuickAction();
   const [greeting, setGreeting] = React.useState('');
   const [loading, setLoading] = React.useState(true);
   const [recentEngagements, setRecentEngagements] = React.useState<ProjectWithProgress[]>(
@@ -179,8 +179,7 @@ export default function DashboardPage() {
 
   React.useEffect(() => {
     getProjects();
-    getBacklogItems();
-  }, [getProjects, getBacklogItems]);
+  }, [getProjects]);
 
   React.useEffect(() => {
     loadDashboardData();

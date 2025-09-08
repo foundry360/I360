@@ -3,7 +3,7 @@
 'use client';
 
 import { db } from '@/lib/firebase';
-import { collection, query, where, getDocs, doc, setDoc, addDoc, getDoc, updateDoc, deleteDoc, deleteField, writeBatch, runTransaction } from 'firebase/firestore';
+import { collection, query, where, getDocs, doc, setDoc, addDoc, getDoc, updateDoc, deleteDoc, deleteField, writeBatch, runTransaction, onSnapshot } from 'firebase/firestore';
 import { updateProjectLastActivity } from './project-service';
 import { parseISO } from 'date-fns';
 import type { UserStory } from './user-story-service';
@@ -51,6 +51,18 @@ export interface BacklogItem {
 }
 
 const backlogItemsCollection = collection(db, 'backlogItems');
+
+export function getBacklogItems(onUpdate: (items: BacklogItem[]) => void): () => void {
+    const q = query(backlogItemsCollection);
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+        const items = snapshot.docs.map(doc => doc.data() as BacklogItem);
+        onUpdate(items);
+    }, (error) => {
+        console.error("Error in getBacklogItems listener:", error);
+    });
+    return unsubscribe;
+}
+
 
 async function getNextBacklogId(projectId: string): Promise<number> {
     const q = query(backlogItemsCollection, where("projectId", "==", projectId));
@@ -295,4 +307,3 @@ export async function deleteBacklogItem(id: string): Promise<void> {
         await updateProjectLastActivity(item.projectId);
     }
 }
-

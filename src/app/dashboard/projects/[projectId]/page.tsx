@@ -44,7 +44,7 @@ import { DragDropContext, Droppable, Draggable, type DropResult } from '@hello-p
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { getProject, Project } from '@/services/project-service';
 import { getEpicsForProject, Epic, deleteEpic } from '@/services/epic-service';
-import { getBacklogItemsForProject, BacklogItem, deleteBacklogItem, updateBacklogItem, addCollectionToProjectBacklog, updateBacklogItemOrderAndStatus, BacklogItemStatus, BacklogItemPriority, BacklogItemType } from '@/services/backlog-item-service';
+import { BacklogItem, deleteBacklogItem, updateBacklogItem, addCollectionToProjectBacklog, updateBacklogItemOrderAndStatus, BacklogItemStatus, BacklogItemPriority, BacklogItemType } from '@/services/backlog-item-service';
 import { getSprintsForProject, Sprint, SprintStatus, startSprint, deleteSprint, updateSprint, completeSprint } from '@/services/sprint-service';
 import { getContactsForCompany, Contact } from '@/services/contact-service';
 import { getCollections, type StoryCollection } from '@/services/collection-service';
@@ -254,7 +254,7 @@ export default function ProjectDetailsPage() {
     const [project, setProject] = React.useState<Project | null>(null);
     const [columns, setColumns] = React.useState<BoardColumns>(initialColumns);
     const [epics, setEpics] = React.useState<Epic[]>([]);
-    const { backlogItems, getBacklogItems } = useQuickAction();
+    const { backlogItems } = useQuickAction();
     const [sprints, setSprints] = React.useState<Sprint[]>([]);
     const [contacts, setContacts] = React.useState<Contact[]>([]);
     const [allTags, setAllTags] = React.useState<Tag[]>([]);
@@ -281,6 +281,11 @@ export default function ProjectDetailsPage() {
     const [itemToDelete, setItemToDelete] = React.useState<{type: 'epic' | 'backlogItem' | 'sprint', id: string, name: string} | null>(null);
     const [allWorkSearchTerm, setAllWorkSearchTerm] = React.useState('');
     const [activeEpicAccordion, setActiveEpicAccordion] = React.useState<string[]>([]);
+    
+    const projectBacklogItems = React.useMemo(() => {
+        return backlogItems.filter(item => item.projectId === projectId);
+    }, [backlogItems, projectId]);
+
 
     const fetchData = React.useCallback(async () => {
         if (!projectId) return;
@@ -309,10 +314,6 @@ export default function ProjectDetailsPage() {
             setLoading(false);
         }
     }, [projectId]);
-
-    React.useEffect(() => {
-        getBacklogItems(projectId);
-    }, [getBacklogItems, projectId]);
 
     React.useEffect(() => {
         fetchData();
@@ -345,7 +346,7 @@ export default function ProjectDetailsPage() {
             .filter(s => s.status === 'Active' || s.status === 'Completed')
             .map(s => s.id);
         
-        const itemsForBoard = backlogItems.filter(item => 
+        const itemsForBoard = projectBacklogItems.filter(item => 
             item.sprintId && activeOrCompletedSprintIds.includes(item.sprintId)
         );
         
@@ -367,7 +368,7 @@ export default function ProjectDetailsPage() {
         }
 
         setColumns(newColumns);
-    }, [backlogItems, sprints]);
+    }, [projectBacklogItems, sprints]);
 
 
     const projectPrefix = project ? project.name.substring(0, project.name.indexOf('-')) : '';
@@ -439,7 +440,7 @@ export default function ProjectDetailsPage() {
     const handleStartSprint = async (sprintId: string) => {
         try {
             setLoading(true);
-            const itemsInSprint = backlogItems.filter(item => item.sprintId === sprintId);
+            const itemsInSprint = projectBacklogItems.filter(item => item.sprintId === sprintId);
             if (itemsInSprint.length === 0) {
                 toast({
                     variant: 'destructive',
@@ -510,8 +511,9 @@ export default function ProjectDetailsPage() {
 
     const upcomingSprints = sprints.filter(s => s.status === 'Not Started' || s.status === 'Active');
 
-    const allSprintItems = React.useMemo(() => 
-        backlogItems
+    const allSprintItems = React.useMemo(() => {
+        if (!projectBacklogItems) return [];
+        return projectBacklogItems
             .filter(item => item.sprintId)
             .filter(item => {
                 if (!allWorkSearchTerm) return true;
@@ -525,11 +527,11 @@ export default function ProjectDetailsPage() {
                 );
             })
             .sort((a,b) => (sprints.find(s => s.id === b.sprintId)?.endDate || '').localeCompare(sprints.find(s => s.id === a.sprintId)?.endDate || ''))
-    , [backlogItems, sprints, allWorkSearchTerm, epics, projectPrefix]);
+    }, [projectBacklogItems, sprints, allWorkSearchTerm, epics, projectPrefix]);
     
     const epicProgressData = React.useMemo(() => {
         return epics.map(epic => {
-            const itemsInEpic = backlogItems.filter(item => item.epicId === epic.id);
+            const itemsInEpic = projectBacklogItems.filter(item => item.epicId === epic.id);
             const completedItems = itemsInEpic.filter(item => item.status === 'Complete');
             const progress = itemsInEpic.length > 0 ? (completedItems.length / itemsInEpic.length) * 100 : 0;
             return {
@@ -539,7 +541,7 @@ export default function ProjectDetailsPage() {
                 category: epic.category,
             }
         });
-    }, [epics, backlogItems]);
+    }, [epics, projectBacklogItems]);
 
     const velocityData = React.useMemo(() => {
         const completedSprints = sprints
@@ -547,7 +549,7 @@ export default function ProjectDetailsPage() {
             .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
     
         return completedSprints.map(sprint => {
-            const itemsInSprint = backlogItems.filter(item => item.sprintId === sprint.id && item.status === 'Complete');
+            const itemsInSprint = projectBacklogItems.filter(item => item.sprintId === sprint.id && item.status === 'Complete');
             const pointsThisSprint = itemsInSprint.reduce((acc, item) => acc + (item?.points || 0), 0);
     
             return {
@@ -555,10 +557,10 @@ export default function ProjectDetailsPage() {
                 velocity: pointsThisSprint,
             };
         });
-    }, [sprints, backlogItems]);
+    }, [sprints, projectBacklogItems]);
     
     const burndownData = React.useMemo(() => {
-        const totalPoints = backlogItems.reduce((acc, item) => acc + (item?.points || 0), 0);
+        const totalPoints = projectBacklogItems.reduce((acc, item) => acc + (item?.points || 0), 0);
         const completedSprints = sprints
             .filter(s => s.status === 'Completed')
             .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
@@ -574,7 +576,7 @@ export default function ProjectDetailsPage() {
         const data = [{ name: 'Start', actual: totalPoints, ideal: totalPoints }];
 
         completedSprints.forEach((sprint) => {
-            const itemsInSprint = backlogItems.filter(item => item.sprintId === sprint.id && item.status === 'Complete');
+            const itemsInSprint = projectBacklogItems.filter(item => item.sprintId === sprint.id && item.status === 'Complete');
             const pointsThisSprint = itemsInSprint.reduce((acc, item) => acc + (item?.points || 0), 0);
             
             cumulativePointsCompleted += pointsThisSprint;
@@ -589,14 +591,14 @@ export default function ProjectDetailsPage() {
         
         return data;
 
-    }, [sprints, backlogItems]);
+    }, [sprints, projectBacklogItems]);
     
     const activeSprint = sprints.find(s => s.status === 'Active');
 
     const activeSprintHealthData = React.useMemo(() => {
         if (!activeSprint) return null;
 
-        const sprintItems = backlogItems.filter(item => item.sprintId === activeSprint.id);
+        const sprintItems = projectBacklogItems.filter(item => item.sprintId === activeSprint.id);
         if (sprintItems.length === 0) return null;
         
         const totalItems = sprintItems.length;
@@ -618,10 +620,10 @@ export default function ProjectDetailsPage() {
 
         return { segments, daysLeft: Math.max(0, daysLeft) };
 
-    }, [activeSprint, backlogItems]);
+    }, [activeSprint, projectBacklogItems]);
     
     const projectHealth = React.useMemo(() => {
-        if (!project || !backlogItems.length) {
+        if (!project || projectBacklogItems.length === 0) {
             return { status: 'Unknown', icon: HelpCircle, color: 'text-muted-foreground', itemsCompletedPercent: 0 };
         }
 
@@ -637,11 +639,11 @@ export default function ProjectDetailsPage() {
         const timeElapsed = differenceInDays(today, startDate);
         const timeElapsedPercent = totalDuration > 0 ? Math.min(100, Math.max(0, (timeElapsed / totalDuration) * 100)) : 0;
         
-        const completedItemsCount = backlogItems.filter(t => t.status === 'Complete').length;
-        const itemsCompletedPercent = (completedItemsCount / backlogItems.length) * 100;
+        const completedItemsCount = projectBacklogItems.filter(t => t.status === 'Complete').length;
+        const itemsCompletedPercent = (completedItemsCount / projectBacklogItems.length) * 100;
         
-        const overdueItemsCount = backlogItems.filter(t => t.dueDate && isPast(parseISO(t.dueDate)) && t.status !== 'Complete').length;
-        const overduePercent = (overdueItemsCount / backlogItems.length) * 100;
+        const overdueItemsCount = projectBacklogItems.filter(t => t.dueDate && isPast(parseISO(t.dueDate)) && t.status !== 'Complete').length;
+        const overduePercent = (overdueItemsCount / projectBacklogItems.length) * 100;
 
         const scheduleVariance = itemsCompletedPercent - timeElapsedPercent;
 
@@ -653,11 +655,11 @@ export default function ProjectDetailsPage() {
             return { status: 'At Risk', icon: AlertTriangle, color: 'text-warning', itemsCompletedPercent: itemsCompletedPercent };
         }
 
-    }, [project, backlogItems]);
+    }, [project, projectBacklogItems]);
     
     const atRiskItems = React.useMemo(() => {
         const today = new Date();
-        return backlogItems.filter(item => {
+        return projectBacklogItems.filter(item => {
             if (item.status === 'Complete' || !item.dueDate) return false;
             
             const dueDate = parseISO(item.dueDate!);
@@ -666,13 +668,13 @@ export default function ProjectDetailsPage() {
             // Overdue or due within 3 days
             return daysUntilDue < 3;
         }).sort((a,b) => parseISO(a.dueDate!).getTime() - parseISO(b.dueDate!).getTime());
-    }, [backlogItems]);
+    }, [projectBacklogItems]);
 
     const timelineData = React.useMemo(() => {
     if (!project || !epics.length || !sprints.length) return { items: [], projectStartDate: new Date(), projectEndDate: new Date() };
 
     const epicItems = epics.map(epic => {
-        const itemsInEpic = backlogItems.filter(item => item.epicId === epic.id);
+        const itemsInEpic = projectBacklogItems.filter(item => item.epicId === epic.id);
         const sprintIdsInEpic = [...new Set(itemsInEpic.map(item => item.sprintId).filter(Boolean))];
         const sprintsInEpic = sprints.filter(sprint => sprintIdsInEpic.includes(sprint.id));
 
@@ -682,7 +684,7 @@ export default function ProjectDetailsPage() {
         const epicEndDate = new Date(Math.max(...sprintsInEpic.map(s => parseISO(s.endDate).getTime())));
         
         const epicChildren = sprintsInEpic.map(sprint => {
-            const itemsInSprint = backlogItems.filter(item => item.sprintId === sprint.id && item.epicId === epic.id);
+            const itemsInSprint = projectBacklogItems.filter(item => item.sprintId === sprint.id && item.epicId === epic.id);
             
             const sprintIsUnstarted = sprint.status === 'Not Started';
             
@@ -736,14 +738,14 @@ export default function ProjectDetailsPage() {
 
     return { items: epicItems as any[], projectStartDate, projectEndDate };
 
-}, [epics, sprints, backlogItems, project]);
+}, [epics, sprints, projectBacklogItems, project]);
 
     const getInitials = (name: string) => {
       if (!name) return '';
       return name.split(' ').map(n => n[0]).join('').toUpperCase();
     }
     
-    const unassignedBacklogItems = backlogItems.filter(item => !item.epicId);
+    const unassignedBacklogItems = projectBacklogItems.filter(item => !item.epicId);
     const unassignedAndUnscheduledBacklogItems = unassignedBacklogItems.filter(item => !item.sprintId);
 
     if (loading) {
@@ -765,11 +767,11 @@ export default function ProjectDetailsPage() {
         return <p>Engagement not found.</p>;
     }
     
-    const totalItems = backlogItems.length;
+    const totalItems = projectBacklogItems.length;
     const inProgressItems = columns['In Progress'].length;
-    const completedItemsCount = backlogItems.filter(item => item.status === 'Complete').length;
+    const completedItemsCount = projectBacklogItems.filter(item => item.status === 'Complete').length;
     
-    const overdueItemsCount = backlogItems.filter(item => 
+    const overdueItemsCount = projectBacklogItems.filter(item => 
         item.dueDate && isPast(parseISO(item.dueDate)) && item.status !== 'Complete'
     ).length;
 
@@ -1268,7 +1270,7 @@ export default function ProjectDetailsPage() {
                                         const config = tagConfig.find(c => c.iconName === epic.category) || tagConfig.find(t => t.iconName === 'Layers');
                                         const IconComponent = config?.icon || Layers;
                                         const color = config?.color || 'text-foreground';
-                                        const itemsInEpic = backlogItems.filter(item => item.epicId === epic.id);
+                                        const itemsInEpic = projectBacklogItems.filter(item => item.epicId === epic.id);
                                         
                                         return (
                                             <Accordion type="multiple" className="w-full" key={epic.id} defaultValue={[epic.id]}>
@@ -1490,7 +1492,7 @@ export default function ProjectDetailsPage() {
                                     ) : (
                                         <Accordion type="single" collapsible className="w-full space-y-4" defaultValue={status === 'Active' && activeSprint ? activeSprint.id : undefined}>
                                             {sprintsByStatus.map(sprint => {
-                                                const itemsInSprint = backlogItems.filter(item => item.sprintId === sprint.id);
+                                                const itemsInSprint = projectBacklogItems.filter(item => item.sprintId === sprint.id);
                                                 return (
                                                     <AccordionItem key={sprint.id} value={sprint.id} className="border rounded-lg bg-card">
                                                         <div className="flex items-center p-4">
