@@ -928,6 +928,10 @@ export default function ProjectDetailsPage() {
                                     <CardContent>
                                         <p className="text-2xl font-bold">{inProgressItems}</p>
                                     </CardContent>
+                                    <CardFooter className="flex-col items-start gap-1 p-4 pt-0">
+                                        <p className="text-xs text-muted-foreground">{Math.round(inProgressPercentage)}% of total</p>
+                                        <Progress value={inProgressPercentage} />
+                                    </CardFooter>
                                 </Card>
                                 <Card>
                                     <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -937,6 +941,10 @@ export default function ProjectDetailsPage() {
                                     <CardContent>
                                         <p className="text-2xl font-bold">{completedItemsCount}</p>
                                     </CardContent>
+                                     <CardFooter className="flex-col items-start gap-1 p-4 pt-0">
+                                        <p className="text-xs text-muted-foreground">{Math.round(completedPercentage)}% of total</p>
+                                        <Progress value={completedPercentage} />
+                                    </CardFooter>
                                 </Card>
                                 <Card>
                                     <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -946,6 +954,10 @@ export default function ProjectDetailsPage() {
                                     <CardContent>
                                         <p className="text-2xl font-bold text-danger">{overdueItemsCount}</p>
                                     </CardContent>
+                                    <CardFooter className="flex-col items-start gap-1 p-4 pt-0">
+                                        <p className="text-xs text-muted-foreground">{Math.round(overduePercentage)}% of total</p>
+                                        <Progress value={overduePercentage} className="[&>div]:bg-danger" />
+                                    </CardFooter>
                                 </Card>
                                 <Card>
                                     <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -955,6 +967,10 @@ export default function ProjectDetailsPage() {
                                     <CardContent>
                                         <p className={cn("text-xl font-bold", projectHealth.color)}>{projectHealth.status}</p>
                                     </CardContent>
+                                    <CardFooter className="flex-col items-start gap-1 p-4 pt-0">
+                                        <p className="text-xs text-muted-foreground">{Math.round(projectHealth.itemsCompletedPercent)}% complete</p>
+                                        <Progress value={projectHealth.itemsCompletedPercent} className={cn("[&>div]:bg-success", projectHealth.status === 'At Risk' && "[&>div]:bg-warning", projectHealth.status === 'Needs Attention' && "[&>div]:bg-danger")} />
+                                    </CardFooter>
                                 </Card>
                             </div>
 
