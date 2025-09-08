@@ -139,12 +139,25 @@ export async function deleteSprint(id: string): Promise<void> {
 
     const projectId = sprintDoc.data().projectId;
 
-    // Find all backlog items in the sprint and move them back to the backlog
+    // Find all backlog items in the sprint
     const backlogQuery = query(collection(db, 'backlogItems'), where("sprintId", "==", id));
     const backlogSnapshot = await getDocs(backlogQuery);
+
+    const backlogIds = backlogSnapshot.docs.map(doc => doc.data().backlogId as number);
+    
+    // Move backlog items back to the backlog
     backlogSnapshot.forEach(doc => {
         batch.update(doc.ref, { sprintId: null });
     });
+
+    // Delete all associated tasks
+    if (backlogIds.length > 0) {
+        const tasksQuery = query(collection(db, 'tasks'), where("projectId", "==", projectId), where("backlogId", "in", backlogIds));
+        const tasksSnapshot = await getDocs(tasksQuery);
+        tasksSnapshot.forEach(doc => {
+            batch.delete(doc.ref);
+        });
+    }
 
     // Delete the sprint document itself
     batch.delete(sprintRef);
