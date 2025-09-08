@@ -200,9 +200,10 @@ export default function DashboardPage() {
     } else {
       setGreeting('Good evening');
     }
-    
     loadDashboardData();
-    
+  }, [loadDashboardData]);
+
+  React.useEffect(() => {
     const unsubscribe = setOnTaskUpdated(loadDashboardData);
     return () => {
       if (unsubscribe) unsubscribe();
@@ -509,3 +510,5 @@ export default function DashboardPage() {
       </div>
     </div>
   );
+
+    
