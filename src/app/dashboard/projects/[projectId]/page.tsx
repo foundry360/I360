@@ -1116,14 +1116,10 @@ export default function ProjectDetailsPage() {
                                     </Card>
                                </div>
                                <div className="col-span-1 space-y-6">
-                                     <Card className={!activeSprint ? 'border-dashed' : ''}>
+                                     <Card className={cn(!activeSprint && 'border-dashed border-2 bg-transparent shadow-none')}>
                                         <CardHeader>
                                             <CardTitle>Active Wave Health</CardTitle>
-                                            {activeSprint ? (
-                                                <CardDescription>{activeSprint.name}</CardDescription>
-                                            ) : (
-                                                <CardDescription>No wave is currently active.</CardDescription>
-                                            )}
+                                            {activeSprint && <CardDescription>{activeSprint.name}</CardDescription>}
                                         </CardHeader>
                                         <CardContent>
                                             {activeSprint && activeSprintHealthData && activeSprintHealthData.totalItems > 0 ? (
@@ -1155,8 +1151,15 @@ export default function ProjectDetailsPage() {
                                                     </div>
                                                 </>
                                             ) : (
-                                                <div className="text-center text-sm text-muted-foreground py-4">
-                                                    {activeSprint ? 'This wave has no items.' : 'Start a wave to see its health.'}
+                                                <div className="text-center text-sm text-muted-foreground py-4 h-[90px] flex flex-col items-center justify-center">
+                                                  {activeSprint ? (
+                                                      'This wave has no items.'
+                                                  ) : (
+                                                    <>
+                                                      <Waves className="h-10 w-10 mb-2" />
+                                                      No wave is currently active. Start a wave to see its health.
+                                                    </>
+                                                  )}
                                                 </div>
                                             )}
                                         </CardContent>
@@ -1843,4 +1846,3 @@ export default function ProjectDetailsPage() {
         </div>
     );
 }
-
