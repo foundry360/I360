@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import * as React from 'react';
@@ -105,8 +106,8 @@ const statusHexColors: Record<BacklogItemStatus, string> = {
 
 
 const BacklogItemTypeIcon = ({ type }: { type: BacklogItemType }) => {
-    const Icon = backlogItemTypeIcons[type];
-    const colorClass = backlogItemTypeColors[type];
+    const Icon = backlogItemTypeIcons[type] || Wrench;
+    const colorClass = backlogItemTypeColors[type] || 'bg-primary';
     return (
         <div className={cn("flex items-center justify-center h-6 w-6 rounded-full", colorClass)}>
             <Icon className="h-4 w-4 text-white" />
@@ -253,7 +254,7 @@ export default function ProjectDetailsPage() {
     const [project, setProject] = React.useState<Project | null>(null);
     const [columns, setColumns] = React.useState<BoardColumns>(initialColumns);
     const [epics, setEpics] = React.useState<Epic[]>([]);
-    const [backlogItems, setBacklogItems] = React.useState<BacklogItem[]>([]);
+    const { backlogItems, getBacklogItems } = useQuickAction();
     const [sprints, setSprints] = React.useState<Sprint[]>([]);
     const [contacts, setContacts] = React.useState<Contact[]>([]);
     const [allTags, setAllTags] = React.useState<Tag[]>([]);
@@ -285,17 +286,15 @@ export default function ProjectDetailsPage() {
         if (!projectId) return;
         setLoading(true);
         try {
-            const [projectData, epicsData, backlogItemsData, sprintsData, tagsData, collectionsData] = await Promise.all([
+            const [projectData, epicsData, sprintsData, tagsData, collectionsData] = await Promise.all([
                 getProject(projectId),
                 getEpicsForProject(projectId),
-                getBacklogItemsForProject(projectId),
                 getSprintsForProject(projectId),
                 getTags(),
                 getCollections(),
             ]);
             setProject(projectData);
             setEpics(epicsData);
-            setBacklogItems(backlogItemsData);
             setSprints(sprintsData);
             setAllTags(tagsData);
             setCollections(collectionsData);
@@ -304,41 +303,16 @@ export default function ProjectDetailsPage() {
                 const companyContacts = await getContactsForCompany(projectData.companyId);
                 setContacts(companyContacts);
             }
-
-            const activeOrCompletedSprintIds = sprintsData
-                .filter(s => s.status === 'Active' || s.status === 'Completed')
-                .map(s => s.id);
-            
-            const itemsForBoard = backlogItemsData.filter(item => 
-                item.sprintId && activeOrCompletedSprintIds.includes(item.sprintId)
-            );
-            
-            const sortedItems = itemsForBoard.sort((a, b) => a.order - b.order);
-            
-            const newColumns = sortedItems.reduce((acc, item) => {
-                const status = item.status;
-                if (!acc[status]) {
-                    acc[status] = [];
-                }
-                acc[status].push(item);
-                return acc;
-            }, JSON.parse(JSON.stringify(initialColumns)) as BoardColumns);
-
-            // Ensure all columns are present, even if empty
-            for (const status in initialColumns) {
-                if (!newColumns[status as BacklogItemStatus]) {
-                    newColumns[status as BacklogItemStatus] = [];
-                }
-            }
-
-            setColumns(newColumns);
-
         } catch (error) {
             console.error("Failed to fetch project data:", error);
         } finally {
             setLoading(false);
         }
     }, [projectId]);
+
+    React.useEffect(() => {
+        getBacklogItems(projectId);
+    }, [getBacklogItems, projectId]);
 
     React.useEffect(() => {
         fetchData();
@@ -365,6 +339,36 @@ export default function ProjectDetailsPage() {
         setOnEpicUpdated,
         setOnSprintUpdated,
     ]);
+
+     React.useEffect(() => {
+        const activeOrCompletedSprintIds = sprints
+            .filter(s => s.status === 'Active' || s.status === 'Completed')
+            .map(s => s.id);
+        
+        const itemsForBoard = backlogItems.filter(item => 
+            item.sprintId && activeOrCompletedSprintIds.includes(item.sprintId)
+        );
+        
+        const sortedItems = itemsForBoard.sort((a, b) => a.order - b.order);
+        
+        const newColumns = sortedItems.reduce((acc, item) => {
+            const status = item.status;
+            if (!acc[status]) {
+                acc[status] = [];
+            }
+            acc[status].push(item);
+            return acc;
+        }, JSON.parse(JSON.stringify(initialColumns)) as BoardColumns);
+
+        for (const status in initialColumns) {
+            if (!newColumns[status as BacklogItemStatus]) {
+                newColumns[status as BacklogItemStatus] = [];
+            }
+        }
+
+        setColumns(newColumns);
+    }, [backlogItems, sprints]);
+
 
     const projectPrefix = project ? project.name.substring(0, project.name.indexOf('-')) : '';
     
@@ -427,7 +431,6 @@ export default function ProjectDetailsPage() {
     const handleMoveToSprint = async (backlogItemId: string, sprintId: string | null) => {
         try {
             await updateBacklogItem(backlogItemId, { sprintId });
-            await fetchData();
         } catch (error) {
             console.error("Failed to move item to sprint:", error);
         }
@@ -451,7 +454,6 @@ export default function ProjectDetailsPage() {
                 title: 'Wave Started!',
                 description: 'Items are now on the board.',
             });
-            await fetchData();
         } catch (error) {
             console.error('Failed to start wave:', error);
             toast({
@@ -472,7 +474,6 @@ export default function ProjectDetailsPage() {
                 title: 'Wave Completed!',
                 description: 'Completed items have been archived.',
             });
-            await fetchData();
         } catch (error) {
             console.error('Failed to complete wave:', error);
             const errorMessage = (error instanceof Error) ? error.message : 'There was a problem completing the wave.';
@@ -495,7 +496,6 @@ export default function ProjectDetailsPage() {
                 title: 'Success!',
                 description: `Stories from "${selectedCollection?.name}" have been added to the backlog.`,
             });
-            await fetchData();
         } catch (error) {
             console.error("Error adding collection to backlog:", error);
              toast({
@@ -547,7 +547,7 @@ export default function ProjectDetailsPage() {
             .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
     
         return completedSprints.map(sprint => {
-            const itemsInSprint = backlogItems.filter(item => item.sprintId === sprint.id);
+            const itemsInSprint = backlogItems.filter(item => item.sprintId === sprint.id && item.status === 'Complete');
             const pointsThisSprint = itemsInSprint.reduce((acc, item) => acc + (item?.points || 0), 0);
     
             return {
@@ -574,7 +574,7 @@ export default function ProjectDetailsPage() {
         const data = [{ name: 'Start', actual: totalPoints, ideal: totalPoints }];
 
         completedSprints.forEach((sprint) => {
-            const itemsInSprint = backlogItems.filter(item => item.sprintId === sprint.id);
+            const itemsInSprint = backlogItems.filter(item => item.sprintId === sprint.id && item.status === 'Complete');
             const pointsThisSprint = itemsInSprint.reduce((acc, item) => acc + (item?.points || 0), 0);
             
             cumulativePointsCompleted += pointsThisSprint;
@@ -1676,3 +1676,4 @@ export default function ProjectDetailsPage() {
         </div>
     );
 }
+

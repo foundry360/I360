@@ -1,8 +1,9 @@
 
+
 'use client';
 
 import { db } from '@/lib/firebase';
-import { collection, query, where, getDocs, doc, setDoc, addDoc, getDoc, updateDoc, deleteDoc, deleteField, writeBatch } from 'firebase/firestore';
+import { collection, query, where, getDocs, doc, setDoc, addDoc, getDoc, updateDoc, deleteDoc, deleteField, writeBatch, runTransaction } from 'firebase/firestore';
 import { updateProjectLastActivity } from './project-service';
 import { parseISO } from 'date-fns';
 import type { UserStory } from './user-story-service';
@@ -226,7 +227,7 @@ export async function addCollectionsToProjectBacklog(projectId: string, collecti
 }
 
 
-export async function updateBacklogItem(id: string, data: Partial<BacklogItem>): Promise<void> {
+export async function updateBacklogItem(id: string, data: Partial<Omit<BacklogItem, 'id'>>): Promise<void> {
     const docRef = doc(db, 'backlogItems', id);
     const docSnap = await getDoc(docRef);
     if (!docSnap.exists()) return;
@@ -248,7 +249,10 @@ export async function updateBacklogItem(id: string, data: Partial<BacklogItem>):
 
 export async function updateBacklogItemOrderAndStatus(itemId: string, newStatus: BacklogItemStatus, newIndex: number, projectId: string): Promise<void> {
     await runTransaction(db, async (transaction) => {
-        const allItems = await getBacklogItemsForProject(projectId);
+        const allItemsQuery = query(collection(db, "backlogItems"), where("projectId", "==", projectId));
+        const allItemsSnapshot = await transaction.get(allItemsQuery);
+        const allItems = allItemsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as BacklogItem));
+
         const itemToMove = allItems.find(i => i.id === itemId);
 
         if (!itemToMove) {
@@ -256,16 +260,17 @@ export async function updateBacklogItemOrderAndStatus(itemId: string, newStatus:
         }
 
         const oldStatus = itemToMove.status;
+        const oldIndex = itemToMove.order;
 
-        // Decrement order for items in old column
+        // Decrement order for items in old column that were after the moved item
         allItems
-            .filter(i => i.id !== itemId && i.status === oldStatus && i.order > itemToMove.order)
+            .filter(i => i.id !== itemId && i.status === oldStatus && i.order > oldIndex)
             .forEach(i => {
                 const itemRef = doc(db, 'backlogItems', i.id);
                 transaction.update(itemRef, { order: i.order - 1 });
             });
 
-        // Increment order for items in new column
+        // Increment order for items in new column at or after the new index
         allItems
             .filter(i => i.status === newStatus && i.order >= newIndex)
             .forEach(i => {
@@ -290,3 +295,4 @@ export async function deleteBacklogItem(id: string): Promise<void> {
         await updateProjectLastActivity(item.projectId);
     }
 }
+
