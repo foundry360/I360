@@ -40,7 +40,7 @@ import {
   Waves,
   LayoutList,
   Trello,
-  LayoutDashboard,
+  Table2,
 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
@@ -812,7 +812,7 @@ export default function ProjectDetailsPage() {
                             value="summary"
                             className="pb-3 rounded-none data-[state=active]:shadow-none data-[state=active]:border-primary data-[state=active]:border-b-4 data-[state=active]:text-foreground data-[state=active]:font-bold flex items-center gap-2"
                         >
-                            <LayoutDashboard className="h-4 w-4" />
+                            <Table2 className="h-4 w-4" />
                             Summary
                         </TabsTrigger>
                          <TabsTrigger 
@@ -1408,7 +1408,7 @@ export default function ProjectDetailsPage() {
                     <TabsContent value="backlog">
                         <div className="space-y-6">
                             {unassignedAndUnscheduledBacklogItems.length === 0 ? (
-                                <div className="p-10 text-center rounded-lg border-2 border-dashed border-border bg-transparent shadow-none">
+                                <div className="p-10 text-center rounded-lg border-2 border-dashed border-border bg-muted/20">
                                     <div className="flex justify-center mb-4">
                                         <div className="flex justify-center items-center h-16 w-16 text-muted-foreground">
                                             <Inbox className="h-8 w-8" />
@@ -1616,8 +1616,7 @@ export default function ProjectDetailsPage() {
                                                 )
                                             })}
                                         </Accordion>
-                                    )}
-                                </div>
+                                    </div>
                                 )
                             })}
                             
@@ -1794,6 +1793,3 @@ export default function ProjectDetailsPage() {
         </div>
     );
 }
-
-
-
