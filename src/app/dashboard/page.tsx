@@ -431,7 +431,10 @@ export default function DashboardPage() {
             <Card className={cn("h-full flex flex-col group", notifications.length === 0 && "border-dashed bg-transparent shadow-none")}>
               <CardHeader>
                 <div className="flex justify-between items-center">
-                  <CardTitle>Communications Feed</CardTitle>
+                  <CardTitle className="flex items-center gap-2">
+                    <Rss className="h-5 w-5" />
+                    Communications Feed
+                  </CardTitle>
                   {unreadCount > 0 && (
                     <Button variant="outline" size="sm" onClick={handleMarkAllRead} className="opacity-0 group-hover:opacity-100 transition-opacity">
                       <CheckCheck className="mr-2 h-4 w-4" />
@@ -539,8 +542,8 @@ export default function DashboardPage() {
                 onClick={openNewProjectDialog}
               >
                 <div className="flex flex-col items-center gap-2 text-muted-foreground">
-                  <PlusCircle className="w-12 h-12 text-[hsl(0,0%,8%)]" />
-                  <p className="text-sm text-[hsl(0,0%,8%)]">New Engagement</p>
+                  <PlusCircle className="w-12 h-12 text-foreground/80 dark:text-foreground/80" />
+                  <p className="text-sm text-foreground/80 dark:text-foreground/80">New Engagement</p>
                 </div>
             </Card>
         </div>
@@ -548,5 +551,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-
-    

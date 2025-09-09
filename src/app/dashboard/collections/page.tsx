@@ -138,8 +138,8 @@ export default function CollectionsPage() {
                             onClick={openNewCollectionDialog}
                         >
                             <div className="flex flex-col items-center gap-2 text-muted-foreground">
-                                <PlusCircle className="w-12 h-12 text-[hsl(0,0%,8%)]" />
-                                <p className="text-sm text-[hsl(0,0%,8%)]">New Collection</p>
+                                <PlusCircle className="w-12 h-12 text-foreground/80 dark:text-foreground/80" />
+                                <p className="text-sm text-foreground/80 dark:text-foreground/80">New Collection</p>
                             </div>
                         </Card>
                     </div>
