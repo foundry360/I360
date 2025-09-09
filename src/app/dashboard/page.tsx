@@ -428,7 +428,7 @@ export default function DashboardPage() {
                 )}
               </CardContent>
             </Card>
-            <Card className={cn("group h-full", notifications.length === 0 && 'p-10 text-center rounded-lg border-2 border-dashed border-border bg-transparent shadow-none')}>
+            <Card className={cn("h-full", notifications.length === 0 && 'p-10 text-center rounded-lg border-2 border-dashed border-border bg-transparent shadow-none')}>
               <CardHeader>
                 <div className="flex justify-between items-center">
                   <CardTitle>
@@ -463,7 +463,7 @@ export default function DashboardPage() {
                     </div>
                 ) : (
                     <div className="flex flex-col items-center justify-center h-full">
-                        <div className="flex justify-center mb-4">
+                       <div className="flex justify-center mb-4">
                            <div className="flex justify-center items-center h-16 w-16 text-muted-foreground">
                                <Rss className="h-8 w-8" />
                            </div>
