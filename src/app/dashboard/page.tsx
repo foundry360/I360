@@ -99,6 +99,25 @@ export default function DashboardPage() {
   const [isTopSectionOpen, setIsTopSectionOpen] = React.useState(true);
   const [isRecentActivityCleared, setIsRecentActivityCleared] = React.useState(false);
 
+  React.useEffect(() => {
+    // Check localStorage on mount
+    const storedValue = localStorage.getItem('recentActivityCleared');
+    if (storedValue === 'true') {
+        setIsRecentActivityCleared(true);
+    }
+  }, []);
+
+  const handleClearRecentActivity = () => {
+    setIsRecentActivityCleared(true);
+    localStorage.setItem('recentActivityCleared', 'true');
+  };
+
+  const handleUndoClear = () => {
+      setIsRecentActivityCleared(false);
+      localStorage.removeItem('recentActivityCleared');
+  };
+
+
   const loadDashboardData = React.useCallback(async () => {
     try {
         const [assessments, contacts, notificationsData] = await Promise.all([
@@ -367,7 +386,7 @@ export default function DashboardPage() {
                     <CardTitle>Recent Activity</CardTitle>
                   </div>
                   {allRecentActivity.length > 0 && !isRecentActivityCleared && (
-                    <Button variant="link" className="p-0 h-auto text-sm opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => setIsRecentActivityCleared(true)}>Clear All</Button>
+                    <Button variant="link" className="p-0 h-auto text-sm opacity-0 group-hover:opacity-100 transition-opacity" onClick={handleClearRecentActivity}>Clear All</Button>
                   )}
                 </div>
                  {allRecentActivity.length > 0 && !isRecentActivityCleared && (
@@ -431,9 +450,9 @@ export default function DashboardPage() {
                            </div>
                        </div>
                         <h3 className="font-semibold text-foreground">{isRecentActivityCleared ? 'Activity Cleared' : 'No recent activity'}</h3>
-                        <p className="text-muted-foreground mt-2">{isRecentActivityCleared ? 'Your activity feed is clear. It will repopulate with new events.' : 'Updates from your workspace will appear here.'}</p>
+                        <p className="text-muted-foreground mt-2">{isRecentActivityCleared ? 'Your activity feed is clear.' : 'Updates from your workspace will appear here.'}</p>
                          {isRecentActivityCleared && (
-                            <Button variant="link" onClick={() => setIsRecentActivityCleared(false)} className="mt-4">
+                            <Button variant="link" onClick={handleUndoClear} className="mt-4">
                                 Undo Clear
                             </Button>
                         )}
