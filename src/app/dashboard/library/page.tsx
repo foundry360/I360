@@ -360,17 +360,17 @@ export default function LibraryPage() {
                 <Accordion type="multiple" defaultValue={['tags', 'collections']} className="w-full">
                   <AccordionItem value="tags" className="border-b-0">
                     <CardHeader className="px-4 py-2">
-                        <div className="flex items-center justify-between">
-                            <AccordionTrigger className="p-0 flex-1 hover:no-underline -mr-6">
+                        <AccordionTrigger className="p-0 flex-1 hover:no-underline">
+                            <div className="flex justify-between items-center w-full">
                                 <CardTitle className="text-base flex items-center gap-2">
                                     <Layers className="h-4 w-4" />
                                     Tags
+                                    <Button variant="ghost" size="icon" className="h-6 w-6 ml-1" onClick={(e) => {e.stopPropagation(); setIsManageTagsOpen(true);}}>
+                                        <Pencil className="h-3 w-3" />
+                                    </Button>
                                 </CardTitle>
-                            </AccordionTrigger>
-                            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setIsManageTagsOpen(true)}>
-                                <Pencil className="h-3 w-3" />
-                            </Button>
-                        </div>
+                            </div>
+                        </AccordionTrigger>
                     </CardHeader>
                     <AccordionContent>
                       <CardContent className="pt-0 pr-4 pl-6 pb-4">
@@ -417,17 +417,17 @@ export default function LibraryPage() {
                   </AccordionItem>
                   <AccordionItem value="collections" className="border-b-0">
                      <CardHeader className="px-4 py-2">
-                         <div className="flex items-center justify-between">
-                            <AccordionTrigger className="p-0 flex-1 hover:no-underline -mr-6">
+                        <AccordionTrigger className="p-0 flex-1 hover:no-underline">
+                           <div className="flex justify-between items-center w-full">
                                 <CardTitle className="text-base flex items-center gap-2">
                                 <BookCopy className="h-4 w-4" />
                                 Collections
+                                <Button variant="ghost" size="icon" className="h-6 w-6 ml-1" onClick={(e) => {e.stopPropagation(); openManageCollectionsDialog();}}>
+                                    <Pencil className="h-3 w-3" />
+                                </Button>
                                 </CardTitle>
-                            </AccordionTrigger>
-                            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={openManageCollectionsDialog}>
-                                <Pencil className="h-3 w-3" />
-                            </Button>
-                        </div>
+                            </div>
+                        </AccordionTrigger>
                     </CardHeader>
                     <AccordionContent>
                       <CardContent className="pt-0 pr-4 pl-6 pb-4">
