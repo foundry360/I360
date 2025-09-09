@@ -459,7 +459,7 @@ export default function LibraryPage() {
           </div>
           <div className="md:col-span-9 min-w-0">
             <ScrollArea className="h-[calc(100vh-18rem)]">
-                <div className="pr-4 space-y-4">
+                <div className="pr-4 space-y-2">
                     {loading ? (
                         Array.from({ length: 3 }).map((_, i) => (
                            <Card key={i}>
