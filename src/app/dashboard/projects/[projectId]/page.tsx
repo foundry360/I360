@@ -1115,7 +1115,7 @@ export default function ProjectDetailsPage() {
                                             ) : (
                                                 <div className="h-[218px] flex flex-col items-center justify-center text-center text-muted-foreground text-sm p-4">
                                                     <CloudDownload className="h-10 w-10 mb-2" />
-                                                    Complete a wave with estimated story points to generate a burndown chart.
+                                                    Complete a wave to generate a burndown chart.
                                                 </div>
                                             )}
                                         </CardContent>
