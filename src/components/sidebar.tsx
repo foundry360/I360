@@ -474,13 +474,13 @@ export function Sidebar() {
                 <TooltipTrigger asChild>
                   <Button
                     variant="ghost"
-                    className="w-full justify-end text-[hsl(var(--sidebar-toggle-icon))]"
+                    className="w-full justify-end"
                     onClick={toggleSidebar}
                     aria-label={
                       isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'
                     }
                   >
-                    {isCollapsed ? <PanelRightOpen /> : <PanelRightClose />}
+                    {isCollapsed ? <PanelRightOpen className="text-[hsl(var(--sidebar-toggle-icon))]" /> : <PanelRightClose className="text-[hsl(var(--sidebar-toggle-icon))]" />}
                   </Button>
                 </TooltipTrigger>
                 {isCollapsed && (
