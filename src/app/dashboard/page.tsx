@@ -97,26 +97,6 @@ export default function DashboardPage() {
   const [isActivityExpanded, setIsActivityExpanded] = React.useState(false);
   const [isTasksExpanded, setIsTasksExpanded] = React.useState(false);
   const [isTopSectionOpen, setIsTopSectionOpen] = React.useState(true);
-  const [isRecentActivityCleared, setIsRecentActivityCleared] = React.useState(false);
-
-  React.useEffect(() => {
-    // Check localStorage on mount
-    const storedValue = localStorage.getItem('recentActivityCleared');
-    if (storedValue === 'true') {
-        setIsRecentActivityCleared(true);
-    }
-  }, []);
-
-  const handleClearRecentActivity = () => {
-    setIsRecentActivityCleared(true);
-    localStorage.setItem('recentActivityCleared', 'true');
-  };
-
-  const handleUndoClear = () => {
-      setIsRecentActivityCleared(false);
-      localStorage.removeItem('recentActivityCleared');
-  };
-
 
   const loadDashboardData = React.useCallback(async () => {
     try {
@@ -329,7 +309,7 @@ export default function DashboardPage() {
                         </CardDescription>
                     )}
                 </CardHeader>
-                <CardContent>
+                <CardContent className={cn(thisWeeksItems.length === 0 && 'flex items-center justify-center h-full')}>
                     {thisWeeksItems.length > 0 ? (
                         <div className="space-y-0">
                             {visibleItems.map((item, index) => {
@@ -367,7 +347,7 @@ export default function DashboardPage() {
                             )}
                         </div>
                     ) : (
-                        <div className="flex flex-col items-center justify-center h-full text-center">
+                        <div className="text-center">
                              <div className="flex justify-center mb-4">
                                <div className="flex justify-center items-center h-16 w-16 text-muted-foreground">
                                    <CalendarCheck className="h-8 w-8" />
@@ -379,22 +359,17 @@ export default function DashboardPage() {
                     )}
                 </CardContent>
             </Card>
-            <Card className={cn("group h-full", (allRecentActivity.length === 0 || isRecentActivityCleared) && 'p-10 rounded-lg border-2 border-dashed border-border bg-transparent shadow-none')}>
+            <Card className={cn("group h-full", allRecentActivity.length === 0 && 'p-10 rounded-lg border-2 border-dashed border-border bg-transparent shadow-none')}>
               <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle>Recent Activity</CardTitle>
-                  {allRecentActivity.length > 0 && !isRecentActivityCleared && (
-                    <Button variant="link" className="p-0 h-auto text-sm opacity-0 group-hover:opacity-100 transition-opacity" onClick={handleClearRecentActivity}>Clear All</Button>
-                  )}
-                </div>
-                 {allRecentActivity.length > 0 && !isRecentActivityCleared && (
+                <CardTitle>Recent Activity</CardTitle>
+                 {allRecentActivity.length > 0 && (
                     <CardDescription>
                       The latest updates from your workspace
                     </CardDescription>
                   )}
               </CardHeader>
-              <CardContent>
-                {allRecentActivity.length > 0 && !isRecentActivityCleared ? (
+              <CardContent className={cn(allRecentActivity.length === 0 && 'flex items-center justify-center h-full')}>
+                {allRecentActivity.length > 0 ? (
                     <>
                         <div className="relative space-y-0">
                         {recentActivity.map((item, index) => {
@@ -441,14 +416,14 @@ export default function DashboardPage() {
                         )}
                     </>
                 ) : (
-                    <div className="flex flex-col items-center justify-center h-full text-center">
+                    <div className="text-center">
                        <div className="flex justify-center mb-4">
                            <div className="flex justify-center items-center h-16 w-16 text-muted-foreground">
                                <FolderKanban className="h-8 w-8" />
                            </div>
                        </div>
-                        <h3 className="font-semibold text-foreground">{isRecentActivityCleared ? 'Activity Cleared' : 'No recent activity'}</h3>
-                        <p className="text-muted-foreground mt-2">{isRecentActivityCleared ? 'Your activity feed is clear.' : 'Updates from your workspace will appear here.'}</p>
+                        <h3 className="font-semibold text-foreground">No recent activity</h3>
+                        <p className="text-muted-foreground mt-2">Updates from your workspace will appear here.</p>
                     </div>
                 )}
               </CardContent>
@@ -472,7 +447,7 @@ export default function DashboardPage() {
                     </CardDescription>
                     )}
                 </CardHeader>
-                <CardContent className={cn("flex-1", notifications.length === 0 && 'flex flex-col')}>
+                <CardContent className={cn("flex-1", notifications.length === 0 && 'flex flex-col items-center justify-center')}>
                 {notifications.length > 0 ? (
                     <div className="space-y-0">
                       {notifications.slice(0,5).map(note => (
@@ -487,7 +462,7 @@ export default function DashboardPage() {
                       ))}
                     </div>
                 ) : (
-                    <div className="flex flex-col items-center justify-center h-full text-center">
+                    <div className="text-center">
                        <div className="flex justify-center mb-4">
                            <div className="flex justify-center items-center h-16 w-16 text-muted-foreground">
                                <Rss className="h-8 w-8" />
