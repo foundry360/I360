@@ -361,18 +361,20 @@ export default function DashboardPage() {
                 </CardContent>
             </Card>
             <Card className={cn("group h-full", (allRecentActivity.length === 0 || isRecentActivityCleared) && 'p-10 text-center rounded-lg border-2 border-dashed border-border bg-transparent shadow-none')}>
-              <CardHeader className="flex flex-row justify-between items-start">
-                <div>
-                  <CardTitle>Recent Activity</CardTitle>
+              <CardHeader>
+                <div className="flex items-center">
+                  <div className="flex-1 text-center">
+                    <CardTitle>Recent Activity</CardTitle>
+                  </div>
                   {allRecentActivity.length > 0 && !isRecentActivityCleared && (
-                      <CardDescription>
-                      The latest updates from your workspace
-                      </CardDescription>
+                    <Button variant="link" className="p-0 h-auto text-sm opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => setIsRecentActivityCleared(true)}>Clear All</Button>
                   )}
                 </div>
-                {allRecentActivity.length > 0 && !isRecentActivityCleared && (
-                   <Button variant="link" className="p-0 h-auto text-sm opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => setIsRecentActivityCleared(true)}>Clear All</Button>
-                )}
+                 {allRecentActivity.length > 0 && !isRecentActivityCleared && (
+                    <CardDescription className="text-center">
+                      The latest updates from your workspace
+                    </CardDescription>
+                  )}
               </CardHeader>
               <CardContent>
                 {allRecentActivity.length > 0 && !isRecentActivityCleared ? (
@@ -439,7 +441,7 @@ export default function DashboardPage() {
                 )}
               </CardContent>
             </Card>
-             <Card className={cn("group h-full", notifications.length === 0 && 'p-10 text-center rounded-lg border-2 border-dashed border-border bg-transparent shadow-none')}>
+             <Card className={cn("group h-full flex flex-col", notifications.length === 0 && 'p-10 text-center rounded-lg border-2 border-dashed border-border bg-transparent shadow-none')}>
                 <CardHeader>
                     <div className="flex items-center">
                     <div className="flex-1 text-center">
@@ -455,7 +457,7 @@ export default function DashboardPage() {
                     )}
                     </div>
                     {notifications.length > 0 && (
-                    <CardDescription>
+                    <CardDescription className="text-center">
                         A live feed of all notifications and alerts
                     </CardDescription>
                     )}
@@ -564,5 +566,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-
-    
