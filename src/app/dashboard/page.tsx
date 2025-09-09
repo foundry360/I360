@@ -282,7 +282,7 @@ export default function DashboardPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <Card className="h-full">
+        <Card className={cn("h-full", thisWeeksItems.length === 0 && 'border-dashed bg-transparent shadow-none')}>
            <CardHeader>
                 <CardTitle>Items Due This Week</CardTitle>
                 {thisWeeksItems.length > 0 && (
@@ -329,17 +329,19 @@ export default function DashboardPage() {
                         )}
                     </div>
                 ) : (
-                    <div className="flex flex-col items-center justify-center h-48 text-center text-muted-foreground">
-                        <div className="flex justify-center mb-4">
-                            <CalendarCheck className="h-8 w-8 text-muted-foreground" />
-                        </div>
-                        <h3 className="font-semibold">All clear for the week!</h3>
-                        <p>No items are due in the next 7 days.</p>
+                    <div className="flex flex-col items-center justify-center h-48 text-center text-muted-foreground p-10">
+                         <div className="flex justify-center mb-4">
+                           <div className="flex justify-center items-center h-16 w-16 text-muted-foreground">
+                               <CalendarCheck className="h-8 w-8" />
+                           </div>
+                       </div>
+                        <h3 className="font-semibold text-foreground">All clear for the week!</h3>
+                        <p className="text-muted-foreground mt-2">No items are due in the next 7 days.</p>
                     </div>
                 )}
             </CardContent>
         </Card>
-        <Card className="h-full">
+        <Card className={cn("h-full", recentActivity.length === 0 && 'border-dashed bg-transparent shadow-none')}>
           <CardHeader>
             <CardTitle>Recent Activity</CardTitle>
             {recentActivity.length > 0 && (
@@ -396,17 +398,19 @@ export default function DashboardPage() {
                     )}
                 </>
             ) : (
-                <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground">
-                    <div className="flex justify-center mb-4">
-                        <FolderKanban className="h-8 w-8 text-muted-foreground" />
-                    </div>
-                    <h3 className="font-semibold">No recent activity</h3>
-                    <p>Updates from your workspace will appear here.</p>
+                <div className="flex flex-col items-center justify-center h-48 text-center text-muted-foreground p-10">
+                   <div className="flex justify-center mb-4">
+                       <div className="flex justify-center items-center h-16 w-16 text-muted-foreground">
+                           <FolderKanban className="h-8 w-8" />
+                       </div>
+                   </div>
+                    <h3 className="font-semibold text-foreground">No recent activity</h3>
+                    <p className="text-muted-foreground mt-2">Updates from your workspace will appear here.</p>
                 </div>
             )}
           </CardContent>
         </Card>
-        <Card className="h-full flex flex-col group">
+        <Card className={cn("h-full flex flex-col group", notifications.length === 0 && "border-dashed bg-transparent shadow-none")}>
           <CardHeader>
             <div className="flex justify-between items-center">
               <CardTitle>Communications Feed</CardTitle>
@@ -436,12 +440,14 @@ export default function DashboardPage() {
                       />
                   ))}
                   {notifications.length === 0 && (
-                      <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground">
-                          <div className="flex justify-center mb-4">
-                              <Rss className="h-8 w-8 text-muted-foreground" />
-                          </div>
-                          <h3 className="font-semibold">Inbox Zero!</h3>
-                          <p>No new notifications.</p>
+                       <div className="flex flex-col items-center justify-center h-48 text-center text-muted-foreground p-10">
+                           <div className="flex justify-center mb-4">
+                               <div className="flex justify-center items-center h-16 w-16 text-muted-foreground">
+                                   <Rss className="h-8 w-8" />
+                               </div>
+                           </div>
+                          <h3 className="font-semibold text-foreground">Inbox Zero!</h3>
+                          <p className="text-muted-foreground mt-2">No new notifications.</p>
                       </div>
                   )}
               </div>
