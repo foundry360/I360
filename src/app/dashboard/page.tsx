@@ -542,7 +542,7 @@ export default function DashboardPage() {
                 <CardHeader>
                   <CardTitle className="flex justify-between items-start">
                     <span className="line-clamp-1">{project.name}</span>
-                    <Badge variant={statusBadgeVariant(project.status)}>
+                    <Badge variant={statusBadgeVariant(project.status)} className="whitespace-nowrap">
                       {project.status}
                     </Badge>
                   </CardTitle>
