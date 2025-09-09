@@ -97,6 +97,7 @@ export default function DashboardPage() {
   const [isActivityExpanded, setIsActivityExpanded] = React.useState(false);
   const [isTasksExpanded, setIsTasksExpanded] = React.useState(false);
   const [isTopSectionOpen, setIsTopSectionOpen] = React.useState(true);
+  const [isRecentActivityCleared, setIsRecentActivityCleared] = React.useState(false);
 
   const loadDashboardData = React.useCallback(async () => {
     try {
@@ -359,17 +360,22 @@ export default function DashboardPage() {
                     )}
                 </CardContent>
             </Card>
-            <Card className={cn("h-full", allRecentActivity.length === 0 && 'p-10 text-center rounded-lg border-2 border-dashed border-border bg-transparent shadow-none')}>
-              <CardHeader>
-                <CardTitle>Recent Activity</CardTitle>
-                {allRecentActivity.length > 0 && (
-                    <CardDescription>
-                    The latest updates from your workspace
-                    </CardDescription>
+            <Card className={cn("h-full group", allRecentActivity.length === 0 && 'p-10 text-center rounded-lg border-2 border-dashed border-border bg-transparent shadow-none')}>
+              <CardHeader className="flex flex-row justify-between items-start">
+                <div>
+                  <CardTitle>Recent Activity</CardTitle>
+                  {allRecentActivity.length > 0 && !isRecentActivityCleared && (
+                      <CardDescription>
+                      The latest updates from your workspace
+                      </CardDescription>
+                  )}
+                </div>
+                {allRecentActivity.length > 0 && !isRecentActivityCleared && (
+                   <Button variant="link" className="p-0 h-auto text-sm opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => setIsRecentActivityCleared(true)}>Clear All</Button>
                 )}
               </CardHeader>
               <CardContent>
-                {allRecentActivity.length > 0 ? (
+                {allRecentActivity.length > 0 && !isRecentActivityCleared ? (
                     <>
                         <div className="relative space-y-0">
                         {recentActivity.map((item, index) => {
@@ -422,8 +428,8 @@ export default function DashboardPage() {
                                <FolderKanban className="h-8 w-8" />
                            </div>
                        </div>
-                        <h3 className="font-semibold text-foreground">No recent activity</h3>
-                        <p className="text-muted-foreground mt-2">Updates from your workspace will appear here.</p>
+                        <h3 className="font-semibold text-foreground">{isRecentActivityCleared ? 'Activity Cleared' : 'No recent activity'}</h3>
+                        <p className="text-muted-foreground mt-2">{isRecentActivityCleared ? 'Your activity feed is clear. It will repopulate with new events.' : 'Updates from your workspace will appear here.'}</p>
                     </div>
                 )}
               </CardContent>
@@ -553,4 +559,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-
