@@ -25,7 +25,7 @@ const CollectionItem = ({ collection, onMove, moveDirection }: { collection: Sto
     <div
         className={cn(
             "p-3 mb-2 rounded-lg border text-card-foreground shadow-sm flex items-center gap-2",
-            'bg-[rgb(0,0,2)]'
+            'bg-[hsl(0_0%_6%)]'
         )}
     >
         <div className="flex-1">
