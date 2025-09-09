@@ -12,7 +12,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Skeleton } from '@/components/ui/skeleton';
-import { MoreHorizontal, Plus, Trash2, Search, Upload, FilePlus, Layers, Library, Pencil, BookCopy, ArrowLeft, Edit } from 'lucide-react';
+import { MoreHorizontal, Plus, Trash2, Search, Upload, FilePlus, Layers, Library, Pencil, BookCopy, ArrowLeft, Edit, ChevronsUpDown } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { useQuickAction } from '@/contexts/quick-action-context';
 import { getUserStories, deleteUserStory, UserStory, bulkCreateUserStories as bulkCreateLibraryStories, getTags, Tag, deleteUserStories } from '@/services/user-story-service';
@@ -343,6 +343,14 @@ export default function LibraryPage() {
                     </DropdownMenuContent>
                 </DropdownMenu>
             )}
+             <Button variant="ghost" size="icon" onClick={() => setIsManageTagsOpen(true)}>
+                <Pencil className="h-4 w-4" />
+                <span className="sr-only">Manage Tags</span>
+            </Button>
+             <Button variant="ghost" size="icon" onClick={openManageCollectionsDialog}>
+                <Edit className="h-4 w-4" />
+                <span className="sr-only">Manage Collections</span>
+            </Button>
             <Button variant="outline" size="icon" onClick={handleUploadClick}>
               <Upload className="h-4 w-4" />
               <span className="sr-only">Upload CSV</span>
@@ -359,25 +367,14 @@ export default function LibraryPage() {
               <ScrollArea className="flex-1">
                 <Accordion type="multiple" defaultValue={['tags', 'collections']} className="w-full">
                   <AccordionItem value="tags" className="border-b-0">
-                    <div className="flex items-center px-6 py-4">
-                      <AccordionTrigger className="flex-1 p-0 hover:no-underline">
-                        <CardTitle className="text-base flex items-center gap-2">
-                          <Layers className="h-4 w-4" />
-                          Tags
-                        </CardTitle>
-                      </AccordionTrigger>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-6 w-6 ml-2"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setIsManageTagsOpen(true);
-                        }}
-                      >
-                        <Pencil className="h-3 w-3" />
-                      </Button>
-                    </div>
+                    <CardHeader className="px-6 py-4">
+                        <AccordionTrigger className="p-0 hover:no-underline">
+                            <CardTitle className="text-base flex items-center gap-2">
+                                <Layers className="h-4 w-4" />
+                                Tags
+                            </CardTitle>
+                        </AccordionTrigger>
+                    </CardHeader>
                     <AccordionContent>
                       <CardContent className="pt-0 pr-4 pl-6 pb-4">
                         <div className="space-y-1">
@@ -422,25 +419,14 @@ export default function LibraryPage() {
                     </AccordionContent>
                   </AccordionItem>
                   <AccordionItem value="collections" className="border-b-0">
-                     <div className="flex items-center px-6 py-4">
-                        <AccordionTrigger className="flex-1 p-0 hover:no-underline">
+                     <CardHeader className="px-6 py-4">
+                        <AccordionTrigger className="p-0 hover:no-underline">
                             <CardTitle className="text-base flex items-center gap-2">
                             <BookCopy className="h-4 w-4" />
                             Collections
                             </CardTitle>
                         </AccordionTrigger>
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-6 w-6 ml-2"
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                openManageCollectionsDialog()
-                            }}
-                        >
-                            <Pencil className="h-3 w-3" />
-                        </Button>
-                    </div>
+                    </CardHeader>
                     <AccordionContent>
                       <CardContent className="pt-0 pr-4 pl-6 pb-4">
                         <div className="space-y-1">
