@@ -6,7 +6,7 @@ import { getNotifications, bulkUpdateNotifications, type Notification, Notificat
 import { useUser } from '@/contexts/user-context';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { CheckCheck, Archive, Inbox, Bell, AtSign, MessageSquare, AlertTriangle, Info, Star, MonitorCog, ArchiveX } from 'lucide-react';
+import { CheckCheck, Archive, Inbox, Bell, AtSign, MessageSquare, AlertTriangle, Info, Star, MonitorCog, ArchiveX, Rss } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { FeedItem } from '@/components/feed-item';
 import {
@@ -196,35 +196,38 @@ export default function FeedPage() {
                     </nav>
                 </div>
                 <div className="col-span-10">
-                    <Card className="overflow-hidden">
+                    
                         {loading ? (
-                            Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-20 w-full border-b" />)
+                           <Card className="overflow-hidden">
+                            {Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-20 w-full border-b" />)}
+                           </Card>
                         ) : filteredNotifications.length > 0 ? (
-                            filteredNotifications.map(note => (
-                                <FeedItem 
-                                    key={note.id}
-                                    notification={note}
-                                    isSelected={selectedNotifications.includes(note.id)}
-                                    onSelect={handleSelectNotification}
-                                    onUpdate={fetchNotifications}
-                                />
-                            ))
+                             <Card className="overflow-hidden">
+                                {filteredNotifications.map(note => (
+                                    <FeedItem 
+                                        key={note.id}
+                                        notification={note}
+                                        isSelected={selectedNotifications.includes(note.id)}
+                                        onSelect={handleSelectNotification}
+                                        onUpdate={fetchNotifications}
+                                    />
+                                ))}
+                            </Card>
                         ) : (
-                            <div className="text-center py-24 text-muted-foreground">
+                             <div className="p-10 text-center rounded-lg border-2 border-dashed border-border bg-transparent shadow-none">
                                 <div className="flex justify-center mb-4">
-                                    <div className="bg-primary/10 rounded-full p-3">
-                                        <Bell className="h-8 w-8 text-primary" />
-                                    </div>
-                                </div>
-                                <h3 className="text-lg font-semibold">
-                                  {emptyState.title}
-                                </h3>
-                                <p>
-                                  {emptyState.message}
-                                </p>
-                            </div>
+                                   <div className="flex justify-center items-center h-16 w-16 text-muted-foreground">
+                                       <Rss className="h-8 w-8" />
+                                   </div>
+                               </div>
+                               <h3 className="text-lg font-semibold text-foreground">
+                                 {emptyState.title}
+                               </h3>
+                               <p className="text-muted-foreground mt-2">
+                                 {emptyState.message}
+                               </p>
+                           </div>
                         )}
-                    </Card>
                 </div>
             </div>
         </div>
