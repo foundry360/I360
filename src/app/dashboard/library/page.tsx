@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import * as React from 'react';
@@ -9,10 +10,14 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuPortal,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Skeleton } from '@/components/ui/skeleton';
-import { MoreHorizontal, Plus, Trash2, Search, Upload, FilePlus, Layers, Library, Pencil, BookCopy, ArrowLeft, Edit, ChevronsUpDown } from 'lucide-react';
+import { MoreHorizontal, Plus, Trash2, Search, Upload, FilePlus, Layers, Library, Pencil, BookCopy, ChevronsUpDown } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { useQuickAction } from '@/contexts/quick-action-context';
 import { getUserStories, deleteUserStory, UserStory, bulkCreateUserStories as bulkCreateLibraryStories, getTags, Tag, deleteUserStories } from '@/services/user-story-service';
@@ -361,7 +366,7 @@ export default function LibraryPage() {
                 <Accordion type="single" collapsible className="w-full">
                   <AccordionItem value="tags">
                     <div className="flex items-center justify-between px-4 py-2 hover:bg-muted/50">
-                      <div className="flex items-center gap-2 flex-1 cursor-pointer" onClick={() => document.querySelector<HTMLButtonElement>('[data-radix-collection-item][aria-controls="radix-rk-content-tags"]')?.click()}>
+                      <div className="flex items-center gap-2 flex-1 cursor-pointer" onClick={() => document.querySelector<HTMLButtonElement>('[data-radix-collection-item][aria-controls*="radix-"][aria-labelledby*="radix-"]')?.click()}>
                           <Layers className="h-4 w-4" />
                           <h3 className="font-semibold text-base">Tags</h3>
                       </div>
@@ -387,6 +392,7 @@ export default function LibraryPage() {
                               Icon = config.icon;
                               color = config.color;
                             }
+                            const bgColor = color.replace('text-', 'bg-');
 
                             return (
                               <Button
@@ -399,7 +405,9 @@ export default function LibraryPage() {
                                 onClick={() => setSelectedTag(tag.name)}
                               >
                                 {isActive && <div className="absolute left-0 top-0 h-full w-1 bg-primary rounded-r-full" />}
-                                <Icon className={cn('h-4 w-4 mr-2', color)} />
+                                 <div className={cn("flex items-center justify-center h-6 w-6 rounded-md mr-2", bgColor)}>
+                                    <Icon className="h-4 w-4 text-white" />
+                                </div>
                                 {tag.name}
                               </Button>
                             );
@@ -415,7 +423,7 @@ export default function LibraryPage() {
                   </AccordionItem>
                   <AccordionItem value="collections">
                     <div className="flex items-center justify-between px-4 py-2 hover:bg-muted/50">
-                      <div className="flex items-center gap-2 flex-1 cursor-pointer" onClick={() => document.querySelector<HTMLButtonElement>('[data-radix-collection-item][aria-controls="radix-rk-content-collections"]')?.click()}>
+                      <div className="flex items-center gap-2 flex-1 cursor-pointer" onClick={() => document.querySelector<HTMLButtonElement>('[data-radix-collection-item][aria-controls*="radix-"][aria-labelledby*="radix-"]')?.click()}>
                           <BookCopy className="h-4 w-4" />
                           <h3 className="font-semibold text-base">Collections</h3>
                       </div>
@@ -429,6 +437,8 @@ export default function LibraryPage() {
                             tagConfig.find((c) => c.iconName === collection.icon) ||
                             tagConfig.find((c) => c.iconName === 'BookCopy');
                           const Icon = config?.icon || BookCopy;
+                          const color = config?.color || 'text-foreground';
+                          const bgColor = color.replace('text-', 'bg-');
                           return (
                             <Button
                               key={collection.id}
@@ -440,7 +450,9 @@ export default function LibraryPage() {
                               onClick={() => setSelectedTag(`coll:${collection.id}`)}
                             >
                               {isActive && <div className="absolute left-0 top-0 h-full w-1 bg-primary rounded-r-full" />}
-                              <Icon className={cn('h-4 w-4 mr-2', config?.color)} />
+                              <div className={cn("flex items-center justify-center h-6 w-6 rounded-md mr-2", bgColor)}>
+                                <Icon className="h-4 w-4 text-white" />
+                              </div>
                               {collection.name}
                             </Button>
                           );
@@ -459,7 +471,7 @@ export default function LibraryPage() {
           </div>
           <div className="md:col-span-9 min-w-0">
             <ScrollArea className="h-[calc(100vh-18rem)]">
-                <div className="pr-4 space-y-2">
+                <div className="pr-4 space-y-4">
                     {loading ? (
                         Array.from({ length: 3 }).map((_, i) => (
                            <Card key={i}>
@@ -579,3 +591,4 @@ export default function LibraryPage() {
     </>
   );
 }
+
