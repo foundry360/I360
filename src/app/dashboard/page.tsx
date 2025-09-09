@@ -300,7 +300,7 @@ export default function DashboardPage() {
         </div>
         <CollapsibleContent>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <Card className={cn("h-full", thisWeeksItems.length === 0 && 'border-dashed bg-transparent shadow-none')}>
+            <Card className={cn("h-full", thisWeeksItems.length === 0 && 'p-10 text-center rounded-lg border-2 border-dashed border-border bg-transparent shadow-none')}>
               <CardHeader>
                     <CardTitle>Items Due This Week</CardTitle>
                     {thisWeeksItems.length > 0 && (
@@ -347,7 +347,7 @@ export default function DashboardPage() {
                             )}
                         </div>
                     ) : (
-                        <div className="flex flex-col items-center justify-center h-48 text-center text-muted-foreground p-10">
+                        <div className="flex flex-col items-center justify-center h-full">
                              <div className="flex justify-center mb-4">
                                <div className="flex justify-center items-center h-16 w-16 text-muted-foreground">
                                    <CalendarCheck className="h-8 w-8" />
@@ -359,7 +359,7 @@ export default function DashboardPage() {
                     )}
                 </CardContent>
             </Card>
-            <Card className={cn("h-full", allRecentActivity.length === 0 && 'border-dashed bg-transparent shadow-none')}>
+            <Card className={cn("h-full", allRecentActivity.length === 0 && 'p-10 text-center rounded-lg border-2 border-dashed border-border bg-transparent shadow-none')}>
               <CardHeader>
                 <CardTitle>Recent Activity</CardTitle>
                 {allRecentActivity.length > 0 && (
@@ -416,7 +416,7 @@ export default function DashboardPage() {
                         )}
                     </>
                 ) : (
-                    <div className="flex flex-col items-center justify-center h-48 text-center text-muted-foreground p-10">
+                    <div className="flex flex-col items-center justify-center h-full">
                        <div className="flex justify-center mb-4">
                            <div className="flex justify-center items-center h-16 w-16 text-muted-foreground">
                                <FolderKanban className="h-8 w-8" />
@@ -428,7 +428,7 @@ export default function DashboardPage() {
                 )}
               </CardContent>
             </Card>
-            <Card className={cn("h-full flex flex-col group", notifications.length === 0 && "border-dashed bg-transparent shadow-none")}>
+            <Card className={cn("h-full flex flex-col group", notifications.length === 0 && "p-10 text-center rounded-lg border-2 border-dashed border-border bg-transparent shadow-none")}>
               <CardHeader>
                 <div className="flex justify-between items-center">
                   <CardTitle className="flex items-center gap-2">
@@ -461,7 +461,7 @@ export default function DashboardPage() {
                           />
                       ))}
                       {notifications.length === 0 && (
-                           <div className="flex flex-col items-center justify-center h-48 text-center text-muted-foreground p-10">
+                           <div className="flex flex-col items-center justify-center h-full">
                                <div className="flex justify-center mb-4">
                                    <div className="flex justify-center items-center h-16 w-16 text-muted-foreground">
                                        <Rss className="h-8 w-8" />
