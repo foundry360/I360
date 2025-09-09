@@ -295,9 +295,9 @@ export default function ProjectDetailsPage() {
     }, [backlogItems, projectId]);
     
     React.useEffect(() => {
-        const tab = searchParams.get('tab');
-        if (tab && ['summary', 'backlog', 'board', 'epics', 'sprints', 'timeline', 'all-work'].includes(tab)) {
-            setActiveTab(tab);
+        const tabFromUrl = searchParams.get('tab');
+        if (tabFromUrl && ['summary', 'backlog', 'board', 'epics', 'sprints', 'timeline', 'all-work'].includes(tabFromUrl)) {
+            setActiveTab(tabFromUrl);
         }
     }, [searchParams]);
 
@@ -811,7 +811,7 @@ export default function ProjectDetailsPage() {
             <Separator className="my-4" />
 
             {/* Navigation Tabs */}
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
+            <Tabs value={activeTab} onValueChange={(value) => router.push(`/dashboard/projects/${projectId}?tab=${value}`)} className="flex-1 flex flex-col">
                 <div className="flex justify-between items-center">
                     <TabsList className="bg-transparent p-0 rounded-none justify-start h-auto">
                         <TabsTrigger 
@@ -1469,7 +1469,6 @@ export default function ProjectDetailsPage() {
                                         <div className="flex justify-between items-center">
                                             <div>
                                                 <CardTitle>Unassigned Backlog Items</CardTitle>
-                                                <CardDescription>Items that are not yet assigned to an epic or wave.</CardDescription>
                                             </div>
                                             <div className="flex items-center gap-2">
                                                  <TooltipProvider>
