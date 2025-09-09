@@ -135,7 +135,7 @@ export function EditUserStoryDialog() {
               Update the details for "{story.title}"
             </DialogDescription>
           </DialogHeader>
-          <div className="grid gap-x-4 gap-y-3 py-4 max-h-[70vh] overflow-y-auto pr-4">
+          <div className="space-y-4 py-4 max-h-[70vh] overflow-y-auto pr-4">
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="title" className="text-right">Title</Label>
               <Input id="title" value={story.title} onChange={handleInputChange} className="col-span-3" required />
@@ -150,9 +150,9 @@ export function EditUserStoryDialog() {
                 placeholder="As a [type of user], I want [an action] so that [a benefit]"
               />
             </div>
-             <div className="grid grid-cols-4 items-start gap-4">
-              <Label htmlFor="acceptanceCriteria" className="text-right pt-2">Acceptance Criteria</Label>
-              <div className="col-span-3 space-y-2">
+             <div className="space-y-2">
+              <Label htmlFor="acceptanceCriteria">Acceptance Criteria</Label>
+              <div className="space-y-2">
                 <div className="flex gap-2">
                   <Input
                     id="new-criterion"
@@ -177,9 +177,9 @@ export function EditUserStoryDialog() {
                 </ScrollArea>
               </div>
             </div>
-            <div className="grid grid-cols-4 items-start gap-4">
-              <Label htmlFor="tags" className="text-right pt-2">Tags</Label>
-              <div className="col-span-3 space-y-2">
+            <div className="space-y-2">
+              <Label htmlFor="tags">Tags</Label>
+              <div className="space-y-2">
                  <Popover open={open} onOpenChange={setOpen}>
                     <PopoverTrigger asChild>
                         <Button
@@ -253,3 +253,4 @@ export function EditUserStoryDialog() {
     </Dialog>
   );
 }
+
