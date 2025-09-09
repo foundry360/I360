@@ -301,14 +301,14 @@ export default function DashboardPage() {
         <CollapsibleContent>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <Card className={cn("h-full", thisWeeksItems.length === 0 && 'p-10 rounded-lg border-2 border-dashed border-border bg-transparent shadow-none')}>
-              <CardHeader>
-                    <CardTitle>Items Due This Week</CardTitle>
-                    {thisWeeksItems.length > 0 && (
-                        <CardDescription>
-                            Your immediate priorities for the next 7 days
-                        </CardDescription>
-                    )}
-                </CardHeader>
+              {thisWeeksItems.length > 0 && (
+                <CardHeader>
+                      <CardTitle>Items Due This Week</CardTitle>
+                      <CardDescription>
+                          Your immediate priorities for the next 7 days
+                      </CardDescription>
+                  </CardHeader>
+              )}
                 <CardContent className={cn(thisWeeksItems.length === 0 && 'flex items-center justify-center h-full')}>
                     {thisWeeksItems.length > 0 ? (
                         <div className="space-y-0">
@@ -360,14 +360,14 @@ export default function DashboardPage() {
                 </CardContent>
             </Card>
             <Card className={cn("h-full", allRecentActivity.length === 0 && 'p-10 rounded-lg border-2 border-dashed border-border bg-transparent shadow-none')}>
-              <CardHeader>
-                <CardTitle>Recent Activity</CardTitle>
-                 {allRecentActivity.length > 0 && (
-                    <CardDescription>
-                      The latest updates from your workspace
-                    </CardDescription>
-                  )}
-              </CardHeader>
+              {allRecentActivity.length > 0 && (
+                <CardHeader>
+                  <CardTitle>Recent Activity</CardTitle>
+                  <CardDescription>
+                    The latest updates from your workspace
+                  </CardDescription>
+                </CardHeader>
+              )}
               <CardContent className={cn(allRecentActivity.length === 0 && 'flex items-center justify-center h-full')}>
                 {allRecentActivity.length > 0 ? (
                     <>
@@ -390,7 +390,7 @@ export default function DashboardPage() {
                                 )}
                                 </div>
                                 
-                                <div className="flex-1 pb-4 pt-1 group-hover:bg-muted rounded-md px-2 -mx-2 flex justify-between items-start cursor-pointer">
+                                <div className="flex-1 pb-2 pt-1 group-hover:bg-muted rounded-md px-2 -mx-2 flex justify-between items-start cursor-pointer">
                                 <div>
                                     <p className="text-sm">{item.message}</p>
                                     <p className="text-xs text-muted-foreground">
@@ -429,24 +429,24 @@ export default function DashboardPage() {
               </CardContent>
             </Card>
              <Card className={cn("group h-full flex flex-col", notifications.length === 0 && 'p-10 rounded-lg border-2 border-dashed border-border bg-transparent shadow-none')}>
-                <CardHeader>
-                    <div className="flex items-center justify-between">
-                        <CardTitle>
-                        Communications Feed
-                        </CardTitle>
-                    {unreadCount > 0 && (
-                        <Button variant="outline" size="sm" onClick={handleMarkAllRead} className="opacity-0 group-hover:opacity-100 transition-opacity">
-                        <CheckCheck className="mr-2 h-4 w-4" />
-                        Mark all as read
-                        </Button>
-                    )}
-                    </div>
-                    {notifications.length > 0 && (
-                    <CardDescription>
-                        A live feed of all notifications and alerts
-                    </CardDescription>
-                    )}
-                </CardHeader>
+                {notifications.length > 0 && (
+                  <CardHeader>
+                      <div className="flex items-center justify-between">
+                          <CardTitle>
+                          Communications Feed
+                          </CardTitle>
+                      {unreadCount > 0 && (
+                          <Button variant="outline" size="sm" onClick={handleMarkAllRead} className="opacity-0 group-hover:opacity-100 transition-opacity">
+                          <CheckCheck className="mr-2 h-4 w-4" />
+                          Mark all as read
+                          </Button>
+                      )}
+                      </div>
+                      <CardDescription>
+                          A live feed of all notifications and alerts
+                      </CardDescription>
+                  </CardHeader>
+                )}
                 <CardContent className={cn("flex-1", notifications.length === 0 && 'flex flex-col items-center justify-center')}>
                 {notifications.length > 0 ? (
                     <div className="space-y-0">
