@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { db } from '@/lib/firebase';
@@ -262,28 +261,34 @@ export async function updateBacklogItem(id: string, data: Partial<Omit<BacklogIt
 export async function updateBacklogItemOrderAndStatus(itemId: string, newStatus: BacklogItemStatus, newIndex: number, projectId?: string): Promise<void> {
     const itemToMoveRef = doc(db, 'backlogItems', itemId);
 
-    let effectiveProjectId: string;
+    // First, get the item to determine the project ID if not provided
+    const itemToMoveDoc = await getDoc(itemToMoveRef);
+    if (!itemToMoveDoc.exists()) {
+        throw new Error("Item to move does not exist!");
+    }
+
+    const itemToMoveData = itemToMoveDoc.data() as BacklogItem;
+    const effectiveProjectId = projectId || itemToMoveData.projectId;
+    
+    if (!effectiveProjectId) {
+        console.error("updateBacklogItemOrderAndStatus called without projectId");
+        throw new Error("projectId is required to update backlog item order and status.");
+    }
+
+    // Get all items for the project outside the transaction
+    const allItemsQuery = query(collection(db, "backlogItems"), where("projectId", "==", effectiveProjectId));
+    const allItemsSnapshot = await getDocs(allItemsQuery);
+    const allItems = allItemsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as BacklogItem));
 
     await runTransaction(db, async (transaction) => {
-        const itemToMoveDoc = await transaction.get(itemToMoveRef);
-        if (!itemToMoveDoc.exists()) {
+        // Re-fetch the item within the transaction to ensure consistency
+        const currentItemDoc = await transaction.get(itemToMoveRef);
+        if (!currentItemDoc.exists()) {
             throw new Error("Item to move does not exist!");
         }
 
-        const itemToMoveData = itemToMoveDoc.data() as BacklogItem;
-        effectiveProjectId = projectId || itemToMoveData.projectId;
-        
-        if (!effectiveProjectId) {
-            console.error("updateBacklogItemOrderAndStatus called without projectId");
-            throw new Error("projectId is required to update backlog item order and status.");
-        }
-        
-        const oldStatus = itemToMoveData.status;
-
-        // Query for all items in the project within the transaction
-        const allItemsQuery = query(collection(db, "backlogItems"), where("projectId", "==", effectiveProjectId));
-        const allItemsSnapshot = await transaction.get(allItemsQuery);
-        const allItems = allItemsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as BacklogItem));
+        const currentItemData = currentItemDoc.data() as BacklogItem;
+        const oldStatus = currentItemData.status;
         
         // Get items from the old column, excluding the one being moved
         const oldColumnItems = allItems
@@ -308,7 +313,7 @@ export async function updateBacklogItemOrderAndStatus(itemId: string, newStatus:
         }
 
         // Add the moved item to its new position in the new column's item list
-        newColumnItems.splice(newIndex, 0, { ...itemToMoveData, status: newStatus });
+        newColumnItems.splice(newIndex, 0, { ...currentItemData, status: newStatus });
         
         // Re-order the new column (which now contains the moved item)
         newColumnItems.forEach((item, index) => {
@@ -321,7 +326,7 @@ export async function updateBacklogItemOrderAndStatus(itemId: string, newStatus:
     });
 
     // Use effectiveProjectId for updating project activity
-    await updateProjectLastActivity(effectiveProjectId!);
+    await updateProjectLastActivity(effectiveProjectId);
 }
 
 
