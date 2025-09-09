@@ -3,7 +3,7 @@
 
 import * as React from 'react';
 import { Button } from '@/components/ui/button';
-import { Plus, Trash2, Edit } from 'lucide-react';
+import { Plus, Trash2, Edit, PlusCircle } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { getCollections, deleteCollection, type StoryCollection } from '@/services/collection-service';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
@@ -133,6 +133,15 @@ export default function CollectionsPage() {
                                 </Card>
                             )
                         })}
+                        <Card
+                            className="cursor-pointer bg-transparent border-dashed hover:border-primary transition-colors flex flex-col items-center justify-center min-h-[224px]"
+                            onClick={openNewCollectionDialog}
+                        >
+                            <div className="flex flex-col items-center gap-2 text-muted-foreground">
+                                <PlusCircle className="w-12 h-12 text-[hsl(0,0%,8%)]" />
+                                <p className="text-sm text-[hsl(0,0%,8%)]">New Collection</p>
+                            </div>
+                        </Card>
                     </div>
                 )}
             </div>
