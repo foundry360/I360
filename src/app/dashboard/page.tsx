@@ -504,14 +504,6 @@ export default function DashboardPage() {
           </div>
         </div>
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            <Card
-                className="cursor-pointer bg-transparent border-dashed hover:border-primary transition-colors flex flex-col items-center justify-center min-h-[260px]"
-                onClick={openNewProjectDialog}
-              >
-                <div className="flex flex-col items-center gap-2 text-muted-foreground">
-                  <PlusCircle className="w-12 h-12 text-[hsl(0,0%,4%)]" />
-                </div>
-            </Card>
           {recentEngagements.map((project) => (
               <Card
                 key={project.id}
@@ -542,6 +534,14 @@ export default function DashboardPage() {
               </Card>
             ))
           }
+            <Card
+                className="cursor-pointer bg-transparent border-dashed hover:border-primary transition-colors flex flex-col items-center justify-center min-h-[260px]"
+                onClick={openNewProjectDialog}
+              >
+                <div className="flex flex-col items-center gap-2 text-muted-foreground">
+                  <PlusCircle className="w-12 h-12 text-[hsl(0,0%,4%)]" />
+                </div>
+            </Card>
         </div>
       </div>
     </div>
