@@ -369,7 +369,7 @@ export default function DashboardPage() {
               <CardContent className={cn(allRecentActivity.length === 0 && 'flex items-center justify-center h-full')}>
                 {allRecentActivity.length > 0 ? (
                     <>
-                        <div className="relative space-y-4">
+                        <div className="space-y-2">
                         {recentActivity.map((item, index) => {
                             const config = activityTypeConfig[item.type];
                             const Icon = config.icon;
@@ -379,16 +379,16 @@ export default function DashboardPage() {
                                 className="flex gap-4 group"
                                 onClick={() => item.link && router.push(item.link)}
                             >
-                                <div className="relative flex flex-col items-center">
-                                <div className={cn("p-2 rounded-full z-10 relative", config.bg)}>
-                                    <Icon className={cn("h-5 w-5", config.color)} />
-                                </div>
-                                {index < recentActivity.length - 1 && (
-                                    <div className="flex-grow w-px bg-primary/20" />
-                                )}
+                                <div className="flex flex-col items-center self-stretch">
+                                    <div className={cn("p-2 rounded-full z-10 relative", config.bg)}>
+                                        <Icon className={cn("h-5 w-5", config.color)} />
+                                    </div>
+                                    {index < recentActivity.length - 1 && (
+                                        <div className="flex-grow w-px bg-border -mt-1" />
+                                    )}
                                 </div>
                                 
-                                <div className="flex-1 group-hover:bg-muted rounded-md px-2 -mx-2 flex justify-between items-start cursor-pointer py-1">
+                                <div className="flex-1 group-hover:bg-muted rounded-md px-2 -mx-2 flex justify-between items-start cursor-pointer py-1 h-14">
                                 <div>
                                     <p className="text-sm line-clamp-2">{item.message}</p>
                                     <p className="text-xs text-muted-foreground">
