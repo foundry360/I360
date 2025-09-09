@@ -542,8 +542,8 @@ export default function DashboardPage() {
                 onClick={openNewProjectDialog}
               >
                 <div className="flex flex-col items-center gap-2 text-muted-foreground">
-                  <PlusCircle className="w-12 h-12 text-foreground/60 dark:text-foreground/10" />
-                  <p className="text-sm text-foreground/60 dark:text-foreground/10">New Engagement</p>
+                  <PlusCircle className="w-12 h-12 text-foreground/80 dark:text-foreground/10" />
+                  <p className="text-sm text-foreground/80 dark:text-foreground/10">New Engagement</p>
                 </div>
             </Card>
         </div>
