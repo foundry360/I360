@@ -21,6 +21,7 @@ import { MoreHorizontal, Plus, Trash2, Search, Upload, FilePlus, Layers, Library
 import { Separator } from '@/components/ui/separator';
 import { useQuickAction } from '@/contexts/quick-action-context';
 import { getUserStories, deleteUserStory, UserStory, bulkCreateUserStories as bulkCreateLibraryStories, getTags, Tag, deleteUserStories } from '@/services/user-story-service';
+import { bulkCreateBacklogItems } from '@/services/backlog-item-service';
 import { getCollections, addStoriesToCollection, type StoryCollection } from '@/services/collection-service';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
@@ -148,7 +149,7 @@ export default function LibraryPage() {
     try {
         setLoading(true);
         const storiesToAdd = stories.filter(story => selectedStories.includes(story.id));
-        // await bulkCreateBacklogItems(projectId, null, storiesToAdd);
+        await bulkCreateBacklogItems(projectId, null, storiesToAdd);
         toast({
             title: 'Success!',
             description: `${storiesToAdd.length} user stor${storiesToAdd.length > 1 ? 'ies' : 'y'} added to the project backlog`,
@@ -588,5 +589,6 @@ export default function LibraryPage() {
     </>
   );
 }
+
 
 
