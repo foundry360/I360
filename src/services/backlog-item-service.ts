@@ -259,47 +259,47 @@ export async function updateBacklogItem(id: string, data: Partial<Omit<BacklogIt
     await updateProjectLastActivity(originalData.projectId);
 }
 
-export async function updateBacklogItemOrderAndStatus(itemId: string, newStatus: BacklogItemStatus, newIndex: number, projectId: string): Promise<void> {
-    if (!projectId) {
-        console.error("updateBacklogItemOrderAndStatus called with undefined projectId");
-        return;
-    }
+export async function updateBacklogItemOrderAndStatus(itemId: string, newStatus: BacklogItemStatus, newIndex: number): Promise<void> {
+    // First, get the item being moved to find out its projectId
     const itemToMoveRef = doc(db, 'backlogItems', itemId);
+    const itemToMoveSnap = await getDoc(itemToMoveRef);
+    if (!itemToMoveSnap.exists()) {
+        throw new Error(`Item with ID ${itemId} does not exist.`);
+    }
+    const itemToMove = itemToMoveSnap.data() as BacklogItem;
+    const { projectId, status: oldStatus, order: oldIndex } = itemToMove;
+
+    if (!projectId) {
+        throw new Error(`Item with ID ${itemId} does not have a projectId.`);
+    }
 
     await runTransaction(db, async (transaction) => {
-        const itemToMoveDoc = await transaction.get(itemToMoveRef);
-        if (!itemToMoveDoc.exists()) {
-            throw `Document ${itemId} does not exist!`;
-        }
-        const itemToMove = itemToMoveDoc.data() as BacklogItem;
-        const oldStatus = itemToMove.status;
-        const oldOrder = itemToMove.order;
+        // Query for all items in the project within the transaction
+        const allItemsQuery = query(collection(db, "backlogItems"), where("projectId", "==", projectId));
+        const allItemsSnapshot = await transaction.get(allItemsQuery);
+        const allItems = allItemsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as BacklogItem));
 
-        // Get all items from the old and new columns
-        const oldColumnQuery = query(backlogItemsCollection, where('projectId', '==', projectId), where('status', '==', oldStatus));
-        const newColumnQuery = query(backlogItemsCollection, where('projectId', '==', projectId), where('status', '==', newStatus));
-        
-        const oldColumnDocs = await transaction.get(oldColumnQuery);
-        const newColumnDocs = oldStatus === newStatus ? oldColumnDocs : await transaction.get(newColumnQuery);
+        // Get items from the old column, excluding the one being moved
+        const oldColumnItems = allItems
+            .filter(i => i.status === oldStatus && i.id !== itemId)
+            .sort((a, b) => a.order - b.order);
 
-        // Remove from old column and shift items
-        const oldColumnItems = oldColumnDocs.docs.map(d => d.data() as BacklogItem).sort((a, b) => a.order - b.order);
-        oldColumnItems.splice(oldOrder, 1);
+        // Update order for the remaining items in the old column
         oldColumnItems.forEach((item, index) => {
             if (item.order !== index) {
                 transaction.update(doc(db, 'backlogItems', item.id), { order: index });
             }
         });
 
-        // Add to new column and shift items
-        const newColumnItems = newColumnDocs.docs.map(d => d.data() as BacklogItem).sort((a, b) => a.order - b.order);
-        // Exclude the item being moved if it was already in the list (same column move)
-        const itemInNewListIndex = newColumnItems.findIndex(item => item.id === itemId);
-        if (itemInNewListIndex > -1) {
-            newColumnItems.splice(itemInNewListIndex, 1);
-        }
+        // Get items from the new column
+        let newColumnItems = allItems
+            .filter(i => i.status === newStatus && i.id !== itemId)
+            .sort((a, b) => a.order - b.order);
+
+        // Insert the moved item into the new column at the correct position
+        newColumnItems.splice(newIndex, 0, { ...itemToMove, status: newStatus });
         
-        newColumnItems.splice(newIndex, 0, itemToMove);
+        // Update the order for all items in the new column
         newColumnItems.forEach((item, index) => {
              if (item.id === itemId) {
                  transaction.update(itemToMoveRef, { status: newStatus, order: index });
@@ -311,6 +311,7 @@ export async function updateBacklogItemOrderAndStatus(itemId: string, newStatus:
 
     await updateProjectLastActivity(projectId);
 }
+
 
 
 
