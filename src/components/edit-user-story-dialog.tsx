@@ -150,19 +150,21 @@ export function EditUserStoryDialog() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="acceptanceCriteria">Acceptance Criteria</Label>
-              <div className="space-y-2">
-                <div className="flex gap-2">
-                  <Input
-                    id="new-criterion"
-                    value={currentCriterion}
-                    onChange={(e) => setCurrentCriterion(e.target.value)}
-                    onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddCriterion(); } }}
-                    placeholder="Add a criterion"
-                  />
-                  <Button type="button" variant="outline" onClick={handleAddCriterion}>Add</Button>
-                </div>
-                {story.acceptanceCriteria.length > 0 && (
+              <Label htmlFor="new-criterion">Acceptance Criteria</Label>
+              <div className="flex gap-2">
+                <Input
+                  id="new-criterion"
+                  value={currentCriterion}
+                  onChange={(e) => setCurrentCriterion(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddCriterion(); } }}
+                  placeholder="Add a criterion"
+                />
+                <Button type="button" variant="outline" onClick={handleAddCriterion}>Add</Button>
+              </div>
+            </div>
+
+            {story.acceptanceCriteria.length > 0 && (
+                <div className="pl-2">
                     <ScrollArea className="max-h-24">
                         <ul className="space-y-1 list-disc pl-5">
                         {story.acceptanceCriteria.map((c, i) => (
@@ -175,9 +177,9 @@ export function EditUserStoryDialog() {
                         ))}
                         </ul>
                     </ScrollArea>
-                )}
-              </div>
-            </div>
+                </div>
+            )}
+
             <div className="space-y-2">
               <Label htmlFor="tags">Tags</Label>
               <div className="space-y-2">
