@@ -29,6 +29,7 @@ import {
   MessageCircleMore,
   Rss,
   ChevronDown,
+  PlusCircle,
 } from 'lucide-react';
 import { getAssessments, type Assessment } from '@/services/assessment-service';
 import { getContacts, type Contact } from '@/services/contact-service';
@@ -82,7 +83,7 @@ const statusColors: Record<BacklogItemStatus, string> = {
 export default function DashboardPage() {
   const { user } = useUser();
   const router = useRouter();
-  const { backlogItems, projects, getProjects } = useQuickAction();
+  const { backlogItems, projects, getProjects, openNewProjectDialog } = useQuickAction();
   const [greeting, setGreeting] = React.useState('');
   const [loading, setLoading] = React.useState(true);
   const [recentEngagements, setRecentEngagements] = React.useState<ProjectWithProgress[]>(
@@ -503,11 +504,21 @@ export default function DashboardPage() {
           </div>
         </div>
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {recentEngagements.length > 0 ? (
-            recentEngagements.map((project) => (
+            <Card
+                className="cursor-pointer bg-transparent border-dashed hover:border-primary transition-colors flex flex-col items-center justify-center min-h-[260px]"
+                onClick={openNewProjectDialog}
+              >
+                <div className="flex flex-col items-center gap-2 text-muted-foreground">
+                  <div className="w-16 h-16 rounded-full border-2 border-dashed border-muted-foreground flex items-center justify-center">
+                    <PlusCircle className="w-8 h-8" />
+                  </div>
+                  <span className="font-semibold mt-2">New Engagement</span>
+                </div>
+            </Card>
+          {recentEngagements.map((project) => (
               <Card
                 key={project.id}
-                className="cursor-pointer hover:border-primary transition-colors flex flex-col"
+                className="cursor-pointer hover:border-primary transition-colors flex flex-col min-h-[260px]"
                 onClick={() => router.push(`/dashboard/projects/${project.id}`)}
               >
                 <CardHeader>
@@ -533,11 +544,7 @@ export default function DashboardPage() {
                 </CardFooter>
               </Card>
             ))
-          ) : (
-            <p className="text-muted-foreground col-span-full text-center py-8">
-              No engagements found
-            </p>
-          )}
+          }
         </div>
       </div>
     </div>
