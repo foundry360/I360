@@ -260,13 +260,9 @@ export async function updateBacklogItem(id: string, data: Partial<Omit<BacklogIt
 }
 
 export async function updateBacklogItemOrderAndStatus(itemId: string, newStatus: BacklogItemStatus, newIndex: number, projectId: string): Promise<void> {
-    if (!projectId) {
-        console.error("updateBacklogItemOrderAndStatus called with undefined projectId");
-        return;
-    }
     await runTransaction(db, async (transaction) => {
         const allItemsQuery = query(collection(db, "backlogItems"), where("projectId", "==", projectId));
-        const allItemsSnapshot = await getDocs(allItemsQuery);
+        const allItemsSnapshot = await transaction.get(allItemsQuery);
         const allItems = allItemsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as BacklogItem));
 
         const itemToMove = allItems.find(i => i.id === itemId);
