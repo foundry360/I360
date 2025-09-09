@@ -151,7 +151,7 @@ export function EditUserStoryDialog() {
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="new-criterion">Acceptance Criteria</Label>
+              <Label>Acceptance Criteria</Label>
               <div className="flex gap-2">
                 <Input
                   id="new-criterion"
@@ -162,22 +162,20 @@ export function EditUserStoryDialog() {
                 />
                 <Button type="button" variant="outline" onClick={handleAddCriterion}>Add</Button>
               </div>
-              {story.acceptanceCriteria.length > 0 && (
-                <div className="pt-2">
-                    <ScrollArea className="max-h-24">
-                        <ul className="space-y-1 list-disc pl-5">
-                        {story.acceptanceCriteria.map((c, i) => (
-                            <li key={i} className="text-sm flex justify-between items-center">
-                            <span>{c}</span>
-                            <Button type="button" variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleRemoveCriterion(i)}>
-                                <X className="h-3 w-3" />
-                            </Button>
-                            </li>
-                        ))}
-                        </ul>
-                    </ScrollArea>
-                </div>
-              )}
+              <div className="border rounded-md p-2 min-h-[40px]">
+                <ScrollArea className="max-h-24">
+                    <ul className="space-y-1 list-disc pl-5">
+                    {story.acceptanceCriteria.map((c, i) => (
+                        <li key={i} className="text-sm flex justify-between items-center">
+                        <span>{c}</span>
+                        <Button type="button" variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleRemoveCriterion(i)}>
+                            <X className="h-3 w-3" />
+                        </Button>
+                        </li>
+                    ))}
+                    </ul>
+                </ScrollArea>
+              </div>
             </div>
 
             <div className="space-y-2">
