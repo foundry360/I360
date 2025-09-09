@@ -448,17 +448,7 @@ export default function DashboardPage() {
                 )}
               </CardHeader>
               <CardContent>
-                {notifications.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center h-full">
-                       <div className="flex justify-center mb-4">
-                           <div className="flex justify-center items-center h-16 w-16 text-muted-foreground">
-                               <Rss className="h-8 w-8" />
-                           </div>
-                       </div>
-                       <h3 className="font-semibold text-foreground">Inbox Zero!</h3>
-                       <p className="text-muted-foreground mt-2">No new notifications.</p>
-                    </div>
-                ) : (
+                {notifications.length > 0 ? (
                     <div className="space-y-0">
                       {notifications.slice(0,5).map(note => (
                           <FeedItem
@@ -470,6 +460,16 @@ export default function DashboardPage() {
                               showActions={false}
                           />
                       ))}
+                    </div>
+                ) : (
+                    <div className="flex flex-col items-center justify-center h-full">
+                        <div className="flex justify-center mb-4">
+                           <div className="flex justify-center items-center h-16 w-16 text-muted-foreground">
+                               <Rss className="h-8 w-8" />
+                           </div>
+                       </div>
+                       <h3 className="font-semibold text-foreground">Inbox Zero!</h3>
+                       <p className="text-muted-foreground mt-2">No new notifications.</p>
                     </div>
                 )}
               </CardContent>
