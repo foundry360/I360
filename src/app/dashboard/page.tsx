@@ -451,11 +451,6 @@ export default function DashboardPage() {
                        </div>
                         <h3 className="font-semibold text-foreground">{isRecentActivityCleared ? 'Activity Cleared' : 'No recent activity'}</h3>
                         <p className="text-muted-foreground mt-2">{isRecentActivityCleared ? 'Your activity feed is clear.' : 'Updates from your workspace will appear here.'}</p>
-                         {isRecentActivityCleared && (
-                            <Button variant="link" onClick={handleUndoClear} className="mt-4">
-                                Undo Clear
-                            </Button>
-                        )}
                     </div>
                 )}
               </CardContent>
