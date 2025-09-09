@@ -372,7 +372,7 @@ export default function DashboardPage() {
                     )}
                 </CardContent>
             </Card>
-            <Card className={cn("h-full", allRecentActivity.length === 0 && 'p-10 rounded-lg border-2 border-dashed border-border bg-transparent shadow-none')}>
+            <Card className={cn("group h-full flex flex-col", allRecentActivity.length === 0 && 'p-10 rounded-lg border-2 border-dashed border-border bg-transparent shadow-none')}>
               {allRecentActivity.length > 0 && (
                 <CardHeader>
                   <CardTitle>Recent Activity</CardTitle>
@@ -381,7 +381,7 @@ export default function DashboardPage() {
                   </CardDescription>
                 </CardHeader>
               )}
-              <CardContent className={cn(allRecentActivity.length === 0 && 'flex items-center justify-center h-full')}>
+              <CardContent className={cn("flex-grow", allRecentActivity.length === 0 && 'flex items-center justify-center h-full')}>
                 {allRecentActivity.length > 0 ? (
                     <>
                         <div className="space-y-4">
@@ -391,7 +391,7 @@ export default function DashboardPage() {
                             return (
                             <div
                                 key={`${item.id}-${index}`}
-                                className="flex gap-4 group"
+                                className="flex gap-4 group/item"
                                 onClick={() => item.link && router.push(item.link)}
                             >
                                 <div className="flex flex-col items-center self-stretch">
@@ -403,7 +403,7 @@ export default function DashboardPage() {
                                     )}
                                 </div>
                                 
-                                <div className="flex-1 group-hover:bg-muted rounded-md px-2 -mx-2 flex justify-between items-center cursor-pointer py-1 min-h-[3.5rem]">
+                                <div className="flex-1 group-hover/item:bg-muted rounded-md px-2 -mx-2 flex justify-between items-center cursor-pointer py-1 min-h-[3.5rem]">
                                   <div className="flex-1">
                                     <p className="text-sm line-clamp-2">{item.message}</p>
                                     <p className="text-xs text-muted-foreground">
@@ -412,21 +412,12 @@ export default function DashboardPage() {
                                     })}
                                     </p>
                                   </div>
-                                <ArrowRight className="h-4 w-4 text-muted-foreground ml-2 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                <ArrowRight className="h-4 w-4 text-muted-foreground ml-2 opacity-0 group-hover/item:opacity-100 transition-opacity" />
                                 </div>
                             </div>
                             );
                         })}
                         </div>
-                        {allRecentActivity.length > 3 && (
-                            <Button 
-                                variant="link" 
-                                className="p-0 h-auto text-sm mt-4"
-                                onClick={() => setIsActivityExpanded(!isActivityExpanded)}
-                            >
-                                {isActivityExpanded ? 'View less' : 'View all'}
-                            </Button>
-                        )}
                     </>
                 ) : (
                     <div className="text-center">
@@ -440,6 +431,17 @@ export default function DashboardPage() {
                     </div>
                 )}
               </CardContent>
+              {allRecentActivity.length > 3 && (
+                <CardFooter className="justify-end">
+                    <Button 
+                        variant="link" 
+                        className="p-0 h-auto text-sm opacity-0 group-hover:opacity-100 transition-opacity"
+                        onClick={() => setIsActivityExpanded(!isActivityExpanded)}
+                    >
+                        {isActivityExpanded ? 'View less' : 'View all'}
+                    </Button>
+                </CardFooter>
+              )}
             </Card>
              <Card className={cn("group h-full flex flex-col", notifications.length === 0 && 'p-10 rounded-lg border-2 border-dashed border-border bg-transparent shadow-none')}>
                 {notifications.length > 0 && (
