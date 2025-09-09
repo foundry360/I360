@@ -381,16 +381,14 @@ export default function DashboardPage() {
             </Card>
             <Card className={cn("group h-full", (allRecentActivity.length === 0 || isRecentActivityCleared) && 'p-10 text-center rounded-lg border-2 border-dashed border-border bg-transparent shadow-none')}>
               <CardHeader>
-                <div className="flex items-center">
-                  <div className="flex-1 text-center">
-                    <CardTitle>Recent Activity</CardTitle>
-                  </div>
+                <div className="flex items-center justify-between">
+                  <CardTitle>Recent Activity</CardTitle>
                   {allRecentActivity.length > 0 && !isRecentActivityCleared && (
                     <Button variant="link" className="p-0 h-auto text-sm opacity-0 group-hover:opacity-100 transition-opacity" onClick={handleClearRecentActivity}>Clear All</Button>
                   )}
                 </div>
                  {allRecentActivity.length > 0 && !isRecentActivityCleared && (
-                    <CardDescription className="text-center">
+                    <CardDescription>
                       The latest updates from your workspace
                     </CardDescription>
                   )}
@@ -457,12 +455,10 @@ export default function DashboardPage() {
             </Card>
              <Card className={cn("group h-full flex flex-col", notifications.length === 0 && 'p-10 text-center rounded-lg border-2 border-dashed border-border bg-transparent shadow-none')}>
                 <CardHeader>
-                    <div className="flex items-center">
-                    <div className="flex-1 text-center">
+                    <div className="flex items-center justify-between">
                         <CardTitle>
                         Communications Feed
                         </CardTitle>
-                    </div>
                     {unreadCount > 0 && (
                         <Button variant="outline" size="sm" onClick={handleMarkAllRead} className="opacity-0 group-hover:opacity-100 transition-opacity">
                         <CheckCheck className="mr-2 h-4 w-4" />
@@ -471,7 +467,7 @@ export default function DashboardPage() {
                     )}
                     </div>
                     {notifications.length > 0 && (
-                    <CardDescription className="text-center">
+                    <CardDescription>
                         A live feed of all notifications and alerts
                     </CardDescription>
                     )}
