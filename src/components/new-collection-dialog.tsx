@@ -153,7 +153,7 @@ export function NewCollectionDialog() {
                                 <div className="flex justify-between items-center">
                                     <CardTitle>Story Library ({filteredLibraryStories.length})</CardTitle>
                                     {filteredLibraryStories.length > 0 && (
-                                        <Button variant="secondary" size="sm" onClick={handleMoveAll}>
+                                        <Button variant="secondary" size="sm" onClick={handleMoveAll} className="dark:bg-[hsl(0_0%_12%)]">
                                             Add all ({filteredLibraryStories.length})
                                         </Button>
                                     )}
