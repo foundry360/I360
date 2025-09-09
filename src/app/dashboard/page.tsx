@@ -376,7 +376,7 @@ export default function DashboardPage() {
             </Card>
             <Card className={cn("group h-full flex flex-col", allRecentActivity.length === 0 && 'p-10 rounded-lg border-2 border-dashed border-border bg-transparent shadow-none')}>
               {allRecentActivity.length > 0 && (
-                <CardHeader>
+                <CardHeader className="flex flex-row justify-between items-center">
                   <div>
                     <CardTitle>Recent Activity</CardTitle>
                     <CardDescription>
@@ -516,9 +516,11 @@ export default function DashboardPage() {
                 <EngagementInsightsPanel projects={recentEngagements.filter(p => p.status === 'Active')} />
               </SheetContent>
             </Sheet>
-            <Button variant="outline" onClick={() => router.push('/dashboard/projects')}>
-              View All
-            </Button>
+            {recentEngagements.length > 4 && (
+              <Button variant="outline" onClick={() => router.push('/dashboard/projects')}>
+                View All
+              </Button>
+            )}
           </div>
         </div>
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
