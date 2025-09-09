@@ -360,7 +360,7 @@ export default function LibraryPage() {
               <ScrollArea className="flex-1">
                 <Accordion type="single" collapsible className="w-full">
                   <AccordionItem value="tags">
-                     <div className="flex items-center justify-between px-4 py-2 hover:bg-muted/50">
+                    <div className="flex items-center justify-between px-4 py-2 hover:bg-muted/50">
                         <div className="flex items-center gap-2 flex-1 cursor-pointer" onClick={() => document.querySelector<HTMLButtonElement>('[data-radix-collection-item][aria-controls="radix-rk-content-tags"]')?.click()}>
                             <Layers className="h-4 w-4" />
                             <h3 className="font-semibold text-base">Tags</h3>
@@ -368,93 +368,89 @@ export default function LibraryPage() {
                         <AccordionTrigger className="p-2 -mr-2" />
                     </div>
                     <AccordionContent>
-                      <CardContent className="pt-0 pr-4 pl-6 pb-4">
-                        <div className="space-y-1">
-                          {loading ? (
-                            Array.from({ length: 5 }).map((_, i) => (
-                              <Skeleton key={i} className="h-8 w-full" />
-                            ))
-                          ) : (
-                            allTags.map((tag) => {
-                              const isActive = selectedTag === tag.name;
-                              const config = tagConfig.find(
-                                (c) => c.iconName === tag.icon
-                              );
-                              let Icon: React.ElementType = Layers; // Default icon
-                              let color = 'text-foreground';
-                              if (tag.name === 'All') {
-                                Icon = Library;
-                              } else if (config) {
-                                Icon = config.icon;
-                                color = config.color;
-                              }
+                      <div className="space-y-1 pr-4 pl-6 pb-4">
+                        {loading ? (
+                          Array.from({ length: 5 }).map((_, i) => (
+                            <Skeleton key={i} className="h-8 w-full" />
+                          ))
+                        ) : (
+                          allTags.map((tag) => {
+                            const isActive = selectedTag === tag.name;
+                            const config = tagConfig.find(
+                              (c) => c.iconName === tag.icon
+                            );
+                            let Icon: React.ElementType = Layers; // Default icon
+                            let color = 'text-foreground';
+                            if (tag.name === 'All') {
+                              Icon = Library;
+                            } else if (config) {
+                              Icon = config.icon;
+                              color = config.color;
+                            }
 
-                              return (
-                                <Button
-                                  key={tag.id}
-                                  variant="ghost"
-                                  className={cn(
-                                    'w-full justify-start relative',
-                                    isActive && 'bg-background font-bold'
-                                  )}
-                                  onClick={() => setSelectedTag(tag.name)}
-                                >
-                                  {isActive && <div className="absolute left-0 top-0 h-full w-1 bg-primary rounded-r-full" />}
-                                  <Icon className={cn('h-4 w-4 mr-2', color)} />
-                                  {tag.name}
-                                </Button>
-                              );
-                            })
-                          )}
-                        </div>
-                         <div className="flex justify-end mt-2">
-                            <Button variant="ghost" size="sm" className="text-xs" onClick={() => setIsManageTagsOpen(true)}>
-                                <Pencil className="h-3 w-3 mr-1" /> Manage
-                            </Button>
-                        </div>
-                      </CardContent>
-                    </AccordionContent>
-                  </AccordionItem>
-                  <AccordionItem value="collections">
-                     <div className="flex items-center justify-between px-4 py-2 hover:bg-muted/50">
-                        <div className="flex items-center gap-2 flex-1 cursor-pointer" onClick={() => document.querySelector<HTMLButtonElement>('[data-radix-collection-item][aria-controls="radix-rk-content-collections"]')?.click()}>
-                            <BookCopy className="h-4 w-4" />
-                            <h3 className="font-semibold text-base">Collections</h3>
-                        </div>
-                        <AccordionTrigger className="p-2 -mr-2" />
-                     </div>
-                    <AccordionContent>
-                      <CardContent className="pt-0 pr-4 pl-6 pb-4">
-                        <div className="space-y-1">
-                          {collections.map((collection) => {
-                            const isActive = selectedTag === `coll:${collection.id}`;
-                            const config =
-                              tagConfig.find((c) => c.iconName === collection.icon) ||
-                              tagConfig.find((c) => c.iconName === 'BookCopy');
-                            const Icon = config?.icon || BookCopy;
                             return (
                               <Button
-                                key={collection.id}
+                                key={tag.id}
                                 variant="ghost"
                                 className={cn(
                                   'w-full justify-start relative',
                                   isActive && 'bg-background font-bold'
                                 )}
-                                onClick={() => setSelectedTag(`coll:${collection.id}`)}
+                                onClick={() => setSelectedTag(tag.name)}
                               >
                                 {isActive && <div className="absolute left-0 top-0 h-full w-1 bg-primary rounded-r-full" />}
-                                <Icon className={cn('h-4 w-4 mr-2', config?.color)} />
-                                {collection.name}
+                                <Icon className={cn('h-4 w-4 mr-2', color)} />
+                                {tag.name}
                               </Button>
                             );
-                          })}
-                        </div>
-                        <div className="flex justify-end mt-2">
-                            <Button variant="ghost" size="sm" className="text-xs" onClick={() => openManageCollectionsDialog()}>
-                                <Pencil className="h-3 w-3 mr-1" /> Manage
+                          })
+                        )}
+                      </div>
+                      <div className="flex justify-end pr-4 pl-6 pb-4">
+                          <Button variant="ghost" size="sm" className="text-xs" onClick={() => setIsManageTagsOpen(true)}>
+                              <Pencil className="h-3 w-3 mr-1" /> Manage
+                          </Button>
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
+                  <AccordionItem value="collections">
+                    <div className="flex items-center justify-between px-4 py-2 hover:bg-muted/50">
+                      <div className="flex items-center gap-2 flex-1 cursor-pointer" onClick={() => document.querySelector<HTMLButtonElement>('[data-radix-collection-item][aria-controls="radix-rk-content-collections"]')?.click()}>
+                          <BookCopy className="h-4 w-4" />
+                          <h3 className="font-semibold text-base">Collections</h3>
+                      </div>
+                      <AccordionTrigger className="p-2 -mr-2" />
+                    </div>
+                    <AccordionContent>
+                      <div className="space-y-1 pr-4 pl-6 pb-4">
+                        {collections.map((collection) => {
+                          const isActive = selectedTag === `coll:${collection.id}`;
+                          const config =
+                            tagConfig.find((c) => c.iconName === collection.icon) ||
+                            tagConfig.find((c) => c.iconName === 'BookCopy');
+                          const Icon = config?.icon || BookCopy;
+                          return (
+                            <Button
+                              key={collection.id}
+                              variant="ghost"
+                              className={cn(
+                                'w-full justify-start relative',
+                                isActive && 'bg-background font-bold'
+                              )}
+                              onClick={() => setSelectedTag(`coll:${collection.id}`)}
+                            >
+                              {isActive && <div className="absolute left-0 top-0 h-full w-1 bg-primary rounded-r-full" />}
+                              <Icon className={cn('h-4 w-4 mr-2', config?.color)} />
+                              {collection.name}
                             </Button>
-                        </div>
-                      </CardContent>
+                          );
+                        })}
+                      </div>
+                      <div className="flex justify-end pr-4 pl-6 pb-4">
+                          <Button variant="ghost" size="sm" className="text-xs" onClick={() => openManageCollectionsDialog()}>
+                              <Pencil className="h-3 w-3 mr-1" /> Manage
+                          </Button>
+                      </div>
                     </AccordionContent>
                   </AccordionItem>
                 </Accordion>
@@ -488,16 +484,20 @@ export default function LibraryPage() {
                                       aria-label={`Select story ${story.title}`}
                                   />
                                </div>
-                               <div className="flex-1">
-                                  <CardHeader className="py-3">
-                                      <div className="flex justify-between items-start">
-                                          <CardTitle className="flex items-center gap-2 text-base">
-                                              <Icon className={cn("h-4 w-4", color)} />
-                                              {story.title}
-                                          </CardTitle>
+                               <div className="flex-1 min-w-0">
+                                  <CardHeader className="py-2">
+                                      <div className="flex justify-between items-center gap-4">
+                                          <div className="flex items-center gap-2 min-w-0">
+                                              <Icon className={cn("h-4 w-4 shrink-0", color)} />
+                                              <CardTitle className="text-sm font-medium truncate flex-1" title={story.title}>
+                                                  {story.title}
+                                              </CardTitle>
+                                              {story.tags.map(tag => <Badge key={tag} variant="secondary" className="whitespace-nowrap">{tag}</Badge>)}
+                                              <Badge variant="outline" className="whitespace-nowrap">{story.points || 0} Points</Badge>
+                                          </div>
                                           <DropdownMenu>
                                               <DropdownMenuTrigger asChild>
-                                                  <Button variant="ghost" className="h-8 w-8 p-0" onClick={(e) => e.stopPropagation()}>
+                                                  <Button variant="ghost" className="h-8 w-8 p-0 shrink-0" onClick={(e) => e.stopPropagation()}>
                                                     <span className="sr-only">Open menu</span>
                                                     <MoreHorizontal className="h-4 w-4" />
                                                   </Button>
@@ -513,13 +513,9 @@ export default function LibraryPage() {
                                               </DropdownMenuContent>
                                           </DropdownMenu>
                                       </div>
-                                      <div className="flex items-center gap-2 pt-1">
-                                          {story.tags.map(tag => <Badge key={tag} variant="secondary">{tag}</Badge>)}
-                                          <Badge variant="outline">{story.points || 0} Points</Badge>
-                                      </div>
                                   </CardHeader>
-                                  <CardContent className="pt-0 pb-3">
-                                      <p className="text-sm text-muted-foreground">{story.story}</p>
+                                  <CardContent className="pt-0 pb-2">
+                                      <p className="text-sm text-muted-foreground line-clamp-2">{story.story}</p>
                                   </CardContent>
                                </div>
                              </Card>
