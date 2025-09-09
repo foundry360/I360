@@ -538,7 +538,7 @@ export default function DashboardPage() {
             ))
           }
             <Card
-                className="cursor-pointer bg-transparent border-dashed hover:border-primary transition-colors flex flex-col items-center justify-center min-h-[260px]"
+                className="cursor-pointer bg-transparent border-dashed hover:border-primary transition-colors flex flex-col items-center justify-center min-h-[260px] border-2 border-border"
                 onClick={openNewProjectDialog}
               >
                 <div className="flex flex-col items-center gap-2 text-muted-foreground">
