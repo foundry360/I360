@@ -585,8 +585,8 @@ export default function ProjectsPage() {
                               onClick={openNewProjectDialog}
                           >
                               <div className="flex flex-col items-center gap-2 text-muted-foreground">
-                                  <PlusCircle className="w-12 h-12 text-[hsl(0_0%_75%)] dark:text-foreground/10" />
-                                  <p className="text-sm text-[hsl(0_0%_75%)] dark:text-foreground/10">New Engagement</p>
+                                  <PlusCircle className="w-12 h-12 text-[hsl(0_0%_75%)] dark:text-[hsl(214_10%_31%)]" />
+                                  <p className="text-sm text-[hsl(0_0%_75%)] dark:text-[hsl(214_10%_31%)]">New Engagement</p>
                               </div>
                           </Card>
                         )}
