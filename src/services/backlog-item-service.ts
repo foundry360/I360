@@ -275,26 +275,32 @@ export async function updateBacklogItemOrderAndStatus(itemId: string, newStatus:
         const itemToMove = itemToMoveSnap.data() as BacklogItem;
         const { status: oldStatus } = itemToMove;
 
+        // Query for all items in the project within the transaction
         const allItemsQuery = query(collection(db, "backlogItems"), where("projectId", "==", projectId));
         const allItemsSnapshot = await transaction.get(allItemsQuery);
         const allItems = allItemsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as BacklogItem));
 
+        // Get items from the old column, excluding the one being moved
         const oldColumnItems = allItems
             .filter(i => i.status === oldStatus && i.id !== itemId)
             .sort((a, b) => a.order - b.order);
-
+        
+        // Re-order the old column
         oldColumnItems.forEach((item, index) => {
             if (item.order !== index) {
                 transaction.update(doc(db, 'backlogItems', item.id), { order: index });
             }
         });
-
+        
+        // Get items from the new column
         let newColumnItems = allItems
             .filter(i => i.status === newStatus && i.id !== itemId)
             .sort((a, b) => a.order - b.order);
 
+        // Add the moved item to its new position in the new column
         newColumnItems.splice(newIndex, 0, { ...itemToMove, status: newStatus });
         
+        // Re-order the new column
         newColumnItems.forEach((item, index) => {
              if (item.id === itemId) {
                  transaction.update(itemToMoveRef, { status: newStatus, order: index });
