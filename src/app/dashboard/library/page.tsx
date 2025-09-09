@@ -344,10 +344,6 @@ export default function LibraryPage() {
                     </DropdownMenuContent>
                 </DropdownMenu>
             )}
-            <Button variant="outline" size="icon" onClick={() => setIsManageTagsOpen(true)}>
-                <Pencil className="h-4 w-4" />
-                 <span className="sr-only">Manage Tags & Collections</span>
-            </Button>
             <Button variant="outline" size="icon" onClick={handleUploadClick}>
               <Upload className="h-4 w-4" />
               <span className="sr-only">Upload CSV</span>
@@ -362,15 +358,15 @@ export default function LibraryPage() {
           <div className="col-span-3">
             <Card className="bg-muted/50 h-full flex flex-col">
               <ScrollArea className="flex-1">
-                <Accordion type="multiple" defaultValue={['tags', 'collections']} className="w-full">
+                <Accordion type="single" collapsible className="w-full">
                   <AccordionItem value="tags" className="border-b-0">
-                    <div className="flex items-center px-4 py-2">
-                      <div className="flex items-center gap-2 flex-1">
-                        <Layers className="h-4 w-4" />
-                        <CardTitle className="text-base">Tags</CardTitle>
-                        <Button variant="ghost" size="icon" className="h-6 w-6 ml-1" onClick={(e) => {e.stopPropagation(); setIsManageTagsOpen(true);}}>
-                          <Pencil className="h-3 w-3" />
-                        </Button>
+                    <div className="flex items-center justify-between px-4 py-2 hover:bg-muted/50 rounded-t-lg">
+                      <div className="flex items-center gap-2 flex-1 cursor-pointer">
+                          <Layers className="h-4 w-4" />
+                          <h3 className="font-semibold text-base">Tags</h3>
+                          <Button variant="ghost" size="icon" className="h-6 w-6 ml-1" onClick={(e) => {e.stopPropagation(); setIsManageTagsOpen(true);}}>
+                              <Pencil className="h-3 w-3" />
+                          </Button>
                       </div>
                       <AccordionTrigger className="p-2 -mr-2" />
                     </div>
@@ -418,16 +414,16 @@ export default function LibraryPage() {
                     </AccordionContent>
                   </AccordionItem>
                   <AccordionItem value="collections" className="border-b-0">
-                    <div className="flex items-center px-4 py-2">
-                        <div className="flex items-center gap-2 flex-1">
+                     <div className="flex items-center justify-between px-4 py-2 hover:bg-muted/50 rounded-b-lg">
+                        <div className="flex items-center gap-2 flex-1 cursor-pointer">
                             <BookCopy className="h-4 w-4" />
-                            <CardTitle className="text-base">Collections</CardTitle>
+                            <h3 className="font-semibold text-base">Collections</h3>
                             <Button variant="ghost" size="icon" className="h-6 w-6 ml-1" onClick={(e) => {e.stopPropagation(); openManageCollectionsDialog();}}>
                                 <Pencil className="h-3 w-3" />
                             </Button>
                         </div>
                         <AccordionTrigger className="p-2 -mr-2" />
-                    </div>
+                     </div>
                     <AccordionContent>
                       <CardContent className="pt-0 pr-4 pl-6 pb-4">
                         <div className="space-y-1">
@@ -543,7 +539,7 @@ export default function LibraryPage() {
             <AlertDialogDescription>
               Your CSV file has been processed.
             </AlertDialogDescription>
-          </AlertDialogHeader>
+          </DialogHeader>
           <div className="py-4">
             <p><strong>Successfully Imported:</strong> {uploadStats?.importedCount || 0} user stories</p>
             <p><strong>Duplicates Skipped:</strong> {uploadStats?.skippedCount || 0} user stories</p>
