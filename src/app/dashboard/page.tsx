@@ -360,7 +360,7 @@ export default function DashboardPage() {
                     )}
                 </CardContent>
             </Card>
-            <Card className={cn("h-full group", (allRecentActivity.length === 0 || isRecentActivityCleared) && 'p-10 text-center rounded-lg border-2 border-dashed border-border bg-transparent shadow-none')}>
+            <Card className={cn("group h-full", (allRecentActivity.length === 0 || isRecentActivityCleared) && 'p-10 text-center rounded-lg border-2 border-dashed border-border bg-transparent shadow-none')}>
               <CardHeader className="flex flex-row justify-between items-start">
                 <div>
                   <CardTitle>Recent Activity</CardTitle>
@@ -430,32 +430,37 @@ export default function DashboardPage() {
                        </div>
                         <h3 className="font-semibold text-foreground">{isRecentActivityCleared ? 'Activity Cleared' : 'No recent activity'}</h3>
                         <p className="text-muted-foreground mt-2">{isRecentActivityCleared ? 'Your activity feed is clear. It will repopulate with new events.' : 'Updates from your workspace will appear here.'}</p>
+                         {isRecentActivityCleared && (
+                            <Button variant="link" onClick={() => setIsRecentActivityCleared(false)} className="mt-4">
+                                Undo Clear
+                            </Button>
+                        )}
                     </div>
                 )}
               </CardContent>
             </Card>
              <Card className={cn("group h-full", notifications.length === 0 && 'p-10 text-center rounded-lg border-2 border-dashed border-border bg-transparent shadow-none')}>
-              <CardHeader>
-                <div className="flex items-center">
-                  <div className="flex-1 text-center">
-                    <CardTitle>
-                      Communications Feed
-                    </CardTitle>
-                  </div>
-                  {unreadCount > 0 && (
-                    <Button variant="outline" size="sm" onClick={handleMarkAllRead} className="opacity-0 group-hover:opacity-100 transition-opacity">
-                      <CheckCheck className="mr-2 h-4 w-4" />
-                      Mark all as read
-                    </Button>
-                  )}
-                </div>
-                 {notifications.length > 0 && (
-                  <CardDescription>
-                    A live feed of all notifications and alerts
-                  </CardDescription>
-                )}
-              </CardHeader>
-              <CardContent className={cn("flex-1", notifications.length === 0 && 'flex flex-col')}>
+                <CardHeader>
+                    <div className="flex items-center">
+                    <div className="flex-1 text-center">
+                        <CardTitle>
+                        Communications Feed
+                        </CardTitle>
+                    </div>
+                    {unreadCount > 0 && (
+                        <Button variant="outline" size="sm" onClick={handleMarkAllRead} className="opacity-0 group-hover:opacity-100 transition-opacity">
+                        <CheckCheck className="mr-2 h-4 w-4" />
+                        Mark all as read
+                        </Button>
+                    )}
+                    </div>
+                    {notifications.length > 0 && (
+                    <CardDescription>
+                        A live feed of all notifications and alerts
+                    </CardDescription>
+                    )}
+                </CardHeader>
+                <CardContent className={cn("flex-1", notifications.length === 0 && 'flex flex-col')}>
                 {notifications.length > 0 ? (
                     <div className="space-y-0">
                       {notifications.slice(0,5).map(note => (
@@ -559,3 +564,5 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+    
