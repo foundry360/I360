@@ -360,13 +360,10 @@ export default function LibraryPage() {
               <ScrollArea className="flex-1">
                 <Accordion type="single" collapsible className="w-full">
                   <AccordionItem value="tags">
-                    <div className="flex items-center justify-between px-4 py-2 hover:bg-muted/50">
-                        <div className="flex items-center gap-2 flex-1 cursor-pointer">
+                     <div className="flex items-center justify-between px-4 py-2 hover:bg-muted/50">
+                        <div className="flex items-center gap-2 flex-1 cursor-pointer" onClick={() => document.querySelector<HTMLButtonElement>('[data-radix-collection-item][aria-controls="radix-rk-content-tags"]')?.click()}>
                             <Layers className="h-4 w-4" />
                             <h3 className="font-semibold text-base">Tags</h3>
-                            <Button variant="ghost" size="icon" className="h-6 w-6 ml-1" onClick={(e) => {e.stopPropagation(); setIsManageTagsOpen(true);}}>
-                                <Pencil className="h-3 w-3" />
-                            </Button>
                         </div>
                         <AccordionTrigger className="p-2 -mr-2" />
                     </div>
@@ -410,17 +407,19 @@ export default function LibraryPage() {
                             })
                           )}
                         </div>
+                         <div className="flex justify-end mt-2">
+                            <Button variant="ghost" size="sm" className="text-xs" onClick={() => setIsManageTagsOpen(true)}>
+                                <Pencil className="h-3 w-3 mr-1" /> Manage
+                            </Button>
+                        </div>
                       </CardContent>
                     </AccordionContent>
                   </AccordionItem>
                   <AccordionItem value="collections">
                      <div className="flex items-center justify-between px-4 py-2 hover:bg-muted/50">
-                        <div className="flex items-center gap-2 flex-1 cursor-pointer">
+                        <div className="flex items-center gap-2 flex-1 cursor-pointer" onClick={() => document.querySelector<HTMLButtonElement>('[data-radix-collection-item][aria-controls="radix-rk-content-collections"]')?.click()}>
                             <BookCopy className="h-4 w-4" />
                             <h3 className="font-semibold text-base">Collections</h3>
-                            <Button variant="ghost" size="icon" className="h-6 w-6 ml-1" onClick={(e) => {e.stopPropagation(); openManageCollectionsDialog();}}>
-                                <Pencil className="h-3 w-3" />
-                            </Button>
                         </div>
                         <AccordionTrigger className="p-2 -mr-2" />
                      </div>
@@ -449,6 +448,11 @@ export default function LibraryPage() {
                               </Button>
                             );
                           })}
+                        </div>
+                        <div className="flex justify-end mt-2">
+                            <Button variant="ghost" size="sm" className="text-xs" onClick={() => openManageCollectionsDialog()}>
+                                <Pencil className="h-3 w-3 mr-1" /> Manage
+                            </Button>
                         </div>
                       </CardContent>
                     </AccordionContent>
