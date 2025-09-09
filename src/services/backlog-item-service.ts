@@ -260,6 +260,10 @@ export async function updateBacklogItem(id: string, data: Partial<Omit<BacklogIt
 }
 
 export async function updateBacklogItemOrderAndStatus(itemId: string, newStatus: BacklogItemStatus, newIndex: number, projectId: string): Promise<void> {
+    if (!projectId) {
+        console.error("updateBacklogItemOrderAndStatus called with undefined projectId");
+        return;
+    }
     const itemToMoveRef = doc(db, 'backlogItems', itemId);
 
     await runTransaction(db, async (transaction) => {
