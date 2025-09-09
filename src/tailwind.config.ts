@@ -113,6 +113,7 @@ export default {
           border: 'hsl(var(--sidebar-border))',
           divider: 'hsl(var(--sidebar-divider))',
           ring: 'hsl(var(--sidebar-ring))',
+          'toggle-icon': 'hsl(var(--sidebar-toggle-icon))',
         },
         success: {
           DEFAULT: 'hsl(var(--success))',
