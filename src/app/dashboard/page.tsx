@@ -428,7 +428,7 @@ export default function DashboardPage() {
                 )}
               </CardContent>
             </Card>
-            <Card className={cn("h-full flex flex-col group", notifications.length === 0 && "p-10 rounded-lg border-2 border-dashed border-border bg-transparent shadow-none")}>
+            <Card className={cn("h-full flex flex-col group", notifications.length === 0 && "p-10 text-center rounded-lg border-2 border-dashed border-border bg-transparent shadow-none")}>
               <CardHeader>
                 <div className="flex justify-between items-center">
                   <CardTitle>
