@@ -134,7 +134,7 @@ export default function CollectionsPage() {
                             )
                         })}
                         <Card
-                            className="cursor-pointer bg-transparent border-dashed hover:border-primary transition-colors flex flex-col items-center justify-center min-h-[224px]"
+                            className="cursor-pointer bg-transparent border-dashed hover:border-primary transition-colors flex flex-col items-center justify-center min-h-[224px] border-2 border-border"
                             onClick={openNewCollectionDialog}
                         >
                             <div className="flex flex-col items-center gap-2 text-muted-foreground">
