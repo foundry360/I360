@@ -1003,9 +1003,6 @@ export default function ProjectDetailsPage() {
                                        </div>
                                    </div>
                                    <h3 className="text-lg font-semibold text-foreground">No Engagement Data Available</h3>
-                                   <p className="text-muted-foreground mt-2">
-                                       Add items to your backlog to start seeing metrics and insights.
-                                   </p>
                                </div>
                             )}
 
