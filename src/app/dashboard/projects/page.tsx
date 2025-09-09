@@ -43,7 +43,7 @@ import { getSprintsForProject } from '@/services/sprint-service';
 import { useUser } from '@/contexts/user-context';
 import { cn } from '@/lib/utils';
 import { Checkbox } from '@/components/ui/checkbox';
-import { TablePagination } from '@/components/ui/table-pagination';
+import { TablePagination } from '@/components/table-pagination';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { format, formatDistanceToNow, parseISO } from 'date-fns';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
