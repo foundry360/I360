@@ -70,7 +70,7 @@ export default function ProjectsPage() {
   const [activeTab, setActiveTab] = React.useState<TabValue>('active');
   const [isDependencyErrorDialogOpen, setIsDependencyErrorDialogOpen] = React.useState(false);
   const [dependencyErrorDialogMessage, setDependencyErrorDialogMessage] = React.useState('');
-  const [viewMode, setViewMode] = React.useState<ViewMode>('list');
+  const [viewMode, setViewMode] = React.useState<ViewMode>('grid');
 
   const { openNewProjectDialog, setOnProjectCreated, openEditProjectDialog, setOnProjectUpdated, globalSearchTerm, setGlobalSearchTerm } = useQuickAction();
   const { user } = useUser();
