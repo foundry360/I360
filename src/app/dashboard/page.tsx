@@ -369,14 +369,14 @@ export default function DashboardPage() {
               <CardContent className={cn(allRecentActivity.length === 0 && 'flex items-center justify-center h-full')}>
                 {allRecentActivity.length > 0 ? (
                     <>
-                        <div className="relative space-y-0">
+                        <div className="relative space-y-4">
                         {recentActivity.map((item, index) => {
                             const config = activityTypeConfig[item.type];
                             const Icon = config.icon;
                             return (
                             <div
                                 key={`${item.id}-${index}`}
-                                className="flex gap-4 group h-[58px]"
+                                className="flex gap-4 group"
                                 onClick={() => item.link && router.push(item.link)}
                             >
                                 <div className="relative flex flex-col items-center">
@@ -388,7 +388,7 @@ export default function DashboardPage() {
                                 )}
                                 </div>
                                 
-                                <div className="flex-1 group-hover:bg-muted rounded-md px-2 -mx-2 flex justify-between items-start cursor-pointer">
+                                <div className="flex-1 group-hover:bg-muted rounded-md px-2 -mx-2 flex justify-between items-start cursor-pointer py-1">
                                 <div>
                                     <p className="text-sm line-clamp-2">{item.message}</p>
                                     <p className="text-xs text-muted-foreground">
@@ -554,3 +554,4 @@ export default function DashboardPage() {
     </div>
   );
 }
+
