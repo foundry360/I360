@@ -1229,7 +1229,7 @@ export default function ProjectDetailsPage() {
                                </div>
                                <div className="col-span-1 space-y-6">
                                      <Card className={cn(atRiskItems.length === 0 && 'border-dashed border-2 bg-transparent shadow-none')}>
-                                         {atRiskItems.length > 0 && (
+                                        {atRiskItems.length > 0 && (
                                             <CardHeader>
                                                 <CardTitle>At-Risk Items</CardTitle>
                                                 <CardDescription>Items that are overdue or due within 3 days.</CardDescription>
