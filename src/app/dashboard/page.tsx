@@ -289,12 +289,14 @@ export default function DashboardPage() {
       </div>
 
       <Collapsible open={isTopSectionOpen} onOpenChange={setIsTopSectionOpen}>
-        <CollapsibleTrigger asChild>
-          <Button variant="ghost" size="sm" className="mb-4 -ml-3">
-            <ChevronDown className={cn("h-4 w-4 mr-2 transition-transform", !isTopSectionOpen && "-rotate-90")} />
-            {isTopSectionOpen ? 'Hide Overview' : 'Show Overview'}
-          </Button>
-        </CollapsibleTrigger>
+        <div className="flex justify-end">
+            <CollapsibleTrigger asChild>
+                <Button variant="ghost" size="icon" className="mb-4">
+                    <ChevronDown className={cn("h-4 w-4 transition-transform", !isTopSectionOpen && "-rotate-90")} />
+                    <span className="sr-only">{isTopSectionOpen ? 'Hide Overview' : 'Show Overview'}</span>
+                </Button>
+            </CollapsibleTrigger>
+        </div>
         <CollapsibleContent>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <Card className={cn("h-full", thisWeeksItems.length === 0 && 'border-dashed bg-transparent shadow-none')}>
