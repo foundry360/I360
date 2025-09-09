@@ -390,7 +390,7 @@ export default function DashboardPage() {
                                 )}
                                 </div>
                                 
-                                <div className="flex-1 pb-8 pt-1 group-hover:bg-muted rounded-md px-2 -mx-2 flex justify-between items-start cursor-pointer">
+                                <div className="flex-1 pb-4 pt-1 group-hover:bg-muted rounded-md px-2 -mx-2 flex justify-between items-start cursor-pointer">
                                 <div>
                                     <p className="text-sm">{item.message}</p>
                                     <p className="text-xs text-muted-foreground">
