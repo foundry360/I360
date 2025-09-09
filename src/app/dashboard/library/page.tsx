@@ -361,11 +361,11 @@ export default function LibraryPage() {
                 <Accordion type="single" collapsible className="w-full">
                   <AccordionItem value="tags">
                     <div className="flex items-center justify-between px-4 py-2 hover:bg-muted/50">
-                        <div className="flex items-center gap-2 flex-1 cursor-pointer" onClick={() => document.querySelector<HTMLButtonElement>('[data-radix-collection-item][aria-controls="radix-rk-content-tags"]')?.click()}>
-                            <Layers className="h-4 w-4" />
-                            <h3 className="font-semibold text-base">Tags</h3>
-                        </div>
-                        <AccordionTrigger className="p-2 -mr-2" />
+                      <div className="flex items-center gap-2 flex-1 cursor-pointer" onClick={() => document.querySelector<HTMLButtonElement>('[data-radix-collection-item][aria-controls="radix-rk-content-tags"]')?.click()}>
+                          <Layers className="h-4 w-4" />
+                          <h3 className="font-semibold text-base">Tags</h3>
+                      </div>
+                      <AccordionTrigger className="p-2 -mr-2" />
                     </div>
                     <AccordionContent>
                       <div className="space-y-1 pr-4 pl-6 pb-4">
@@ -473,6 +473,7 @@ export default function LibraryPage() {
                            const config = tagConfig.find(c => c.iconName === primaryTag?.icon) || tagConfig.find(t => t.iconName === 'Layers');
                            const Icon = config?.icon || Layers;
                            const color = config?.color || 'text-foreground';
+                           const bgColor = color.replace('text-', 'bg-');
                            return (
                            <label htmlFor={`select-${story.id}`} key={story.id} className="block cursor-pointer">
                              <Card className={cn("flex hover:border-primary", selectedStories.includes(story.id) && "border-primary ring-2 ring-primary")}>
@@ -488,7 +489,9 @@ export default function LibraryPage() {
                                   <CardHeader className="py-2">
                                       <div className="flex justify-between items-center gap-4">
                                           <div className="flex items-center gap-2 min-w-0">
-                                              <Icon className={cn("h-4 w-4 shrink-0", color)} />
+                                              <div className={cn("flex items-center justify-center h-6 w-6 rounded-md", bgColor)}>
+                                                  <Icon className="h-4 w-4 text-white" />
+                                              </div>
                                               <CardTitle className="text-sm font-medium truncate flex-1" title={story.title}>
                                                   {story.title}
                                               </CardTitle>
