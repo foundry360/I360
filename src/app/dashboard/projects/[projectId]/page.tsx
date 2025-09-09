@@ -1797,7 +1797,7 @@ export default function ProjectDetailsPage() {
                         )}
                     </TabsContent>
                      <TabsContent value="all-work">
-                        {projectBacklogItems.length > 0 ? (
+                         {projectBacklogItems.length > 0 ? (
                             <div className="space-y-4">
                                 <div className="relative">
                                     <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -1854,14 +1854,22 @@ export default function ProjectDetailsPage() {
                                             </div>
                                         )
                                     }) : (
-                                        <p className="text-sm text-muted-foreground text-center p-6">
-                                            {allWorkSearchTerm ? 'No matching items found.' : 'No items assigned to any waves.'}
-                                        </p>
+                                        <div className="p-10 text-center rounded-lg border-2 border-dashed border-border bg-transparent shadow-none">
+                                            <div className="flex justify-center mb-4">
+                                                <div className="flex justify-center items-center h-16 w-16 text-muted-foreground">
+                                                    <LayoutList className="h-8 w-8" />
+                                                </div>
+                                            </div>
+                                            <h3 className="text-lg font-semibold text-foreground">No Matching Items</h3>
+                                            <p className="text-muted-foreground mt-2 mb-4">
+                                                Your search for "{allWorkSearchTerm}" did not return any results.
+                                            </p>
+                                        </div>
                                     )}
                                 </div>
                             </div>
                         ) : (
-                            <div className="p-10 text-center rounded-lg border-2 border-dashed border-border bg-transparent shadow-none">
+                           <div className="p-10 text-center rounded-lg border-2 border-dashed border-border bg-transparent shadow-none">
                                 <div className="flex justify-center mb-4">
                                     <div className="flex justify-center items-center h-16 w-16 text-muted-foreground">
                                         <LayoutList className="h-8 w-8" />
