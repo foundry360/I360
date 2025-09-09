@@ -21,8 +21,8 @@ import {
   History,
   ChevronRight as ChevronRightIcon,
   Rss,
-  PanelRightClose,
-  PanelRightOpen,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -473,15 +473,15 @@ export function Sidebar() {
               <Tooltip>
                 <TooltipTrigger asChild>
                   <div
-                    className="flex w-full justify-end cursor-pointer p-2 rounded-md hover:bg-sidebar-accent"
+                    className="flex w-full justify-end cursor-pointer p-2 rounded-md"
                     onClick={toggleSidebar}
                     aria-label={
                       isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'
                     }
                   >
                     {isCollapsed ? 
-                        <PanelRightOpen className="text-[hsl(var(--sidebar-toggle-icon))]" /> : 
-                        <PanelRightClose className="text-[hsl(var(--sidebar-toggle-icon))]" />}
+                        <ChevronRight className="text-[hsl(var(--sidebar-toggle-icon))]" /> : 
+                        <ChevronLeft className="text-[hsl(var(--sidebar-toggle-icon))]" />}
                   </div>
                 </TooltipTrigger>
                 {isCollapsed && (
