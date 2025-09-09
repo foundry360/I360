@@ -137,9 +137,9 @@ export default function CollectionsPage() {
                             className="cursor-pointer bg-transparent border-dashed hover:border-primary transition-colors flex flex-col items-center justify-center min-h-[224px] border-2 border-border"
                             onClick={openNewCollectionDialog}
                         >
-                            <div className="flex flex-col items-center gap-2 text-muted-foreground dark:text-[hsl(0_0%_90%)]">
-                                <PlusCircle className="w-12 h-12 text-foreground/80 dark:text-[hsl(0_0%_90%)]" />
-                                <p className="text-sm text-foreground/80 dark:text-[hsl(0_0%_90%)]">New Collection</p>
+                            <div className="flex flex-col items-center gap-2 text-muted-foreground">
+                                <PlusCircle className="w-12 h-12 text-foreground/80 dark:text-foreground/10" />
+                                <p className="text-sm text-foreground/80 dark:text-foreground/10">New Collection</p>
                             </div>
                         </Card>
                     </div>
@@ -162,3 +162,5 @@ export default function CollectionsPage() {
         </>
     )
 }
+
+    
