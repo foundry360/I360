@@ -1130,13 +1130,17 @@ export default function ProjectDetailsPage() {
                                </div>
                                <div className="col-span-1 space-y-6">
                                      <Card className={cn(!activeSprint && 'border-dashed border-2 bg-transparent shadow-none')}>
-                                        {activeSprint && (
+                                        {activeSprint ? (
                                             <CardHeader>
                                                 <CardTitle>Active Wave Health</CardTitle>
                                                 <CardDescription>{activeSprint.name}</CardDescription>
                                             </CardHeader>
+                                        ) : (
+                                            <CardHeader className="h-full">
+                                                <CardTitle>Active Wave Health</CardTitle>
+                                            </CardHeader>
                                         )}
-                                        <CardContent className={cn(!activeSprint && 'p-0')}>
+                                        <CardContent>
                                             {activeSprint ? (
                                                 activeSprintHealthData && activeSprintHealthData.totalItems > 0 ? (
                                                     <>
@@ -1172,7 +1176,7 @@ export default function ProjectDetailsPage() {
                                                     </div>
                                                 )
                                             ) : (
-                                                <div className="h-[200px] flex flex-col items-center justify-center text-center text-muted-foreground text-sm p-4">
+                                                <div className="h-[150px] flex flex-col items-center justify-center text-center text-muted-foreground text-sm p-4">
                                                   <Waves className="h-10 w-10 mb-2" />
                                                   No wave is currently active. Start a wave to see its health.
                                                 </div>
@@ -1219,7 +1223,7 @@ export default function ProjectDetailsPage() {
                                                     })}
                                                 </Accordion>
                                             ) : (
-                                                 <div className="h-[218px] flex flex-col items-center justify-center text-center text-muted-foreground text-sm p-4">
+                                                 <div className="h-[150px] flex flex-col items-center justify-center text-center text-muted-foreground text-sm p-4">
                                                     <Loader className="h-10 w-10 mb-2" />
                                                     No epic progress to display. Add items with points to epics.
                                                 </div>
@@ -1279,7 +1283,7 @@ export default function ProjectDetailsPage() {
                                                     )
                                                 })
                                             ) : (
-                                                 <div className="h-[460px] flex flex-col items-center justify-center text-center text-muted-foreground text-sm p-4">
+                                                 <div className="h-[150px] flex flex-col items-center justify-center text-center text-muted-foreground text-sm p-4">
                                                     <AlertTriangle className="h-10 w-10 mb-2" />
                                                     No at-risk items. Great job!
                                                 </div>
@@ -1307,7 +1311,7 @@ export default function ProjectDetailsPage() {
                     </TabsContent>
                     <TabsContent value="epics">
                         <div className="space-y-6">
-                            {epics.length === 0 && unassignedBacklogItems.length === 0 ? (
+                            {epics.length === 0 ? (
                                 <div className="p-10 text-center rounded-lg border-2 border-dashed border-border bg-transparent shadow-none">
                                     <div className="flex justify-center mb-4">
                                        <div className="flex justify-center items-center h-16 w-16 text-muted-foreground">
