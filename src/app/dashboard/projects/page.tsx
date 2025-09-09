@@ -582,18 +582,20 @@ export default function ProjectsPage() {
                     </div>
                 )}
 
-                <div className="flex justify-end mt-4">
-                    <TablePagination
-                        count={filteredProjects.length}
-                        page={page}
-                        rowsPerPage={rowsPerPage}
-                        onPageChange={(newPage) => setPage(newPage)}
-                        onRowsPerPageChange={(newRowsPerPage) => {
-                            setRowsPerPage(newRowsPerPage);
-                            setPage(0);
-                        }}
-                    />
-                </div>
+                {viewMode === 'list' && (
+                    <div className="flex justify-end mt-4">
+                        <TablePagination
+                            count={filteredProjects.length}
+                            page={page}
+                            rowsPerPage={rowsPerPage}
+                            onPageChange={(newPage) => setPage(newPage)}
+                            onRowsPerPageChange={(newRowsPerPage) => {
+                                setRowsPerPage(newRowsPerPage);
+                                setPage(0);
+                            }}
+                        />
+                    </div>
+                )}
             </TabsContent>
         </Tabs>
         
