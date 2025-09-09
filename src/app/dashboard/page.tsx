@@ -430,10 +430,12 @@ export default function DashboardPage() {
             </Card>
              <Card className={cn("group h-full", notifications.length === 0 && 'p-10 text-center rounded-lg border-2 border-dashed border-border bg-transparent shadow-none flex flex-col')}>
               <CardHeader>
-                <div className="flex justify-between items-center">
-                  <CardTitle>
-                    Communications Feed
-                  </CardTitle>
+                <div className="flex items-center">
+                  <div className="flex-1 text-center">
+                    <CardTitle>
+                      Communications Feed
+                    </CardTitle>
+                  </div>
                   {unreadCount > 0 && (
                     <Button variant="outline" size="sm" onClick={handleMarkAllRead} className="opacity-0 group-hover:opacity-100 transition-opacity">
                       <CheckCheck className="mr-2 h-4 w-4" />
