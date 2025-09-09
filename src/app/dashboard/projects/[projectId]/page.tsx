@@ -380,7 +380,7 @@ export default function ProjectDetailsPage() {
 
     const projectPrefix = project ? project.name.substring(0, project.name.indexOf('-')) : '';
     
-    const onDragEnd = async (result: DropResult) => {
+    const onDragEnd = React.useCallback(async (result: DropResult) => {
         const { source, destination, draggableId } = result;
 
         if (!destination) return;
@@ -390,31 +390,33 @@ export default function ProjectDetailsPage() {
         const destColId = destination.droppableId as BacklogItemStatus;
         
         // Optimistic UI Update
-        const newColumnsState = { ...columns };
-        const sourceCol = newColumnsState[sourceColId];
-        const destCol = newColumnsState[destColId];
-        const [movedItem] = sourceCol.splice(source.index, 1);
-
-        if (sourceColId === destColId) {
-            // Moving within the same column
-            sourceCol.splice(destination.index, 0, movedItem);
-        } else {
-            // Moving to a different column
-            destCol.splice(destination.index, 0, movedItem);
-        }
-        
-        setColumns(newColumnsState);
+        setColumns(prevColumns => {
+            const newColumnsState = { ...prevColumns };
+            const sourceCol = Array.from(newColumnsState[sourceColId]);
+            const destCol = sourceColId === destColId ? sourceCol : Array.from(newColumnsState[destColId]);
+            const [movedItem] = sourceCol.splice(source.index, 1);
+    
+            if (sourceColId === destColId) {
+                sourceCol.splice(destination.index, 0, movedItem);
+                newColumnsState[sourceColId] = sourceCol;
+            } else {
+                destCol.splice(destination.index, 0, movedItem);
+                newColumnsState[sourceColId] = sourceCol;
+                newColumnsState[destColId] = destCol;
+            }
+            return newColumnsState;
+        });
 
         // Persist changes to Firestore
         try {
             await updateBacklogItemOrderAndStatus(itemId, destColId, destination.index, projectId);
-            // No need to fetch data here, as the listener will pick up changes
+            // The real-time listener will eventually update the state, but the optimistic update handles the immediate UI change.
         } catch (error) {
             console.error("Failed to update item:", error);
             // Revert optimistic update on failure by re-fetching
             fetchData();
         }
-    };
+    }, [projectId, fetchData]);
     
     const handleDelete = async (e?: React.MouseEvent<HTMLButtonElement>) => {
         if (e) e.stopPropagation();
