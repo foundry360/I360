@@ -163,18 +163,20 @@ export function EditUserStoryDialog() {
                   />
                   <Button type="button" variant="outline" onClick={handleAddCriterion}>Add</Button>
                 </div>
-                <ScrollArea className="h-24">
-                  <ul className="space-y-1 list-disc pl-5">
-                    {story.acceptanceCriteria.map((c, i) => (
-                      <li key={i} className="text-sm flex justify-between items-center">
-                        <span>{c}</span>
-                        <Button type="button" variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleRemoveCriterion(i)}>
-                          <X className="h-3 w-3" />
-                        </Button>
-                      </li>
-                    ))}
-                  </ul>
-                </ScrollArea>
+                {story.acceptanceCriteria.length > 0 && (
+                    <ScrollArea className="h-24">
+                        <ul className="space-y-1 list-disc pl-5">
+                        {story.acceptanceCriteria.map((c, i) => (
+                            <li key={i} className="text-sm flex justify-between items-center">
+                            <span>{c}</span>
+                            <Button type="button" variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleRemoveCriterion(i)}>
+                                <X className="h-3 w-3" />
+                            </Button>
+                            </li>
+                        ))}
+                        </ul>
+                    </ScrollArea>
+                )}
               </div>
             </div>
             <div className="space-y-2">
@@ -253,4 +255,3 @@ export function EditUserStoryDialog() {
     </Dialog>
   );
 }
-
