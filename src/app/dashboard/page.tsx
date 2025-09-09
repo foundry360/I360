@@ -28,6 +28,7 @@ import {
   CheckCheck,
   MessageCircleMore,
   Rss,
+  ChevronDown,
 } from 'lucide-react';
 import { getAssessments, type Assessment } from '@/services/assessment-service';
 import { getContacts, type Contact } from '@/services/contact-service';
@@ -45,6 +46,11 @@ import { getNotifications, markAllNotificationsAsRead, type Notification } from 
 import { FeedItem } from '@/components/feed-item';
 import { useQuickAction } from '@/contexts/quick-action-context';
 import type { Project } from '@/services/project-service';
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible"
 
 type ActivityItem = {
   id: string;
@@ -89,6 +95,7 @@ export default function DashboardPage() {
   const [notifications, setNotifications] = React.useState<Notification[]>([]);
   const [isActivityExpanded, setIsActivityExpanded] = React.useState(false);
   const [isTasksExpanded, setIsTasksExpanded] = React.useState(false);
+  const [isTopSectionOpen, setIsTopSectionOpen] = React.useState(true);
 
   const loadDashboardData = React.useCallback(async () => {
     try {
@@ -281,184 +288,195 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <Card className={cn("h-full", thisWeeksItems.length === 0 && 'border-dashed bg-transparent shadow-none')}>
-           <CardHeader>
-                <CardTitle>Items Due This Week</CardTitle>
-                {thisWeeksItems.length > 0 && (
-                    <CardDescription>
-                        Your immediate priorities for the next 7 days
-                    </CardDescription>
-                )}
-            </CardHeader>
-            <CardContent>
-                {thisWeeksItems.length > 0 ? (
-                    <div className="space-y-0">
-                        {visibleItems.map((item, index) => {
-                            const riskStatus = getItemRiskStatus(item);
-                            return (
-                                <div key={item.id} className={cn("flex items-start justify-between py-2 rounded-md hover:bg-muted cursor-pointer", index !== visibleItems.length - 1 && 'border-b dark:border-white/10')} onClick={() => router.push(`/dashboard/projects/${item.projectId}`)}>
-                                    <div className="flex items-center gap-3 w-full">
-                                        <div 
-                                          className={cn(
-                                            "h-2.5 w-2.5 rounded-full mt-1.5",
-                                            riskStatus === 'at-risk' && 'bg-red-500',
-                                            riskStatus === 'due-soon' && 'bg-yellow-500',
-                                            riskStatus === 'on-track' && 'bg-green-500'
-                                          )}
-                                        />
-                                        <div className="flex-1 overflow-hidden">
-                                            <div className="flex justify-between items-center gap-2">
-                                                <p className="font-medium text-sm truncate">{item.title}</p>
-                                                <Badge variant="outline" className={cn("font-normal whitespace-nowrap", statusColors[item.status])}>{item.status}</Badge>
+      <Collapsible open={isTopSectionOpen} onOpenChange={setIsTopSectionOpen}>
+        <CollapsibleTrigger asChild>
+          <Button variant="ghost" size="sm" className="mb-4 -ml-3">
+            <ChevronDown className={cn("h-4 w-4 mr-2 transition-transform", !isTopSectionOpen && "-rotate-90")} />
+            {isTopSectionOpen ? 'Hide Overview' : 'Show Overview'}
+          </Button>
+        </CollapsibleTrigger>
+        <CollapsibleContent>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <Card className={cn("h-full", thisWeeksItems.length === 0 && 'border-dashed bg-transparent shadow-none')}>
+              <CardHeader>
+                    <CardTitle>Items Due This Week</CardTitle>
+                    {thisWeeksItems.length > 0 && (
+                        <CardDescription>
+                            Your immediate priorities for the next 7 days
+                        </CardDescription>
+                    )}
+                </CardHeader>
+                <CardContent>
+                    {thisWeeksItems.length > 0 ? (
+                        <div className="space-y-0">
+                            {visibleItems.map((item, index) => {
+                                const riskStatus = getItemRiskStatus(item);
+                                return (
+                                    <div key={item.id} className={cn("flex items-start justify-between py-2 rounded-md hover:bg-muted cursor-pointer", index !== visibleItems.length - 1 && 'border-b dark:border-white/10')} onClick={() => router.push(`/dashboard/projects/${item.projectId}`)}>
+                                        <div className="flex items-center gap-3 w-full">
+                                            <div 
+                                              className={cn(
+                                                "h-2.5 w-2.5 rounded-full mt-1.5",
+                                                riskStatus === 'at-risk' && 'bg-red-500',
+                                                riskStatus === 'due-soon' && 'bg-yellow-500',
+                                                riskStatus === 'on-track' && 'bg-green-500'
+                                              )}
+                                            />
+                                            <div className="flex-1 overflow-hidden">
+                                                <div className="flex justify-between items-center gap-2">
+                                                    <p className="font-medium text-sm truncate">{item.title}</p>
+                                                    <Badge variant="outline" className={cn("font-normal whitespace-nowrap", statusColors[item.status])}>{item.status}</Badge>
+                                                </div>
+                                                <p className="text-xs text-muted-foreground">Due on {format(parseISO(item.dueDate!), 'EEE, MMM dd')}</p>
                                             </div>
-                                            <p className="text-xs text-muted-foreground">Due on {format(parseISO(item.dueDate!), 'EEE, MMM dd')}</p>
                                         </div>
                                     </div>
-                                </div>
-                            )
-                        })}
-                        {thisWeeksItems.length > 5 && (
-                             <Button 
-                                variant="link" 
-                                className="p-0 h-auto text-sm mt-2"
-                                onClick={() => setIsTasksExpanded(!isTasksExpanded)}
-                            >
-                                {isTasksExpanded ? 'See Less' : 'See More...'}
-                            </Button>
-                        )}
-                    </div>
-                ) : (
-                    <div className="flex flex-col items-center justify-center h-48 text-center text-muted-foreground p-10">
-                         <div className="flex justify-center mb-4">
-                           <div className="flex justify-center items-center h-16 w-16 text-muted-foreground">
-                               <CalendarCheck className="h-8 w-8" />
-                           </div>
-                       </div>
-                        <h3 className="font-semibold text-foreground">All clear for the week!</h3>
-                        <p className="text-muted-foreground mt-2">No items are due in the next 7 days.</p>
-                    </div>
-                )}
-            </CardContent>
-        </Card>
-        <Card className={cn("h-full", recentActivity.length === 0 && 'border-dashed bg-transparent shadow-none')}>
-          <CardHeader>
-            <CardTitle>Recent Activity</CardTitle>
-            {recentActivity.length > 0 && (
-                <CardDescription>
-                The latest updates from your workspace
-                </CardDescription>
-            )}
-          </CardHeader>
-          <CardContent>
-            {recentActivity.length > 0 ? (
-                <>
-                    <div className="relative space-y-0">
-                    {recentActivity.map((item, index) => {
-                        const config = activityTypeConfig[item.type];
-                        const Icon = config.icon;
-                        return (
-                        <div
-                            key={`${item.id}-${index}`}
-                            className="flex gap-4 group"
-                            onClick={() => item.link && router.push(item.link)}
-                        >
-                            <div className="relative flex flex-col items-center">
-                            <div className={cn("p-2 rounded-full z-10 relative", config.bg)}>
-                                <Icon className={cn("h-5 w-5", config.color)} />
-                            </div>
-                            {index < recentActivity.length - 1 && (
-                                <div className="flex-grow w-px bg-primary/20" />
+                                )
+                            })}
+                            {thisWeeksItems.length > 5 && (
+                                 <Button 
+                                    variant="link" 
+                                    className="p-0 h-auto text-sm mt-2"
+                                    onClick={() => setIsTasksExpanded(!isTasksExpanded)}
+                                >
+                                    {isTasksExpanded ? 'See Less' : 'See More...'}
+                                </Button>
                             )}
-                            </div>
-                            
-                            <div className="flex-1 pb-8 pt-1 group-hover:bg-muted rounded-md px-2 -mx-2 flex justify-between items-start cursor-pointer">
-                            <div>
-                                <p className="text-sm">{item.message}</p>
-                                <p className="text-xs text-muted-foreground">
-                                {formatDistanceToNow(parseISO(item.timestamp), {
-                                    addSuffix: true,
-                                })}
-                                </p>
-                            </div>
-                            <ArrowRight className="h-4 w-4 text-muted-foreground mt-1 opacity-0 group-hover:opacity-100 transition-opacity" />
-                            </div>
                         </div>
-                        );
-                    })}
-                    </div>
-                    {allRecentActivity.length > 5 && (
-                        <Button 
-                            variant="link" 
-                            className="p-0 h-auto text-sm mt-4"
-                            onClick={() => setIsActivityExpanded(!isActivityExpanded)}
-                        >
-                            {isActivityExpanded ? 'View less' : 'View all'}
-                        </Button>
-                    )}
-                </>
-            ) : (
-                <div className="flex flex-col items-center justify-center h-48 text-center text-muted-foreground p-10">
-                   <div className="flex justify-center mb-4">
-                       <div className="flex justify-center items-center h-16 w-16 text-muted-foreground">
-                           <FolderKanban className="h-8 w-8" />
-                       </div>
-                   </div>
-                    <h3 className="font-semibold text-foreground">No recent activity</h3>
-                    <p className="text-muted-foreground mt-2">Updates from your workspace will appear here.</p>
-                </div>
-            )}
-          </CardContent>
-        </Card>
-        <Card className={cn("h-full flex flex-col group", notifications.length === 0 && "border-dashed bg-transparent shadow-none")}>
-          <CardHeader>
-            <div className="flex justify-between items-center">
-              <CardTitle>Communications Feed</CardTitle>
-              {unreadCount > 0 && (
-                <Button variant="outline" size="sm" onClick={handleMarkAllRead} className="opacity-0 group-hover:opacity-100 transition-opacity">
-                  <CheckCheck className="mr-2 h-4 w-4" />
-                  Mark all as read
-                </Button>
-              )}
-            </div>
-             {notifications.length > 0 && (
-              <CardDescription>
-                A live feed of all notifications and alerts
-              </CardDescription>
-            )}
-          </CardHeader>
-          <CardContent className="flex-1 -mt-4 flex flex-col">
-              <div className="space-y-0 h-full">
-                  {notifications.slice(0,5).map(note => (
-                      <FeedItem
-                          key={note.id}
-                          notification={note}
-                          isSelected={selectedNotifications.includes(note.id)}
-                          onSelect={handleSelectNotification}
-                          onUpdate={() => getNotifications().then(setNotifications)}
-                          showActions={false}
-                      />
-                  ))}
-                  {notifications.length === 0 && (
-                       <div className="flex flex-col items-center justify-center h-48 text-center text-muted-foreground p-10">
-                           <div className="flex justify-center mb-4">
+                    ) : (
+                        <div className="flex flex-col items-center justify-center h-48 text-center text-muted-foreground p-10">
+                             <div className="flex justify-center mb-4">
                                <div className="flex justify-center items-center h-16 w-16 text-muted-foreground">
-                                   <Rss className="h-8 w-8" />
+                                   <CalendarCheck className="h-8 w-8" />
                                </div>
                            </div>
-                          <h3 className="font-semibold text-foreground">Inbox Zero!</h3>
-                          <p className="text-muted-foreground mt-2">No new notifications.</p>
-                      </div>
+                            <h3 className="font-semibold text-foreground">All clear for the week!</h3>
+                            <p className="text-muted-foreground mt-2">No items are due in the next 7 days.</p>
+                        </div>
+                    )}
+                </CardContent>
+            </Card>
+            <Card className={cn("h-full", allRecentActivity.length === 0 && 'border-dashed bg-transparent shadow-none')}>
+              <CardHeader>
+                <CardTitle>Recent Activity</CardTitle>
+                {allRecentActivity.length > 0 && (
+                    <CardDescription>
+                    The latest updates from your workspace
+                    </CardDescription>
+                )}
+              </CardHeader>
+              <CardContent>
+                {allRecentActivity.length > 0 ? (
+                    <>
+                        <div className="relative space-y-0">
+                        {recentActivity.map((item, index) => {
+                            const config = activityTypeConfig[item.type];
+                            const Icon = config.icon;
+                            return (
+                            <div
+                                key={`${item.id}-${index}`}
+                                className="flex gap-4 group"
+                                onClick={() => item.link && router.push(item.link)}
+                            >
+                                <div className="relative flex flex-col items-center">
+                                <div className={cn("p-2 rounded-full z-10 relative", config.bg)}>
+                                    <Icon className={cn("h-5 w-5", config.color)} />
+                                </div>
+                                {index < recentActivity.length - 1 && (
+                                    <div className="flex-grow w-px bg-primary/20" />
+                                )}
+                                </div>
+                                
+                                <div className="flex-1 pb-8 pt-1 group-hover:bg-muted rounded-md px-2 -mx-2 flex justify-between items-start cursor-pointer">
+                                <div>
+                                    <p className="text-sm">{item.message}</p>
+                                    <p className="text-xs text-muted-foreground">
+                                    {formatDistanceToNow(parseISO(item.timestamp), {
+                                        addSuffix: true,
+                                    })}
+                                    </p>
+                                </div>
+                                <ArrowRight className="h-4 w-4 text-muted-foreground mt-1 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                </div>
+                            </div>
+                            );
+                        })}
+                        </div>
+                        {allRecentActivity.length > 5 && (
+                            <Button 
+                                variant="link" 
+                                className="p-0 h-auto text-sm mt-4"
+                                onClick={() => setIsActivityExpanded(!isActivityExpanded)}
+                            >
+                                {isActivityExpanded ? 'View less' : 'View all'}
+                            </Button>
+                        )}
+                    </>
+                ) : (
+                    <div className="flex flex-col items-center justify-center h-48 text-center text-muted-foreground p-10">
+                       <div className="flex justify-center mb-4">
+                           <div className="flex justify-center items-center h-16 w-16 text-muted-foreground">
+                               <FolderKanban className="h-8 w-8" />
+                           </div>
+                       </div>
+                        <h3 className="font-semibold text-foreground">No recent activity</h3>
+                        <p className="text-muted-foreground mt-2">Updates from your workspace will appear here.</p>
+                    </div>
+                )}
+              </CardContent>
+            </Card>
+            <Card className={cn("h-full flex flex-col group", notifications.length === 0 && "border-dashed bg-transparent shadow-none")}>
+              <CardHeader>
+                <div className="flex justify-between items-center">
+                  <CardTitle>Communications Feed</CardTitle>
+                  {unreadCount > 0 && (
+                    <Button variant="outline" size="sm" onClick={handleMarkAllRead} className="opacity-0 group-hover:opacity-100 transition-opacity">
+                      <CheckCheck className="mr-2 h-4 w-4" />
+                      Mark all as read
+                    </Button>
                   )}
-              </div>
-          </CardContent>
-          {notifications.length > 5 && (
-            <CardFooter>
-              <Button variant="outline" className="w-full" onClick={() => router.push('/dashboard/feed')}>View all in Feed</Button>
-            </CardFooter>
-          )}
-        </Card>
-      </div>
+                </div>
+                 {notifications.length > 0 && (
+                  <CardDescription>
+                    A live feed of all notifications and alerts
+                  </CardDescription>
+                )}
+              </CardHeader>
+              <CardContent className="flex-1 -mt-4 flex flex-col">
+                  <div className="space-y-0 h-full">
+                      {notifications.slice(0,5).map(note => (
+                          <FeedItem
+                              key={note.id}
+                              notification={note}
+                              isSelected={selectedNotifications.includes(note.id)}
+                              onSelect={handleSelectNotification}
+                              onUpdate={() => getNotifications().then(setNotifications)}
+                              showActions={false}
+                          />
+                      ))}
+                      {notifications.length === 0 && (
+                           <div className="flex flex-col items-center justify-center h-48 text-center text-muted-foreground p-10">
+                               <div className="flex justify-center mb-4">
+                                   <div className="flex justify-center items-center h-16 w-16 text-muted-foreground">
+                                       <Rss className="h-8 w-8" />
+                                   </div>
+                               </div>
+                              <h3 className="font-semibold text-foreground">Inbox Zero!</h3>
+                              <p className="text-muted-foreground mt-2">No new notifications.</p>
+                          </div>
+                      )}
+                  </div>
+              </CardContent>
+              {notifications.length > 5 && (
+                <CardFooter>
+                  <Button variant="outline" className="w-full" onClick={() => router.push('/dashboard/feed')}>View all in Feed</Button>
+                </CardFooter>
+              )}
+            </Card>
+          </div>
+        </CollapsibleContent>
+      </Collapsible>
+
 
       <Separator />
 
