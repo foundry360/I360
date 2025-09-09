@@ -30,6 +30,7 @@ import {
   Rss,
   ChevronDown,
   PlusCircle,
+  MoreHorizontal,
 } from 'lucide-react';
 import { getAssessments, type Assessment } from '@/services/assessment-service';
 import { getContacts, type Contact } from '@/services/contact-service';
@@ -43,7 +44,7 @@ import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { EngagementInsightsPanel } from '@/components/engagement-insights-panel';
-import { getNotifications, markAllNotificationsAsRead, type Notification } from '@/services/notification-service';
+import { getNotifications, markAllNotificationsAsRead, type Notification, updateNotification } from '@/services/notification-service';
 import { FeedItem } from '@/components/feed-item';
 import { useQuickAction } from '@/contexts/quick-action-context';
 import type { Project } from '@/services/project-service';
@@ -52,6 +53,8 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { useToast } from '@/hooks/use-toast';
 
 type ActivityItem = {
   id: string;
@@ -97,6 +100,7 @@ export default function DashboardPage() {
   const [isActivityExpanded, setIsActivityExpanded] = React.useState(false);
   const [isTasksExpanded, setIsTasksExpanded] = React.useState(false);
   const [isTopSectionOpen, setIsTopSectionOpen] = React.useState(true);
+  const { toast } = useToast();
 
   const loadDashboardData = React.useCallback(async () => {
     try {
@@ -239,6 +243,14 @@ export default function DashboardPage() {
       return 'on-track';
   }
 
+  const handleToggleRead = async (notification: Notification) => {
+    await updateNotification(notification.id, { isRead: !notification.isRead });
+    toast({
+        title: notification.isRead ? "Marked as unread" : "Marked as read",
+    });
+    loadDashboardData();
+  };
+
   if (loading) {
     return (
       <div className="space-y-6">
@@ -364,7 +376,7 @@ export default function DashboardPage() {
                             return (
                             <div
                                 key={`${item.id}-${index}`}
-                                className="flex gap-4 group"
+                                className="flex gap-4 group h-[58px]"
                                 onClick={() => item.link && router.push(item.link)}
                             >
                                 <div className="relative flex flex-col items-center">
@@ -376,9 +388,9 @@ export default function DashboardPage() {
                                 )}
                                 </div>
                                 
-                                <div className="flex-1 py-1 group-hover:bg-muted rounded-md px-2 -mx-2 flex justify-between items-start cursor-pointer">
+                                <div className="flex-1 group-hover:bg-muted rounded-md px-2 -mx-2 flex justify-between items-start cursor-pointer">
                                 <div>
-                                    <p className="text-sm">{item.message}</p>
+                                    <p className="text-sm line-clamp-2">{item.message}</p>
                                     <p className="text-xs text-muted-foreground">
                                     {formatDistanceToNow(parseISO(item.timestamp), {
                                         addSuffix: true,
@@ -431,15 +443,25 @@ export default function DashboardPage() {
                 {notifications.length > 0 ? (
                     <div className="space-y-0">
                       {notifications.slice(0, 3).map(note => (
-                          <FeedItem
-                              key={note.id}
-                              notification={note}
-                              isSelected={false}
-                              onSelect={() => {}}
-                              onUpdate={() => getNotifications().then(setNotifications)}
-                              showActions={true}
-                              showCheckbox={false}
-                          />
+                          <div key={note.id} className="group/item flex justify-between items-start p-2 -mx-2 rounded-md hover:bg-muted">
+                            <div onClick={() => router.push(note.link)} className="flex-1 cursor-pointer">
+                                <p className={cn("text-sm", !note.isRead && "font-semibold")}>{note.message}</p>
+                                <p className="text-xs text-muted-foreground">{formatDistanceToNow(new Date(note.createdAt), { addSuffix: true })}</p>
+                            </div>
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover/item:opacity-100 transition-opacity">
+                                        <MoreHorizontal className="h-4 w-4" />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent>
+                                    <DropdownMenuItem onClick={() => handleToggleRead(note)}>
+                                        <CheckCheck className="mr-2 h-4 w-4" />
+                                        {note.isRead ? 'Mark as unread' : 'Mark as read'}
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                          </div>
                       ))}
                     </div>
                 ) : (
@@ -532,5 +554,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-
-    
