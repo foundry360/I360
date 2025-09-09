@@ -205,13 +205,7 @@ export default function DashboardPage() {
   
   const recentActivity = isActivityExpanded ? allRecentActivity : allRecentActivity.slice(0, 3);
   const visibleItems = isTasksExpanded ? thisWeeksItems : thisWeeksItems.slice(0, 5);
-  const [selectedNotifications, setSelectedNotifications] = React.useState<string[]>([]);
-  const handleSelectNotification = (id: string) => {
-    setSelectedNotifications(prev => 
-        prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
-    );
-  };
-
+  
   const getFirstName = () => {
     if (user?.displayName) {
       return user.displayName.split(' ')[0];
@@ -243,14 +237,6 @@ export default function DashboardPage() {
       const daysUntilDue = differenceInDays(dueDate, new Date());
       if (daysUntilDue <= 3) return 'due-soon';
       return 'on-track';
-  }
-  
-  const unreadCount = notifications.filter(n => !n.isRead).length;
-
-  const handleMarkAllRead = async () => {
-    await markAllNotificationsAsRead();
-    const newNotifications = await getNotifications();
-    setNotifications(newNotifications);
   }
 
   if (loading) {
@@ -390,7 +376,7 @@ export default function DashboardPage() {
                                 )}
                                 </div>
                                 
-                                <div className="flex-1 pb-2 pt-1 group-hover:bg-muted rounded-md px-2 -mx-2 flex justify-between items-start cursor-pointer">
+                                <div className="flex-1 py-1 group-hover:bg-muted rounded-md px-2 -mx-2 flex justify-between items-start cursor-pointer">
                                 <div>
                                     <p className="text-sm">{item.message}</p>
                                     <p className="text-xs text-muted-foreground">
@@ -448,8 +434,8 @@ export default function DashboardPage() {
                           <FeedItem
                               key={note.id}
                               notification={note}
-                              isSelected={selectedNotifications.includes(note.id)}
-                              onSelect={handleSelectNotification}
+                              isSelected={false}
+                              onSelect={() => {}}
                               onUpdate={() => getNotifications().then(setNotifications)}
                               showActions={true}
                               showCheckbox={false}
@@ -546,3 +532,5 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+    
