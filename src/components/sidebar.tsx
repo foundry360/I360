@@ -473,7 +473,7 @@ export function Sidebar() {
                 <TooltipTrigger asChild>
                   <Button
                     variant="ghost"
-                    className="w-full justify-end"
+                    className="w-full justify-end text-[hsl(var(--sidebar-toggle-icon))]"
                     onClick={toggleSidebar}
                     aria-label={
                       isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'

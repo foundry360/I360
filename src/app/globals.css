@@ -74,6 +74,8 @@ body {
     --sidebar-border: 217.2 32.6% 17.5%;
     --sidebar-divider: 217.2 32.6% 22.5%;
     --sidebar-ring: 256 96% 63%;
+
+    --sidebar-toggle-icon: 210 40% 98%;
   }
   .dark {
     --background: 0 0% 2%;
@@ -120,6 +122,8 @@ body {
     --sidebar-accent-foreground: 210 40% 98%;
     --sidebar-border: 0 0% 4%;
     --sidebar-divider: 0 0% 14%;
+
+    --sidebar-toggle-icon: 210 40% 98%;
   }
 }
 
