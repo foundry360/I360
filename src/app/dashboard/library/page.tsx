@@ -365,19 +365,11 @@ export default function LibraryPage() {
               <ScrollArea className="flex-1">
                 <Accordion type="single" collapsible className="w-full">
                   <AccordionItem value="tags">
-                    <div className="flex items-center justify-between px-4 py-2 hover:bg-muted/50">
-                      <div className="p-0 flex-1 flex items-center gap-2" onClick={() => document.querySelector<HTMLButtonElement>('[data-radix-collection-item][aria-controls*="radix-"][aria-labelledby*="radix-"]')?.click()}>
-                          <h3 className="font-semibold text-base flex items-center gap-2">
-                             <Layers className="h-4 w-4" /> Tags
-                          </h3>
+                    <AccordionTrigger className="px-4 py-2 text-base font-semibold no-underline hover:no-underline hover:bg-muted/50 flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Layers className="h-4 w-4" /> Tags
                       </div>
-                      <div className="flex items-center gap-1">
-                          <Button variant="ghost" size="icon" className="h-6 w-6 ml-1" onClick={(e) => { e.stopPropagation(); setIsManageTagsOpen(true);}}>
-                              <Pencil className="h-3 w-3" />
-                          </Button>
-                          <AccordionTrigger className="p-2 -mr-2" />
-                      </div>
-                    </div>
+                    </AccordionTrigger>
                     <AccordionContent>
                       <div className="space-y-1 pr-4 pl-6 pb-4">
                         {loading ? (
@@ -421,22 +413,19 @@ export default function LibraryPage() {
                           })
                         )}
                       </div>
+                      <div className="px-6 pb-4">
+                          <Button variant="outline" size="sm" className="w-full" onClick={() => setIsManageTagsOpen(true)}>
+                              <Pencil className="h-3 w-3 mr-2" /> Manage Tags
+                          </Button>
+                      </div>
                     </AccordionContent>
                   </AccordionItem>
                   <AccordionItem value="collections">
-                     <div className="flex items-center justify-between px-4 py-2 hover:bg-muted/50">
-                      <div className="p-0 flex-1 flex items-center gap-2" onClick={() => document.querySelector<HTMLButtonElement>('[data-radix-collection-item][aria-controls*="radix-"][aria-labelledby*="radix-"]')?.click()}>
-                          <h3 className="font-semibold text-base flex items-center gap-2">
-                             <BookCopy className="h-4 w-4" /> Collections
-                          </h3>
-                      </div>
-                      <div className="flex items-center gap-1">
-                          <Button variant="ghost" size="icon" className="h-6 w-6 ml-1" onClick={(e) => { e.stopPropagation(); openManageCollectionsDialog();}}>
-                              <Pencil className="h-3 w-3" />
-                          </Button>
-                          <AccordionTrigger className="p-2 -mr-2" />
-                      </div>
-                    </div>
+                    <AccordionTrigger className="px-4 py-2 text-base font-semibold no-underline hover:no-underline hover:bg-muted/50 flex items-center justify-between">
+                       <div className="flex items-center gap-2">
+                         <BookCopy className="h-4 w-4" /> Collections
+                       </div>
+                    </AccordionTrigger>
                     <AccordionContent>
                       <div className="space-y-1 pr-4 pl-6 pb-4">
                         {collections.map((collection) => {
@@ -465,6 +454,11 @@ export default function LibraryPage() {
                             </Button>
                           );
                         })}
+                      </div>
+                      <div className="px-6 pb-4">
+                          <Button variant="outline" size="sm" className="w-full" onClick={() => openManageCollectionsDialog()}>
+                              <Pencil className="h-3 w-3 mr-2" /> Manage Collections
+                          </Button>
                       </div>
                     </AccordionContent>
                   </AccordionItem>
@@ -594,4 +588,5 @@ export default function LibraryPage() {
     </>
   );
 }
+
 
