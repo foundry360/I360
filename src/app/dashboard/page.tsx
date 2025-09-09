@@ -31,6 +31,10 @@ import {
   ChevronDown,
   PlusCircle,
   MoreHorizontal,
+  AtSign,
+  MessageSquare,
+  AlertTriangle,
+  MonitorCog,
 } from 'lucide-react';
 import { getAssessments, type Assessment } from '@/services/assessment-service';
 import { getContacts, type Contact } from '@/services/contact-service';
@@ -44,7 +48,7 @@ import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { EngagementInsightsPanel } from '@/components/engagement-insights-panel';
-import { getNotifications, markAllNotificationsAsRead, type Notification, updateNotification } from '@/services/notification-service';
+import { getNotifications, markAllNotificationsAsRead, type Notification, updateNotification, NotificationType } from '@/services/notification-service';
 import { FeedItem } from '@/components/feed-item';
 import { useQuickAction } from '@/contexts/quick-action-context';
 import type { Project } from '@/services/project-service';
@@ -80,6 +84,17 @@ const statusColors: Record<BacklogItemStatus, string> = {
     'Needs Revision': 'bg-orange-500/20 text-orange-600 dark:text-orange-400',
     'Final Approval': 'bg-yellow-500/20 text-yellow-600 dark:text-yellow-400',
     'Complete': 'bg-green-500/20 text-green-600 dark:text-green-400',
+};
+
+const notificationTypeConfig: Record<
+  NotificationType,
+  { icon: React.ElementType; color: string }
+> = {
+  system: { icon: MonitorCog, color: 'text-purple-500' },
+  alert: { icon: AlertTriangle, color: 'text-destructive' },
+  activity: { icon: Bell, color: 'text-orange-500' },
+  mention: { icon: AtSign, color: 'text-blue-500' },
+  thread: { icon: MessageSquare, color: 'text-green-500' },
 };
 
 
@@ -369,7 +384,7 @@ export default function DashboardPage() {
               <CardContent className={cn(allRecentActivity.length === 0 && 'flex items-center justify-center h-full')}>
                 {allRecentActivity.length > 0 ? (
                     <>
-                        <div className="space-y-2">
+                        <div className="space-y-4">
                         {recentActivity.map((item, index) => {
                             const config = activityTypeConfig[item.type];
                             const Icon = config.icon;
@@ -389,7 +404,7 @@ export default function DashboardPage() {
                                 </div>
                                 
                                 <div className="flex-1 group-hover:bg-muted rounded-md px-2 -mx-2 flex justify-between items-start cursor-pointer py-1 h-14">
-                                <div>
+                                <div className="flex flex-col justify-center h-full">
                                     <p className="text-sm line-clamp-2">{item.message}</p>
                                     <p className="text-xs text-muted-foreground">
                                     {formatDistanceToNow(parseISO(item.timestamp), {
@@ -441,12 +456,18 @@ export default function DashboardPage() {
                 )}
                 <CardContent className={cn("flex-1", notifications.length === 0 && 'flex flex-col items-center justify-center')}>
                 {notifications.length > 0 ? (
-                    <div className="space-y-0">
-                      {notifications.slice(0, 3).map(note => (
+                    <div className="space-y-2">
+                      {notifications.slice(0, 3).map(note => {
+                          const config = notificationTypeConfig[note.type] || notificationTypeConfig.activity;
+                          const Icon = config.icon;
+                          return (
                           <div key={note.id} className="group/item flex justify-between items-start p-2 -mx-2 rounded-md hover:bg-muted">
-                            <div onClick={() => router.push(note.link)} className="flex-1 cursor-pointer">
-                                <p className={cn("text-sm", !note.isRead && "font-semibold")}>{note.message}</p>
-                                <p className="text-xs text-muted-foreground">{formatDistanceToNow(new Date(note.createdAt), { addSuffix: true })}</p>
+                            <div className="flex items-start gap-3 flex-1" onClick={() => router.push(note.link)}>
+                                <Icon className={cn("h-5 w-5 mt-0.5 shrink-0", config.color)} />
+                                <div className="flex-1 cursor-pointer">
+                                    <p className={cn("text-sm", !note.isRead && "font-semibold")}>{note.message}</p>
+                                    <p className="text-xs text-muted-foreground">{formatDistanceToNow(new Date(note.createdAt), { addSuffix: true })}</p>
+                                </div>
                             </div>
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
@@ -462,7 +483,7 @@ export default function DashboardPage() {
                                 </DropdownMenuContent>
                             </DropdownMenu>
                           </div>
-                      ))}
+                      )})}
                     </div>
                 ) : (
                     <div className="text-center">
@@ -554,4 +575,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-
