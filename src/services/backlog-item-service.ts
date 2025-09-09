@@ -262,6 +262,8 @@ export async function updateBacklogItem(id: string, data: Partial<Omit<BacklogIt
 export async function updateBacklogItemOrderAndStatus(itemId: string, newStatus: BacklogItemStatus, newIndex: number, projectId?: string): Promise<void> {
     const itemToMoveRef = doc(db, 'backlogItems', itemId);
 
+    let effectiveProjectId: string;
+
     await runTransaction(db, async (transaction) => {
         const itemToMoveDoc = await transaction.get(itemToMoveRef);
         if (!itemToMoveDoc.exists()) {
@@ -269,9 +271,11 @@ export async function updateBacklogItemOrderAndStatus(itemId: string, newStatus:
         }
 
         const itemToMoveData = itemToMoveDoc.data() as BacklogItem;
-        const effectiveProjectId = projectId || itemToMoveData.projectId;
+        effectiveProjectId = projectId || itemToMoveData.projectId;
+        
         if (!effectiveProjectId) {
-            throw new Error("Project ID is missing and could not be determined.");
+            console.error("updateBacklogItemOrderAndStatus called without projectId");
+            throw new Error("projectId is required to update backlog item order and status.");
         }
         
         const oldStatus = itemToMoveData.status;
@@ -316,7 +320,8 @@ export async function updateBacklogItemOrderAndStatus(itemId: string, newStatus:
         });
     });
 
-    await updateProjectLastActivity(projectId!);
+    // Use effectiveProjectId instead of projectId!
+    await updateProjectLastActivity(effectiveProjectId!);
 }
 
 
