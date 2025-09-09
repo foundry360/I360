@@ -150,7 +150,7 @@ export function EditUserStoryDialog() {
                 placeholder="As a [type of user], I want [an action] so that [a benefit]"
               />
             </div>
-             <div className="space-y-2">
+            <div className="space-y-2">
               <Label htmlFor="acceptanceCriteria">Acceptance Criteria</Label>
               <div className="space-y-2">
                 <div className="flex gap-2">
