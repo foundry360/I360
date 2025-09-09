@@ -828,7 +828,7 @@ export default function ProjectDetailsPage() {
                             <Inbox className="h-4 w-4" />
                             Backlog
                         </TabsTrigger>
-                        <TabsTrigger 
+                         <TabsTrigger 
                             value="epics"
                             className="pb-3 rounded-none data-[state=active]:shadow-none data-[state=active]:border-primary data-[state=active]:border-b-4 data-[state=active]:text-foreground data-[state=active]:font-bold flex items-center gap-2"
                         >
@@ -1010,7 +1010,7 @@ export default function ProjectDetailsPage() {
                                             <CardTitle>Velocity</CardTitle>
                                             {velocityData.length > 0 && <CardDescription>Story points completed per wave</CardDescription>}
                                         </CardHeader>
-                                        <CardContent className={cn(velocityData.length === 0 && 'p-0')}>
+                                        <CardContent>
                                             {velocityData.length > 0 ? (
                                                 <ChartContainer config={chartConfig} className="h-[150px] w-full">
                                                     <LineChart
@@ -1063,7 +1063,7 @@ export default function ProjectDetailsPage() {
                                                     </LineChart>
                                                 </ChartContainer>
                                             ) : (
-                                                <div className="h-[218px] flex flex-col items-center justify-center text-center text-muted-foreground text-sm p-4">
+                                                <div className="h-[150px] flex flex-col items-center justify-center text-center text-muted-foreground text-sm p-4">
                                                     <CircleGauge className="h-10 w-10 mb-2" />
                                                     Complete a wave to see your team's velocity.
                                                 </div>
@@ -1075,7 +1075,7 @@ export default function ProjectDetailsPage() {
                                             <CardTitle>Burndown</CardTitle>
                                             {burndownData.length > 0 && <CardDescription>Ideal vs actual work remaining</CardDescription>}
                                         </CardHeader>
-                                        <CardContent className={cn(burndownData.length === 0 && 'p-0')}>
+                                        <CardContent>
                                             {burndownData.length > 0 ? (
                                                 <ChartContainer config={chartConfig} className="h-[150px] w-full">
                                                     <LineChart
@@ -1116,9 +1116,9 @@ export default function ProjectDetailsPage() {
                                                     </LineChart>
                                                 </ChartContainer>
                                             ) : (
-                                                <div className="h-[218px] flex flex-col items-center justify-center text-center text-muted-foreground text-sm p-4">
+                                                <div className="h-[150px] flex flex-col items-center justify-center text-center text-muted-foreground text-sm p-4">
                                                     <CloudDownload className="h-10 w-10 mb-2" />
-                                                    Complete a wave to generate a burndown chart.
+                                                    Complete a wave with estimated story points to generate a burndown chart.
                                                 </div>
                                             )}
                                         </CardContent>
@@ -1299,7 +1299,7 @@ export default function ProjectDetailsPage() {
                     </TabsContent>
                     <TabsContent value="epics">
                         <div className="space-y-6">
-                            {epics.length === 0 ? (
+                            {epics.length === 0 && unassignedBacklogItems.length === 0 ? (
                                 <div className="p-10 text-center rounded-lg border-2 border-dashed border-border bg-transparent shadow-none">
                                     <div className="flex justify-center mb-4">
                                        <div className="flex justify-center items-center h-16 w-16 text-muted-foreground">
@@ -1885,3 +1885,4 @@ export default function ProjectDetailsPage() {
         </div>
     );
 }
+
