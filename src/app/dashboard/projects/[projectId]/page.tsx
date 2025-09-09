@@ -380,7 +380,7 @@ export default function ProjectDetailsPage() {
 
     const projectPrefix = project ? project.name.substring(0, project.name.indexOf('-')) : '';
     
-    const onDragEnd = React.useCallback(async (result: DropResult) => {
+    const onDragEnd = async (result: DropResult) => {
         const { source, destination, draggableId } = result;
 
         if (!destination) return;
@@ -390,33 +390,31 @@ export default function ProjectDetailsPage() {
         const destColId = destination.droppableId as BacklogItemStatus;
         
         // Optimistic UI Update
-        setColumns(prevColumns => {
-            const newColumnsState = { ...prevColumns };
-            const sourceCol = Array.from(newColumnsState[sourceColId]);
-            const destCol = sourceColId === destColId ? sourceCol : Array.from(newColumnsState[destColId]);
-            const [movedItem] = sourceCol.splice(source.index, 1);
-    
-            if (sourceColId === destColId) {
-                sourceCol.splice(destination.index, 0, movedItem);
-                newColumnsState[sourceColId] = sourceCol;
-            } else {
-                destCol.splice(destination.index, 0, movedItem);
-                newColumnsState[sourceColId] = sourceCol;
-                newColumnsState[destColId] = destCol;
-            }
-            return newColumnsState;
-        });
+        const newColumnsState = { ...columns };
+        const sourceCol = newColumnsState[sourceColId];
+        const destCol = newColumnsState[destColId];
+        const [movedItem] = sourceCol.splice(source.index, 1);
+
+        if (sourceColId === destColId) {
+            // Moving within the same column
+            sourceCol.splice(destination.index, 0, movedItem);
+        } else {
+            // Moving to a different column
+            destCol.splice(destination.index, 0, movedItem);
+        }
+        
+        setColumns(newColumnsState);
 
         // Persist changes to Firestore
         try {
             await updateBacklogItemOrderAndStatus(itemId, destColId, destination.index, projectId);
-            // The real-time listener will eventually update the state, but the optimistic update handles the immediate UI change.
+            // No need to fetch data here, as the listener will pick up changes
         } catch (error) {
             console.error("Failed to update item:", error);
             // Revert optimistic update on failure by re-fetching
             fetchData();
         }
-    }, [projectId, fetchData]);
+    };
     
     const handleDelete = async (e?: React.MouseEvent<HTMLButtonElement>) => {
         if (e) e.stopPropagation();
@@ -1001,11 +999,13 @@ export default function ProjectDetailsPage() {
                             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                                <div className="col-span-1 space-y-6">
                                     <Card className={cn(velocityData.length === 0 && 'border-dashed border-2 bg-transparent shadow-none')}>
-                                        <CardHeader>
-                                            <CardTitle>Velocity</CardTitle>
-                                            {velocityData.length > 0 && <CardDescription>Story points completed per wave</CardDescription>}
-                                        </CardHeader>
-                                        <CardContent>
+                                        {velocityData.length > 0 && (
+                                            <CardHeader>
+                                                <CardTitle>Velocity</CardTitle>
+                                                <CardDescription>Story points completed per wave</CardDescription>
+                                            </CardHeader>
+                                        )}
+                                        <CardContent className={cn(velocityData.length === 0 && 'p-0')}>
                                             {velocityData.length > 0 ? (
                                                 <ChartContainer config={chartConfig} className="h-[150px] w-full">
                                                     <LineChart
@@ -1058,7 +1058,7 @@ export default function ProjectDetailsPage() {
                                                     </LineChart>
                                                 </ChartContainer>
                                             ) : (
-                                                <div className="h-[150px] flex flex-col items-center justify-center text-center text-muted-foreground text-sm p-4">
+                                                <div className="h-[218px] flex flex-col items-center justify-center text-center text-muted-foreground text-sm p-4">
                                                     <CircleGauge className="h-10 w-10 mb-2" />
                                                     Complete a wave to see your team's velocity.
                                                 </div>
@@ -1066,11 +1066,13 @@ export default function ProjectDetailsPage() {
                                         </CardContent>
                                     </Card>
                                     <Card className={cn(burndownData.length === 0 && 'border-dashed border-2 bg-transparent shadow-none')}>
-                                        <CardHeader>
-                                            <CardTitle>Burndown</CardTitle>
-                                            {burndownData.length > 0 && <CardDescription>Ideal vs actual work remaining</CardDescription>}
-                                        </CardHeader>
-                                        <CardContent>
+                                        {burndownData.length > 0 && (
+                                            <CardHeader>
+                                                <CardTitle>Burndown</CardTitle>
+                                                <CardDescription>Ideal vs actual work remaining</CardDescription>
+                                            </CardHeader>
+                                        )}
+                                        <CardContent className={cn(burndownData.length === 0 && 'p-0')}>
                                             {burndownData.length > 0 ? (
                                                 <ChartContainer config={chartConfig} className="h-[150px] w-full">
                                                     <LineChart
@@ -1111,7 +1113,7 @@ export default function ProjectDetailsPage() {
                                                     </LineChart>
                                                 </ChartContainer>
                                             ) : (
-                                                <div className="h-[150px] flex flex-col items-center justify-center text-center text-muted-foreground text-sm p-4">
+                                                <div className="h-[218px] flex flex-col items-center justify-center text-center text-muted-foreground text-sm p-4">
                                                     <CloudDownload className="h-10 w-10 mb-2" />
                                                     Complete a wave with estimated story points to generate a burndown chart.
                                                 </div>
@@ -1121,13 +1123,13 @@ export default function ProjectDetailsPage() {
                                </div>
                                <div className="col-span-1 space-y-6">
                                      <Card className={cn(!activeSprint && 'border-dashed border-2 bg-transparent shadow-none')}>
-                                        <CardHeader>
-                                            <CardTitle>Active Wave Health</CardTitle>
-                                            {activeSprint ? (
+                                        {activeSprint && (
+                                            <CardHeader>
+                                                <CardTitle>Active Wave Health</CardTitle>
                                                 <CardDescription>{activeSprint.name}</CardDescription>
-                                            ) : null }
-                                        </CardHeader>
-                                        <CardContent>
+                                            </CardHeader>
+                                        )}
+                                        <CardContent className={cn(!activeSprint && 'p-0')}>
                                             {activeSprint ? (
                                                 activeSprintHealthData && activeSprintHealthData.totalItems > 0 ? (
                                                     <>
@@ -1163,7 +1165,7 @@ export default function ProjectDetailsPage() {
                                                     </div>
                                                 )
                                             ) : (
-                                                <div className="h-[150px] flex flex-col items-center justify-center text-center text-muted-foreground text-sm p-4">
+                                                <div className="h-[200px] flex flex-col items-center justify-center text-center text-muted-foreground text-sm p-4">
                                                   <Waves className="h-10 w-10 mb-2" />
                                                   No wave is currently active. Start a wave to see its health.
                                                 </div>
@@ -1178,11 +1180,13 @@ export default function ProjectDetailsPage() {
                                         )}
                                     </Card>
                                     <Card className={cn(epicProgressData.length === 0 && 'border-dashed border-2 bg-transparent shadow-none')}>
-                                        <CardHeader>
-                                            <CardTitle>Epic Progress</CardTitle>
-                                            {epicProgressData.length > 0 && <CardDescription>A summary of completion for each engagement epic</CardDescription>}
-                                        </CardHeader>
-                                        <CardContent>
+                                        {epicProgressData.length > 0 && (
+                                            <CardHeader>
+                                                <CardTitle>Epic Progress</CardTitle>
+                                                <CardDescription>A summary of completion for each engagement epic</CardDescription>
+                                            </CardHeader>
+                                        )}
+                                        <CardContent className={cn(epicProgressData.length === 0 && 'p-0')}>
                                             {epicProgressData.length > 0 ? (
                                                 <Accordion type="multiple" className="w-full">
                                                     {epicProgressData.map((epic, index) => {
@@ -1208,7 +1212,7 @@ export default function ProjectDetailsPage() {
                                                     })}
                                                 </Accordion>
                                             ) : (
-                                                 <div className="h-[150px] flex flex-col items-center justify-center text-center text-muted-foreground text-sm p-4">
+                                                 <div className="h-[218px] flex flex-col items-center justify-center text-center text-muted-foreground text-sm p-4">
                                                     <Loader className="h-10 w-10 mb-2" />
                                                     No epic progress to display. Add items with points to epics.
                                                 </div>
@@ -1218,11 +1222,13 @@ export default function ProjectDetailsPage() {
                                </div>
                                <div className="col-span-1 space-y-6">
                                      <Card className={cn(atRiskItems.length === 0 && 'border-dashed border-2 bg-transparent shadow-none')}>
-                                        <CardHeader>
-                                            <CardTitle>At-Risk Items</CardTitle>
-                                            {atRiskItems.length > 0 && <CardDescription>Items that are overdue or due within 3 days.</CardDescription>}
-                                        </CardHeader>
-                                        <CardContent>
+                                        {atRiskItems.length > 0 && (
+                                            <CardHeader>
+                                                <CardTitle>At-Risk Items</CardTitle>
+                                                <CardDescription>Items that are overdue or due within 3 days.</CardDescription>
+                                            </CardHeader>
+                                        )}
+                                        <CardContent className={cn(atRiskItems.length === 0 && 'p-0')}>
                                             {atRiskItems.length > 0 ? (
                                                 atRiskItems.map(item => {
                                                     const dueDate = parseISO(item.dueDate!);
@@ -1266,7 +1272,7 @@ export default function ProjectDetailsPage() {
                                                     )
                                                 })
                                             ) : (
-                                                 <div className="h-[150px] flex flex-col items-center justify-center text-center text-muted-foreground text-sm p-4">
+                                                 <div className="h-[460px] flex flex-col items-center justify-center text-center text-muted-foreground text-sm p-4">
                                                     <AlertTriangle className="h-10 w-10 mb-2" />
                                                     No at-risk items. Great job!
                                                 </div>
