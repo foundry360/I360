@@ -450,7 +450,7 @@ export default function DashboardPage() {
               <CardContent>
                 {notifications.length === 0 ? (
                     <div className="flex flex-col items-center justify-center h-full">
-                        <div className="flex justify-center mb-4">
+                       <div className="flex justify-center mb-4">
                            <div className="flex justify-center items-center h-16 w-16 text-muted-foreground">
                                <Rss className="h-8 w-8" />
                            </div>
