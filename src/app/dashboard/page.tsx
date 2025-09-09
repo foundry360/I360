@@ -376,16 +376,13 @@ export default function DashboardPage() {
             </Card>
             <Card className={cn("group h-full flex flex-col", allRecentActivity.length === 0 && 'p-10 rounded-lg border-2 border-dashed border-border bg-transparent shadow-none')}>
               {allRecentActivity.length > 0 && (
-                <CardHeader className="flex flex-row justify-between items-center">
+                <CardHeader>
                   <div>
                     <CardTitle>Recent Activity</CardTitle>
                     <CardDescription>
                       The latest updates from your workspace
                     </CardDescription>
                   </div>
-                  <Button variant="ghost" size="icon" className="opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Eye className="h-4 w-4" />
-                  </Button>
                 </CardHeader>
               )}
               <CardContent className={cn("flex-grow", allRecentActivity.length === 0 && 'flex items-center justify-center h-full')}>
