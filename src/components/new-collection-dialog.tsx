@@ -189,7 +189,7 @@ export function NewCollectionDialog() {
                                             <StoryItem key={story.id} story={story} onMove={() => handleMoveStory(story, 'remove')} moveDirection="remove" />
                                         ))}
                                         {collectionStories.length === 0 && (
-                                            <div className="h-full flex items-center justify-center text-center text-muted-foreground border-2 border-dashed rounded-lg p-4 bg-muted/20 dark:bg-[hsl(0_0%_0%)]">
+                                            <div className="h-full flex items-center justify-center text-center text-muted-foreground border-2 border-dashed rounded-lg p-4 bg-muted/20 dark:bg-[hsl(0_0%_12%)]">
                                                 <p>Move stories from the library here to build your collection</p>
                                             </div>
                                         )}
