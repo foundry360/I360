@@ -10,13 +10,15 @@ import { GtmReadinessReport } from '@/components/gtm-readiness-report';
 import { AppLayout } from '@/components/app-layout';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button }from '@/components/ui/button';
-import { ArrowLeft, Terminal } from 'lucide-react';
+import { ArrowLeft, Terminal, RefreshCw } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { useQuickAction } from '@/contexts/quick-action-context';
 
 export default function ReportPage() {
     const params = useParams();
     const router = useRouter();
+    const { openAssessmentModal } = useQuickAction();
     const assessmentId = params.assessmentId as string;
     const [assessment, setAssessment] = React.useState<Assessment | null>(null);
     const [loading, setLoading] = React.useState(true);
@@ -64,6 +66,22 @@ export default function ReportPage() {
 
         fetchAssessment();
     }, [assessmentId]);
+    
+    const handleRerun = () => {
+        if (!assessment) return;
+        
+        const newAssessmentData = {
+            ...assessment,
+            id: '', // Unset the ID to create a new document
+            status: 'In Progress' as const,
+            result: undefined, // Clear the old result
+            formData: {
+                ...assessment.formData,
+                assessmentName: `${assessment.name} (Rerun)`
+            }
+        };
+        openAssessmentModal(newAssessmentData);
+    };
 
     const getReportTitle = () => {
         if (!assessment) return '';
@@ -121,6 +139,10 @@ export default function ReportPage() {
                             <p className="text-muted-foreground">GTM Readiness Report</p>
                         </div>
                     </div>
+                    <Button onClick={handleRerun} variant="outline">
+                        <RefreshCw className="mr-2 h-4 w-4" />
+                        Rerun Assessment
+                    </Button>
                 </div>
                 <Separator />
                 <div className="flex-1 overflow-y-auto">
