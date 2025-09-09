@@ -191,7 +191,7 @@ const BacklogItemCard = ({ item, itemNumber }: { item: BacklogItem; itemNumber: 
 
 const BoardColumn = ({ title, items, projectPrefix, onItemClick }: { title: string; items: BacklogItem[]; projectPrefix: string; onItemClick: (item: BacklogItem) => void;}) => (
     <div className="flex-1">
-        <Card className="bg-muted border-none shadow-none">
+        <Card className="bg-background border-none shadow-none">
             <CardHeader className="p-4">
                 <CardTitle className="text-base font-semibold">{title}</CardTitle>
             </CardHeader>
@@ -1130,15 +1130,11 @@ export default function ProjectDetailsPage() {
                                </div>
                                <div className="col-span-1 space-y-6">
                                      <Card className={cn(!activeSprint && 'border-dashed border-2 bg-transparent shadow-none')}>
-                                        {activeSprint ? (
-                                            <CardHeader>
-                                                <CardTitle>Active Wave Health</CardTitle>
-                                                <CardDescription>{activeSprint.name}</CardDescription>
-                                            </CardHeader>
-                                        ) : (
-                                            <CardHeader className="h-full">
-                                                <CardTitle>Active Wave Health</CardTitle>
-                                            </CardHeader>
+                                        {activeSprint && (
+                                        <CardHeader>
+                                            <CardTitle>Active Wave Health</CardTitle>
+                                            <CardDescription>{activeSprint.name}</CardDescription>
+                                        </CardHeader>
                                         )}
                                         <CardContent>
                                             {activeSprint ? (
@@ -1192,12 +1188,12 @@ export default function ProjectDetailsPage() {
                                     </Card>
                                     <Card className={cn(epicProgressData.length === 0 && 'border-dashed border-2 bg-transparent shadow-none')}>
                                         {epicProgressData.length > 0 && (
-                                            <CardHeader>
-                                                <CardTitle>Epic Progress</CardTitle>
-                                                <CardDescription>A summary of completion for each engagement epic</CardDescription>
-                                            </CardHeader>
+                                        <CardHeader>
+                                            <CardTitle>Epic Progress</CardTitle>
+                                            <CardDescription>A summary of completion for each engagement epic</CardDescription>
+                                        </CardHeader>
                                         )}
-                                        <CardContent className={cn(epicProgressData.length === 0 && 'p-0')}>
+                                        <CardContent>
                                             {epicProgressData.length > 0 ? (
                                                 <Accordion type="multiple" className="w-full">
                                                     {epicProgressData.map((epic, index) => {
@@ -1233,13 +1229,13 @@ export default function ProjectDetailsPage() {
                                </div>
                                <div className="col-span-1 space-y-6">
                                      <Card className={cn(atRiskItems.length === 0 && 'border-dashed border-2 bg-transparent shadow-none')}>
-                                        {atRiskItems.length > 0 && (
+                                         {atRiskItems.length > 0 && (
                                             <CardHeader>
                                                 <CardTitle>At-Risk Items</CardTitle>
                                                 <CardDescription>Items that are overdue or due within 3 days.</CardDescription>
                                             </CardHeader>
-                                        )}
-                                        <CardContent className={cn(atRiskItems.length === 0 && 'p-0')}>
+                                         )}
+                                        <CardContent>
                                             {atRiskItems.length > 0 ? (
                                                 atRiskItems.map(item => {
                                                     const dueDate = parseISO(item.dueDate!);
@@ -1311,7 +1307,7 @@ export default function ProjectDetailsPage() {
                     </TabsContent>
                     <TabsContent value="epics">
                         <div className="space-y-6">
-                            {epics.length === 0 ? (
+                            {epics.length === 0 && (
                                 <div className="p-10 text-center rounded-lg border-2 border-dashed border-border bg-transparent shadow-none">
                                     <div className="flex justify-center mb-4">
                                        <div className="flex justify-center items-center h-16 w-16 text-muted-foreground">
@@ -1326,7 +1322,8 @@ export default function ProjectDetailsPage() {
                                        <Button onClick={() => openNewEpicDialog(projectId)}><Plus className="h-4 w-4 mr-2" /> Create Epic</Button>
                                    </div>
                                </div>
-                            ) : (
+                            )}
+                            {epics.length > 0 && (
                                 <>
                                     {epics.map(epic => {
                                         const config = tagConfig.find(c => c.iconName === epic.category) || tagConfig.find(t => t.iconName === 'Layers');
@@ -1467,12 +1464,10 @@ export default function ProjectDetailsPage() {
                                 <Card>
                                     <CardHeader>
                                         <div className="flex justify-between items-center">
-                                            <div>
-                                                <CardTitle className="flex items-center gap-2">
-                                                    <Inbox className="h-5 w-5" />
-                                                    Unassigned Backlog Items
-                                                </CardTitle>
-                                            </div>
+                                            <CardTitle className="flex items-center gap-2">
+                                                <Inbox className="h-5 w-5" />
+                                                Unassigned Backlog Items
+                                            </CardTitle>
                                             <div className="flex items-center gap-2">
                                                  <TooltipProvider>
                                                     <Tooltip>
@@ -1682,17 +1677,6 @@ export default function ProjectDetailsPage() {
                                                                                         </TooltipContent>
                                                                                     </Tooltip>
                                                                                 </TooltipProvider>
-                                                                                 <DropdownMenu>
-                                                                                    <DropdownMenuTrigger asChild>
-                                                                                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => e.stopPropagation()}><MoreVertical className="h-4 w-4" /></Button>
-                                                                                    </DropdownMenuTrigger>
-                                                                                    <DropdownMenuContent align="end">
-                                                                                        <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setItemToDelete({type: 'backlogItem', id: item.id, name: item.title}); setIsDeleteDialogOpen(true);}} className="text-destructive focus:bg-destructive/90 focus:text-destructive-foreground">
-                                                                                            <Trash2 className="mr-2 h-4 w-4" />
-                                                                                            Delete
-                                                                                        </DropdownMenuItem>
-                                                                                    </DropdownMenuContent>
-                                                                                </DropdownMenu>
                                                                             </div>
                                                                         </div>
                                                                     )
