@@ -403,16 +403,16 @@ export default function DashboardPage() {
                                     )}
                                 </div>
                                 
-                                <div className="flex-1 group-hover:bg-muted rounded-md px-2 -mx-2 flex justify-between items-start cursor-pointer py-1 h-14">
-                                <div className="flex flex-col justify-center h-full">
+                                <div className="flex-1 group-hover:bg-muted rounded-md px-2 -mx-2 flex justify-between items-center cursor-pointer py-1 min-h-[3.5rem]">
+                                  <div className="flex-1">
                                     <p className="text-sm line-clamp-2">{item.message}</p>
                                     <p className="text-xs text-muted-foreground">
                                     {formatDistanceToNow(parseISO(item.timestamp), {
                                         addSuffix: true,
                                     })}
                                     </p>
-                                </div>
-                                <ArrowRight className="h-4 w-4 text-muted-foreground mt-1 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                  </div>
+                                <ArrowRight className="h-4 w-4 text-muted-foreground ml-2 opacity-0 group-hover:opacity-100 transition-opacity" />
                                 </div>
                             </div>
                             );
