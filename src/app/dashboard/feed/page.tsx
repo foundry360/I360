@@ -119,7 +119,7 @@ export default function FeedPage() {
                     message: "Your feed is empty. Important updates will appear here"
                 };
             case 'system':
-                return {
+                 return {
                     title: "All caught up!",
                     message: `Your system notifications are empty. Important updates will appear here`
                 };
