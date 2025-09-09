@@ -428,7 +428,7 @@ export default function DashboardPage() {
                 )}
               </CardContent>
             </Card>
-            <Card className={cn("h-full flex flex-col group", notifications.length === 0 && "p-10 text-center rounded-lg border-2 border-dashed border-border bg-transparent shadow-none")}>
+            <Card className={cn("h-full flex flex-col group", notifications.length === 0 && 'p-10 text-center rounded-lg border-2 border-dashed border-border bg-transparent shadow-none')}>
               <CardHeader>
                 <div className="flex justify-between items-center">
                   <CardTitle>
@@ -538,7 +538,7 @@ export default function DashboardPage() {
             ))
           }
             <Card
-                className="cursor-pointer bg-transparent border-dashed hover:border-primary transition-colors flex flex-col items-center justify-center min-h-[260px] border-2"
+                className="cursor-pointer bg-transparent border-dashed hover:border-primary transition-colors flex flex-col items-center justify-center min-h-[260px] border-2 border-border"
                 onClick={openNewProjectDialog}
               >
                 <div className="flex flex-col items-center gap-2 text-muted-foreground">
