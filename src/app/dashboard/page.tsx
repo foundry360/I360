@@ -428,7 +428,7 @@ export default function DashboardPage() {
                 )}
               </CardContent>
             </Card>
-             <Card className={cn("group flex flex-col", notifications.length === 0 && 'p-10 text-center rounded-lg border-2 border-dashed border-border bg-transparent shadow-none')}>
+             <Card className={cn("group h-full", notifications.length === 0 && 'p-10 text-center rounded-lg border-2 border-dashed border-border bg-transparent shadow-none flex flex-col')}>
               <CardHeader>
                 <div className="flex justify-between items-center">
                   <CardTitle>
@@ -447,7 +447,7 @@ export default function DashboardPage() {
                   </CardDescription>
                 )}
               </CardHeader>
-              <CardContent className={cn(notifications.length === 0 && 'flex-1')}>
+              <CardContent className={cn("flex-1", notifications.length === 0 && 'flex flex-col')}>
                 {notifications.length > 0 ? (
                     <div className="space-y-0">
                       {notifications.slice(0,5).map(note => (
