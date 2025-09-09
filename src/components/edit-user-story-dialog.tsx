@@ -135,7 +135,7 @@ export function EditUserStoryDialog() {
               Update the details for "{story.title}"
             </DialogDescription>
           </DialogHeader>
-          <div className="grid gap-4 py-4 max-h-[70vh] overflow-y-auto pr-4">
+          <div className="grid gap-x-4 gap-y-3 py-4 max-h-[70vh] overflow-y-auto pr-4">
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="title" className="text-right">Title</Label>
               <Input id="title" value={story.title} onChange={handleInputChange} className="col-span-3" required />
@@ -253,3 +253,4 @@ export function EditUserStoryDialog() {
     </Dialog>
   );
 }
+
