@@ -1468,7 +1468,10 @@ export default function ProjectDetailsPage() {
                                     <CardHeader>
                                         <div className="flex justify-between items-center">
                                             <div>
-                                                <CardTitle>Unassigned Backlog Items</CardTitle>
+                                                <CardTitle className="flex items-center gap-2">
+                                                    <Inbox className="h-5 w-5" />
+                                                    Unassigned Backlog Items
+                                                </CardTitle>
                                             </div>
                                             <div className="flex items-center gap-2">
                                                  <TooltipProvider>
