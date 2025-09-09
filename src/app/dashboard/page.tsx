@@ -428,7 +428,7 @@ export default function DashboardPage() {
                 )}
               </CardContent>
             </Card>
-             <Card className={cn("group h-full", notifications.length === 0 && 'p-10 text-center rounded-lg border-2 border-dashed border-border bg-transparent shadow-none flex flex-col')}>
+             <Card className={cn("group h-full", notifications.length === 0 && 'p-10 text-center rounded-lg border-2 border-dashed border-border bg-transparent shadow-none')}>
               <CardHeader>
                 <div className="flex items-center">
                   <div className="flex-1 text-center">
@@ -553,3 +553,4 @@ export default function DashboardPage() {
     </div>
   );
 }
+
