@@ -203,7 +203,7 @@ export default function DashboardPage() {
     else setGreeting('Good evening');
   }, []);
   
-  const recentActivity = isActivityExpanded ? allRecentActivity : allRecentActivity.slice(0, 5);
+  const recentActivity = isActivityExpanded ? allRecentActivity : allRecentActivity.slice(0, 3);
   const visibleItems = isTasksExpanded ? thisWeeksItems : thisWeeksItems.slice(0, 5);
   const [selectedNotifications, setSelectedNotifications] = React.useState<string[]>([]);
   const handleSelectNotification = (id: string) => {
@@ -405,7 +405,7 @@ export default function DashboardPage() {
                             );
                         })}
                         </div>
-                        {allRecentActivity.length > 5 && (
+                        {allRecentActivity.length > 3 && (
                             <Button 
                                 variant="link" 
                                 className="p-0 h-auto text-sm mt-4"
@@ -450,7 +450,7 @@ export default function DashboardPage() {
                 <CardContent className={cn("flex-1", notifications.length === 0 && 'flex flex-col items-center justify-center')}>
                 {notifications.length > 0 ? (
                     <div className="space-y-0">
-                      {notifications.slice(0,5).map(note => (
+                      {notifications.slice(0, 3).map(note => (
                           <FeedItem
                               key={note.id}
                               notification={note}
@@ -473,7 +473,7 @@ export default function DashboardPage() {
                     </div>
                 )}
               </CardContent>
-              {notifications.length > 5 && (
+              {notifications.length > 3 && (
                 <CardFooter>
                   <Button variant="outline" className="w-full" onClick={() => router.push('/dashboard/feed')}>View all in Feed</Button>
                 </CardFooter>
