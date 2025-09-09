@@ -359,7 +359,7 @@ export default function DashboardPage() {
                     )}
                 </CardContent>
             </Card>
-            <Card className={cn("group h-full", allRecentActivity.length === 0 && 'p-10 rounded-lg border-2 border-dashed border-border bg-transparent shadow-none')}>
+            <Card className={cn("h-full", allRecentActivity.length === 0 && 'p-10 rounded-lg border-2 border-dashed border-border bg-transparent shadow-none')}>
               <CardHeader>
                 <CardTitle>Recent Activity</CardTitle>
                  {allRecentActivity.length > 0 && (
