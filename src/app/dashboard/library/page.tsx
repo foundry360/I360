@@ -17,7 +17,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Skeleton } from '@/components/ui/skeleton';
-import { MoreHorizontal, Plus, Trash2, Search, Upload, FilePlus, Layers, Library, Pencil, BookCopy, ChevronsUpDown } from 'lucide-react';
+import { MoreHorizontal, Plus, Trash2, Search, Upload, FilePlus, Layers, Library, Pencil, BookCopy, ChevronsUpDown, ArrowLeft } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { useQuickAction } from '@/contexts/quick-action-context';
 import { getUserStories, deleteUserStory, UserStory, bulkCreateUserStories as bulkCreateLibraryStories, getTags, Tag, deleteUserStories } from '@/services/user-story-service';
@@ -366,11 +366,17 @@ export default function LibraryPage() {
                 <Accordion type="single" collapsible className="w-full">
                   <AccordionItem value="tags">
                     <div className="flex items-center justify-between px-4 py-2 hover:bg-muted/50">
-                      <div className="flex items-center gap-2 flex-1 cursor-pointer" onClick={() => document.querySelector<HTMLButtonElement>('[data-radix-collection-item][aria-controls*="radix-"][aria-labelledby*="radix-"]')?.click()}>
-                          <Layers className="h-4 w-4" />
-                          <h3 className="font-semibold text-base">Tags</h3>
+                      <div className="p-0 flex-1 flex items-center gap-2" onClick={() => document.querySelector<HTMLButtonElement>('[data-radix-collection-item][aria-controls*="radix-"][aria-labelledby*="radix-"]')?.click()}>
+                          <h3 className="font-semibold text-base flex items-center gap-2">
+                             <Layers className="h-4 w-4" /> Tags
+                          </h3>
                       </div>
-                      <AccordionTrigger className="p-2 -mr-2" />
+                      <div className="flex items-center gap-1">
+                          <Button variant="ghost" size="icon" className="h-6 w-6 ml-1" onClick={(e) => { e.stopPropagation(); setIsManageTagsOpen(true);}}>
+                              <Pencil className="h-3 w-3" />
+                          </Button>
+                          <AccordionTrigger className="p-2 -mr-2" />
+                      </div>
                     </div>
                     <AccordionContent>
                       <div className="space-y-1 pr-4 pl-6 pb-4">
@@ -384,13 +390,14 @@ export default function LibraryPage() {
                             const config = tagConfig.find(
                               (c) => c.iconName === tag.icon
                             );
-                            let Icon: React.ElementType = Layers; // Default icon
+                            let Icon: React.ElementType = Layers;
                             let color = 'text-foreground';
                             if (tag.name === 'All') {
-                              Icon = Library;
+                                Icon = Library;
+                                color = 'text-purple-500';
                             } else if (config) {
-                              Icon = config.icon;
-                              color = config.color;
+                                Icon = config.icon;
+                                color = config.color;
                             }
                             const bgColor = color.replace('text-', 'bg-');
 
@@ -414,20 +421,21 @@ export default function LibraryPage() {
                           })
                         )}
                       </div>
-                      <div className="flex justify-end pr-4 pl-6 pb-4">
-                          <Button variant="ghost" size="sm" className="text-xs" onClick={() => setIsManageTagsOpen(true)}>
-                              <Pencil className="h-3 w-3 mr-1" /> Manage
-                          </Button>
-                      </div>
                     </AccordionContent>
                   </AccordionItem>
                   <AccordionItem value="collections">
-                    <div className="flex items-center justify-between px-4 py-2 hover:bg-muted/50">
-                      <div className="flex items-center gap-2 flex-1 cursor-pointer" onClick={() => document.querySelector<HTMLButtonElement>('[data-radix-collection-item][aria-controls*="radix-"][aria-labelledby*="radix-"]')?.click()}>
-                          <BookCopy className="h-4 w-4" />
-                          <h3 className="font-semibold text-base">Collections</h3>
+                     <div className="flex items-center justify-between px-4 py-2 hover:bg-muted/50">
+                      <div className="p-0 flex-1 flex items-center gap-2" onClick={() => document.querySelector<HTMLButtonElement>('[data-radix-collection-item][aria-controls*="radix-"][aria-labelledby*="radix-"]')?.click()}>
+                          <h3 className="font-semibold text-base flex items-center gap-2">
+                             <BookCopy className="h-4 w-4" /> Collections
+                          </h3>
                       </div>
-                      <AccordionTrigger className="p-2 -mr-2" />
+                      <div className="flex items-center gap-1">
+                          <Button variant="ghost" size="icon" className="h-6 w-6 ml-1" onClick={(e) => { e.stopPropagation(); openManageCollectionsDialog();}}>
+                              <Pencil className="h-3 w-3" />
+                          </Button>
+                          <AccordionTrigger className="p-2 -mr-2" />
+                      </div>
                     </div>
                     <AccordionContent>
                       <div className="space-y-1 pr-4 pl-6 pb-4">
@@ -457,11 +465,6 @@ export default function LibraryPage() {
                             </Button>
                           );
                         })}
-                      </div>
-                      <div className="flex justify-end pr-4 pl-6 pb-4">
-                          <Button variant="ghost" size="sm" className="text-xs" onClick={() => openManageCollectionsDialog()}>
-                              <Pencil className="h-3 w-3 mr-1" /> Manage
-                          </Button>
                       </div>
                     </AccordionContent>
                   </AccordionItem>
