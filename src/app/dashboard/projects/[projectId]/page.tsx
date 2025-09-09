@@ -1307,7 +1307,7 @@ export default function ProjectDetailsPage() {
                     </TabsContent>
                     <TabsContent value="epics">
                         <div className="space-y-6">
-                            {epics.length === 0 && (
+                            {epics.length === 0 ? (
                                 <div className="p-10 text-center rounded-lg border-2 border-dashed border-border bg-transparent shadow-none">
                                     <div className="flex justify-center mb-4">
                                        <div className="flex justify-center items-center h-16 w-16 text-muted-foreground">
@@ -1322,8 +1322,7 @@ export default function ProjectDetailsPage() {
                                        <Button onClick={() => openNewEpicDialog(projectId)}><Plus className="h-4 w-4 mr-2" /> Create Epic</Button>
                                    </div>
                                </div>
-                            )}
-                            {epics.length > 0 && (
+                            ) : (
                                 <>
                                     {epics.map(epic => {
                                         const config = tagConfig.find(c => c.iconName === epic.category) || tagConfig.find(t => t.iconName === 'Layers');
@@ -1777,75 +1776,103 @@ export default function ProjectDetailsPage() {
                         </div>
                     </TabsContent>
                     <TabsContent value="timeline">
-                        <TimelineView
-                            items={timelineData.items}
-                            projectStartDate={timelineData.projectStartDate}
-                            projectEndDate={timelineData.projectEndDate}
-                        />
+                        {timelineData.items.length > 0 ? (
+                            <TimelineView
+                                items={timelineData.items}
+                                projectStartDate={timelineData.projectStartDate}
+                                projectEndDate={timelineData.projectEndDate}
+                            />
+                        ) : (
+                             <div className="p-10 text-center rounded-lg border-2 border-dashed border-border bg-transparent shadow-none">
+                                <div className="flex justify-center mb-4">
+                                    <div className="flex justify-center items-center h-16 w-16 text-muted-foreground">
+                                        <GanttChartSquare className="h-8 w-8" />
+                                    </div>
+                                </div>
+                                <h3 className="text-lg font-semibold text-foreground">Nothing to Show on Timeline</h3>
+                                <p className="text-muted-foreground mt-2 mb-4">
+                                    Create epics and waves, then assign items to them to build out your engagement timeline.
+                                </p>
+                            </div>
+                        )}
                     </TabsContent>
                      <TabsContent value="all-work">
-                        <div className="space-y-4">
-                            <div className="relative">
-                                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                                <Input
-                                    placeholder="Search all work items..."
-                                    value={allWorkSearchTerm}
-                                    onChange={(e) => setAllWorkSearchTerm(e.target.value)}
-                                    className="pl-8"
-                                />
-                            </div>
-                             <div className="border rounded-lg">
-                                {allSprintItems.length > 0 ? allSprintItems.map(item => {
-                                    const epic = epics.find(e => e.id === item.epicId);
-                                    const sprint = sprints.find(s => s.id === item.sprintId);
-                                    const config = epic ? (tagConfig.find(c => c.iconName === epic.category) || tagConfig.find(t => t.iconName === 'Layers')) : tagConfig.find(t => t.iconName === 'Layers');
-                                    const IconComponent = config?.icon || Layers;
-                                    return (
-                                        <div key={item.id} className="flex justify-between items-center p-3 border-b last:border-b-0 hover:bg-muted/50 cursor-pointer"
-                                            onClick={() => openEditBacklogItemDialog(item, epics, sprints, contacts)}
-                                        >
-                                            <div className="flex items-center gap-3">
-                                                <TooltipProvider>
-                                                    <Tooltip>
-                                                        <TooltipTrigger>
-                                                            <IconComponent className={cn("h-4 w-4", config?.color)} />
-                                                        </TooltipTrigger>
-                                                        <TooltipContent>
-                                                            <p>Epic: {epic?.title || 'Unknown'}</p>
-                                                        </TooltipContent>
-                                                    </Tooltip>
-                                                </TooltipProvider>
-                                                <span className="text-foreground text-sm">{projectPrefix}-{item.backlogId}</span>
-                                                <p className="text-sm font-medium">{item.title}</p>
+                        {projectBacklogItems.length > 0 ? (
+                            <div className="space-y-4">
+                                <div className="relative">
+                                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                                    <Input
+                                        placeholder="Search all work items..."
+                                        value={allWorkSearchTerm}
+                                        onChange={(e) => setAllWorkSearchTerm(e.target.value)}
+                                        className="pl-8"
+                                    />
+                                </div>
+                                 <div className="border rounded-lg">
+                                    {allSprintItems.length > 0 ? allSprintItems.map(item => {
+                                        const epic = epics.find(e => e.id === item.epicId);
+                                        const sprint = sprints.find(s => s.id === item.sprintId);
+                                        const config = epic ? (tagConfig.find(c => c.iconName === epic.category) || tagConfig.find(t => t.iconName === 'Layers')) : tagConfig.find(t => t.iconName === 'Layers');
+                                        const IconComponent = config?.icon || Layers;
+                                        return (
+                                            <div key={item.id} className="flex justify-between items-center p-3 border-b last:border-b-0 hover:bg-muted/50 cursor-pointer"
+                                                onClick={() => openEditBacklogItemDialog(item, epics, sprints, contacts)}
+                                            >
+                                                <div className="flex items-center gap-3">
+                                                    <TooltipProvider>
+                                                        <Tooltip>
+                                                            <TooltipTrigger>
+                                                                <IconComponent className={cn("h-4 w-4", config?.color)} />
+                                                            </TooltipTrigger>
+                                                            <TooltipContent>
+                                                                <p>Epic: {epic?.title || 'Unknown'}</p>
+                                                            </TooltipContent>
+                                                        </Tooltip>
+                                                    </TooltipProvider>
+                                                    <span className="text-foreground text-sm">{projectPrefix}-{item.backlogId}</span>
+                                                    <p className="text-sm font-medium">{item.title}</p>
+                                                </div>
+                                                <div className="flex items-center gap-4">
+                                                    {sprint && <Badge variant={sprint.status === 'Active' ? 'success' : sprint.status === 'Completed' ? 'secondary' : 'outline'}>{sprint.name}</Badge>}
+                                                    <Badge variant="outline" className={cn(statusColors[item.status])}>{item.status}</Badge>
+                                                    <Badge variant="secondary">{item.points} Points</Badge>
+                                                     <TooltipProvider>
+                                                        <Tooltip>
+                                                            <TooltipTrigger>
+                                                                <PriorityIcon priority={item.priority} />
+                                                            </TooltipTrigger>
+                                                            <TooltipContent>
+                                                                <p>Priority: {item.priority}</p>
+                                                            </TooltipContent>
+                                                        </Tooltip>
+                                                    </TooltipProvider>
+                                                    <Avatar className="h-6 w-6">
+                                                        <AvatarImage src={item.ownerAvatarUrl} />
+                                                        <AvatarFallback className="text-xs">{item.owner.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                                                    </Avatar>
+                                                </div>
                                             </div>
-                                            <div className="flex items-center gap-4">
-                                                {sprint && <Badge variant={sprint.status === 'Active' ? 'success' : sprint.status === 'Completed' ? 'secondary' : 'outline'}>{sprint.name}</Badge>}
-                                                <Badge variant="outline" className={cn(statusColors[item.status])}>{item.status}</Badge>
-                                                <Badge variant="secondary">{item.points} Points</Badge>
-                                                 <TooltipProvider>
-                                                    <Tooltip>
-                                                        <TooltipTrigger>
-                                                            <PriorityIcon priority={item.priority} />
-                                                        </TooltipTrigger>
-                                                        <TooltipContent>
-                                                            <p>Priority: {item.priority}</p>
-                                                        </TooltipContent>
-                                                    </Tooltip>
-                                                </TooltipProvider>
-                                                <Avatar className="h-6 w-6">
-                                                    <AvatarImage src={item.ownerAvatarUrl} />
-                                                    <AvatarFallback className="text-xs">{item.owner.split(' ').map(n => n[0]).join('')}</AvatarFallback>
-                                                </Avatar>
-                                            </div>
-                                        </div>
-                                    )
-                                }) : (
-                                    <p className="text-sm text-muted-foreground text-center p-6">
-                                        {allWorkSearchTerm ? 'No matching items found.' : 'No items assigned to any waves.'}
-                                    </p>
-                                )}
+                                        )
+                                    }) : (
+                                        <p className="text-sm text-muted-foreground text-center p-6">
+                                            {allWorkSearchTerm ? 'No matching items found.' : 'No items assigned to any waves.'}
+                                        </p>
+                                    )}
+                                </div>
                             </div>
-                        </div>
+                        ) : (
+                           <div className="p-10 text-center rounded-lg border-2 border-dashed border-border bg-transparent shadow-none">
+                                <div className="flex justify-center mb-4">
+                                    <div className="flex justify-center items-center h-16 w-16 text-muted-foreground">
+                                        <LayoutList className="h-8 w-8" />
+                                    </div>
+                                </div>
+                                <h3 className="text-lg font-semibold text-foreground">No Work Items Yet</h3>
+                                <p className="text-muted-foreground mt-2 mb-4">
+                                    Add items to the backlog and assign them to waves to see them here.
+                                </p>
+                            </div>
+                        )}
                     </TabsContent>
                 </div>
             </Tabs>
