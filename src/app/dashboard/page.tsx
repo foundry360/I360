@@ -27,6 +27,7 @@ import {
   Bell,
   CheckCheck,
   MessageCircleMore,
+  Rss,
 } from 'lucide-react';
 import { getAssessments, type Assessment } from '@/services/assessment-service';
 import { getContacts, type Contact } from '@/services/contact-service';
@@ -437,7 +438,7 @@ export default function DashboardPage() {
                   {notifications.length === 0 && (
                       <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground">
                           <div className="flex justify-center mb-4">
-                              <MessageCircleMore className="h-8 w-8 text-muted-foreground" />
+                              <Rss className="h-8 w-8 text-muted-foreground" />
                           </div>
                           <h3 className="font-semibold">Inbox Zero!</h3>
                           <p>No new notifications.</p>
