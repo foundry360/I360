@@ -1663,6 +1663,17 @@ export default function ProjectDetailsPage() {
                                                                                         </TooltipContent>
                                                                                     </Tooltip>
                                                                                 </TooltipProvider>
+                                                                                 <DropdownMenu>
+                                                                                    <DropdownMenuTrigger asChild>
+                                                                                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => e.stopPropagation()}><MoreVertical className="h-4 w-4" /></Button>
+                                                                                    </DropdownMenuTrigger>
+                                                                                    <DropdownMenuContent align="end">
+                                                                                        <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setItemToDelete({type: 'backlogItem', id: item.id, name: item.title}); setIsDeleteDialogOpen(true);}} className="text-destructive focus:bg-destructive/90 focus:text-destructive-foreground">
+                                                                                            <Trash2 className="mr-2 h-4 w-4" />
+                                                                                            Delete
+                                                                                        </DropdownMenuItem>
+                                                                                    </DropdownMenuContent>
+                                                                                </DropdownMenu>
                                                                             </div>
                                                                         </div>
                                                                     )
