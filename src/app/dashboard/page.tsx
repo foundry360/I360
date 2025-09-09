@@ -435,12 +435,6 @@ export default function DashboardPage() {
                           <CardTitle>
                           Communications Feed
                           </CardTitle>
-                      {unreadCount > 0 && (
-                          <Button variant="outline" size="sm" onClick={handleMarkAllRead} className="opacity-0 group-hover:opacity-100 transition-opacity">
-                          <CheckCheck className="mr-2 h-4 w-4" />
-                          Mark all as read
-                          </Button>
-                      )}
                       </div>
                       <CardDescription>
                           A live feed of all notifications and alerts
@@ -457,7 +451,8 @@ export default function DashboardPage() {
                               isSelected={selectedNotifications.includes(note.id)}
                               onSelect={handleSelectNotification}
                               onUpdate={() => getNotifications().then(setNotifications)}
-                              showActions={false}
+                              showActions={true}
+                              showCheckbox={false}
                           />
                       ))}
                     </div>

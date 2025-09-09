@@ -47,6 +47,7 @@ interface FeedItemProps {
   onSelect: (id: string) => void;
   onUpdate: () => void;
   showActions?: boolean;
+  showCheckbox?: boolean;
 }
 
 const notificationTypeConfig: Record<
@@ -66,6 +67,7 @@ export const FeedItem: React.FC<FeedItemProps> = ({
   onSelect,
   onUpdate,
   showActions = true,
+  showCheckbox = true,
 }) => {
   const router = useRouter();
   const { user } = useUser();
@@ -117,7 +119,7 @@ export const FeedItem: React.FC<FeedItemProps> = ({
       onClick={handleItemClick}
     >
       <div className="flex items-center gap-4" onClick={e => e.stopPropagation()}>
-         {showActions && (
+         {showCheckbox && (
             <Checkbox
             checked={isSelected}
             onCheckedChange={() => onSelect(notification.id)}
@@ -138,7 +140,7 @@ export const FeedItem: React.FC<FeedItemProps> = ({
       
       {showActions && (
         <div 
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity"
             onClick={e => e.stopPropagation()}
         >
             <Button variant="ghost" size="sm" onClick={handleToggleRead}>
