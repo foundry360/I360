@@ -811,7 +811,7 @@ export default function ProjectDetailsPage() {
             <Separator className="my-4" />
 
             {/* Navigation Tabs */}
-            <Tabs value={activeTab} onValueChange={(value) => router.push(`/dashboard/projects/${projectId}?tab=${value}`)} className="flex-1 flex flex-col">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
                 <div className="flex justify-between items-center">
                     <TabsList className="bg-transparent p-0 rounded-none justify-start h-auto">
                         <TabsTrigger 
@@ -1861,7 +1861,7 @@ export default function ProjectDetailsPage() {
                                 </div>
                             </div>
                         ) : (
-                           <div className="p-10 text-center rounded-lg border-2 border-dashed border-border bg-transparent shadow-none">
+                            <div className="p-10 text-center rounded-lg border-2 border-dashed border-border bg-transparent shadow-none">
                                 <div className="flex justify-center mb-4">
                                     <div className="flex justify-center items-center h-16 w-16 text-muted-foreground">
                                         <LayoutList className="h-8 w-8" />
@@ -1871,7 +1871,7 @@ export default function ProjectDetailsPage() {
                                 <p className="text-muted-foreground mt-2 mb-4">
                                     Add items to the backlog and assign them to waves to see them here.
                                 </p>
-                            </div>
+                           </div>
                         )}
                     </TabsContent>
                 </div>
