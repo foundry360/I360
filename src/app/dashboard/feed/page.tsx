@@ -200,21 +200,22 @@ export default function FeedPage() {
                 <div className="col-span-10">
                     
                         {loading ? (
-                           <Card className="overflow-hidden">
-                            {Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-20 w-full border-b" />)}
-                           </Card>
+                           <div className="space-y-2">
+                            {Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-20 w-full" />)}
+                           </div>
                         ) : filteredNotifications.length > 0 ? (
-                             <Card className="overflow-hidden divide-y">
+                             <div className="space-y-2">
                                 {filteredNotifications.map(note => (
-                                    <FeedItem 
-                                        key={note.id}
-                                        notification={note}
-                                        isSelected={selectedNotifications.includes(note.id)}
-                                        onSelect={handleSelectNotification}
-                                        onUpdate={fetchNotifications}
-                                    />
+                                    <Card key={note.id} className="overflow-hidden">
+                                        <FeedItem 
+                                            notification={note}
+                                            isSelected={selectedNotifications.includes(note.id)}
+                                            onSelect={handleSelectNotification}
+                                            onUpdate={fetchNotifications}
+                                        />
+                                    </Card>
                                 ))}
-                            </Card>
+                            </div>
                         ) : (
                              <div className="p-10 text-center rounded-lg border-2 border-dashed border-border bg-transparent shadow-none">
                                 <div className="flex justify-center mb-4">
