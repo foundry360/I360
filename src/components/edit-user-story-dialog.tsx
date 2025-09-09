@@ -136,17 +136,16 @@ export function EditUserStoryDialog() {
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4 max-h-[70vh] overflow-y-auto pr-4">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="title" className="text-right">Title</Label>
-              <Input id="title" value={story.title} onChange={handleInputChange} className="col-span-3" required />
+            <div className="space-y-2">
+              <Label htmlFor="title">Title</Label>
+              <Input id="title" value={story.title} onChange={handleInputChange} required />
             </div>
-            <div className="grid grid-cols-4 items-start gap-4">
-              <Label htmlFor="story" className="text-right pt-2">Story</Label>
+            <div className="space-y-2">
+              <Label htmlFor="story">Story</Label>
               <Textarea
                 id="story"
                 value={story.story}
                 onChange={handleInputChange}
-                className="col-span-3"
                 placeholder="As a [type of user], I want [an action] so that [a benefit]"
               />
             </div>
@@ -164,7 +163,7 @@ export function EditUserStoryDialog() {
                   <Button type="button" variant="outline" onClick={handleAddCriterion}>Add</Button>
                 </div>
                 {story.acceptanceCriteria.length > 0 && (
-                    <ScrollArea className="h-24">
+                    <ScrollArea className="max-h-24">
                         <ul className="space-y-1 list-disc pl-5">
                         {story.acceptanceCriteria.map((c, i) => (
                             <li key={i} className="text-sm flex justify-between items-center">
@@ -239,9 +238,9 @@ export function EditUserStoryDialog() {
                 </div>
               </div>
             </div>
-             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="points" className="text-right">Story Points</Label>
-              <Input id="points" type="number" value={story.points} onChange={handleInputChange} className="col-span-3" />
+            <div className="space-y-2">
+              <Label htmlFor="points">Story Points</Label>
+              <Input id="points" type="number" value={story.points} onChange={handleInputChange} />
             </div>
           </div>
           <DialogFooter className="pt-4">
