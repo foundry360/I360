@@ -261,8 +261,7 @@ export async function updateBacklogItem(id: string, data: Partial<Omit<BacklogIt
 
 export async function updateBacklogItemOrderAndStatus(itemId: string, newStatus: BacklogItemStatus, newIndex: number, projectId: string): Promise<void> {
     if (!projectId) {
-        console.error("updateBacklogItemOrderAndStatus called without projectId");
-        throw new Error("projectId is required to update backlog item order and status.");
+        throw new Error("Project ID is required to update backlog item order and status.");
     }
     
     const itemToMoveRef = doc(db, 'backlogItems', itemId);
