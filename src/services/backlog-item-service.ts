@@ -320,7 +320,7 @@ export async function updateBacklogItemOrderAndStatus(itemId: string, newStatus:
         });
     });
 
-    // Use effectiveProjectId instead of projectId!
+    // Use effectiveProjectId for updating project activity
     await updateProjectLastActivity(effectiveProjectId!);
 }
 
