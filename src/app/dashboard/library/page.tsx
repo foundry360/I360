@@ -343,14 +343,6 @@ export default function LibraryPage() {
                     </DropdownMenuContent>
                 </DropdownMenu>
             )}
-             <Button variant="ghost" size="icon" onClick={() => setIsManageTagsOpen(true)}>
-                <Pencil className="h-4 w-4" />
-                <span className="sr-only">Manage Tags</span>
-            </Button>
-             <Button variant="ghost" size="icon" onClick={openManageCollectionsDialog}>
-                <Edit className="h-4 w-4" />
-                <span className="sr-only">Manage Collections</span>
-            </Button>
             <Button variant="outline" size="icon" onClick={handleUploadClick}>
               <Upload className="h-4 w-4" />
               <span className="sr-only">Upload CSV</span>
@@ -367,13 +359,18 @@ export default function LibraryPage() {
               <ScrollArea className="flex-1">
                 <Accordion type="multiple" defaultValue={['tags', 'collections']} className="w-full">
                   <AccordionItem value="tags" className="border-b-0">
-                    <CardHeader className="px-6 py-4">
-                        <AccordionTrigger className="p-0 hover:no-underline">
-                            <CardTitle className="text-base flex items-center gap-2">
-                                <Layers className="h-4 w-4" />
-                                Tags
-                            </CardTitle>
-                        </AccordionTrigger>
+                    <CardHeader className="px-4 py-2">
+                        <div className="flex items-center justify-between">
+                            <AccordionTrigger className="p-0 flex-1 hover:no-underline -mr-6">
+                                <CardTitle className="text-base flex items-center gap-2">
+                                    <Layers className="h-4 w-4" />
+                                    Tags
+                                </CardTitle>
+                            </AccordionTrigger>
+                            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setIsManageTagsOpen(true)}>
+                                <Pencil className="h-3 w-3" />
+                            </Button>
+                        </div>
                     </CardHeader>
                     <AccordionContent>
                       <CardContent className="pt-0 pr-4 pl-6 pb-4">
@@ -419,13 +416,18 @@ export default function LibraryPage() {
                     </AccordionContent>
                   </AccordionItem>
                   <AccordionItem value="collections" className="border-b-0">
-                     <CardHeader className="px-6 py-4">
-                        <AccordionTrigger className="p-0 hover:no-underline">
-                            <CardTitle className="text-base flex items-center gap-2">
-                            <BookCopy className="h-4 w-4" />
-                            Collections
-                            </CardTitle>
-                        </AccordionTrigger>
+                     <CardHeader className="px-4 py-2">
+                         <div className="flex items-center justify-between">
+                            <AccordionTrigger className="p-0 flex-1 hover:no-underline -mr-6">
+                                <CardTitle className="text-base flex items-center gap-2">
+                                <BookCopy className="h-4 w-4" />
+                                Collections
+                                </CardTitle>
+                            </AccordionTrigger>
+                            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={openManageCollectionsDialog}>
+                                <Pencil className="h-3 w-3" />
+                            </Button>
+                        </div>
                     </CardHeader>
                     <AccordionContent>
                       <CardContent className="pt-0 pr-4 pl-6 pb-4">
