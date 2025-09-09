@@ -448,30 +448,30 @@ export default function DashboardPage() {
                 )}
               </CardHeader>
               <CardContent className="flex-1 -mt-4 flex flex-col">
-                  <div className="space-y-0 h-full">
-                      {notifications.length === 0 ? (
-                           <div className="flex flex-col items-center justify-center h-full">
-                               <div className="flex justify-center mb-4">
-                                   <div className="flex justify-center items-center h-16 w-16 text-muted-foreground">
-                                       <Rss className="h-8 w-8" />
-                                   </div>
+                <div className="space-y-0 h-full">
+                    {notifications.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center h-full">
+                           <div className="flex justify-center mb-4">
+                               <div className="flex justify-center items-center h-16 w-16 text-muted-foreground">
+                                   <Rss className="h-8 w-8" />
                                </div>
-                              <h3 className="font-semibold text-foreground">Inbox Zero!</h3>
-                              <p className="text-muted-foreground mt-2">No new notifications.</p>
-                          </div>
-                      ) : (
-                        notifications.slice(0,5).map(note => (
-                            <FeedItem
-                                key={note.id}
-                                notification={note}
-                                isSelected={selectedNotifications.includes(note.id)}
-                                onSelect={handleSelectNotification}
-                                onUpdate={() => getNotifications().then(setNotifications)}
-                                showActions={false}
-                            />
-                        ))
-                      )}
-                  </div>
+                           </div>
+                           <h3 className="font-semibold text-foreground">Inbox Zero!</h3>
+                           <p className="text-muted-foreground mt-2">No new notifications.</p>
+                        </div>
+                    ) : (
+                      notifications.slice(0,5).map(note => (
+                          <FeedItem
+                              key={note.id}
+                              notification={note}
+                              isSelected={selectedNotifications.includes(note.id)}
+                              onSelect={handleSelectNotification}
+                              onUpdate={() => getNotifications().then(setNotifications)}
+                              showActions={false}
+                          />
+                      ))
+                    )}
+                </div>
               </CardContent>
               {notifications.length > 5 && (
                 <CardFooter>
