@@ -30,6 +30,11 @@ import {
   Rss,
   ChevronDown,
   PlusCircle,
+  MoreHorizontal,
+  AtSign,
+  MessageSquare,
+  AlertTriangle,
+  MonitorCog,
 } from 'lucide-react';
 import { getAssessments, type Assessment } from '@/services/assessment-service';
 import { getContacts, type Contact } from '@/services/contact-service';
@@ -43,7 +48,7 @@ import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { EngagementInsightsPanel } from '@/components/engagement-insights-panel';
-import { getNotifications, markAllNotificationsAsRead, type Notification } from '@/services/notification-service';
+import { getNotifications, markAllNotificationsAsRead, type Notification, updateNotification, NotificationType } from '@/services/notification-service';
 import { FeedItem } from '@/components/feed-item';
 import { useQuickAction } from '@/contexts/quick-action-context';
 import type { Project } from '@/services/project-service';
@@ -52,6 +57,8 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { useToast } from '@/hooks/use-toast';
 
 type ActivityItem = {
   id: string;
@@ -79,6 +86,17 @@ const statusColors: Record<BacklogItemStatus, string> = {
     'Complete': 'bg-green-500/20 text-green-600 dark:text-green-400',
 };
 
+const notificationTypeConfig: Record<
+  NotificationType,
+  { icon: React.ElementType; color: string }
+> = {
+  system: { icon: MonitorCog, color: 'text-purple-500' },
+  alert: { icon: AlertTriangle, color: 'text-destructive' },
+  activity: { icon: Bell, color: 'text-orange-500' },
+  mention: { icon: AtSign, color: 'text-blue-500' },
+  thread: { icon: MessageSquare, color: 'text-green-500' },
+};
+
 
 export default function DashboardPage() {
   const { user } = useUser();
@@ -97,26 +115,7 @@ export default function DashboardPage() {
   const [isActivityExpanded, setIsActivityExpanded] = React.useState(false);
   const [isTasksExpanded, setIsTasksExpanded] = React.useState(false);
   const [isTopSectionOpen, setIsTopSectionOpen] = React.useState(true);
-  const [isRecentActivityCleared, setIsRecentActivityCleared] = React.useState(false);
-
-  React.useEffect(() => {
-    // Check localStorage on mount
-    const storedValue = localStorage.getItem('recentActivityCleared');
-    if (storedValue === 'true') {
-        setIsRecentActivityCleared(true);
-    }
-  }, []);
-
-  const handleClearRecentActivity = () => {
-    setIsRecentActivityCleared(true);
-    localStorage.setItem('recentActivityCleared', 'true');
-  };
-
-  const handleUndoClear = () => {
-      setIsRecentActivityCleared(false);
-      localStorage.removeItem('recentActivityCleared');
-  };
-
+  const { toast } = useToast();
 
   const loadDashboardData = React.useCallback(async () => {
     try {
@@ -223,15 +222,9 @@ export default function DashboardPage() {
     else setGreeting('Good evening');
   }, []);
   
-  const recentActivity = isActivityExpanded ? allRecentActivity : allRecentActivity.slice(0, 5);
+  const recentActivity = isActivityExpanded ? allRecentActivity : allRecentActivity.slice(0, 3);
   const visibleItems = isTasksExpanded ? thisWeeksItems : thisWeeksItems.slice(0, 5);
-  const [selectedNotifications, setSelectedNotifications] = React.useState<string[]>([]);
-  const handleSelectNotification = (id: string) => {
-    setSelectedNotifications(prev => 
-        prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
-    );
-  };
-
+  
   const getFirstName = () => {
     if (user?.displayName) {
       return user.displayName.split(' ')[0];
@@ -264,14 +257,14 @@ export default function DashboardPage() {
       if (daysUntilDue <= 3) return 'due-soon';
       return 'on-track';
   }
-  
-  const unreadCount = notifications.filter(n => !n.isRead).length;
 
-  const handleMarkAllRead = async () => {
-    await markAllNotificationsAsRead();
-    const newNotifications = await getNotifications();
-    setNotifications(newNotifications);
-  }
+  const handleToggleRead = async (notification: Notification) => {
+    await updateNotification(notification.id, { isRead: !notification.isRead });
+    toast({
+        title: notification.isRead ? "Marked as unread" : "Marked as read",
+    });
+    loadDashboardData();
+  };
 
   if (loading) {
     return (
@@ -320,16 +313,16 @@ export default function DashboardPage() {
         </div>
         <CollapsibleContent>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <Card className={cn("h-full", thisWeeksItems.length === 0 && 'p-10 text-center rounded-lg border-2 border-dashed border-border bg-transparent shadow-none')}>
-              <CardHeader>
-                    <CardTitle>Items Due This Week</CardTitle>
-                    {thisWeeksItems.length > 0 && (
-                        <CardDescription>
-                            Your immediate priorities for the next 7 days
-                        </CardDescription>
-                    )}
-                </CardHeader>
-                <CardContent>
+            <Card className={cn("h-full", thisWeeksItems.length === 0 && 'p-10 rounded-lg border-2 border-dashed border-border bg-transparent shadow-none')}>
+              {thisWeeksItems.length > 0 && (
+                <CardHeader>
+                      <CardTitle>Items Due This Week</CardTitle>
+                      <CardDescription>
+                          Your immediate priorities for the next 7 days
+                      </CardDescription>
+                  </CardHeader>
+              )}
+                <CardContent className={cn(thisWeeksItems.length === 0 && 'flex items-center justify-center h-full')}>
                     {thisWeeksItems.length > 0 ? (
                         <div className="space-y-0">
                             {visibleItems.map((item, index) => {
@@ -367,7 +360,7 @@ export default function DashboardPage() {
                             )}
                         </div>
                     ) : (
-                        <div className="flex flex-col items-center justify-center h-full">
+                        <div className="text-center">
                              <div className="flex justify-center mb-4">
                                <div className="flex justify-center items-center h-16 w-16 text-muted-foreground">
                                    <CalendarCheck className="h-8 w-8" />
@@ -379,119 +372,123 @@ export default function DashboardPage() {
                     )}
                 </CardContent>
             </Card>
-            <Card className={cn("group h-full", (allRecentActivity.length === 0 || isRecentActivityCleared) && 'p-10 text-center rounded-lg border-2 border-dashed border-border bg-transparent shadow-none')}>
-              <CardHeader>
-                <div className="flex items-center">
-                  <div className="flex-1 text-center">
-                    <CardTitle>Recent Activity</CardTitle>
-                  </div>
-                  {allRecentActivity.length > 0 && !isRecentActivityCleared && (
-                    <Button variant="link" className="p-0 h-auto text-sm opacity-0 group-hover:opacity-100 transition-opacity" onClick={handleClearRecentActivity}>Clear All</Button>
-                  )}
-                </div>
-                 {allRecentActivity.length > 0 && !isRecentActivityCleared && (
-                    <CardDescription className="text-center">
-                      The latest updates from your workspace
-                    </CardDescription>
-                  )}
-              </CardHeader>
-              <CardContent>
-                {allRecentActivity.length > 0 && !isRecentActivityCleared ? (
+            <Card className={cn("group h-full flex flex-col", allRecentActivity.length === 0 && 'p-10 rounded-lg border-2 border-dashed border-border bg-transparent shadow-none')}>
+              {allRecentActivity.length > 0 && (
+                <CardHeader>
+                  <CardTitle>Recent Activity</CardTitle>
+                  <CardDescription>
+                    The latest updates from your workspace
+                  </CardDescription>
+                </CardHeader>
+              )}
+              <CardContent className={cn("flex-grow", allRecentActivity.length === 0 && 'flex items-center justify-center h-full')}>
+                {allRecentActivity.length > 0 ? (
                     <>
-                        <div className="relative space-y-0">
+                        <div className="space-y-4">
                         {recentActivity.map((item, index) => {
                             const config = activityTypeConfig[item.type];
                             const Icon = config.icon;
                             return (
                             <div
                                 key={`${item.id}-${index}`}
-                                className="flex gap-4 group"
+                                className="flex gap-4 group/item"
                                 onClick={() => item.link && router.push(item.link)}
                             >
-                                <div className="relative flex flex-col items-center">
-                                <div className={cn("p-2 rounded-full z-10 relative", config.bg)}>
-                                    <Icon className={cn("h-5 w-5", config.color)} />
-                                </div>
-                                {index < recentActivity.length - 1 && (
-                                    <div className="flex-grow w-px bg-primary/20" />
-                                )}
+                                <div className="flex flex-col items-center self-stretch">
+                                    <div className={cn("p-2 rounded-full z-10 relative", config.bg)}>
+                                        <Icon className={cn("h-5 w-5", config.color)} />
+                                    </div>
+                                    {index < recentActivity.length - 1 && (
+                                        <div className="flex-grow w-px bg-border -mt-1" />
+                                    )}
                                 </div>
                                 
-                                <div className="flex-1 pb-8 pt-1 group-hover:bg-muted rounded-md px-2 -mx-2 flex justify-between items-start cursor-pointer">
-                                <div>
-                                    <p className="text-sm">{item.message}</p>
+                                <div className="flex-1 group-hover/item:bg-muted rounded-md px-2 -mx-2 flex justify-between items-center cursor-pointer py-1 min-h-[3.5rem]">
+                                  <div className="flex-1">
+                                    <p className="text-sm line-clamp-2">{item.message}</p>
                                     <p className="text-xs text-muted-foreground">
                                     {formatDistanceToNow(parseISO(item.timestamp), {
                                         addSuffix: true,
                                     })}
                                     </p>
-                                </div>
-                                <ArrowRight className="h-4 w-4 text-muted-foreground mt-1 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                  </div>
+                                <ArrowRight className="h-4 w-4 text-muted-foreground ml-2 opacity-0 group-hover/item:opacity-100 transition-opacity" />
                                 </div>
                             </div>
                             );
                         })}
                         </div>
-                        {allRecentActivity.length > 5 && (
-                            <Button 
-                                variant="link" 
-                                className="p-0 h-auto text-sm mt-4"
-                                onClick={() => setIsActivityExpanded(!isActivityExpanded)}
-                            >
-                                {isActivityExpanded ? 'View less' : 'View all'}
-                            </Button>
-                        )}
                     </>
                 ) : (
-                    <div className="flex flex-col items-center justify-center h-full">
+                    <div className="text-center">
                        <div className="flex justify-center mb-4">
                            <div className="flex justify-center items-center h-16 w-16 text-muted-foreground">
                                <FolderKanban className="h-8 w-8" />
                            </div>
                        </div>
-                        <h3 className="font-semibold text-foreground">{isRecentActivityCleared ? 'Activity Cleared' : 'No recent activity'}</h3>
-                        <p className="text-muted-foreground mt-2">{isRecentActivityCleared ? 'Your activity feed is clear.' : 'Updates from your workspace will appear here.'}</p>
+                        <h3 className="font-semibold text-foreground">No recent activity</h3>
+                        <p className="text-muted-foreground mt-2">Updates from your workspace will appear here.</p>
                     </div>
                 )}
               </CardContent>
+              {allRecentActivity.length > 3 && (
+                <CardFooter className="justify-end">
+                    <Button 
+                        variant="link" 
+                        className="p-0 h-auto text-sm opacity-0 group-hover:opacity-100 transition-opacity"
+                        onClick={() => setIsActivityExpanded(!isActivityExpanded)}
+                    >
+                        {isActivityExpanded ? 'View less' : 'View all'}
+                    </Button>
+                </CardFooter>
+              )}
             </Card>
-             <Card className={cn("group h-full flex flex-col", notifications.length === 0 && 'p-10 text-center rounded-lg border-2 border-dashed border-border bg-transparent shadow-none')}>
-                <CardHeader>
-                    <div className="flex items-center">
-                    <div className="flex-1 text-center">
-                        <CardTitle>
-                        Communications Feed
-                        </CardTitle>
-                    </div>
-                    {unreadCount > 0 && (
-                        <Button variant="outline" size="sm" onClick={handleMarkAllRead} className="opacity-0 group-hover:opacity-100 transition-opacity">
-                        <CheckCheck className="mr-2 h-4 w-4" />
-                        Mark all as read
-                        </Button>
-                    )}
-                    </div>
-                    {notifications.length > 0 && (
-                    <CardDescription className="text-center">
-                        A live feed of all notifications and alerts
-                    </CardDescription>
-                    )}
-                </CardHeader>
-                <CardContent className={cn("flex-1", notifications.length === 0 && 'flex flex-col')}>
+             <Card className={cn("group h-full flex flex-col", notifications.length === 0 && 'p-10 rounded-lg border-2 border-dashed border-border bg-transparent shadow-none')}>
+                {notifications.length > 0 && (
+                  <CardHeader>
+                      <div className="flex items-center justify-between">
+                          <CardTitle>
+                          Communications Feed
+                          </CardTitle>
+                      </div>
+                      <CardDescription>
+                          A live feed of all notifications and alerts
+                      </CardDescription>
+                  </CardHeader>
+                )}
+                <CardContent className={cn("flex-1", notifications.length === 0 && 'flex flex-col items-center justify-center')}>
                 {notifications.length > 0 ? (
-                    <div className="space-y-0">
-                      {notifications.slice(0,5).map(note => (
-                          <FeedItem
-                              key={note.id}
-                              notification={note}
-                              isSelected={selectedNotifications.includes(note.id)}
-                              onSelect={handleSelectNotification}
-                              onUpdate={() => getNotifications().then(setNotifications)}
-                              showActions={false}
-                          />
-                      ))}
+                    <div className="space-y-2">
+                      {notifications.slice(0, 3).map(note => {
+                          const config = notificationTypeConfig[note.type] || notificationTypeConfig.activity;
+                          const Icon = config.icon;
+                          return (
+                          <div key={note.id} className="group/item flex justify-between items-start p-2 -mx-2 rounded-md hover:bg-muted">
+                            <div className="flex items-start gap-3 flex-1" onClick={() => router.push(note.link)}>
+                                <Icon className={cn("h-5 w-5 mt-0.5 shrink-0", config.color)} />
+                                <div className="flex-1 cursor-pointer">
+                                    <p className={cn("text-sm", !note.isRead && "font-semibold")}>{note.message}</p>
+                                    <p className="text-xs text-muted-foreground">{formatDistanceToNow(new Date(note.createdAt), { addSuffix: true })}</p>
+                                </div>
+                            </div>
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover/item:opacity-100 transition-opacity">
+                                        <MoreHorizontal className="h-4 w-4" />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent>
+                                    <DropdownMenuItem onClick={() => handleToggleRead(note)}>
+                                        <CheckCheck className="mr-2 h-4 w-4" />
+                                        {note.isRead ? 'Mark as unread' : 'Mark as read'}
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                          </div>
+                      )})}
                     </div>
                 ) : (
-                    <div className="flex flex-col items-center justify-center h-full">
+                    <div className="text-center">
                        <div className="flex justify-center mb-4">
                            <div className="flex justify-center items-center h-16 w-16 text-muted-foreground">
                                <Rss className="h-8 w-8" />
@@ -502,7 +499,7 @@ export default function DashboardPage() {
                     </div>
                 )}
               </CardContent>
-              {notifications.length > 5 && (
+              {notifications.length > 3 && (
                 <CardFooter>
                   <Button variant="outline" className="w-full" onClick={() => router.push('/dashboard/feed')}>View all in Feed</Button>
                 </CardFooter>

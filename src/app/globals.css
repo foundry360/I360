@@ -74,6 +74,8 @@ body {
     --sidebar-border: 217.2 32.6% 17.5%;
     --sidebar-divider: 217.2 32.6% 22.5%;
     --sidebar-ring: 256 96% 63%;
+
+    --sidebar-toggle-icon: hsl(217 33% 17%);
   }
   .dark {
     --background: 0 0% 2%;
@@ -96,7 +98,7 @@ body {
     --destructive-hover: 358 100% 54%;
     --destructive-foreground: 0 0% 98%;
     --border: 0 0% 9%;
-    --input: 0 0% 7%;
+    --input: 0 0% 12%;
     --ring: 259 82% 56%;
     --chart-1: 256 96% 63%;
     --chart-2: 232 78% 71%;
@@ -120,6 +122,8 @@ body {
     --sidebar-accent-foreground: 210 40% 98%;
     --sidebar-border: 0 0% 4%;
     --sidebar-divider: 0 0% 14%;
+
+    --sidebar-toggle-icon: hsl(0 0% 5%);
   }
 }
 
@@ -133,6 +137,12 @@ body {
   .dark .sidebar-popover {
     --border: var(--sidebar-border);
   }
+}
+
+@layer components {
+    .dark .btn-outline-cancel {
+        @apply bg-[hsl(0_0%_12%)] border-[hsl(0_0%_12%)] hover:bg-[hsl(0_0%_15%)] hover:text-foreground;
+    }
 }
 
 @layer utilities {

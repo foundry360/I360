@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import * as React from 'react';
@@ -20,8 +21,8 @@ import {
   History,
   ChevronRight as ChevronRightIcon,
   Rss,
-  PanelRightClose,
-  PanelRightOpen,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -391,9 +392,9 @@ export function Sidebar() {
                 </Button>
             </TooltipTrigger>
             {isCollapsed && (
-                <TooltipContent side="right">
+              <TooltipContent side="right">
                 {item.label}
-                </TooltipContent>
+              </TooltipContent>
             )}
         </Tooltip>
     )
@@ -471,16 +472,17 @@ export function Sidebar() {
             <div className="border-t border-sidebar-border p-2">
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    className="w-full justify-end"
+                  <div
+                    className="flex w-full justify-end cursor-pointer p-2 rounded-md"
                     onClick={toggleSidebar}
                     aria-label={
                       isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'
                     }
                   >
-                    {isCollapsed ? <PanelRightOpen /> : <PanelRightClose />}
-                  </Button>
+                    {isCollapsed ? 
+                        <ChevronRight className="text-[hsl(var(--sidebar-toggle-icon))]" /> : 
+                        <ChevronLeft className="text-[hsl(var(--sidebar-toggle-icon))]" />}
+                  </div>
                 </TooltipTrigger>
                 {isCollapsed && (
                   <TooltipContent side="right">

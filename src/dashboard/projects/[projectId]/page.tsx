@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import * as React from 'react';
@@ -41,6 +42,7 @@ import {
   LayoutList,
   Trello,
   Table2,
+  BarChartHorizontal,
 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
@@ -856,7 +858,7 @@ export default function ProjectDetailsPage() {
                         </TabsTrigger>
                     </TabsList>
                      <div className="flex items-center gap-2">
-                        {activeTab === 'backlog' && unassignedAndUnscheduledBacklogItems.length > 0 && (
+                        {activeTab === 'backlog' && (
                              <div className="flex items-center gap-2">
                                  <TooltipProvider>
                                     <Tooltip>
@@ -919,7 +921,7 @@ export default function ProjectDetailsPage() {
                                 </TooltipProvider>
                             </div>
                         )}
-                         {activeTab === 'sprints' && sprints.length > 0 && (
+                         {activeTab === 'sprints' && (
                             <TooltipProvider>
                                 <Tooltip>
                                     <TooltipTrigger asChild>
@@ -1116,14 +1118,16 @@ export default function ProjectDetailsPage() {
                                     </Card>
                                </div>
                                <div className="col-span-1 space-y-6">
-                                    {activeSprintHealthData && (
-                                        <Card>
-                                            <CardHeader>
-                                                <CardTitle>Active Wave Health</CardTitle>
-                                                <CardDescription>{activeSprint?.name}</CardDescription>
-                                            </CardHeader>
-                                            <CardContent>
-                                                {activeSprintHealthData.totalItems > 0 ? (
+                                     <Card className={cn(!activeSprint && 'border-dashed border-2 bg-transparent shadow-none')}>
+                                        <CardHeader>
+                                            <CardTitle>Active Wave Health</CardTitle>
+                                            {activeSprint ? (
+                                                <CardDescription>{activeSprint.name}</CardDescription>
+                                            ) : null }
+                                        </CardHeader>
+                                        <CardContent>
+                                            {activeSprint ? (
+                                                activeSprintHealthData && activeSprintHealthData.totalItems > 0 ? (
                                                     <>
                                                         <TooltipProvider>
                                                             <div className="flex w-full h-3 rounded-full overflow-hidden bg-muted mb-2">
@@ -1152,18 +1156,25 @@ export default function ProjectDetailsPage() {
                                                         </div>
                                                     </>
                                                 ) : (
-                                                    <div className="text-center text-sm text-muted-foreground py-4">
-                                                        This wave has no items.
+                                                    <div className="text-center text-sm text-muted-foreground py-4 h-[90px] flex flex-col items-center justify-center">
+                                                      This wave has no items.
                                                     </div>
-                                                )}
-                                            </CardContent>
+                                                )
+                                            ) : (
+                                                <div className="h-[150px] flex flex-col items-center justify-center text-center text-muted-foreground text-sm p-4">
+                                                  <Waves className="h-10 w-10 mb-2" />
+                                                  No wave is currently active. Start a wave to see its health.
+                                                </div>
+                                            )}
+                                        </CardContent>
+                                        {activeSprint && activeSprintHealthData && (
                                             <CardFooter>
                                                 <p className="text-sm text-muted-foreground w-full text-center">
                                                     <span className="font-bold">{activeSprintHealthData.daysLeft}</span> days remaining
                                                 </p>
                                             </CardFooter>
-                                        </Card>
-                                    )}
+                                        )}
+                                    </Card>
                                     <Card className={cn(epicProgressData.length === 0 && 'border-dashed border-2 bg-transparent shadow-none')}>
                                         <CardHeader>
                                             <CardTitle>Epic Progress</CardTitle>
