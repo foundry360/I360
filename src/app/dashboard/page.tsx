@@ -59,6 +59,7 @@ import {
 } from "@/components/ui/collapsible"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useToast } from '@/hooks/use-toast';
+import Link from 'next/link';
 
 type ActivityItem = {
   id: string;
@@ -500,8 +501,10 @@ export default function DashboardPage() {
                 )}
               </CardContent>
               {notifications.length > 3 && (
-                <CardFooter>
-                  <Button variant="outline" className="w-full" onClick={() => router.push('/dashboard/feed')}>View all in Feed</Button>
+                <CardFooter className="transition-opacity opacity-0 group-hover:opacity-100">
+                  <Button variant="link" asChild className="w-full">
+                    <Link href="/dashboard/feed">View all in Feed</Link>
+                  </Button>
                 </CardFooter>
               )}
             </Card>
