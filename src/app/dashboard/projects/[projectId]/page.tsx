@@ -1307,7 +1307,7 @@ export default function ProjectDetailsPage() {
                     </TabsContent>
                     <TabsContent value="epics">
                         <div className="space-y-6">
-                            {epics.length === 0 && unassignedBacklogItems.length === 0 ? (
+                            {epics.length === 0 ? (
                                 <div className="p-10 text-center rounded-lg border-2 border-dashed border-border bg-transparent shadow-none">
                                     <div className="flex justify-center mb-4">
                                        <div className="flex justify-center items-center h-16 w-16 text-muted-foreground">
