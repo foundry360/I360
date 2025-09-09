@@ -509,10 +509,7 @@ export default function DashboardPage() {
                 onClick={openNewProjectDialog}
               >
                 <div className="flex flex-col items-center gap-2 text-muted-foreground">
-                  <div className="w-16 h-16 rounded-full border-2 border-dashed border-muted-foreground flex items-center justify-center">
-                    <PlusCircle className="w-8 h-8" />
-                  </div>
-                  <span className="font-semibold mt-2">New Engagement</span>
+                  <PlusCircle className="w-12 h-12 text-[hsl(0,0%,4%)]" />
                 </div>
             </Card>
           {recentEngagements.map((project) => (
