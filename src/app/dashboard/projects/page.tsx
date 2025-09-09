@@ -371,7 +371,7 @@ export default function ProjectsPage() {
             </div>
             <TabsContent value={activeTab} className="mt-4">
                 <div className="flex justify-between items-center mb-4">
-                    <div className="text-sm text-muted-foreground">Total Records: {filteredProjects.length}</div>
+                    {viewMode === 'list' && <div className="text-sm text-muted-foreground">Total Records: {filteredProjects.length}</div>}
                 </div>
                 {viewMode === 'list' ? (
                      <div className="border rounded-lg">
