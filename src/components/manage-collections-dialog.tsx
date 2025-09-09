@@ -212,7 +212,7 @@ export function ManageCollectionsDialog({ isOpen, onOpenChange, onCollectionsUpd
             </ScrollArea>
         </div>
         <DialogFooter>
-          <Button type="button" onClick={() => onOpenChange(false)}>
+          <Button type="button" onClick={() => onOpenChange(false)} className={cn('dark:btn-outline-cancel')}>
             Done
           </Button>
         </DialogFooter>

@@ -30,6 +30,7 @@ import { useUser } from '@/contexts/user-context';
 import { format, parseISO } from 'date-fns';
 import { Rocket } from 'lucide-react';
 import { Separator } from './ui/separator';
+import { cn } from '@/lib/utils';
 
 // MOCK USER DATA - Replace with a service call to fetch actual users
 const mockUsers = [
@@ -215,7 +216,7 @@ export function EditBacklogItemDialog() {
             </div>
           </div>
           <DialogFooter className="pt-4">
-            <Button type="button" variant="outline" onClick={() => handleOpenChange(false)}>
+            <Button type="button" variant="outline" onClick={() => handleOpenChange(false)} className={cn('dark:btn-outline-cancel')}>
               Cancel
             </Button>
             <Button type="submit">Save Changes</Button>

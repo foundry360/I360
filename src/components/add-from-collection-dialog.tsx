@@ -175,7 +175,7 @@ export function AddFromCollectionDialog() {
                     </div>
                 </div>
                 <DialogFooter className="p-6 pt-4 border-t">
-                    <Button variant="outline" onClick={handleClose}>Cancel</Button>
+                    <Button variant="outline" onClick={handleClose} className={cn('dark:btn-outline-cancel')}>Cancel</Button>
                     <Button onClick={handleAdd} disabled={selectedCollections.length === 0}>Add to Backlog ({selectedCollections.length})</Button>
                 </DialogFooter>
             </DialogContent>

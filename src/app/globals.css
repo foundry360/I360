@@ -135,6 +135,12 @@ body {
   }
 }
 
+@layer components {
+    .dark .btn-outline-cancel {
+        @apply bg-[hsl(0_0%_12%)] border-[hsl(0_0%_12%)] hover:bg-[hsl(0_0%_15%)] hover:text-foreground;
+    }
+}
+
 @layer utilities {
     @keyframes spin-slow {
       from { transform: rotate(0deg); }

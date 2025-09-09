@@ -152,32 +152,32 @@ export function EditUserStoryDialog() {
             
             <div className="space-y-2">
               <Label>Acceptance Criteria</Label>
-              <div className="border rounded-md p-2 space-y-2">
-                <div className="flex gap-2">
-                  <Input
-                    id="new-criterion"
-                    value={currentCriterion}
-                    onChange={(e) => setCurrentCriterion(e.target.value)}
-                    onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddCriterion(); } }}
-                    placeholder="Add a criterion"
-                  />
-                  <Button type="button" variant="outline" onClick={handleAddCriterion}>Add</Button>
-                </div>
-                <div className="min-h-[40px]">
-                  <ScrollArea className="max-h-24">
-                      <ul className="space-y-1 list-disc pl-5">
-                      {story.acceptanceCriteria.map((c, i) => (
-                          <li key={i} className="text-sm flex justify-between items-center">
-                          <span>{c}</span>
-                          <Button type="button" variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleRemoveCriterion(i)}>
-                              <X className="h-3 w-3" />
-                          </Button>
-                          </li>
-                      ))}
-                      </ul>
-                  </ScrollArea>
-                </div>
-              </div>
+               <div className="border rounded-md p-2 space-y-2">
+                  <div className="flex gap-2">
+                    <Input
+                      id="new-criterion"
+                      value={currentCriterion}
+                      onChange={(e) => setCurrentCriterion(e.target.value)}
+                      onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddCriterion(); } }}
+                      placeholder="Add a criterion"
+                    />
+                    <Button type="button" variant="outline" onClick={handleAddCriterion}>Add</Button>
+                  </div>
+                  <div className="min-h-[40px]">
+                    <ScrollArea className="max-h-24">
+                        <ul className="space-y-1 list-disc pl-5">
+                        {story.acceptanceCriteria.map((c, i) => (
+                            <li key={i} className="text-sm flex justify-between items-center">
+                            <span>{c}</span>
+                            <Button type="button" variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleRemoveCriterion(i)}>
+                                <X className="h-3 w-3" />
+                            </Button>
+                            </li>
+                        ))}
+                        </ul>
+                    </ScrollArea>
+                  </div>
+               </div>
             </div>
 
             <div className="space-y-2">
@@ -246,7 +246,7 @@ export function EditUserStoryDialog() {
             </div>
           </div>
           <DialogFooter className="pt-4">
-            <Button type="button" variant="outline" onClick={() => handleOpenChange(false)}>
+            <Button type="button" variant="outline" onClick={() => handleOpenChange(false)} className={cn('dark:btn-outline-cancel')}>
               Cancel
             </Button>
             <Button type="submit">Save Changes</Button>

@@ -186,7 +186,7 @@ export function ManageTagsDialog({ isOpen, onOpenChange, onTagsUpdated }: Manage
             </ScrollArea>
         </div>
         <DialogFooter>
-           <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+           <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className={cn('dark:btn-outline-cancel')}>
             Cancel
           </Button>
           <Button type="button" onClick={handleSaveChanges}>

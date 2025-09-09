@@ -23,6 +23,7 @@ import {
 import { updateEpic, type Epic } from '@/services/epic-service';
 import { useQuickAction } from '@/contexts/quick-action-context';
 import { getTags, type Tag } from '@/services/user-story-service';
+import { cn } from '@/lib/utils';
 
 export function EditEpicDialog() {
   const {
@@ -125,7 +126,7 @@ export function EditEpicDialog() {
             </div>
           </div>
           <DialogFooter className="pt-4">
-            <Button type="button" variant="outline" onClick={() => handleOpenChange(false)}>
+            <Button type="button" variant="outline" onClick={() => handleOpenChange(false)} className={cn('dark:btn-outline-cancel')}>
               Cancel
             </Button>
             <Button type="submit">Save Changes</Button>

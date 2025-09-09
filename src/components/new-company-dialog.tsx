@@ -15,6 +15,7 @@ import { Label } from '@/components/ui/label';
 import { createCompany } from '@/services/company-service';
 import { useQuickAction } from '@/contexts/quick-action-context';
 import { Textarea } from './ui/textarea';
+import { cn } from '@/lib/utils';
 
 const initialNewCompanyState = {
   name: '',
@@ -169,6 +170,7 @@ export function NewCompanyDialog() {
               type="button"
               variant="outline"
               onClick={() => handleOpenChange(false)}
+              className={cn('dark:btn-outline-cancel')}
             >
               Cancel
             </Button>
