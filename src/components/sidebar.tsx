@@ -392,9 +392,9 @@ export function Sidebar() {
                 </Button>
             </TooltipTrigger>
             {isCollapsed && (
-                <TooltipContent side="right">
+              <TooltipContent side="right">
                 {item.label}
-                </TooltipContent>
+              </TooltipContent>
             )}
         </Tooltip>
     )
@@ -472,16 +472,17 @@ export function Sidebar() {
             <div className="border-t border-sidebar-border p-2">
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    className="w-full justify-end text-[hsl(var(--sidebar-toggle-icon))]"
+                  <div
+                    className="flex w-full justify-end cursor-pointer p-2 rounded-md hover:bg-sidebar-accent"
                     onClick={toggleSidebar}
                     aria-label={
                       isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'
                     }
                   >
-                    {isCollapsed ? <PanelRightOpen /> : <PanelRightClose />}
-                  </Button>
+                    {isCollapsed ? 
+                        <PanelRightOpen className="text-[hsl(var(--sidebar-toggle-icon))]" /> : 
+                        <PanelRightClose className="text-[hsl(var(--sidebar-toggle-icon))]" />}
+                  </div>
                 </TooltipTrigger>
                 {isCollapsed && (
                   <TooltipContent side="right">
