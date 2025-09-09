@@ -154,7 +154,7 @@ export default function LibraryPage() {
             title: 'Success!',
             description: `${storiesToAdd.length} user stor${storiesToAdd.length > 1 ? 'ies' : 'y'} added to the project backlog`,
         });
-        router.push(`/dashboard/projects/${projectId}`);
+        router.push(`/dashboard/projects/${projectId}?tab=backlog`);
     } catch (error) {
         console.error("Error adding stories to backlog:", error);
         toast({
@@ -589,6 +589,4 @@ export default function LibraryPage() {
     </>
   );
 }
-
-
 

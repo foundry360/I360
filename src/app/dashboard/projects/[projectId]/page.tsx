@@ -3,7 +3,7 @@
 'use client';
 
 import * as React from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter, CardDescription } from '@/components/ui/card';
 import {
@@ -257,6 +257,7 @@ const chartConfig = {
 export default function ProjectDetailsPage() {
     const params = useParams();
     const router = useRouter();
+    const searchParams = useSearchParams();
     const projectId = params.projectId as string;
     const [project, setProject] = React.useState<Project | null>(null);
     const [columns, setColumns] = React.useState<BoardColumns>(initialColumns);
@@ -292,7 +293,13 @@ export default function ProjectDetailsPage() {
     const projectBacklogItems = React.useMemo(() => {
         return backlogItems.filter(item => item.projectId === projectId);
     }, [backlogItems, projectId]);
-
+    
+    React.useEffect(() => {
+        const tab = searchParams.get('tab');
+        if (tab && ['summary', 'backlog', 'board', 'epics', 'sprints', 'timeline', 'all-work'].includes(tab)) {
+            setActiveTab(tab);
+        }
+    }, [searchParams]);
 
     const fetchData = React.useCallback(async () => {
         if (!projectId) return;
@@ -1869,3 +1876,4 @@ export default function ProjectDetailsPage() {
         </div>
     );
 }
+
