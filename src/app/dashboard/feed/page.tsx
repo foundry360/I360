@@ -20,16 +20,16 @@ import { Card } from '@/components/ui/card';
 
 type FilterType = 'all' | NotificationType | 'mention' | 'thread' | 'saved';
 
-const filterConfig: { id: FilterType; label: string; icon: React.ElementType, color: string }[] = [
-    { id: 'all', label: 'All', icon: Inbox, color: 'text-slate-500' },
-    { id: 'activity', label: 'Notifications', icon: Bell, color: 'text-orange-500' },
-    { id: 'mention', label: '@Mentions', icon: AtSign, color: 'text-blue-500' },
-    { id: 'thread', label: 'Threads', icon: MessageSquare, color: 'text-green-500' },
-    { id: 'alert', label: 'Alerts', icon: AlertTriangle, color: 'text-red-500' },
-    { id: 'system', label: 'System', icon: MonitorCog, color: 'text-purple-500' },
+const filterConfig: { id: FilterType; label: string; icon: React.ElementType, color: string, bgColor: string }[] = [
+    { id: 'all', label: 'All', icon: Inbox, color: 'text-slate-500', bgColor: 'bg-slate-500' },
+    { id: 'activity', label: 'Notifications', icon: Bell, color: 'text-orange-500', bgColor: 'bg-orange-500' },
+    { id: 'mention', label: '@Mentions', icon: AtSign, color: 'text-blue-500', bgColor: 'bg-blue-500' },
+    { id: 'thread', label: 'Threads', icon: MessageSquare, color: 'text-green-500', bgColor: 'bg-green-500' },
+    { id: 'alert', label: 'Alerts', icon: AlertTriangle, color: 'text-red-500', bgColor: 'bg-red-500' },
+    { id: 'system', label: 'System', icon: MonitorCog, color: 'text-purple-500', bgColor: 'bg-purple-500' },
 ];
 
-const savedFilter = { id: 'saved' as const, label: 'Saved', icon: Star, color: 'text-yellow-500' };
+const savedFilter = { id: 'saved' as const, label: 'Saved', icon: Star, color: 'text-yellow-500', bgColor: 'bg-yellow-500' };
 
 export default function FeedPage() {
     const { user } = useUser();
@@ -85,7 +85,7 @@ export default function FeedPage() {
 
     const unreadCount = notifications.filter(n => !n.isRead && !n.isArchived).length;
     
-    const renderFilterButton = (filter: { id: FilterType; label: string; icon: React.ElementType, color: string }) => {
+    const renderFilterButton = (filter: { id: FilterType; label: string; icon: React.ElementType, color: string, bgColor: string }) => {
         const Icon = filter.icon;
         return (
             <Button 
@@ -97,7 +97,9 @@ export default function FeedPage() {
                 )}
                 onClick={() => setActiveFilter(filter.id)}
             >
-                <Icon className={cn("mr-3 h-4 w-4", filter.color)} />
+                 <div className={cn("flex items-center justify-center h-6 w-6 rounded-md mr-3", filter.bgColor)}>
+                    <Icon className="h-4 w-4 text-white" />
+                </div>
                 {filter.label}
             </Button>
         );
