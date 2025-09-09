@@ -3,6 +3,7 @@
 import { db } from '@/lib/firebase';
 import { collection, doc, getDocs, setDoc, addDoc, writeBatch, deleteDoc, query, where, getDoc, updateDoc } from 'firebase/firestore';
 import type { Company } from './company-service';
+import { createNotification } from './notification-service';
 
 export interface Project {
   id: string;
@@ -114,6 +115,13 @@ export async function createProject(projectData: Omit<Project, 'id' | 'companyNa
       isStarred: false,
   };
   await setDoc(projectDocRef, newProject);
+
+  await createNotification({
+    message: `New engagement "${newProject.name}" has been created for ${companyName}.`,
+    link: `/dashboard/projects/${newProject.id}`,
+    type: 'activity',
+  });
+
   return projectDocRef.id;
 }
 

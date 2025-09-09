@@ -1,20 +1,25 @@
 
 'use client';
 import { db, auth } from '@/lib/firebase';
-import { collection, doc, addDoc, getDocs, writeBatch, serverTimestamp, query, orderBy, limit } from 'firebase/firestore';
+import { collection, doc, addDoc, getDocs, writeBatch, serverTimestamp, query, orderBy, limit, where, updateDoc } from 'firebase/firestore';
+
+export type NotificationType = 'system' | 'alert' | 'activity' | 'mention' | 'thread';
 
 export interface Notification {
   id: string;
   userId: string;
+  type: NotificationType;
   message: string;
   link: string;
   isRead: boolean;
+  isArchived: boolean;
+  snoozedUntil: string | null;
   createdAt: string; 
 }
 
 const notificationsCollection = collection(db, 'notifications');
 
-export async function createNotification(data: { message: string; link: string; }): Promise<string> {
+export async function createNotification(data: { message: string; link: string; type?: NotificationType }): Promise<string> {
     if (!auth.currentUser) {
         throw new Error("User must be logged in to create a notification.");
     }
@@ -22,7 +27,10 @@ export async function createNotification(data: { message: string; link: string; 
     const newNotification = {
         ...data,
         userId: auth.currentUser.uid,
+        type: data.type || 'activity',
         isRead: false,
+        isArchived: false,
+        snoozedUntil: null,
         createdAt: new Date().toISOString(),
     };
 
@@ -31,20 +39,35 @@ export async function createNotification(data: { message: string; link: string; 
 }
 
 
-export async function getNotifications(): Promise<Notification[]> {
+export async function getNotifications(includeArchived = false): Promise<Notification[]> {
     if (!auth.currentUser) {
         console.warn("No user logged in, cannot fetch notifications.");
         return [];
     }
 
     try {
-        const q = query(notificationsCollection, orderBy('createdAt', 'desc'), limit(20));
+        const q = query(
+            notificationsCollection, 
+            orderBy('createdAt', 'desc'), 
+            limit(100) // Fetch more to allow for client-side filtering
+        );
         const snapshot = await getDocs(q);
         
-        return snapshot.docs.map(docSnapshot => ({
+        const now = new Date();
+        const notifications = snapshot.docs.map(docSnapshot => ({
             id: docSnapshot.id,
             ...docSnapshot.data()
         } as Notification));
+        
+        if (includeArchived) {
+            return notifications.filter(n => n.isArchived);
+        }
+
+        return notifications.filter(n => {
+            if (n.isArchived) return false;
+            if (!n.snoozedUntil) return true;
+            return new Date(n.snoozedUntil) <= now;
+        });
 
     } catch (error) {
         console.error("Error fetching notifications:", error);
@@ -52,20 +75,35 @@ export async function getNotifications(): Promise<Notification[]> {
     }
 }
 
-export async function markAllNotificationsAsRead(): Promise<void> {
-    if (!auth.currentUser) {
-        throw new Error("User must be logged in to update notifications.");
-    }
-    
-    const q = query(notificationsCollection);
-    const snapshot = await getDocs(q);
+export async function updateNotification(id: string, data: Partial<Pick<Notification, 'isRead' | 'isArchived' | 'snoozedUntil'>>): Promise<void> {
+    const docRef = doc(db, 'notifications', id);
+    await updateDoc(docRef, data);
+}
+
+export async function bulkUpdateNotifications(updates: { ids: string[], data: Partial<Pick<Notification, 'isRead' | 'isArchived'>> }): Promise<void> {
+    const { ids, data } = updates;
+    if (ids.length === 0) return;
     
     const batch = writeBatch(db);
-    snapshot.docs.forEach(docSnapshot => {
-        if (!docSnapshot.data().isRead) {
-            batch.update(docSnapshot.ref, { isRead: true });
-        }
+    ids.forEach(id => {
+        const docRef = doc(db, 'notifications', id);
+        batch.update(docRef, data);
     });
-
     await batch.commit();
+}
+
+export async function markAllNotificationsAsRead(): Promise<void> {
+  if (!auth.currentUser) return;
+  
+  const q = query(notificationsCollection, where('isRead', '==', false));
+  const snapshot = await getDocs(q);
+
+  if (snapshot.empty) return;
+
+  const batch = writeBatch(db);
+  snapshot.docs.forEach(docSnapshot => {
+      batch.update(docSnapshot.ref, { isRead: true });
+  });
+
+  await batch.commit();
 }

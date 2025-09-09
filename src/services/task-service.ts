@@ -2,9 +2,10 @@
 'use client';
 
 import { db } from '@/lib/firebase';
-import { collection, doc, getDocs, setDoc, updateDoc, query, where, writeBatch, runTransaction, DocumentReference, WriteBatch, addDoc, deleteDoc, getDoc, deleteField } from 'firebase/firestore';
+import { collection, doc, getDocs, setDoc, updateDoc, query, where, writeBatch, runTransaction, DocumentReference, WriteBatch, addDoc, deleteDoc, getDoc, deleteField, onSnapshot } from 'firebase/firestore';
 import type { BacklogItem } from './backlog-item-service';
 import { updateProjectLastActivity } from './project-service';
+import { createNotification } from './notification-service';
 
 export const TaskStatus = {
   ToDo: 'To Do',
@@ -42,14 +43,20 @@ export interface Task {
 
 const tasksCollection = collection(db, 'tasks');
 
-export async function getTasks(): Promise<Task[]> {
-    try {
-        const snapshot = await getDocs(tasksCollection);
-        return snapshot.docs.map(doc => doc.data() as Task);
-    } catch (error) {
-        console.error("Error fetching all tasks:", error);
-        return [];
-    }
+export function getTasks(onUpdate: (tasks: Task[]) => void): () => void {
+    const q = query(tasksCollection);
+    
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+        const tasks = snapshot.docs.map(doc => {
+            const data = doc.data() as Task;
+            return data;
+        });
+        onUpdate(tasks);
+    }, (error) => {
+        console.error("❌ Error in getTasks listener:", error);
+    });
+    
+    return unsubscribe;
 }
 
 export async function getTasksForProject(projectId: string): Promise<Task[]> {
@@ -75,50 +82,108 @@ export async function createTask(taskData: Omit<Task, 'id'>): Promise<string> {
   }
   
   await setDoc(docRef, newTask);
+  
+  await createNotification({
+    message: `New task "${newTask.title}" assigned to ${newTask.owner}.`,
+    link: `/dashboard/projects/${newTask.projectId}`,
+    type: 'activity',
+  });
+
   await updateProjectLastActivity(taskData.projectId);
   return docRef.id;
 }
 
 
 export async function updateTask(id: string, taskData: Partial<Omit<Task, 'id'>>): Promise<void> {
-    const docRef = doc(db, 'tasks', id);
-    const taskDoc = await getDoc(docRef);
-    if (!taskDoc.exists()) {
-        throw new Error("Task not found");
-    }
-
-    const originalTask = taskDoc.data() as Task;
-    const projectId = taskData.projectId || originalTask.projectId;
+    console.log('🔄 updateTask called:', { id, taskData });
     
-    // Update the task itself
-    await updateDoc(docRef, taskData);
+    try {
+        const docRef = doc(db, 'tasks', id);
+        const taskDoc = await getDoc(docRef);
+        if (!taskDoc.exists()) {
+            console.error('❌ Task not found:', id);
+            throw new Error("Task not found");
+        }
 
-    // If the task is linked to a backlog item, update the backlog item too
-    if (originalTask.backlogId) {
-        const backlogQuery = query(collection(db, 'backlogItems'), where("projectId", "==", projectId), where("backlogId", "==", originalTask.backlogId));
-        const backlogSnapshot = await getDocs(backlogQuery);
-        if (!backlogSnapshot.empty) {
-            const backlogItemRef = backlogSnapshot.docs[0].ref;
-            const backlogUpdateData: Partial<Omit<BacklogItem, 'id'>> = {};
-            if (taskData.status) backlogUpdateData.status = taskData.status;
+        const originalTask = taskDoc.data() as Task;
+        const projectId = taskData.projectId || originalTask.projectId;
+        
+        console.log('📋 Original task data:', originalTask);
+        console.log('📝 Update data:', taskData);
+        
+        // Update the task itself
+        await updateDoc(docRef, taskData);
+        console.log('✅ Task document updated in Firestore');
 
-            if (taskData.hasOwnProperty('dueDate')) {
-                backlogUpdateData.dueDate = taskData.dueDate || null;
-            }
+        // If the task is linked to a backlog item, update the backlog item too
+        if (originalTask.backlogId) {
+            console.log('🔗 Updating linked backlog item:', originalTask.backlogId);
+            const backlogQuery = query(collection(db, 'backlogItems'), where("projectId", "==", projectId), where("backlogId", "==", originalTask.backlogId));
+            const backlogSnapshot = await getDocs(backlogQuery);
+            if (!backlogSnapshot.empty) {
+                const backlogItemRef = backlogSnapshot.docs[0].ref;
+                const backlogUpdateData: Partial<Omit<BacklogItem, 'id'>> = {};
+                if (taskData.status) backlogUpdateData.status = taskData.status;
 
-            if (taskData.description) backlogUpdateData.description = taskData.description;
-            
-            backlogUpdateData.owner = taskData.owner || originalTask.owner;
-            backlogUpdateData.ownerAvatarUrl = taskData.ownerAvatarUrl || originalTask.ownerAvatarUrl;
+                if ('dueDate' in taskData) {
+                    backlogUpdateData.dueDate = taskData.dueDate || null;
+                    console.log('📅 Updating backlog due date to:', backlogUpdateData.dueDate);
+                }
 
+                if (taskData.description) backlogUpdateData.description = taskData.description;
+                if (taskData.owner) backlogUpdateData.owner = taskData.owner;
+                if (taskData.ownerAvatarUrl) backlogUpdateData.ownerAvatarUrl = taskData.ownerAvatarUrl;
 
-            if (Object.keys(backlogUpdateData).length > 0) {
-                 await updateDoc(backlogItemRef, backlogUpdateData);
+                if (Object.keys(backlogUpdateData).length > 0) {
+                     await updateDoc(backlogItemRef, backlogUpdateData);
+                     console.log('✅ Backlog item updated');
+                }
             }
         }
+        
+        // Send notification for due date changes
+        if ('dueDate' in taskData && originalTask.dueDate !== taskData.dueDate) {
+            console.log('📢 Due date changed - creating notification');
+            
+            let message;
+            if (taskData.dueDate) {
+                const dueDate = new Date(taskData.dueDate);
+                message = `Due date for "${originalTask.title}" updated to ${dueDate.toLocaleDateString()}.`;
+            } else {
+                message = `Due date removed from "${originalTask.title}".`;
+            }
+            
+            try {
+                await createNotification({
+                    message,
+                    link: `/dashboard/projects/${projectId}`,
+                    type: 'activity'
+                });
+                console.log('✅ Due date notification created');
+            } catch (error) {
+                console.error('❌ Failed to create due date notification:', error);
+            }
+        }
+        
+        await updateProjectLastActivity(projectId);
+        console.log('✅ updateTask completed successfully');
+        
+    } catch (error) {
+        console.error('❌ Error in updateTask:', error);
+        throw error;
     }
+}
+
+export async function updateTaskDueDate(id: string, dueDate: string | null): Promise<void> {
+    console.log('📅 updateTaskDueDate called:', { id, dueDate });
     
-    await updateProjectLastActivity(projectId);
+    try {
+        await updateTask(id, { dueDate });
+        console.log('✅ updateTaskDueDate completed successfully');
+    } catch (error) {
+        console.error('❌ updateTaskDueDate failed:', error);
+        throw error;
+    }
 }
 
 export async function deleteTask(id: string): Promise<void> {
@@ -153,16 +218,38 @@ export async function updateTaskStatus(id: string, status: TaskStatus): Promise<
 }
 
 export async function updateTaskOrderAndStatus(taskId: string, newStatus: TaskStatus, newIndex: number, projectId: string): Promise<void> {
+    console.log('🔄 Starting updateTaskOrderAndStatus', { taskId, newStatus, newIndex, projectId });
+    
     const tasksQuery = query(tasksCollection, where("projectId", "==", projectId));
-    const tasksSnapshot = await getDocs(tasksQuery);
-    const tasks = tasksSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Task));
-    const taskToMove = tasks.find(t => t.id === taskId);
-    if (!taskToMove) throw new Error("Task not found!");
+    let oldStatus: TaskStatus | null = null;
+    let taskTitle = '';
+    let taskDueDate: string | null = null;
     
     await runTransaction(db, async (transaction) => {
-        const oldStatus = taskToMove.status;
+        console.log('📦 Inside transaction');
+        const tasksSnapshot = await getDocs(tasksQuery);
+        const tasks = tasksSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Task));
+        const taskToMove = tasks.find(t => t.id === taskId);
+        
+        if (!taskToMove) {
+            console.error('❌ Task not found!', taskId);
+            throw new Error("Task not found!");
+        }
+
+        oldStatus = taskToMove.status;
+        taskTitle = taskToMove.title;
+        taskDueDate = taskToMove.dueDate || null;
         const oldIndex = taskToMove.order;
 
+        console.log('📊 Task details:', { 
+            oldStatus, 
+            newStatus, 
+            taskTitle, 
+            taskDueDate,
+            statusChanging: oldStatus !== newStatus 
+        });
+
+        // Update order for tasks in old column
         tasks
             .filter(t => t.id !== taskId && t.status === oldStatus && t.order > oldIndex)
             .forEach(t => {
@@ -170,6 +257,7 @@ export async function updateTaskOrderAndStatus(taskId: string, newStatus: TaskSt
                 transaction.update(taskRef, { order: t.order - 1 });
             });
 
+        // Update order for tasks in new column
         tasks
             .filter(t => t.id !== taskId && t.status === newStatus && t.order >= newIndex)
             .forEach(t => {
@@ -177,10 +265,13 @@ export async function updateTaskOrderAndStatus(taskId: string, newStatus: TaskSt
                 transaction.update(taskRef, { order: t.order + 1 });
             });
 
+        // Update the moved task
         const movedTaskRef = doc(db, "tasks", taskId);
         transaction.update(movedTaskRef, { status: newStatus, order: newIndex });
         
+        // Update linked backlog item
         if (taskToMove.backlogId) {
+            console.log('🔗 Updating linked backlog item:', taskToMove.backlogId);
             const backlogQuery = query(collection(db, 'backlogItems'), where("projectId", "==", projectId), where("backlogId", "==", taskToMove.backlogId));
             const backlogSnapshot = await getDocs(backlogQuery);
             if (!backlogSnapshot.empty) {
@@ -189,6 +280,38 @@ export async function updateTaskOrderAndStatus(taskId: string, newStatus: TaskSt
             }
         }
     });
+
+    console.log('✅ Transaction completed');
+
+    // Check if status changed and send notification
+    if (oldStatus && oldStatus !== newStatus) {
+        console.log('📢 Status changed - creating notification');
+        
+        let message = `Task "${taskTitle}" was moved to ${newStatus}.`;
+        if (newStatus === 'Complete') {
+            message = `Task "${taskTitle}" has been completed.`;
+        }
+
+        try {
+            await createNotification({
+                message,
+                link: `/dashboard/projects/${projectId}`,
+                type: newStatus === 'Complete' ? 'activity' : 'system'
+            });
+            console.log('✅ Notification created successfully');
+        } catch (error) {
+            console.error('❌ Failed to create notification:', error);
+        }
+    } else {
+        console.log('ℹ️ No status change detected', { oldStatus, newStatus });
+    }
     
-    await updateProjectLastActivity(projectId);
+    try {
+        await updateProjectLastActivity(projectId);
+        console.log('✅ Project last activity updated');
+    } catch (error) {
+        console.error('❌ Failed to update project activity:', error);
+    }
+
+    console.log('🏁 updateTaskOrderAndStatus completed');
 }

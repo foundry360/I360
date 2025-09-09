@@ -87,7 +87,8 @@ export default function AssessmentsPage() {
 
   React.useEffect(() => {
     fetchAssessments();
-    const unsubscribe = setOnAssessmentCompleted(() => fetchAssessments);
+    const unsubscribe = setOnAssessmentCompleted(fetchAssessments);
+    
     return () => {
         if(unsubscribe) unsubscribe();
     }
@@ -510,5 +511,3 @@ export default function AssessmentsPage() {
     </>
   );
 }
-
-    

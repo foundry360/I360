@@ -97,7 +97,7 @@ export default function CompaniesPage() {
 
   React.useEffect(() => {
     fetchCompanies();
-    const unsubscribe = setOnCompanyCreated(() => fetchCompanies);
+    const unsubscribe = setOnCompanyCreated(fetchCompanies);
     return () => {
       if (unsubscribe) unsubscribe();
     };
@@ -480,7 +480,3 @@ export default function CompaniesPage() {
       </AlertDialog>
     </div>
   );
-
-    
-
-    

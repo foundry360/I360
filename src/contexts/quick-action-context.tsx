@@ -4,11 +4,10 @@
 import * as React from 'react';
 import type { Assessment } from '@/services/assessment-service';
 import type { Epic } from '@/services/epic-service';
-import type { BacklogItem } from '@/services/backlog-item-service';
+import { getBacklogItems, type BacklogItem } from '@/services/backlog-item-service';
 import type { Sprint } from '@/services/sprint-service';
-import type { Task } from '@/services/task-service';
 import type { Contact } from '@/services/contact-service';
-import type { Project } from '@/services/project-service';
+import { getProjects, type Project } from '@/services/project-service';
 import type { UserStory } from '@/services/user-story-service';
 import type { StoryCollection } from '@/services/collection-service';
 
@@ -91,13 +90,6 @@ type QuickActionContextType = {
   setOnSprintUpdated: (callback: (() => void) | null) => (() => void) | void;
   editSprintData: Sprint | null;
 
-  isEditTaskDialogOpen: boolean;
-  openEditTaskDialog: (task: Task, contacts: Contact[]) => void;
-  closeEditTaskDialog: () => void;
-  onTaskUpdated: (() => void) | null;
-  setOnTaskUpdated: (callback: (() => void) | null) => (() => void) | void;
-  editTaskData: { task: Task, contacts: Contact[] } | null;
-
   isNewUserStoryDialogOpen: boolean;
   openNewUserStoryDialog: () => void;
   closeNewUserStoryDialog: () => void;
@@ -135,6 +127,11 @@ type QuickActionContextType = {
   
   globalSearchTerm: string;
   setGlobalSearchTerm: (term: string) => void;
+  
+  projects: Project[];
+  getProjects: () => void;
+  
+  backlogItems: BacklogItem[];
 };
 
 const QuickActionContext = React.createContext<
@@ -183,10 +180,6 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
   const onSprintUpdatedRef = React.useRef<(() => void) | null>(null);
   const [editSprintData, setEditSprintData] = React.useState<Sprint | null>(null);
 
-  const [isEditTaskDialogOpen, setIsEditTaskDialogOpen] = React.useState(false);
-  const onTaskUpdatedRef = React.useRef<(() => void) | null>(null);
-  const [editTaskData, setEditTaskData] = React.useState<{ task: Task, contacts: Contact[] } | null>(null);
-
   const [isNewUserStoryDialogOpen, setIsNewUserStoryDialogOpen] = React.useState(false);
   const onUserStoryCreatedRef = React.useRef<(() => void) | null>(null);
   
@@ -207,6 +200,22 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
   const onAddFromLibraryRef = React.useRef<(() => void) | null>(null);
 
   const [globalSearchTerm, setGlobalSearchTerm] = React.useState('');
+
+  const [projects, setProjects] = React.useState<Project[]>([]);
+  const [backlogItems, setBacklogItems] = React.useState<BacklogItem[]>([]);
+  
+  const getProjectsCallback = React.useCallback(async () => {
+    const fetchedProjects = await getProjects();
+    setProjects(fetchedProjects);
+  }, []);
+
+  React.useEffect(() => {
+    const unsubscribe = getBacklogItems((items) => {
+        setBacklogItems(items);
+    });
+    return () => unsubscribe();
+  }, []);
+
 
   const openNewCompanyDialog = React.useCallback(() => setIsNewCompanyDialogOpen(true), []);
   const closeNewCompanyDialog = React.useCallback(() => setIsNewCompanyDialogOpen(false), []);
@@ -331,19 +340,6 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
   const setOnSprintUpdated = React.useCallback((callback: (() => void) | null) => {
     onSprintUpdatedRef.current = callback;
     return () => { onSprintUpdatedRef.current = null; };
-  }, []);
-
-  const openEditTaskDialog = React.useCallback((task: Task, contacts: Contact[]) => {
-    setEditTaskData({ task, contacts });
-    setIsEditTaskDialogOpen(true);
-  }, []);
-  const closeEditTaskDialog = React.useCallback(() => {
-    setIsEditTaskDialogOpen(false);
-    setEditTaskData(null);
-  }, []);
-  const setOnTaskUpdated = React.useCallback((callback: (() => void) | null) => {
-    onTaskUpdatedRef.current = callback;
-    return () => { onTaskUpdatedRef.current = null; };
   }, []);
 
   const openNewUserStoryDialog = React.useCallback(() => setIsNewUserStoryDialogOpen(true), []);
@@ -472,13 +468,6 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
     onSprintUpdated: onSprintUpdatedRef.current,
     setOnSprintUpdated,
     editSprintData,
-
-    isEditTaskDialogOpen,
-    openEditTaskDialog,
-    closeEditTaskDialog,
-    onTaskUpdated: onTaskUpdatedRef.current,
-    setOnTaskUpdated,
-    editTaskData,
     
     isNewUserStoryDialogOpen,
     openNewUserStoryDialog,
@@ -517,6 +506,11 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
     
     globalSearchTerm,
     setGlobalSearchTerm,
+    
+    projects,
+    getProjects: getProjectsCallback,
+    
+    backlogItems,
   }), [
     isNewCompanyDialogOpen, openNewCompanyDialog, closeNewCompanyDialog, setOnCompanyCreated,
     isNewContactDialogOpen, openNewContactDialog, closeNewContactDialog, setOnContactCreated,
@@ -529,7 +523,6 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
     isEditBacklogItemDialogOpen, openEditBacklogItemDialog, closeEditBacklogItemDialog, editBacklogItemData, setOnBacklogItemUpdated,
     isNewSprintDialogOpen, openNewSprintDialog, closeNewSprintDialog, newSprintData, setOnSprintCreated,
     isEditSprintDialogOpen, openEditSprintDialog, closeEditSprintDialog, editSprintData, setOnSprintUpdated,
-    isEditTaskDialogOpen, openEditTaskDialog, closeEditTaskDialog, editTaskData, setOnTaskUpdated,
     isNewUserStoryDialogOpen, openNewUserStoryDialog, closeNewUserStoryDialog, setOnUserStoryCreated,
     isEditUserStoryDialogOpen, openEditUserStoryDialog, closeEditUserStoryDialog, editUserStoryData, setOnUserStoryUpdated,
     isNewCollectionDialogOpen, openNewCollectionDialog, closeNewCollectionDialog, setOnCollectionCreated,
@@ -537,6 +530,8 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
     isManageCollectionsDialogOpen, openManageCollectionsDialog, closeManageCollectionsDialog, setOnCollectionsUpdated,
     setOnAddFromLibrary,
     globalSearchTerm,
+    projects, getProjectsCallback,
+    backlogItems,
   ]);
 
   return (

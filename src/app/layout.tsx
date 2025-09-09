@@ -20,7 +20,6 @@ import { Loader2 } from 'lucide-react';
 import { ThemeProvider } from '@/components/theme-provider';
 import { NewSprintDialog } from '@/components/new-sprint-dialog';
 import { EditSprintDialog } from '@/components/edit-sprint-dialog';
-import { EditTaskDialog } from '@/components/edit-task-dialog';
 import { NewUserStoryDialog } from '@/components/new-user-story-dialog';
 import { EditUserStoryDialog } from '@/components/edit-user-story-dialog';
 import { useIdle } from '@/hooks/use-idle';
@@ -128,7 +127,6 @@ export default function RootLayout({
                   <EditBacklogItemDialog />
                   <NewSprintDialog />
                   <EditSprintDialog />
-                  <EditTaskDialog />
                   <NewUserStoryDialog />
                   <EditUserStoryDialog />
                   <NewCollectionDialog />

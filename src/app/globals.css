@@ -27,7 +27,7 @@ body {
   }
   
   :root {
-    --background: 0 0% 100%;
+    --background: 0 0% 98%;
     --foreground: 222.2 47.4% 11.2%;
     --card: 0 0% 100%;
     --card-foreground: 222.2 47.4% 11.2%;
@@ -39,7 +39,7 @@ body {
     --primary-foreground: 0 0% 98%;
     --secondary: 210 40% 96.1%;
     --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 20% 97%; /* #f5f8fa */
+    --muted: 0 0% 97%; /* #f7f7f7 */
     --muted-foreground: 215.4 16.3% 46.9%;
     --accent: 232 78% 71%; /* #677be6 */
     --accent-foreground: 0 0% 98%;
@@ -96,7 +96,7 @@ body {
     --destructive-hover: 358 100% 54%;
     --destructive-foreground: 0 0% 98%;
     --border: 0 0% 9%;
-    --input: 217.2 32.6% 17.5%;
+    --input: 0 0% 7%;
     --ring: 259 82% 56%;
     --chart-1: 256 96% 63%;
     --chart-2: 232 78% 71%;

@@ -82,7 +82,7 @@ export default function ContactsPage() {
 
   React.useEffect(() => {
     fetchContacts();
-    const unsubscribe = setOnContactCreated(() => fetchContacts);
+    const unsubscribe = setOnContactCreated(fetchContacts);
     return () => {
         if (unsubscribe) unsubscribe();
     }
@@ -441,5 +441,3 @@ export default function ContactsPage() {
     </div>
   );
 }
-
-    

@@ -3,9 +3,9 @@
 
 import { db } from '@/lib/firebase';
 import { collection, query, where, getDocs, doc, setDoc, addDoc, updateDoc, deleteDoc, writeBatch, getDoc } from 'firebase/firestore';
-import { deleteTask, type Task } from './task-service';
 import type { BacklogItem } from './backlog-item-service';
 import { updateProjectLastActivity } from './project-service';
+import { createNotification } from './notification-service';
 
 export type SprintStatus = 'Not Started' | 'Active' | 'Completed';
 
@@ -42,87 +42,91 @@ export async function createSprint(sprintData: Omit<Sprint, 'id'>): Promise<stri
     return docRef.id;
 }
 
-export async function startSprint(sprintId: string, projectId: string, sprintItems: BacklogItem[], existingTasks: Task[]): Promise<void> {
+export async function startSprint(sprintId: string, projectId: string, sprintItems: BacklogItem[]): Promise<void> {
     const batch = writeBatch(db);
     const sprintRef = doc(db, 'sprints', sprintId);
 
-    // 1. Clean slate: Delete existing tasks for these backlog items to avoid orphans/duplicates
-    const sprintItemBacklogIds = sprintItems.map(item => item.backlogId);
-    const tasksToDelete = existingTasks.filter(task => task.backlogId && sprintItemBacklogIds.includes(task.backlogId));
-    tasksToDelete.forEach(task => {
-        const taskRef = doc(db, 'tasks', task.id);
-        batch.delete(taskRef);
-    });
-
-    // 2. Create a fresh task for every item in the sprint
-    sprintItems.forEach((item, index) => {
-        const taskRef = doc(collection(db, 'tasks')); // Create new ref
-        
-        const newTask: Task = {
-            id: taskRef.id,
-            projectId: projectId,
-            title: item.title,
-            status: 'To Do',
-            order: index, // Position in the "To Do" column
-            owner: item.owner || 'Unassigned',
-            ownerAvatarUrl: item.ownerAvatarUrl || '',
-            priority: item.priority,
-            type: 'Execution', // Default type, can be adjusted
-            backlogId: item.backlogId,
-            ...(item.dueDate && { dueDate: item.dueDate }),
-        };
-
-        batch.set(taskRef, newTask);
-    });
-
-    // 3. Update the sprint status to Active
+    // Update the sprint status to Active
     batch.update(sprintRef, { status: 'Active' });
 
+    // Update the status of each backlog item to 'To Do'
+    sprintItems.forEach(item => {
+        const itemRef = doc(db, 'backlogItems', item.id);
+        batch.update(itemRef, { status: 'To Do', order: 0 }); // Reset order
+    });
+
     await batch.commit();
+
+    // Create notification
+    const sprintDoc = await getDoc(sprintRef);
+    if(sprintDoc.exists()) {
+        const sprintName = sprintDoc.data().name;
+        await createNotification({
+            message: `Wave "${sprintName}" has kicked off.`,
+            link: `/dashboard/projects/${projectId}`,
+            type: 'activity',
+        });
+    }
+
     await updateProjectLastActivity(projectId);
 }
 
 export async function completeSprint(sprintId: string, projectId: string): Promise<void> {
     const batch = writeBatch(db);
 
-    // 1. Get all tasks in the sprint
-    const backlogQuery = query(collection(db, 'backlogItems'), where("sprintId", "==", sprintId));
-    const tasksQuery = query(collection(db, 'tasks'), where("projectId", "==", projectId));
-    
-    const [backlogSnapshot, tasksSnapshot] = await Promise.all([getDocs(backlogQuery), getDocs(tasksQuery)]);
-    
-    const sprintItems = backlogSnapshot.docs.map(doc => doc.data() as BacklogItem);
-    const allTasks = tasksSnapshot.docs.map(doc => doc.data() as Task);
-
-    const sprintItemBacklogIds = sprintItems.map(item => item.backlogId);
-    const tasksInSprint = allTasks.filter(task => task.backlogId && sprintItemBacklogIds.includes(task.backlogId));
-
-    // 2. Check if all tasks are complete
-    const allTasksAreComplete = tasksInSprint.every(task => task.status === 'Complete');
-
-    if (!allTasksAreComplete) {
-        throw new Error("Cannot complete the sprint. There are still open tasks.");
-    }
-    
-    // 3. If all complete, update sprint status and delete completed tasks
     const sprintRef = doc(db, 'sprints', sprintId);
+    
+    // Update sprint status
     batch.update(sprintRef, { status: 'Completed' });
 
-    tasksInSprint.forEach(task => {
-        const taskRef = doc(db, 'tasks', task.id);
-        batch.delete(taskRef);
+    // Mark all incomplete items in the sprint as 'To Do' and move them back to the backlog
+    const backlogQuery = query(collection(db, 'backlogItems'), where("sprintId", "==", sprintId));
+    const backlogSnapshot = await getDocs(backlogQuery);
+
+    backlogSnapshot.docs.forEach(docSnapshot => {
+        const item = docSnapshot.data() as BacklogItem;
+        if(item.status !== 'Complete') {
+            batch.update(docSnapshot.ref, { status: 'To Do', sprintId: null });
+        }
     });
 
     await batch.commit();
+
+    // Create notification
+    const sprintDoc = await getDoc(sprintRef);
+    if(sprintDoc.exists()) {
+        const sprintName = sprintDoc.data().name;
+        await createNotification({
+            message: `Wave "${sprintName}" has been completed.`,
+            link: `/dashboard/projects/${projectId}`,
+            type: 'activity',
+        });
+    }
+
     await updateProjectLastActivity(projectId);
 }
 
 
 export async function updateSprint(id: string, data: Partial<Omit<Sprint, 'id'>>): Promise<void> {
     const docRef = doc(db, 'sprints', id);
+    const originalSprintDoc = await getDoc(docRef);
+    if (!originalSprintDoc.exists()) return;
+
     await updateDoc(docRef, data);
+    
+    const originalSprint = originalSprintDoc.data();
+    if(data.startDate !== originalSprint.startDate || data.endDate !== originalSprint.endDate) {
+        await createNotification({
+            message: `The timeline for wave "${originalSprint.name}" has been adjusted.`,
+            link: `/dashboard/projects/${originalSprint.projectId}`,
+            type: 'alert',
+        });
+    }
+
     if (data.projectId) {
         await updateProjectLastActivity(data.projectId);
+    } else {
+        await updateProjectLastActivity(originalSprint.projectId);
     }
 }
 
@@ -135,14 +139,27 @@ export async function deleteSprint(id: string): Promise<void> {
 
     const projectId = sprintDoc.data().projectId;
 
-    // 1. Find all backlog items in the sprint and move them back to the backlog
+    // Find all backlog items in the sprint
     const backlogQuery = query(collection(db, 'backlogItems'), where("sprintId", "==", id));
     const backlogSnapshot = await getDocs(backlogQuery);
+
+    const backlogIds = backlogSnapshot.docs.map(doc => doc.data().backlogId as number);
+    
+    // Move backlog items back to the backlog
     backlogSnapshot.forEach(doc => {
         batch.update(doc.ref, { sprintId: null });
     });
 
-    // 2. Delete the sprint document itself
+    // Delete all associated tasks
+    if (backlogIds.length > 0) {
+        const tasksQuery = query(collection(db, 'tasks'), where("projectId", "==", projectId), where("backlogId", "in", backlogIds));
+        const tasksSnapshot = await getDocs(tasksQuery);
+        tasksSnapshot.forEach(doc => {
+            batch.delete(doc.ref);
+        });
+    }
+
+    // Delete the sprint document itself
     batch.delete(sprintRef);
 
     await batch.commit();

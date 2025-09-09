@@ -41,7 +41,6 @@ import {
   LayoutList,
   Trello,
   Table2,
-  BarChartHorizontal,
 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
@@ -813,19 +812,19 @@ export default function ProjectDetailsPage() {
                             <Table2 className="h-4 w-4" />
                             Summary
                         </TabsTrigger>
-                        <TabsTrigger 
-                            value="board"
-                            className="pb-3 rounded-none data-[state=active]:shadow-none data-[state=active]:border-primary data-[state=active]:border-b-4 data-[state=active]:text-foreground data-[state=active]:font-bold flex items-center gap-2"
-                        >
-                            <Trello className="h-4 w-4" />
-                            Board
-                        </TabsTrigger>
                          <TabsTrigger 
                             value="backlog"
                             className="pb-3 rounded-none data-[state=active]:shadow-none data-[state=active]:border-primary data-[state=active]:border-b-4 data-[state=active]:text-foreground data-[state=active]:font-bold flex items-center gap-2"
                         >
                             <Inbox className="h-4 w-4" />
                             Backlog
+                        </TabsTrigger>
+                        <TabsTrigger 
+                            value="board"
+                            className="pb-3 rounded-none data-[state=active]:shadow-none data-[state=active]:border-primary data-[state=active]:border-b-4 data-[state=active]:text-foreground data-[state=active]:font-bold flex items-center gap-2"
+                        >
+                            <Trello className="h-4 w-4" />
+                            Board
                         </TabsTrigger>
                         <TabsTrigger 
                             value="epics"
@@ -896,7 +895,7 @@ export default function ProjectDetailsPage() {
                                 </TooltipProvider>
                             </div>
                         )}
-                        {activeTab === 'epics' && (epics.length > 0 || unassignedBacklogItems.length > 0) && (
+                        {activeTab === 'epics' && (
                             <div className="flex items-center gap-2">
                                 <TooltipProvider>
                                     <Tooltip>
@@ -940,71 +939,60 @@ export default function ProjectDetailsPage() {
                 <div className="flex-1 overflow-y-auto pt-6">
                     <TabsContent value="summary">
                        <div className="space-y-6">
-                            {projectBacklogItems.length > 0 ? (
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                                    <Card>
-                                        <CardHeader className="flex flex-row items-center justify-between pb-2">
-                                            <CardTitle className="text-sm font-medium text-muted-foreground">In Progress</CardTitle>
-                                            <Loader className="h-4 w-4 text-muted-foreground" />
-                                        </CardHeader>
-                                        <CardContent>
-                                            <p className="text-2xl font-bold">{inProgressItems}</p>
-                                        </CardContent>
-                                        <CardFooter className="flex-col items-start gap-1 p-4 pt-0">
-                                            <p className="text-xs text-muted-foreground">{Math.round(inProgressPercentage)}% of total</p>
-                                            <Progress value={inProgressPercentage} />
-                                        </CardFooter>
-                                    </Card>
-                                    <Card>
-                                        <CardHeader className="flex flex-row items-center justify-between pb-2">
-                                            <CardTitle className="text-sm font-medium text-muted-foreground">Completed</CardTitle>
-                                            <CheckCircle2 className="h-4 w-4 text-muted-foreground" />
-                                        </CardHeader>
-                                        <CardContent>
-                                            <p className="text-2xl font-bold">{completedItemsCount}</p>
-                                        </CardContent>
-                                         <CardFooter className="flex-col items-start gap-1 p-4 pt-0">
-                                            <p className="text-xs text-muted-foreground">{Math.round(completedPercentage)}% of total</p>
-                                            <Progress value={completedPercentage} />
-                                        </CardFooter>
-                                    </Card>
-                                    <Card>
-                                        <CardHeader className="flex flex-row items-center justify-between pb-2">
-                                            <CardTitle className="text-sm font-medium text-muted-foreground">Overdue Items</CardTitle>
-                                            <AlertTriangle className="h-4 w-4 text-muted-foreground" />
-                                        </CardHeader>
-                                        <CardContent>
-                                            <p className="text-2xl font-bold text-danger">{overdueItemsCount}</p>
-                                        </CardContent>
-                                        <CardFooter className="flex-col items-start gap-1 p-4 pt-0">
-                                            <p className="text-xs text-muted-foreground">{Math.round(overduePercentage)}% of total</p>
-                                            <Progress value={overduePercentage} className="[&>div]:bg-danger" />
-                                        </CardFooter>
-                                    </Card>
-                                    <Card>
-                                        <CardHeader className="flex flex-row items-center justify-between pb-2">
-                                            <CardTitle className="text-sm font-medium text-muted-foreground">Engagement Health</CardTitle>
-                                            <HealthIcon className="h-4 w-4 text-muted-foreground" />
-                                        </CardHeader>
-                                        <CardContent>
-                                            <p className={cn("text-xl font-bold", projectHealth.color)}>{projectHealth.status}</p>
-                                        </CardContent>
-                                        <CardFooter className="flex-col items-start gap-1 p-4 pt-0">
-                                            <p className="text-xs text-muted-foreground">{Math.round(projectHealth.itemsCompletedPercent)}% complete</p>
-                                            <Progress value={projectHealth.itemsCompletedPercent} className={cn("[&>div]:bg-success", projectHealth.status === 'At Risk' && "[&>div]:bg-warning", projectHealth.status === 'Needs Attention' && "[&>div]:bg-danger")} />
-                                        </CardFooter>
-                                    </Card>
-                                </div>
-                            ) : (
-                                <div className="p-10 text-center rounded-lg border-2 border-dashed border-border bg-transparent shadow-none">
-                                    <div className="flex justify-center mb-4">
-                                       <div className="flex justify-center items-center h-16 w-16 text-muted-foreground">
-                                           <BarChartHorizontal className="h-8 w-8" />
-                                       </div>
-                                   </div>
-                                   <h3 className="text-lg font-semibold text-foreground">No Engagement Data Available</h3>
-                               </div>
-                            )}
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                                <Card>
+                                    <CardHeader className="flex flex-row items-center justify-between pb-2">
+                                        <CardTitle className="text-sm font-medium text-muted-foreground">In Progress</CardTitle>
+                                        <Loader className="h-4 w-4 text-muted-foreground" />
+                                    </CardHeader>
+                                    <CardContent>
+                                        <p className="text-2xl font-bold">{inProgressItems}</p>
+                                    </CardContent>
+                                    <CardFooter className="flex-col items-start gap-1 p-4 pt-0">
+                                        <p className="text-xs text-muted-foreground">{Math.round(inProgressPercentage)}% of total</p>
+                                        <Progress value={inProgressPercentage} />
+                                    </CardFooter>
+                                </Card>
+                                <Card>
+                                    <CardHeader className="flex flex-row items-center justify-between pb-2">
+                                        <CardTitle className="text-sm font-medium text-muted-foreground">Completed</CardTitle>
+                                        <CheckCircle2 className="h-4 w-4 text-muted-foreground" />
+                                    </CardHeader>
+                                    <CardContent>
+                                        <p className="text-2xl font-bold">{completedItemsCount}</p>
+                                    </CardContent>
+                                     <CardFooter className="flex-col items-start gap-1 p-4 pt-0">
+                                        <p className="text-xs text-muted-foreground">{Math.round(completedPercentage)}% of total</p>
+                                        <Progress value={completedPercentage} />
+                                    </CardFooter>
+                                </Card>
+                                <Card>
+                                    <CardHeader className="flex flex-row items-center justify-between pb-2">
+                                        <CardTitle className="text-sm font-medium text-muted-foreground">Overdue Items</CardTitle>
+                                        <AlertTriangle className="h-4 w-4 text-muted-foreground" />
+                                    </CardHeader>
+                                    <CardContent>
+                                        <p className="text-2xl font-bold text-danger">{overdueItemsCount}</p>
+                                    </CardContent>
+                                    <CardFooter className="flex-col items-start gap-1 p-4 pt-0">
+                                        <p className="text-xs text-muted-foreground">{Math.round(overduePercentage)}% of total</p>
+                                        <Progress value={overduePercentage} className="[&>div]:bg-danger" />
+                                    </CardFooter>
+                                </Card>
+                                <Card>
+                                    <CardHeader className="flex flex-row items-center justify-between pb-2">
+                                        <CardTitle className="text-sm font-medium text-muted-foreground">Engagement Health</CardTitle>
+                                        <HealthIcon className="h-4 w-4 text-muted-foreground" />
+                                    </CardHeader>
+                                    <CardContent>
+                                        <p className={cn("text-xl font-bold", projectHealth.color)}>{projectHealth.status}</p>
+                                    </CardContent>
+                                    <CardFooter className="flex-col items-start gap-1 p-4 pt-0">
+                                        <p className="text-xs text-muted-foreground">{Math.round(projectHealth.itemsCompletedPercent)}% complete</p>
+                                        <Progress value={projectHealth.itemsCompletedPercent} className={cn("[&>div]:bg-success", projectHealth.status === 'At Risk' && "[&>div]:bg-warning", projectHealth.status === 'Needs Attention' && "[&>div]:bg-danger")} />
+                                    </CardFooter>
+                                </Card>
+                            </div>
 
                             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                                <div className="col-span-1 space-y-6">
@@ -1128,16 +1116,14 @@ export default function ProjectDetailsPage() {
                                     </Card>
                                </div>
                                <div className="col-span-1 space-y-6">
-                                     <Card className={cn(!activeSprint && 'border-dashed border-2 bg-transparent shadow-none')}>
-                                        <CardHeader>
-                                            <CardTitle>Active Wave Health</CardTitle>
-                                            {activeSprint ? (
-                                                <CardDescription>{activeSprint.name}</CardDescription>
-                                            ) : null }
-                                        </CardHeader>
-                                        <CardContent>
-                                            {activeSprint ? (
-                                                activeSprintHealthData && activeSprintHealthData.totalItems > 0 ? (
+                                    {activeSprintHealthData && (
+                                        <Card>
+                                            <CardHeader>
+                                                <CardTitle>Active Wave Health</CardTitle>
+                                                <CardDescription>{activeSprint?.name}</CardDescription>
+                                            </CardHeader>
+                                            <CardContent>
+                                                {activeSprintHealthData.totalItems > 0 ? (
                                                     <>
                                                         <TooltipProvider>
                                                             <div className="flex w-full h-3 rounded-full overflow-hidden bg-muted mb-2">
@@ -1166,25 +1152,18 @@ export default function ProjectDetailsPage() {
                                                         </div>
                                                     </>
                                                 ) : (
-                                                    <div className="text-center text-sm text-muted-foreground py-4 h-[90px] flex flex-col items-center justify-center">
-                                                      This wave has no items.
+                                                    <div className="text-center text-sm text-muted-foreground py-4">
+                                                        This wave has no items.
                                                     </div>
-                                                )
-                                            ) : (
-                                                <div className="h-[150px] flex flex-col items-center justify-center text-center text-muted-foreground text-sm p-4">
-                                                  <Waves className="h-10 w-10 mb-2" />
-                                                  No wave is currently active. Start a wave to see its health.
-                                                </div>
-                                            )}
-                                        </CardContent>
-                                        {activeSprint && activeSprintHealthData && (
+                                                )}
+                                            </CardContent>
                                             <CardFooter>
                                                 <p className="text-sm text-muted-foreground w-full text-center">
                                                     <span className="font-bold">{activeSprintHealthData.daysLeft}</span> days remaining
                                                 </p>
                                             </CardFooter>
-                                        )}
-                                    </Card>
+                                        </Card>
+                                    )}
                                     <Card className={cn(epicProgressData.length === 0 && 'border-dashed border-2 bg-transparent shadow-none')}>
                                         <CardHeader>
                                             <CardTitle>Epic Progress</CardTitle>

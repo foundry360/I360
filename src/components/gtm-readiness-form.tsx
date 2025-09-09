@@ -448,7 +448,7 @@ export function GtmReadinessForm({ onComplete, assessmentToResume }: GtmReadines
 
   return (
     <div className="grid grid-cols-12 h-full">
-        <div className="col-span-3 border-r p-6 bg-primary-light">
+        <div className="col-span-3 border-r p-6 bg-muted/20">
             <h3 className="font-semibold mb-4">Assessment Sections</h3>
             <nav className="space-y-2">
                 {formSections.map((section, index) => (
@@ -583,7 +583,7 @@ export function GtmReadinessForm({ onComplete, assessmentToResume }: GtmReadines
                         </Card>
                     </div>
                    )}
-                    <div className="flex justify-between items-center p-6 border-t bg-background">
+                    <div className="flex justify-between items-center p-6 border-t bg-card">
                         <div>
                              <Button type="button" variant="link" onClick={handleSaveForLater}>
                                 Save for Later
@@ -614,6 +614,8 @@ export function GtmReadinessForm({ onComplete, assessmentToResume }: GtmReadines
     </div>
   );
 }
+
+    
 
     
 

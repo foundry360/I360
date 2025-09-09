@@ -20,6 +20,8 @@ import {
   History,
   ChevronRight as ChevronRightIcon,
   Rss,
+  PanelRightClose,
+  PanelRightOpen,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -240,6 +242,19 @@ export function Sidebar() {
   const [isCollapsed, setIsCollapsed] = React.useState(false);
   const [isStarredPopoverOpen, setIsStarredPopoverOpen] = React.useState(false);
   const [isRecentPopoverOpen, setIsRecentPopoverOpen] = React.useState(false);
+  const [hasStarredItems, setHasStarredItems] = React.useState(false);
+
+  React.useEffect(() => {
+    const checkStarredItems = async () => {
+        const [projects, assessments] = await Promise.all([getProjects(), getAssessments()]);
+        const anyStarred = projects.some(p => p.isStarred) || assessments.some(a => a.isStarred);
+        setHasStarredItems(anyStarred);
+    };
+    checkStarredItems();
+
+    const interval = setInterval(checkStarredItems, 30000); // Re-check every 30 seconds
+    return () => clearInterval(interval);
+  }, []);
 
   const navItems = [
     {
@@ -297,6 +312,7 @@ export function Sidebar() {
                                     <Icon
                                     className={cn('h-4 w-4', {
                                         'mr-2': !isCollapsed,
+                                        'text-yellow-400 fill-yellow-400': hasStarredItems
                                     })}
                                     />
                                     {!isCollapsed && <span className="text-sm">{item.label}</span>}
@@ -457,13 +473,13 @@ export function Sidebar() {
                 <TooltipTrigger asChild>
                   <Button
                     variant="ghost"
-                    className="w-full justify-center"
+                    className="w-full justify-end"
                     onClick={toggleSidebar}
                     aria-label={
                       isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'
                     }
                   >
-                    {isCollapsed ? <ChevronsRight /> : <ChevronsLeft />}
+                    {isCollapsed ? <PanelRightOpen /> : <PanelRightClose />}
                   </Button>
                 </TooltipTrigger>
                 {isCollapsed && (
