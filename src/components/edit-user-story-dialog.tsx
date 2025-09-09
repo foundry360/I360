@@ -149,6 +149,7 @@ export function EditUserStoryDialog() {
                 placeholder="As a [type of user], I want [an action] so that [a benefit]"
               />
             </div>
+            
             <div className="space-y-2">
               <Label htmlFor="new-criterion">Acceptance Criteria</Label>
               <div className="flex gap-2">
@@ -161,10 +162,8 @@ export function EditUserStoryDialog() {
                 />
                 <Button type="button" variant="outline" onClick={handleAddCriterion}>Add</Button>
               </div>
-            </div>
-
-            {story.acceptanceCriteria.length > 0 && (
-                <div className="pl-2">
+              {story.acceptanceCriteria.length > 0 && (
+                <div className="pt-2">
                     <ScrollArea className="max-h-24">
                         <ul className="space-y-1 list-disc pl-5">
                         {story.acceptanceCriteria.map((c, i) => (
@@ -178,7 +177,8 @@ export function EditUserStoryDialog() {
                         </ul>
                     </ScrollArea>
                 </div>
-            )}
+              )}
+            </div>
 
             <div className="space-y-2">
               <Label htmlFor="tags">Tags</Label>
