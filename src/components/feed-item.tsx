@@ -47,6 +47,7 @@ interface FeedItemProps {
   onSelect: (id: string) => void;
   onUpdate: () => void;
   showActions?: boolean;
+  showCheckbox?: boolean;
 }
 
 const notificationTypeConfig: Record<
@@ -66,6 +67,7 @@ export const FeedItem: React.FC<FeedItemProps> = ({
   onSelect,
   onUpdate,
   showActions = true,
+  showCheckbox = true,
 }) => {
   const router = useRouter();
   const { user } = useUser();
@@ -73,8 +75,8 @@ export const FeedItem: React.FC<FeedItemProps> = ({
   const config = notificationTypeConfig[notification.type] || notificationTypeConfig.activity;
   const Icon = config.icon;
 
-  const handleToggleRead = async (e: React.MouseEvent) => {
-    e.stopPropagation();
+  const handleToggleRead = async (e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
     await updateNotification(notification.id, { isRead: !notification.isRead });
     onUpdate();
   };
@@ -117,7 +119,7 @@ export const FeedItem: React.FC<FeedItemProps> = ({
       onClick={handleItemClick}
     >
       <div className="flex items-center gap-4" onClick={e => e.stopPropagation()}>
-         {showActions && (
+         {showCheckbox && (
             <Checkbox
             checked={isSelected}
             onCheckedChange={() => onSelect(notification.id)}
@@ -138,13 +140,9 @@ export const FeedItem: React.FC<FeedItemProps> = ({
       
       {showActions && (
         <div 
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity"
             onClick={e => e.stopPropagation()}
         >
-            <Button variant="ghost" size="sm" onClick={handleToggleRead}>
-            {notification.isRead ? <Undo2 className="h-4 w-4 mr-2"/> : <Check className="h-4 w-4 mr-2"/>}
-            {notification.isRead ? 'Mark as Unread' : 'Mark as Read'}
-            </Button>
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                     <Button variant="ghost" size="icon" className="h-8 w-8">
@@ -152,6 +150,10 @@ export const FeedItem: React.FC<FeedItemProps> = ({
                     </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent>
+                    <DropdownMenuItem onSelect={() => handleToggleRead()}>
+                        {notification.isRead ? <Undo2 className="mr-2 h-4 w-4"/> : <Check className="mr-2 h-4 w-4"/>}
+                        {notification.isRead ? 'Mark as Unread' : 'Mark as Read'}
+                    </DropdownMenuItem>
                     <DropdownMenuItem>
                         <Reply className="mr-2 h-4 w-4" /> Reply
                     </DropdownMenuItem>
@@ -184,3 +186,5 @@ export const FeedItem: React.FC<FeedItemProps> = ({
     </div>
   );
 };
+
+    

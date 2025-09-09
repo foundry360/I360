@@ -22,6 +22,7 @@ import {
 import { createContact } from '@/services/contact-service';
 import { getCompanies, type Company } from '@/services/company-service';
 import { useQuickAction } from '@/contexts/quick-action-context';
+import { cn } from '@/lib/utils';
 
 const initialNewContactState = {
   name: '',
@@ -130,7 +131,7 @@ export function NewContactDialog() {
             </div>
           </div>
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => handleOpenChange(false)}>
+            <Button type="button" variant="outline" onClick={() => handleOpenChange(false)} className={cn('dark:btn-outline-cancel')}>
               Cancel
             </Button>
             <Button type="submit">Create Contact</Button>

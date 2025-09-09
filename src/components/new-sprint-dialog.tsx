@@ -16,6 +16,7 @@ import { Textarea } from './ui/textarea';
 import { createSprint, type Sprint } from '@/services/sprint-service';
 import { useQuickAction } from '@/contexts/quick-action-context';
 import { add, format } from 'date-fns';
+import { cn } from '@/lib/utils';
 
 type NewSprintState = Omit<Sprint, 'id'>;
 
@@ -106,7 +107,7 @@ export function NewSprintDialog() {
             </div>
           </div>
           <DialogFooter className="pt-4">
-            <Button type="button" variant="outline" onClick={() => handleOpenChange(false)}>
+            <Button type="button" variant="outline" onClick={() => handleOpenChange(false)} className={cn('dark:btn-outline-cancel')}>
               Cancel
             </Button>
             <Button type="submit">Create Wave</Button>

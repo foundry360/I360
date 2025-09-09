@@ -163,18 +163,20 @@ export function NewUserStoryDialog() {
                   />
                   <Button type="button" variant="outline" onClick={handleAddCriterion}>Add</Button>
                 </div>
-                <ScrollArea className="h-24">
-                  <ul className="space-y-1 list-disc pl-5">
-                    {newStory.acceptanceCriteria.map((c, i) => (
-                      <li key={i} className="text-sm flex justify-between items-center">
-                        <span>{c}</span>
-                        <Button type="button" variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleRemoveCriterion(i)}>
-                          <X className="h-3 w-3" />
-                        </Button>
-                      </li>
-                    ))}
-                  </ul>
-                </ScrollArea>
+                <div className="border rounded-md p-2 min-h-[40px]">
+                  <ScrollArea className="h-24">
+                    <ul className="space-y-1 list-disc pl-5">
+                      {newStory.acceptanceCriteria.map((c, i) => (
+                        <li key={i} className="text-sm flex justify-between items-center">
+                          <span>{c}</span>
+                          <Button type="button" variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleRemoveCriterion(i)}>
+                            <X className="h-3 w-3" />
+                          </Button>
+                        </li>
+                      ))}
+                    </ul>
+                  </ScrollArea>
+                </div>
               </div>
             </div>
             <div className="grid grid-cols-4 items-start gap-4">
@@ -243,7 +245,7 @@ export function NewUserStoryDialog() {
             </div>
           </div>
           <DialogFooter className="pt-4">
-            <Button type="button" variant="outline" onClick={() => handleOpenChange(false)}>
+            <Button type="button" variant="outline" onClick={() => handleOpenChange(false)} className={cn('dark:btn-outline-cancel')}>
               Cancel
             </Button>
             <Button type="submit">Create Story</Button>

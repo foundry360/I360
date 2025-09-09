@@ -24,6 +24,7 @@ import { createProject } from '@/services/project-service';
 import { getCompanies, type Company } from '@/services/company-service';
 import { useQuickAction } from '@/contexts/quick-action-context';
 import { useUser } from '@/contexts/user-context';
+import { cn } from '@/lib/utils';
 
 const initialNewProjectState = {
   name: '',
@@ -240,7 +241,7 @@ export function NewProjectDialog() {
             </div>
           </div>
           <DialogFooter className="pt-4">
-            <Button type="button" variant="outline" onClick={() => handleOpenChange(false)}>
+            <Button type="button" variant="outline" onClick={() => handleOpenChange(false)} className={cn('dark:btn-outline-cancel')}>
               Cancel
             </Button>
             <Button type="submit">Create Engagement</Button>

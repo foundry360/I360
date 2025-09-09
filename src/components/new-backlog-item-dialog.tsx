@@ -25,6 +25,7 @@ import { useQuickAction } from '@/contexts/quick-action-context';
 import type { Epic } from '@/services/epic-service';
 import { TaskPriority } from '@/services/task-service';
 import { getProject } from '@/services/project-service';
+import { cn } from '@/lib/utils';
 
 type NewBacklogItemState = Omit<BacklogItem, 'id' | 'backlogId'>;
 
@@ -158,7 +159,7 @@ export function NewBacklogItemDialog() {
             </div>
           </div>
           <DialogFooter className="pt-4">
-            <Button type="button" variant="outline" onClick={() => handleOpenChange(false)}>
+            <Button type="button" variant="outline" onClick={() => handleOpenChange(false)} className={cn('dark:btn-outline-cancel')}>
               Cancel
             </Button>
             <Button type="submit">Create Item</Button>

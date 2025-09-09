@@ -14,6 +14,7 @@ import { Label } from '@/components/ui/label';
 import type { Company } from '@/services/company-service';
 import { Textarea } from './ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import { cn } from '@/lib/utils';
 
 type EditCompanyModalProps = {
   isOpen: boolean;
@@ -169,6 +170,7 @@ export function EditCompanyModal({
               type="button"
               variant="outline"
               onClick={() => onOpenChange(false)}
+              className={cn('dark:btn-outline-cancel')}
             >
               Cancel
             </Button>

@@ -24,6 +24,7 @@ import { updateProject, type Project } from '@/services/project-service';
 import { useQuickAction } from '@/contexts/quick-action-context';
 import { useUser } from '@/contexts/user-context';
 import { parseISO } from 'date-fns';
+import { cn } from '@/lib/utils';
 
 // MOCK USER DATA - Replace with a service call to fetch actual users
 const mockUsers = [
@@ -235,7 +236,7 @@ export function EditProjectDialog() {
             </div>
           </div>
           <DialogFooter className="pt-4">
-            <Button type="button" variant="outline" onClick={() => handleOpenChange(false)}>
+            <Button type="button" variant="outline" onClick={() => handleOpenChange(false)} className={cn('dark:btn-outline-cancel')}>
               Cancel
             </Button>
             <Button type="submit">Save Changes</Button>

@@ -135,51 +135,54 @@ export function EditUserStoryDialog() {
               Update the details for "{story.title}"
             </DialogDescription>
           </DialogHeader>
-          <div className="grid gap-4 py-4 max-h-[70vh] overflow-y-auto pr-4">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="title" className="text-right">Title</Label>
-              <Input id="title" value={story.title} onChange={handleInputChange} className="col-span-3" required />
+          <div className="space-y-4 py-4 max-h-[70vh] overflow-y-auto pr-4">
+            <div className="space-y-2">
+              <Label htmlFor="title">Title</Label>
+              <Input id="title" value={story.title} onChange={handleInputChange} required />
             </div>
-            <div className="grid grid-cols-4 items-start gap-4">
-              <Label htmlFor="story" className="text-right pt-2">Story</Label>
+            <div className="space-y-2">
+              <Label htmlFor="story">Story</Label>
               <Textarea
                 id="story"
                 value={story.story}
                 onChange={handleInputChange}
-                className="col-span-3"
                 placeholder="As a [type of user], I want [an action] so that [a benefit]"
               />
             </div>
-             <div className="grid grid-cols-4 items-start gap-4">
-              <Label htmlFor="acceptanceCriteria" className="text-right pt-2">Acceptance Criteria</Label>
-              <div className="col-span-3 space-y-2">
-                <div className="flex gap-2">
-                  <Input
-                    id="new-criterion"
-                    value={currentCriterion}
-                    onChange={(e) => setCurrentCriterion(e.target.value)}
-                    onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddCriterion(); } }}
-                    placeholder="Add a criterion"
-                  />
-                  <Button type="button" variant="outline" onClick={handleAddCriterion}>Add</Button>
-                </div>
-                <ScrollArea className="h-24">
-                  <ul className="space-y-1 list-disc pl-5">
-                    {story.acceptanceCriteria.map((c, i) => (
-                      <li key={i} className="text-sm flex justify-between items-center">
-                        <span>{c}</span>
-                        <Button type="button" variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleRemoveCriterion(i)}>
-                          <X className="h-3 w-3" />
-                        </Button>
-                      </li>
-                    ))}
-                  </ul>
-                </ScrollArea>
-              </div>
+            
+            <div className="space-y-2">
+              <Label>Acceptance Criteria</Label>
+               <div className="border rounded-md p-2 space-y-2">
+                  <div className="flex gap-2">
+                    <Input
+                      id="new-criterion"
+                      value={currentCriterion}
+                      onChange={(e) => setCurrentCriterion(e.target.value)}
+                      onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddCriterion(); } }}
+                      placeholder="Add a criterion"
+                    />
+                    <Button type="button" variant="outline" onClick={handleAddCriterion}>Add</Button>
+                  </div>
+                  <div className="min-h-[40px]">
+                    <ScrollArea className="max-h-24">
+                        <ul className="space-y-1 list-disc pl-5">
+                        {story.acceptanceCriteria.map((c, i) => (
+                            <li key={i} className="text-sm flex justify-between items-center">
+                            <span>{c}</span>
+                            <Button type="button" variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleRemoveCriterion(i)}>
+                                <X className="h-3 w-3" />
+                            </Button>
+                            </li>
+                        ))}
+                        </ul>
+                    </ScrollArea>
+                  </div>
+               </div>
             </div>
-            <div className="grid grid-cols-4 items-start gap-4">
-              <Label htmlFor="tags" className="text-right pt-2">Tags</Label>
-              <div className="col-span-3 space-y-2">
+
+            <div className="space-y-2">
+              <Label htmlFor="tags">Tags</Label>
+              <div className="space-y-2">
                  <Popover open={open} onOpenChange={setOpen}>
                     <PopoverTrigger asChild>
                         <Button
@@ -237,13 +240,13 @@ export function EditUserStoryDialog() {
                 </div>
               </div>
             </div>
-             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="points" className="text-right">Story Points</Label>
-              <Input id="points" type="number" value={story.points} onChange={handleInputChange} className="col-span-3" />
+            <div className="space-y-2">
+              <Label htmlFor="points">Story Points</Label>
+              <Input id="points" type="number" value={story.points} onChange={handleInputChange} />
             </div>
           </div>
           <DialogFooter className="pt-4">
-            <Button type="button" variant="outline" onClick={() => handleOpenChange(false)}>
+            <Button type="button" variant="outline" onClick={() => handleOpenChange(false)} className={cn('dark:btn-outline-cancel')}>
               Cancel
             </Button>
             <Button type="submit">Save Changes</Button>
