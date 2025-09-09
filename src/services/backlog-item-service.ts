@@ -261,23 +261,27 @@ export async function updateBacklogItem(id: string, data: Partial<Omit<BacklogIt
 
 export async function updateBacklogItemOrderAndStatus(itemId: string, newStatus: BacklogItemStatus, newIndex: number, projectId: string): Promise<void> {
     if (!projectId) {
-        throw new Error("Project ID is required to update backlog item order and status.");
-    }
-    
-    const itemToMoveRef = doc(db, 'backlogItems', itemId);
-
-    await runTransaction(db, async (transaction) => {
-        const itemToMoveSnap = await transaction.get(itemToMoveRef);
-        if (!itemToMoveSnap.exists()) {
+        const itemDoc = await getDoc(doc(db, 'backlogItems', itemId));
+        if (itemDoc.exists()) {
+            projectId = itemDoc.data().projectId;
+        } else {
             throw new Error(`Item with ID ${itemId} does not exist.`);
         }
-        const itemToMove = itemToMoveSnap.data() as BacklogItem;
-        const { status: oldStatus } = itemToMove;
-
+    }
+    
+    await runTransaction(db, async (transaction) => {
         // Query for all items in the project within the transaction
         const allItemsQuery = query(collection(db, "backlogItems"), where("projectId", "==", projectId));
         const allItemsSnapshot = await transaction.get(allItemsQuery);
         const allItems = allItemsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as BacklogItem));
+
+        const itemToMove = allItems.find(i => i.id === itemId);
+
+        if (!itemToMove) {
+            throw new Error(`Item with ID ${itemId} does not exist in project ${projectId}.`);
+        }
+        
+        const oldStatus = itemToMove.status;
 
         // Get items from the old column, excluding the one being moved
         const oldColumnItems = allItems
@@ -291,18 +295,23 @@ export async function updateBacklogItemOrderAndStatus(itemId: string, newStatus:
             }
         });
         
-        // Get items from the new column
-        let newColumnItems = allItems
-            .filter(i => i.status === newStatus && i.id !== itemId)
-            .sort((a, b) => a.order - b.order);
+        let newColumnItems;
 
-        // Add the moved item to its new position in the new column
+        if (oldStatus === newStatus) {
+            newColumnItems = oldColumnItems;
+        } else {
+             newColumnItems = allItems
+                .filter(i => i.status === newStatus)
+                .sort((a, b) => a.order - b.order);
+        }
+
+        // Add the moved item to its new position in the new column's item list
         newColumnItems.splice(newIndex, 0, { ...itemToMove, status: newStatus });
         
-        // Re-order the new column
+        // Re-order the new column (which now contains the moved item)
         newColumnItems.forEach((item, index) => {
              if (item.id === itemId) {
-                 transaction.update(itemToMoveRef, { status: newStatus, order: index });
+                 transaction.update(doc(db, 'backlogItems', item.id), { status: newStatus, order: index });
              } else if (item.order !== index) {
                  transaction.update(doc(db, 'backlogItems', item.id), { order: index });
              }

@@ -407,7 +407,7 @@ export default function ProjectDetailsPage() {
 
         // Persist changes to Firestore
         try {
-            await updateBacklogItemOrderAndStatus(itemId, destColId, destination.index);
+            await updateBacklogItemOrderAndStatus(itemId, destColId, destination.index, projectId);
             // No need to fetch data here, as the listener will pick up changes
         } catch (error) {
             console.error("Failed to update item:", error);
@@ -814,7 +814,7 @@ export default function ProjectDetailsPage() {
                             <Table2 className="h-4 w-4" />
                             Summary
                         </TabsTrigger>
-                        <TabsTrigger 
+                         <TabsTrigger 
                             value="backlog"
                             className="pb-3 rounded-none data-[state=active]:shadow-none data-[state=active]:border-primary data-[state=active]:border-b-4 data-[state=active]:text-foreground data-[state=active]:font-bold flex items-center gap-2"
                         >
