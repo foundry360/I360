@@ -204,7 +204,7 @@ export default function FeedPage() {
                             {Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-20 w-full border-b" />)}
                            </Card>
                         ) : filteredNotifications.length > 0 ? (
-                             <Card className="overflow-hidden">
+                             <Card className="overflow-hidden divide-y">
                                 {filteredNotifications.map(note => (
                                     <FeedItem 
                                         key={note.id}
