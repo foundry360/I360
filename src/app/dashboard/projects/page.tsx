@@ -31,7 +31,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Skeleton } from '@/components/ui/skeleton';
-import { MoreHorizontal, Plus, Trash2, ArrowUpDown, Search, Star, List, LayoutGrid } from 'lucide-react';
+import { MoreHorizontal, Plus, Trash2, ArrowUpDown, Search, Star, List, LayoutGrid, PlusCircle } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import Link from 'next/link';
 import { useQuickAction } from '@/contexts/quick-action-context';
@@ -43,7 +43,7 @@ import { getSprintsForProject } from '@/services/sprint-service';
 import { useUser } from '@/contexts/user-context';
 import { cn } from '@/lib/utils';
 import { Checkbox } from '@/components/ui/checkbox';
-import { TablePagination } from '@/components/table-pagination';
+import { TablePagination } from '@/components/ui/table-pagination';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { format, formatDistanceToNow, parseISO } from 'date-fns';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -579,6 +579,15 @@ export default function ProjectsPage() {
                                 No engagements found
                             </p>
                         )}
+                        <Card
+                            className="cursor-pointer bg-transparent border-dashed hover:border-primary transition-colors flex flex-col items-center justify-center min-h-[260px] border-2 border-border"
+                            onClick={openNewProjectDialog}
+                        >
+                            <div className="flex flex-col items-center gap-2 text-muted-foreground">
+                                <PlusCircle className="w-12 h-12 text-[hsl(0_0%_75%)] dark:text-foreground/10" />
+                                <p className="text-sm text-[hsl(0_0%_75%)] dark:text-foreground/10">New Engagement</p>
+                            </div>
+                        </Card>
                     </div>
                 )}
 
