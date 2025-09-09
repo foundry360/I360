@@ -39,7 +39,7 @@ body {
     --primary-foreground: 0 0% 98%;
     --secondary: 210 40% 96.1%;
     --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 20% 97%; /* #f5f8fa */
+    --muted: 0 0% 97%; /* #f7f7f7 */
     --muted-foreground: 215.4 16.3% 46.9%;
     --accent: 232 78% 71%; /* #677be6 */
     --accent-foreground: 0 0% 98%;
