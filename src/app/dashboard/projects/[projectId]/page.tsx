@@ -264,14 +264,11 @@ export default function ProjectDetailsPage() {
     const [project, setProject] = React.useState<Project | null>(null);
     const [columns, setColumns] = React.useState<BoardColumns>(initialColumns);
     const [epics, setEpics] = React.useState<Epic[]>([]);
-    const { backlogItems, getProjects, setOnBacklogItemCreated, onBacklogItemCreated } = useQuickAction();
-    const [sprints, setSprints] = React.useState<Sprint[]>([]);
-    const [contacts, setContacts] = React.useState<Contact[]>([]);
-    const [allTags, setAllTags] = React.useState<Tag[]>([]);
-    const [collections, setCollections] = React.useState<StoryCollection[]>([]);
-    const [loading, setLoading] = React.useState(true);
-    const [activeTab, setActiveTab] = React.useState('summary');
     const { 
+        backlogItems, 
+        getProjects, 
+        setOnBacklogItemCreated, 
+        onBacklogItemCreated,
         openNewBacklogItemDialog,
         openNewEpicDialog,
         openEditEpicDialog,
@@ -286,6 +283,13 @@ export default function ProjectDetailsPage() {
         setOnSprintUpdated,
         setOnCollectionAddedToProject,
     } = useQuickAction();
+    const [sprints, setSprints] = React.useState<Sprint[]>([]);
+    const [contacts, setContacts] = React.useState<Contact[]>([]);
+    const [allTags, setAllTags] = React.useState<Tag[]>([]);
+    const [collections, setCollections] = React.useState<StoryCollection[]>([]);
+    const [loading, setLoading] = React.useState(true);
+    const [activeTab, setActiveTab] = React.useState('summary');
+    
     const { toast } = useToast();
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
     const [itemToDelete, setItemToDelete] = React.useState<{type: 'epic' | 'backlogItem' | 'sprint', id: string, name: string} | null>(null);
@@ -342,15 +346,24 @@ export default function ProjectDetailsPage() {
         const unsubCollectionAdded = setOnCollectionAddedToProject(fetchData);
 
         return () => {
-            if (unsubCreated) unsubCreated();
-            if (unsubEpic) unsubEpic();
-            if (unsubSprint) unsubSprint();
-            if (unsubBacklogUpdated) unsubBacklogUpdated();
-            if (unsubEpicUpdated) unsubEpicUpdated();
-            if (unsubSprintUpdated) unsubSprintUpdated();
-            if (unsubCollectionAdded) unsubCollectionAdded();
+            if (typeof unsubCreated === 'function') unsubCreated();
+            if (typeof unsubEpic === 'function') unsubEpic();
+            if (typeof unsubSprint === 'function') unsubSprint();
+            if (typeof unsubBacklogUpdated === 'function') unsubBacklogUpdated();
+            if (typeof unsubEpicUpdated === 'function') unsubEpicUpdated();
+            if (typeof unsubSprintUpdated === 'function') unsubSprintUpdated();
+            if (typeof unsubCollectionAdded === 'function') unsubCollectionAdded();
         };
-    }, [fetchData, setOnBacklogItemCreated, setOnEpicCreated, setOnSprintCreated, setOnBacklogItemUpdated, setOnEpicUpdated, setOnSprintUpdated, setOnCollectionAddedToProject]);
+    }, [
+        fetchData, 
+        setOnBacklogItemCreated, 
+        setOnEpicCreated, 
+        setOnSprintCreated, 
+        setOnBacklogItemUpdated, 
+        setOnEpicUpdated, 
+        setOnSprintUpdated, 
+        setOnCollectionAddedToProject
+    ]);
 
      React.useEffect(() => {
         const activeOrCompletedSprintIds = sprints
@@ -1908,3 +1921,5 @@ export default function ProjectDetailsPage() {
     );
 }
 
+
+    
