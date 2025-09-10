@@ -5,7 +5,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '
 import { useQuickAction } from '@/contexts/quick-action-context';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { ArrowUp, Bot, Loader2, User } from 'lucide-react';
+import { ArrowUp, Bot, Loader2, Sparkles, User } from 'lucide-react';
 import { getInsights } from '@/ai/flows/insights-flow';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -65,7 +65,10 @@ export function InsightsPanel() {
         <Sheet open={isInsightsPanelOpen} onOpenChange={closeInsightsPanel}>
             <SheetContent className="w-[800px] sm:max-w-none flex flex-col p-0">
                 <SheetHeader className="p-6 border-b">
-                    <SheetTitle>Ask Insights360</SheetTitle>
+                    <SheetTitle className="flex items-center gap-2">
+                        <Sparkles className="h-5 w-5 text-primary" />
+                        <span>Ask Insights360</span>
+                    </SheetTitle>
                     <SheetDescription>Ask Insights360 questions about your engagements, tasks, and more...</SheetDescription>
                 </SheetHeader>
                 <div className="p-4 border-b">
