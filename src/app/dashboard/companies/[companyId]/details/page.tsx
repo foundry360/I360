@@ -80,7 +80,7 @@ export default function CompanyDetailsPage() {
   const searchParams = useSearchParams();
   const { toast } = useToast();
   const companyId = params.companyId as string;
-  const { openAssessmentModal, setOnAssessmentCompleted, openNewContactDialog, setOnContactCreated, openNewProjectDialog, setOnProjectCreated } from useQuickAction();
+  const { openAssessmentModal, setOnAssessmentCompleted, openNewContactDialog, setOnContactCreated, openNewProjectDialog, setOnProjectCreated } = useQuickAction();
   const [companyData, setCompanyData] = React.useState<Company | null>(null);
   const [assessments, setAssessments] = React.useState<Assessment[]>([]);
   const [contacts, setContacts] = React.useState<Contact[]>([]);
@@ -718,7 +718,7 @@ export default function CompanyDetailsPage() {
                       <AccordionTrigger>
                           <div className="flex items-center justify-between w-full">
                               <h3 className="font-semibold">Company Information</h3>
-                              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setIsEditModalOpen(true)}>
+                              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={(e) => { e.stopPropagation(); setIsEditModalOpen(true);}}>
                                   <Pencil className="h-4 w-4" />
                               </Button>
                           </div>
@@ -746,7 +746,7 @@ export default function CompanyDetailsPage() {
                       <AccordionTrigger>
                           <div className="flex items-center justify-between w-full">
                               <h3 className="font-semibold">Primary Contacts</h3>
-                              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={openNewContactDialog}>
+                              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={(e) => { e.stopPropagation(); openNewContactDialog(); }}>
                                   <Plus className="h-4 w-4" />
                               </Button>
                           </div>
@@ -779,7 +779,7 @@ export default function CompanyDetailsPage() {
                       <AccordionTrigger>
                           <div className="flex items-center justify-between w-full">
                               <h3 className="font-semibold">Company Engagements</h3>
-                              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={openNewProjectDialog}>
+                              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={(e) => { e.stopPropagation(); openNewProjectDialog(); }}>
                                   <Plus className="h-4 w-4" />
                               </Button>
                           </div>
@@ -817,7 +817,7 @@ export default function CompanyDetailsPage() {
                                       <div key={index} className="flex items-start gap-4">
                                           <div className="mt-1 h-2 w-2 rounded-full bg-primary" />
                                           <div>
-                                          <p className="font-medium text-sm">{item.activity}</p>
+                                          <p className="text-sm line-clamp-2">{item.activity}</p>
                                           <p className="text-xs text-muted-foreground">{formatDateTime(item.time)}</p>
                                           </div>
                                       </div>
