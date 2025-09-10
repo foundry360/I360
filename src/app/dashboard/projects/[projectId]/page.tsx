@@ -875,8 +875,13 @@ export default function ProjectDetailsPage() {
                                     Insights
                                     </Button>
                                 </SheetTrigger>
-                                <SheetContent className="w-[1000px] sm:max-w-none sm:w-[1280px] p-0 bg-sidebar text-sidebar-foreground border-sidebar-border">
-                                    <EngagementInsightsPanel projects={[project]} />
+                                <SheetContent className="w-[600px] sm:max-w-none sm:w-[600px] p-0 bg-sidebar text-sidebar-foreground border-sidebar-border">
+                                    <EngagementInsightsPanel 
+                                        project={project}
+                                        epics={epics}
+                                        sprints={sprints}
+                                        backlogItems={projectBacklogItems}
+                                    />
                                 </SheetContent>
                             </Sheet>
                         )}
