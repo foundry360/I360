@@ -722,7 +722,7 @@ export default function CompanyDetailsPage() {
         </AlertDialogContent>
       </AlertDialog>
         <Sheet open={isInputsPanelOpen} onOpenChange={setIsInputsPanelOpen}>
-            <SheetContent className="w-[600px] sm:w-[800px]">
+            <SheetContent className="w-full sm:max-w-4xl">
                 {selectedAssessmentForPanel && (
                     <AssessmentInputsPanel assessment={selectedAssessmentForPanel} />
                 )}
