@@ -701,7 +701,7 @@ export default function CompanyDetailsPage() {
             </Tabs>
           </div>
 
-          <div className={cn("relative transition-all duration-300 border-l", isPanelCollapsed ? "w-12" : "w-[32rem]")}>
+          <div className={cn("relative transition-all duration-300 border-l", isPanelCollapsed ? "w-12" : "w-[28rem]")}>
             <Button
                 variant="ghost"
                 size="icon"
@@ -907,3 +907,5 @@ export default function CompanyDetailsPage() {
     </>
   );
 }
+
+    
