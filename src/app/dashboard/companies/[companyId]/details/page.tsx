@@ -69,8 +69,7 @@ export default function CompanyDetailsPage() {
   const companyId = params.companyId as string;
   const { openAssessmentModal, setOnAssessmentCompleted, openNewContactDialog, setOnContactCreated, openNewProjectDialog, setOnProjectCreated } = useQuickAction();
   const [companyData, setCompanyData] = React.useState<Company | null>(null);
-  const [currentAssessments, setCurrentAssessments] = React.useState<Assessment[]>([]);
-  const [completedAssessments, setCompletedAssessments] = React.useState<Assessment[]>([]);
+  const [assessments, setAssessments] = React.useState<Assessment[]>([]);
   const [contacts, setContacts] = React.useState<Contact[]>([]);
   const [projects, setProjects] = React.useState<Project[]>([]);
   const [allRecentActivity, setAllRecentActivity] = React.useState<ActivityItem[]>([]);
@@ -106,10 +105,9 @@ export default function CompanyDetailsPage() {
       setCompanyData(company);
       setProjects(companyProjects);
       
-      const current = allAssessments.filter(a => a.status === 'In Progress');
-      const completed = allAssessments.filter(a => a.status === 'Completed').sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime());
-      setCurrentAssessments(current);
-      setCompletedAssessments(completed);
+      const sortedAssessments = allAssessments.sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime());
+      setAssessments(sortedAssessments);
+
       setContacts(companyContacts);
 
       if (company) {
@@ -259,7 +257,7 @@ export default function CompanyDetailsPage() {
     }
   };
 
-  const paginatedAssessments = completedAssessments.slice(
+  const paginatedAssessments = assessments.slice(
     page * rowsPerPage,
     page * rowsPerPage + rowsPerPage
   );
@@ -371,101 +369,40 @@ export default function CompanyDetailsPage() {
                   )}
               </CardContent>
             </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between">
-                <div>
-                  <CardTitle className="text-xl">Current Assessments</CardTitle>
-                  <CardDescription>
-                    Ongoing assessments for {companyData.name}
-                  </CardDescription>
-                </div>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="sm">
-                      <Plus className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem onSelect={() => openAssessmentModal()}>
-                      GTM Readiness
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </CardHeader>
-              <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Assessment Name</TableHead>
-                      <TableHead>Type</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead className="w-[150px]">Progress</TableHead>
-                      <TableHead>Start Date</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {currentAssessments.length > 0 ? (
-                      currentAssessments.map((assessment, index) => (
-                        <TableRow 
-                          key={index}
-                          onClick={() => handleOpenAssessment(assessment)}
-                          className="cursor-pointer"
-                        >
-                          <TableCell className="font-medium">
-                            {assessment.name}
-                          </TableCell>
-                          <TableCell>
-                            <Badge variant={(assessment.type || 'GTM Readiness') === 'GTM Readiness' ? 'default' : 'secondary'}>
-                              {assessment.type || 'GTM Readiness'}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                            <Badge
-                              variant={
-                                assessment.status === 'In Progress'
-                                  ? 'secondary'
-                                  : 'outline'
-                              }
-                            >
-                              {assessment.status}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                              <Progress value={assessment.progress} className="h-2" />
-                          </TableCell>
-                          <TableCell>{formatDate(assessment.startDate)}</TableCell>
-                        </TableRow>
-                      ))
-                    ) : (
-                      <TableRow>
-                        <TableCell colSpan={5} className="h-24 text-center">
-                          No assessments found.
-                        </TableCell>
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
+            
             <Card>
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <div>
-                    <CardTitle className="text-xl">Assessment History</CardTitle>
+                    <CardTitle className="text-xl">Assessments</CardTitle>
                     <CardDescription>
-                      Review of all completed assessments
+                      Manage and review all assessments for this company
                     </CardDescription>
                   </div>
-                   {selectedAssessments.length > 0 && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setIsBulkDeleteDialogOpen(true)}
-                      >
-                        <Trash2 className="h-4 w-4 mr-2" />
-                        Delete ({selectedAssessments.length})
-                      </Button>
-                    )}
+                   <div className='flex items-center gap-2'>
+                    {selectedAssessments.length > 0 && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setIsBulkDeleteDialogOpen(true)}
+                        >
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          Delete ({selectedAssessments.length})
+                        </Button>
+                      )}
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="outline" size="sm">
+                            <Plus className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onSelect={() => openAssessmentModal()}>
+                            GTM Readiness
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                   </div>
                 </div>
               </CardHeader>
               <CardContent>
@@ -510,8 +447,8 @@ export default function CompanyDetailsPage() {
                                 <Star className={cn("h-4 w-4", assessment.isStarred ? 'text-yellow-400 fill-yellow-400' : 'text-muted-foreground')} />
                               </Button>
                            </TableCell>
-                          <TableCell className="font-medium">
-                            {assessment.name}
+                          <TableCell className="font-medium" onClick={() => handleOpenAssessment(assessment)}>
+                            <span className="cursor-pointer hover:text-primary">{assessment.name}</span>
                           </TableCell>
                           <TableCell>
                             <Badge variant={(assessment.type || 'GTM Readiness') === 'GTM Readiness' ? 'default' : 'secondary'}>
@@ -523,7 +460,7 @@ export default function CompanyDetailsPage() {
                               variant={
                                 assessment.status === 'Completed'
                                   ? 'success'
-                                  : 'outline'
+                                  : 'secondary'
                               }
                             >
                               {assessment.status}
@@ -531,22 +468,26 @@ export default function CompanyDetailsPage() {
                           </TableCell>
                           <TableCell>{formatDate(assessment.startDate)}</TableCell>
                           <TableCell className="text-right">
-                              {assessment.documentUrl && (
-                                <Button asChild variant="ghost" size="icon" title="View Document">
-                                    <a href={assessment.documentUrl} target="_blank" rel="noopener noreferrer">
-                                        <Paperclip className="h-4 w-4" />
-                                        <span className="sr-only">View Document</span>
-                                    </a>
-                                </Button>
+                              {assessment.status === 'Completed' && (
+                                <>
+                                  {assessment.documentUrl && (
+                                    <Button asChild variant="ghost" size="icon" title="View Document">
+                                        <a href={assessment.documentUrl} target="_blank" rel="noopener noreferrer">
+                                            <Paperclip className="h-4 w-4" />
+                                            <span className="sr-only">View Document</span>
+                                        </a>
+                                    </Button>
+                                  )}
+                                  <Button variant="ghost" size="icon" onClick={() => handleOpenAssessment(assessment)} title="View Inputs">
+                                      <FileText className="h-4 w-4" />
+                                      <span className="sr-only">View Inputs</span>
+                                  </Button>
+                                  <Button variant="ghost" size="icon" onClick={() => handleUploadClick(assessment.id)} title="Upload Document">
+                                      <Upload className="h-4 w-4" />
+                                      <span className="sr-only">Upload Document</span>
+                                  </Button>
+                                </>
                               )}
-                              <Button variant="ghost" size="icon" onClick={() => handleOpenAssessment(assessment)} title="View Inputs">
-                                  <FileText className="h-4 w-4" />
-                                  <span className="sr-only">View Inputs</span>
-                              </Button>
-                              <Button variant="ghost" size="icon" onClick={() => handleUploadClick(assessment.id)} title="Upload Document">
-                                  <Upload className="h-4 w-4" />
-                                  <span className="sr-only">Upload Document</span>
-                              </Button>
                           </TableCell>
                         </TableRow>
                       ))
@@ -559,10 +500,10 @@ export default function CompanyDetailsPage() {
                     )}
                   </TableBody>
                 </Table>
-                {completedAssessments.length > 0 && (
+                {assessments.length > 0 && (
                     <div className="flex justify-end mt-4">
                         <TablePagination
-                            count={completedAssessments.length}
+                            count={assessments.length}
                             page={page}
                             rowsPerPage={rowsPerPage}
                             onPageChange={(newPage) => setPage(newPage)}
