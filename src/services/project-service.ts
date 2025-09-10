@@ -1,5 +1,4 @@
 
-'use client';
 import { db } from '@/lib/firebase';
 import { collection, doc, getDocs, setDoc, addDoc, writeBatch, deleteDoc, query, where, getDoc, updateDoc } from 'firebase/firestore';
 import type { Company } from './company-service';
