@@ -21,7 +21,7 @@ import { AppLayout } from '@/components/app-layout';
 import { useParams, useRouter } from 'next/navigation';
 import React from 'react';
 import { Progress } from '@/components/ui/progress';
-import { Phone, Globe, MapPin, ArrowLeft, Plus, Pencil, FileText, Trash2, Paperclip, Upload, Link2, FolderKanban, Star } from 'lucide-react';
+import { Phone, Globe, MapPin, ArrowLeft, Plus, Pencil, FileText, Trash2, Paperclip, Upload, Link2, FolderKanban, Star, MoreHorizontal } from 'lucide-react';
 import type { Company } from '@/services/company-service';
 import { getCompany, updateCompany } from '@/services/company-service';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -31,6 +31,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import {
@@ -79,6 +80,7 @@ export default function CompanyDetailsPage() {
   const [isActivityExpanded, setIsActivityExpanded] = React.useState(false);
   const [selectedAssessments, setSelectedAssessments] = React.useState<string[]>([]);
   const [isBulkDeleteDialogOpen, setIsBulkDeleteDialogOpen] = React.useState(false);
+  const [assessmentToDelete, setAssessmentToDelete] = React.useState<Assessment | null>(null);
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(10);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
@@ -161,6 +163,11 @@ export default function CompanyDetailsPage() {
         openAssessmentModal(assessment);
     }
   }
+  
+  const openDeleteDialog = (assessment: Assessment) => {
+    setAssessmentToDelete(assessment);
+    setIsBulkDeleteDialogOpen(true);
+  };
 
   const handleCompanyUpdate = async (updatedData: Partial<Company>) => {
     if (!companyId) return;
@@ -247,10 +254,12 @@ export default function CompanyDetailsPage() {
   };
 
   const handleBulkDelete = async () => {
+    const idsToDelete = assessmentToDelete ? [assessmentToDelete.id] : selectedAssessments;
     try {
-      await deleteAssessments(selectedAssessments);
+      await deleteAssessments(idsToDelete);
       setSelectedAssessments([]);
       setIsBulkDeleteDialogOpen(false);
+      setAssessmentToDelete(null);
       await fetchCompanyData(); // Refetch data
     } catch (error) {
       console.error('Failed to delete assessments:', error);
@@ -266,11 +275,6 @@ export default function CompanyDetailsPage() {
   const isAssessmentIndeterminate = paginatedAssessments.some(a => selectedAssessments.includes(a.id)) && !allOnPageSelected;
 
   const recentActivity = isActivityExpanded ? allRecentActivity : allRecentActivity.slice(0, 5);
-
-  const formatDate = (isoDate: string) => {
-    if (!isoDate) return 'N/A';
-    return format(parseISO(isoDate), 'MMM dd, yyyy');
-  };
 
   const formatDateTime = (date: Date) => {
     return formatDistanceToNow(date, { addSuffix: true });
@@ -426,7 +430,6 @@ export default function CompanyDetailsPage() {
                       <TableHead>Type</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead>Progress</TableHead>
-                      <TableHead>Date</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -473,34 +476,46 @@ export default function CompanyDetailsPage() {
                                 <span className="text-xs text-muted-foreground">{assessment.progress}%</span>
                             </div>
                           </TableCell>
-                          <TableCell>{formatDate(assessment.startDate)}</TableCell>
                           <TableCell className="text-right">
-                              {assessment.status === 'Completed' && (
-                                <>
-                                  {assessment.documentUrl && (
-                                    <Button asChild variant="ghost" size="icon" title="View Document">
-                                        <a href={assessment.documentUrl} target="_blank" rel="noopener noreferrer">
-                                            <Paperclip className="h-4 w-4" />
-                                            <span className="sr-only">View Document</span>
-                                        </a>
+                             <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" className="h-8 w-8 p-0">
+                                        <span className="sr-only">Open menu</span>
+                                        <MoreHorizontal className="h-4 w-4" />
                                     </Button>
-                                  )}
-                                  <Button variant="ghost" size="icon" onClick={() => handleOpenAssessment(assessment)} title="View Inputs">
-                                      <FileText className="h-4 w-4" />
-                                      <span className="sr-only">View Inputs</span>
-                                  </Button>
-                                  <Button variant="ghost" size="icon" onClick={() => handleUploadClick(assessment.id)} title="Upload Document">
-                                      <Upload className="h-4 w-4" />
-                                      <span className="sr-only">Upload Document</span>
-                                  </Button>
-                                </>
-                              )}
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                    <DropdownMenuItem onClick={() => handleOpenAssessment(assessment)}>
+                                        <FileText className="mr-2 h-4 w-4" />
+                                        <span>{assessment.status === 'Completed' ? 'View Inputs' : 'Resume'}</span>
+                                    </DropdownMenuItem>
+                                    {assessment.status === 'Completed' && assessment.documentUrl && (
+                                        <DropdownMenuItem asChild>
+                                            <a href={assessment.documentUrl} target="_blank" rel="noopener noreferrer">
+                                                <Paperclip className="mr-2 h-4 w-4" />
+                                                <span>View Document</span>
+                                            </a>
+                                        </DropdownMenuItem>
+                                    )}
+                                     {assessment.status === 'Completed' && (
+                                        <DropdownMenuItem onClick={() => handleUploadClick(assessment.id)}>
+                                            <Upload className="mr-2 h-4 w-4" />
+                                            <span>Upload Document</span>
+                                        </DropdownMenuItem>
+                                    )}
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem onClick={() => openDeleteDialog(assessment)} className="text-destructive focus:bg-destructive/90 focus:text-destructive-foreground">
+                                        <Trash2 className="mr-2 h-4 w-4" />
+                                        <span>Delete</span>
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
                           </TableCell>
                         </TableRow>
                       ))
                     ) : (
                        <TableRow>
-                        <TableCell colSpan={8} className="h-24 text-center">
+                        <TableCell colSpan={7} className="h-24 text-center">
                           No assessments found.
                         </TableCell>
                       </TableRow>
@@ -656,11 +671,11 @@ export default function CompanyDetailsPage() {
             <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
             <AlertDialogDescription>
               This action cannot be undone. This will permanently delete the
-              {selectedAssessments.length} selected assessments.
+              {selectedAssessments.length > 1 ? ` ${selectedAssessments.length} selected assessments.` : ' selected assessment.'}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setIsBulkDeleteDialogOpen(false)}>
+            <AlertDialogCancel onClick={() => { setIsBulkDeleteDialogOpen(false); setAssessmentToDelete(null); }}>
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction onClick={handleBulkDelete}>
