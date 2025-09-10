@@ -102,7 +102,12 @@ When listing items, use bullet points.`,
 });
 
 export async function getInsights(history: any[], prompt: string): Promise<string> {
-    const result = await insightsPrompt({history, prompt});
+    const result = await ai.generate({
+        prompt: insightsPrompt.prompt,
+        history: history,
+        input: { history, prompt }
+    });
     return result.text;
 }
+
 
