@@ -6,7 +6,7 @@ import { getProjects } from '@/services/project-service';
 import { getTasksForProject } from '@/services/task-service';
 import { add, isWithinInterval, parseISO } from 'date-fns';
 import { z } from 'zod';
-import { GenerateRequest } from 'genkit';
+import { GenerateRequest, Message } from 'genkit';
 
 const getOpenTasksTool = ai.defineTool(
   {
@@ -102,14 +102,16 @@ When listing items, use bullet points.`,
   }
 });
 
-export async function getInsights(history: any[], prompt: string): Promise<string> {
+export async function getInsights(history: Message[], prompt: string): Promise<string> {
+    const messages = [...history, { role: 'user', content: [{ text: prompt }] }];
     const result = await ai.generate({
-        prompt: [{ role: 'user', content: prompt }],
-        history: history,
+        messages: messages,
         tools: [getOpenTasksTool, getTasksDueSoonTool],
+        prompt: insightsPrompt.prompt,
     });
     return result.text;
 }
+
 
 
 
