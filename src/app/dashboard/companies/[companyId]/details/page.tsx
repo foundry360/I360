@@ -700,7 +700,7 @@ export default function CompanyDetailsPage() {
             </Tabs>
           </div>
 
-          <div className={cn("relative transition-all duration-300 border-l", isPanelCollapsed ? "w-12" : "w-[24rem]")}>
+          <div className={cn("relative transition-all duration-300 border-l", isPanelCollapsed ? "w-12" : "w-[22rem]")}>
             <Button
                 variant="ghost"
                 size="icon"
@@ -821,8 +821,8 @@ export default function CompanyDetailsPage() {
                            <div className="space-y-4 pt-2">
                               {recentActivity.length > 0 ? (
                                   recentActivity.map((item, index) => (
-                                      <div key={index} className="flex items-start gap-4">
-                                          <div className="mt-1 h-2 w-2 rounded-full bg-primary" />
+                                      <div key={index} className="flex items-start gap-3">
+                                          <div className="mt-1.5 h-2 w-2 rounded-full bg-primary flex-shrink-0" />
                                           <div>
                                           <p className="text-sm line-clamp-2">{item.activity}</p>
                                           <p className="text-xs text-muted-foreground">{formatDateTime(item.time)}</p>
@@ -919,3 +919,4 @@ export default function CompanyDetailsPage() {
     
 
     
+
