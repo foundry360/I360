@@ -61,7 +61,7 @@ export function TablePagination({
             onRowsPerPageChange(Number(value));
           }}
         >
-          <SelectTrigger className="h-8 w-[70px] table-pagination-select">
+          <SelectTrigger className="h-8 w-[70px]" variant="ghost">
             <SelectValue placeholder={rowsPerPage} />
           </SelectTrigger>
           <SelectContent side="top">
