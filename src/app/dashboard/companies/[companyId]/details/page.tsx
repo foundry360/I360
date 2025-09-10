@@ -21,7 +21,7 @@ import { AppLayout } from '@/components/app-layout';
 import { useParams, useRouter } from 'next/navigation';
 import React from 'react';
 import { Progress } from '@/components/ui/progress';
-import { Phone, Globe, MapPin, ArrowLeft, Plus, Pencil, FileText, Trash2, Paperclip, Upload, Link2, FolderKanban, Star, MoreHorizontal } from 'lucide-react';
+import { Phone, Globe, MapPin, ArrowLeft, Plus, Pencil, FileText, Trash2, Paperclip, Upload, Link2, FolderKanban, Star, MoreHorizontal, ClipboardList } from 'lucide-react';
 import type { Company } from '@/services/company-service';
 import { getCompany, updateCompany } from '@/services/company-service';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -405,11 +405,9 @@ export default function CompanyDetailsPage() {
             <Card>
               <CardHeader>
                 <div className="flex items-center justify-between">
-                  <div>
+                  <div className="flex items-center gap-3">
+                    <ClipboardList className="h-6 w-6 text-primary" />
                     <CardTitle className="text-xl">Assessments</CardTitle>
-                    <CardDescription>
-                      Manage and review all assessments for this company
-                    </CardDescription>
                   </div>
                    <div className='flex items-center gap-2'>
                     {selectedAssessments.length > 0 && (
@@ -531,6 +529,7 @@ export default function CompanyDetailsPage() {
                                             <span>Upload Document</span>
                                         </DropdownMenuItem>
                                     )}
+                                    <DropdownMenuSeparator />
                                     {assessment.documentUrl && (
                                         <DropdownMenuItem onClick={() => openDeleteDocumentDialog(assessment)} className="text-destructive focus:bg-destructive/90 focus:text-destructive-foreground">
                                           <Trash2 className="mr-2 h-4 w-4" />
