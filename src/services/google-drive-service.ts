@@ -9,7 +9,9 @@ class GoogleDriveService {
 
   constructor() {
     this.provider = new GoogleAuthProvider();
+    // Try with broader scope first
     this.provider.addScope('https://www.googleapis.com/auth/drive.readonly');
+    this.provider.addScope('https://www.googleapis.com/auth/drive.metadata.readonly');
     this.accessToken = null;
     
     if (typeof window !== 'undefined') {
