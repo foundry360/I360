@@ -285,6 +285,7 @@ export default function ProjectDetailsPage() {
         setOnBacklogItemUpdated,
         setOnEpicUpdated,
         setOnSprintUpdated,
+        setOnCollectionAddedToProject,
     } = useQuickAction();
     const { toast } = useToast();
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
@@ -339,6 +340,7 @@ export default function ProjectDetailsPage() {
         const unsub4 = setOnBacklogItemUpdated(fetchData);
         const unsub5 = setOnEpicUpdated(fetchData);
         const unsub6 = setOnSprintUpdated(fetchData);
+        const unsub7 = setOnCollectionAddedToProject(fetchData);
         return () => {
             if(unsub1) unsub1();
             if(unsub2) unsub2();
@@ -346,6 +348,7 @@ export default function ProjectDetailsPage() {
             if(unsub4) unsub4();
             if(unsub5) unsub5();
             if(unsub6) unsub6();
+            if(unsub7) unsub7();
         };
     }, [
         fetchData, 
@@ -355,6 +358,7 @@ export default function ProjectDetailsPage() {
         setOnBacklogItemUpdated,
         setOnEpicUpdated,
         setOnSprintUpdated,
+        setOnCollectionAddedToProject,
     ]);
 
      React.useEffect(() => {

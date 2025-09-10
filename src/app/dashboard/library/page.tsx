@@ -57,7 +57,7 @@ export default function LibraryPage() {
   const [isManageCollectionsOpen, setIsManageCollectionsOpen] = React.useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
   
-  const { openNewUserStoryDialog, setOnUserStoryCreated, openEditUserStoryDialog, setOnUserStoryUpdated, openManageCollectionsDialog, isManageCollectionsDialogOpen, closeManageCollectionsDialog, onCollectionsUpdated, setOnCollectionsUpdated } = useQuickAction();
+  const { openNewUserStoryDialog, setOnUserStoryCreated, openEditUserStoryDialog, setOnUserStoryUpdated, openManageCollectionsDialog, isManageCollectionsDialogOpen, closeManageCollectionsDialog, onCollectionsUpdated, setOnCollectionsUpdated, onBacklogItemCreated, setOnBacklogItemCreated } = useQuickAction();
   const { toast } = useToast();
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   const [isUploadResultDialogOpen, setIsUploadResultDialogOpen] = React.useState(false);
@@ -149,11 +149,12 @@ export default function LibraryPage() {
     try {
         setLoading(true);
         const storiesToAdd = stories.filter(story => selectedStories.includes(story.id));
-        await bulkCreateBacklogItems(projectId, null, storiesToAdd);
+        await bulkCreateLibraryStories(storiesToAdd, projectId);
         toast({
             title: 'Success!',
             description: `${storiesToAdd.length} user stor${storiesToAdd.length > 1 ? 'ies' : 'y'} added to the project backlog`,
         });
+        if(onBacklogItemCreated) onBacklogItemCreated();
         router.push(`/dashboard/projects/${projectId}?tab=backlog`);
     } catch (error) {
         console.error("Error adding stories to backlog:", error);
