@@ -207,9 +207,6 @@ export default function ContactsPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold">Contacts</h1>
-        <p className="text-muted-foreground">
-          Manage all contacts in your system
-        </p>
       </div>
       <Separator />
       <div className="flex justify-between items-center">

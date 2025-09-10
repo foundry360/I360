@@ -145,7 +145,6 @@ export default function FeedPage() {
             <div className="flex justify-between items-center">
                 <div>
                     <h1 className="text-2xl font-bold">Communications Feed</h1>
-                    <p className="text-muted-foreground">All notifications, messages, and alerts in one place</p>
                 </div>
                 <div className="flex items-center gap-2">
                     {selectedNotifications.length > 0 ? (

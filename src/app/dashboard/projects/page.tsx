@@ -316,9 +316,6 @@ export default function ProjectsPage() {
       <div className="space-y-6">
         <div>
             <h1 className="text-2xl font-bold">Engagements</h1>
-            <p className="text-muted-foreground">
-                Manage and track all engagements across your companies
-            </p>
         </div>
         <Separator />
         

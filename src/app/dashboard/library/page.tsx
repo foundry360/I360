@@ -302,12 +302,6 @@ export default function LibraryPage() {
             )}
             <div>
                 <h1 className="text-2xl font-bold">User Story Library</h1>
-                <p className="text-muted-foreground">
-                    {projectId 
-                        ? "Select stories to add to your project's backlog"
-                        : "Browse and manage reusable user stories for your projects"
-                    }
-                </p>
             </div>
         </div>
         <Separator />

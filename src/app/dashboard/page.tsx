@@ -298,9 +298,6 @@ export default function DashboardPage() {
           <h1 className="text-2xl font-bold">
             {greeting ? `${greeting}, ${getFirstName()} 👋` : `Welcome, ${getFirstName()} 👋`}
           </h1>
-          <p className="text-muted-foreground">
-            Here's a quick overview of your workspace
-          </p>
         </div>
       </div>
 

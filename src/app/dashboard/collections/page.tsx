@@ -70,9 +70,6 @@ export default function CollectionsPage() {
                 <div className="flex justify-between items-center">
                     <div>
                         <h1 className="text-2xl font-bold">User Story Collections</h1>
-                        <p className="text-muted-foreground">
-                            Create and manage curated collections of user stories to quickly populate engagement backlogs
-                        </p>
                     </div>
                     {!loading && collections.length > 0 && (
                         <Button size="icon" onClick={openNewCollectionDialog}>

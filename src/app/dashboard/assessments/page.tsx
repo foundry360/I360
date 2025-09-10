@@ -276,9 +276,6 @@ export default function AssessmentsPage() {
       <div className="space-y-6">
         <div>
           <h1 className="text-2xl font-bold">Assessments</h1>
-          <p className="text-muted-foreground">
-            Manage and track all assessments in your system
-          </p>
         </div>
         <Separator />
         <div className="flex justify-between items-center">
