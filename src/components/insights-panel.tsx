@@ -98,8 +98,8 @@ export function InsightsPanel() {
                             {messages.map((message, index) => (
                                 <div key={index} className={cn("flex items-start gap-3", message.role === 'user' && 'justify-end')}>
                                     {message.role === 'model' && (
-                                        <Avatar className="h-8 w-8 bg-primary text-primary-foreground">
-                                            <AvatarFallback><Bot className="h-5 w-5" /></AvatarFallback>
+                                        <Avatar className="h-8 w-8">
+                                            <AvatarFallback><Bot className="h-5 w-5 text-primary" /></AvatarFallback>
                                         </Avatar>
                                     )}
                                     <div className={cn(
@@ -117,8 +117,8 @@ export function InsightsPanel() {
                             ))}
                             {loading && (
                                 <div className="flex items-start gap-3">
-                                    <Avatar className="h-8 w-8 bg-primary text-primary-foreground">
-                                        <AvatarFallback><Bot className="h-5 w-5" /></AvatarFallback>
+                                    <Avatar className="h-8 w-8">
+                                        <AvatarFallback><Bot className="h-5 w-5 text-primary" /></AvatarFallback>
                                     </Avatar>
                                     <div className="max-w-[80%] p-3 rounded-lg bg-muted flex items-center">
                                        <Loader2 className="h-5 w-5 animate-spin" />
