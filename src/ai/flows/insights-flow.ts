@@ -107,13 +107,6 @@ export async function getInsights(history: Message[], prompt: string): Promise<s
     const result = await ai.generate({
         messages: messages,
         tools: [getOpenTasksTool, getTasksDueSoonTool],
-        prompt: insightsPrompt.prompt,
     });
     return result.text;
 }
-
-
-
-
-
-

@@ -14,10 +14,12 @@ import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback } from './ui/avatar';
 import { useUser } from '@/contexts/user-context';
 import { Separator } from './ui/separator';
+import type { MessagePart } from 'genkit';
+
 
 interface Message {
     role: 'user' | 'model';
-    content: string;
+    content: MessagePart[];
 }
 
 export function InsightsPanel() {
@@ -31,17 +33,17 @@ export function InsightsPanel() {
     const handleSend = async () => {
         if (!input.trim()) return;
 
-        const newMessages: Message[] = [...messages, { role: 'user', content: input }];
+        const newMessages: Message[] = [...messages, { role: 'user', content: [{text: input}] }];
         setMessages(newMessages);
         setInput('');
         setLoading(true);
 
         try {
             const aiResponse = await getInsights(newMessages, input);
-            setMessages(prev => [...prev, { role: 'model', content: aiResponse }]);
+            setMessages(prev => [...prev, { role: 'model', content: [{text: aiResponse}] }]);
         } catch (error) {
             console.error("Error getting insights:", error);
-            setMessages(prev => [...prev, { role: 'model', content: "Sorry, I encountered an error. Please try again." }]);
+            setMessages(prev => [...prev, { role: 'model', content: [{text: "Sorry, I encountered an error. Please try again."}] }]);
         } finally {
             setLoading(false);
         }
@@ -63,7 +65,7 @@ export function InsightsPanel() {
 
     return (
         <Sheet open={isInsightsPanelOpen} onOpenChange={closeInsightsPanel}>
-            <SheetContent className="w-[600px] sm:max-w-none flex flex-col p-0">
+            <SheetContent className="w-[500px] sm:max-w-none flex flex-col p-0">
                 <SheetHeader className="p-6 border-b">
                     <SheetTitle className="flex items-center gap-2">
                         <Sparkles className="h-5 w-5 text-primary" />
@@ -104,7 +106,7 @@ export function InsightsPanel() {
                                         "max-w-[80%] p-3 rounded-lg prose dark:prose-invert prose-sm",
                                         message.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-muted'
                                     )}>
-                                        <ReactMarkdown remarkPlugins={[remarkGfm]}>{message.content}</ReactMarkdown>
+                                        <ReactMarkdown remarkPlugins={[remarkGfm]}>{message.content[0].text}</ReactMarkdown>
                                     </div>
                                     {message.role === 'user' && user && (
                                         <Avatar className="h-8 w-8">
