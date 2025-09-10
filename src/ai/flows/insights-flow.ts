@@ -114,15 +114,23 @@ const getCompaniesTool = ai.defineTool({
 
 const getEngagementsTool = ai.defineTool({
     name: 'getEngagements',
-    description: 'Get a list of all engagements (also known as projects).',
-    inputSchema: z.object({}),
+    description: 'Get a list of engagements (also known as projects), optionally filtering by company name.',
+    inputSchema: z.object({
+        companyName: z.string().optional().describe('The name of the company to filter engagements by.'),
+    }),
     outputSchema: z.array(z.object({
         name: z.string(),
         companyName: z.string().optional(),
         status: z.string(),
         owner: z.string(),
     })),
-}, getProjectsServer);
+}, async ({ companyName }) => {
+    const allProjects = await getProjectsServer();
+    if (companyName) {
+        return allProjects.filter(p => p.companyName?.toLowerCase() === companyName.toLowerCase());
+    }
+    return allProjects;
+});
 
 const getUserStoriesTool = ai.defineTool({
     name: 'getUserStories',
