@@ -105,3 +105,4 @@ export async function getInsights(history: any[], prompt: string): Promise<strin
     const result = await insightsPrompt({history, prompt});
     return result.text;
 }
+
