@@ -72,18 +72,38 @@ export async function setTokensFromCode(code: string) {
 }
 
 
-export async function listFiles(folderId: string): Promise<{ id: string; name: string; webViewLink: string; iconLink: string }[]> {
+export async function listFiles(parentFolderId: string, companyName: string): Promise<{ id: string; name: string; webViewLink: string; iconLink: string }[]> {
     const auth = await getAuthenticatedClient();
     if (!auth) {
-        // This case will be handled by the UI to prompt for authentication
-        return [];
+        throw new Error("User is not authenticated with Google Drive.");
     }
     
     const drive = google.drive({ version: 'v3', auth });
     
     try {
+        // 1. Find the company subfolder
+        const folderQuery = `mimeType='application/vnd.google-apps.folder' and name='${companyName}' and '${parentFolderId}' in parents and trashed=false`;
+        const folderRes = await drive.files.list({
+            q: folderQuery,
+            fields: 'files(id, name)',
+            pageSize: 1,
+        });
+
+        if (!folderRes.data.files || folderRes.data.files.length === 0) {
+            console.log(`No folder found with name "${companyName}" in parent folder.`);
+            return [];
+        }
+        
+        const companyFolderId = folderRes.data.files[0].id;
+        if (!companyFolderId) {
+             console.log(`Folder "${companyName}" has no ID.`);
+             return [];
+        }
+
+        // 2. List files within that subfolder
+        const fileQuery = `'${companyFolderId}' in parents and trashed=false`;
         const res = await drive.files.list({
-            q: `'${folderId}' in parents and trashed=false`,
+            q: fileQuery,
             fields: 'files(id, name, webViewLink, iconLink)',
             pageSize: 100,
         });
@@ -102,7 +122,7 @@ export async function listFiles(folderId: string): Promise<{ id: string; name: s
     } catch (error: any) {
         if (error.response?.status === 401 || error.response?.status === 403) {
            console.log("Authentication error, user needs to re-authenticate.");
-           return [];
+           throw new Error("Authentication required");
         }
         console.error('The API returned an error: ' + error);
         throw error;

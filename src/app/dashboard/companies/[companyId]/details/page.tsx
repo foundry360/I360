@@ -158,27 +158,35 @@ export default function CompanyDetailsPage() {
   }, [companyId]);
 
   const fetchDriveFiles = React.useCallback(async () => {
-    if (process.env.NEXT_PUBLIC_GOOGLE_DRIVE_FOLDER_ID) {
+    if (process.env.NEXT_PUBLIC_GOOGLE_DRIVE_FOLDER_ID && companyData) {
       setIsDriveLoading(true);
-      setDriveAuthNeeded(false); // Reset on each fetch attempt
+      setDriveAuthNeeded(false);
       try {
-        const files = await listFiles(process.env.NEXT_PUBLIC_GOOGLE_DRIVE_FOLDER_ID);
+        const files = await listFiles(process.env.NEXT_PUBLIC_GOOGLE_DRIVE_FOLDER_ID, companyData.name);
         setDriveFiles(files);
       } catch (error) {
         console.error("Error fetching Google Drive files:", error);
-        setDriveAuthNeeded(true);
+        if (error instanceof Error && error.message === 'Authentication required') {
+           setDriveAuthNeeded(true);
+        }
       } finally {
         setIsDriveLoading(false);
       }
     }
-  }, []);
+  }, [companyData]);
 
 
   React.useEffect(() => {
     fetchCompanyData();
-    if (activeTab === 'documents') {
+  }, [fetchCompanyData]);
+
+  React.useEffect(() => {
+     if (activeTab === 'documents') {
         fetchDriveFiles();
     }
+  }, [activeTab, fetchDriveFiles])
+
+  React.useEffect(() => {
     const unsubscribeAssessment = setOnAssessmentCompleted(() => fetchCompanyData);
     const unsubscribeContact = setOnContactCreated(() => fetchCompanyData);
     const unsubscribeProject = setOnProjectCreated(() => fetchCompanyData);
@@ -188,7 +196,7 @@ export default function CompanyDetailsPage() {
       if (typeof unsubscribeContact === 'function') unsubscribeContact();
       if (typeof unsubscribeProject === 'function') unsubscribeProject();
     }
-  }, [fetchCompanyData, setOnAssessmentCompleted, setOnContactCreated, setOnProjectCreated, activeTab, fetchDriveFiles]);
+  }, [fetchCompanyData, setOnAssessmentCompleted, setOnContactCreated, setOnProjectCreated]);
   
   const handleOpenAssessment = (assessment: Assessment) => {
     if (assessment.status === 'Completed') {
