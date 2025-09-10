@@ -48,7 +48,7 @@ import { EditCompanyModal } from '@/components/edit-company-modal';
 import { getAssessmentsForCompany, type Assessment, deleteAssessments, uploadAssessmentDocument, updateAssessment, deleteAssessmentDocument } from '@/services/assessment-service';
 import { getContactsForCompany, type Contact } from '@/services/contact-service';
 import { getProjectsForCompany, type Project } from '@/services/project-service';
-import { signInWithGoogleDriveRedirect, handleGoogleDriveRedirectResult, listFiles } from '@/services/google-drive-service';
+import { signInWithGoogleDriveRedirect, handleGoogleDriveRedirectResult, listFiles, isGoogleDriveAuthenticated } from '@/services/google-drive-service';
 import { cn } from '@/lib/utils';
 import { useQuickAction } from '@/contexts/quick-action-context';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -164,17 +164,17 @@ export default function CompanyDetailsPage() {
   
    React.useEffect(() => {
     async function checkDriveAuth() {
-        if (!companyData) return;
+        if (!companyData || activeTab !== 'documents') return;
 
         setIsDriveLoading(true);
+        setDriveAuthNeeded(!isGoogleDriveAuthenticated());
+
         try {
-            const accessToken = await handleGoogleDriveRedirectResult();
-            if (accessToken) {
-                const files = await listFiles(accessToken, companyData.name);
-                setDriveFiles(files);
+            await handleGoogleDriveRedirectResult();
+            if (isGoogleDriveAuthenticated()) {
                 setDriveAuthNeeded(false);
-            } else {
-                setDriveAuthNeeded(true);
+                const files = await listFiles(companyData.name);
+                setDriveFiles(files);
             }
         } catch (error) {
             console.error("Error handling Google Drive auth:", error);
@@ -184,7 +184,7 @@ export default function CompanyDetailsPage() {
         }
     }
     checkDriveAuth();
-  }, [companyData]);
+  }, [companyData, activeTab]);
 
   React.useEffect(() => {
     const unsubscribeAssessment = setOnAssessmentCompleted(() => fetchCompanyData);
@@ -656,7 +656,7 @@ export default function CompanyDetailsPage() {
                                   </TableBody>
                                 </Table>
                             ) : (
-                                <p className="text-muted-foreground text-center p-8">No documents found in the linked Google Drive folder.</p>
+                                <p className="text-muted-foreground text-center p-8">No documents found in Google Drive for this company.</p>
                             )}
                         </CardContent>
                     </Card>
