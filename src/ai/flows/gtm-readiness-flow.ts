@@ -159,7 +159,7 @@ export async function generateGtmReadiness(
 const prompt = ai.definePrompt({
   name: 'gtmReadinessPrompt',
   input: { schema: GtmReadinessInputSchema },
-  output: { schema: GtmReadinessOutputSchema },
+  output: { schema: GtmReadinessOutputSchema, format: 'json' },
   prompt: `
 # Enterprise-Grade Go-To-Market Readiness Assessment Framework
 
