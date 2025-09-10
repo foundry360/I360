@@ -11,6 +11,7 @@ const getOpenTasksTool = ai.defineTool(
   {
     name: 'getOpenTasks',
     description: 'Get all tasks that are not in a "Complete" status.',
+    inputSchema: z.object({}),
     outputSchema: z.array(
       z.object({
         title: z.string(),
@@ -45,6 +46,7 @@ const getTasksDueSoonTool = ai.defineTool(
   {
     name: 'getTasksDueSoon',
     description: 'Get all tasks that are due within the next 7 days.',
+    inputSchema: z.object({}),
     outputSchema: z.array(
       z.object({
         title: z.string(),
