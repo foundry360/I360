@@ -415,7 +415,7 @@ export default function LibraryPage() {
                                     <Icon className="h-4 w-4 text-white" />
                                 </div>
                                 <span className="flex-1 text-left">{tag.name}</span>
-                                <span className="text-xs text-muted-foreground">{count}</span>
+                                <span className="text-xs text-muted-foreground">({count})</span>
                               </Button>
                             );
                           })
@@ -461,7 +461,7 @@ export default function LibraryPage() {
                                 <Icon className="h-4 w-4 text-white" />
                               </div>
                               <span className="flex-1 text-left">{collection.name}</span>
-                              <span className="text-xs text-muted-foreground">{collection.userStoryIds.length}</span>
+                              <span className="text-xs text-muted-foreground">({collection.userStoryIds.length})</span>
                             </Button>
                           );
                         })}
