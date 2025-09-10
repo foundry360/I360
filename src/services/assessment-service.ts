@@ -1,5 +1,4 @@
 
-'use client';
 
 import { db, auth } from '@/lib/firebase';
 import { collection, doc, getDocs, setDoc, updateDoc, query, where, writeBatch, getDoc, addDoc, deleteField } from 'firebase/firestore';
@@ -185,8 +184,7 @@ export async function uploadAssessmentDocument(assessmentId: string, file: File)
 
     const assessmentDocRef = doc(db, 'assessments', assessmentId);
     await updateDoc(assessmentDocRef, {
-        documentUrl: downloadURL,
-        lastActivity: new Date().toISOString()
+        documentUrl: downloadURL
     });
 
     return downloadURL;
@@ -228,8 +226,7 @@ export async function deleteAssessmentDocument(assessmentId: string): Promise<vo
 
             // Remove the URL field from the Firestore document
             await updateDoc(assessmentDocRef, {
-                documentUrl: deleteField(),
-                lastActivity: new Date().toISOString()
+                documentUrl: deleteField()
             });
         }
     } else {

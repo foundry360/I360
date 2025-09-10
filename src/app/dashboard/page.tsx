@@ -1,4 +1,5 @@
 
+
 'use client';
 import * as React from 'react';
 import {
@@ -47,10 +48,7 @@ import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { EngagementInsightsPanel } from '@/components/engagement-insights-panel';
 import { getNotifications, markAllNotificationsAsRead, type Notification, updateNotification, NotificationType } from '@/services/notification-service';
-import { FeedItem } from '@/components/feed-item';
 import { useQuickAction } from '@/contexts/quick-action-context';
 import type { Project } from '@/services/project-service';
 import {
@@ -64,7 +62,7 @@ import Link from 'next/link';
 
 type ActivityItem = {
   id: string;
-  type: 'Engagement' | 'Assessment' | 'Contact';
+  type: 'Engagement' | 'Assessment' | 'Contact' | 'System';
   message: string;
   timestamp: string;
   icon: React.ElementType;
@@ -77,6 +75,7 @@ const activityTypeConfig: Record<ActivityItem['type'], { icon: React.ElementType
   Engagement: { icon: FolderKanban, color: 'text-blue-500', bg: 'bg-blue-500/10' },
   Assessment: { icon: ClipboardList, color: 'text-purple-500', bg: 'bg-purple-500/10' },
   Contact: { icon: UserPlus, color: 'text-green-500', bg: 'bg-green-500/10' },
+  System: { icon: MonitorCog, color: 'text-gray-500', bg: 'bg-gray-500/10' },
 };
 
 const statusColors: Record<BacklogItemStatus, string> = {
@@ -126,7 +125,9 @@ export default function DashboardPage() {
             getContacts(),
             getNotifications(),
         ]);
-        setNotifications(notificationsData);
+        
+        const systemNotifications = notificationsData.filter(n => n.type === 'system' || n.type === 'alert');
+        setNotifications(notificationsData.filter(n => n.type !== 'system' && n.type !== 'alert'));
 
         const projectActivities: ActivityItem[] = projects.map((p) => ({
             id: p.id,
@@ -155,10 +156,20 @@ export default function DashboardPage() {
             link: `/dashboard/companies/${c.companyId}/details`,
         }));
         
+        const systemActivities: ActivityItem[] = systemNotifications.map(n => ({
+            id: n.id,
+            type: 'System',
+            message: n.message,
+            timestamp: n.createdAt,
+            icon: MonitorCog,
+            link: n.link,
+        }));
+        
         const allActivities = [
             ...projectActivities,
             ...assessmentActivities,
             ...contactActivities,
+            ...systemActivities
         ].sort(
             (a, b) =>
             parseISO(b.timestamp).getTime() -
@@ -501,24 +512,11 @@ export default function DashboardPage() {
       <div>
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-bold">Recent Engagements</h2>
-          <div className="flex items-center gap-2">
-            <Sheet>
-              <SheetTrigger asChild>
-                <Button variant="outline">
-                  <Zap className="mr-2 h-4 w-4"/>
-                  Insights
-                </Button>
-              </SheetTrigger>
-              <SheetContent className="w-[1000px] sm:max-w-none sm:w-[1280px] p-0 bg-sidebar text-sidebar-foreground border-sidebar-border">
-                <EngagementInsightsPanel projects={recentEngagements.filter(p => p.status === 'Active')} />
-              </SheetContent>
-            </Sheet>
-            {recentEngagements.length > 4 && (
-              <Button variant="outline" onClick={() => router.push('/dashboard/projects')}>
-                View All
-              </Button>
-            )}
-          </div>
+          {recentEngagements.length > 4 && (
+            <Button variant="outline" onClick={() => router.push('/dashboard/projects')}>
+              View All
+            </Button>
+          )}
         </div>
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {recentEngagements.map((project) => (

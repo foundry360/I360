@@ -362,7 +362,9 @@ export default function LibraryPage() {
                   <AccordionItem value="tags">
                     <AccordionTrigger className="px-4 py-2 text-base font-semibold no-underline hover:no-underline hover:bg-muted/50 flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <Layers className="h-4 w-4" /> Tags
+                        <Layers className="h-4 w-4" />
+                        <span>Tags</span>
+                        <span className="text-muted-foreground text-sm">({allTags.length})</span>
                       </div>
                     </AccordionTrigger>
                     <AccordionContent>
@@ -388,6 +390,16 @@ export default function LibraryPage() {
                             }
                             const bgColor = color.replace('text-', 'bg-');
 
+                            let count = 0;
+                            if (tag.name === 'All') {
+                                count = stories.length;
+                            } else if (tag.name === 'Uncategorized') {
+                                count = stories.filter(s => s.tags.length === 0).length;
+                            } else {
+                                count = stories.filter(s => s.tags.includes(tag.name)).length;
+                            }
+
+
                             return (
                               <Button
                                 key={tag.id}
@@ -402,7 +414,8 @@ export default function LibraryPage() {
                                  <div className={cn("flex items-center justify-center h-6 w-6 rounded-md mr-2", bgColor)}>
                                     <Icon className="h-4 w-4 text-white" />
                                 </div>
-                                {tag.name}
+                                <span className="flex-1 text-left">{tag.name}</span>
+                                <span className="text-xs text-muted-foreground">({count})</span>
                               </Button>
                             );
                           })
@@ -418,7 +431,9 @@ export default function LibraryPage() {
                   <AccordionItem value="collections">
                     <AccordionTrigger className="px-4 py-2 text-base font-semibold no-underline hover:no-underline hover:bg-muted/50 flex items-center justify-between">
                        <div className="flex items-center gap-2">
-                         <BookCopy className="h-4 w-4" /> Collections
+                         <BookCopy className="h-4 w-4" />
+                         <span>Collections</span>
+                         <span className="text-muted-foreground text-sm">({collections.length})</span>
                        </div>
                     </AccordionTrigger>
                     <AccordionContent>
@@ -445,7 +460,8 @@ export default function LibraryPage() {
                               <div className={cn("flex items-center justify-center h-6 w-6 rounded-md mr-2", bgColor)}>
                                 <Icon className="h-4 w-4 text-white" />
                               </div>
-                              {collection.name}
+                              <span className="flex-1 text-left">{collection.name}</span>
+                              <span className="text-xs text-muted-foreground">({collection.userStoryIds.length})</span>
                             </Button>
                           );
                         })}
@@ -583,4 +599,3 @@ export default function LibraryPage() {
     </>
   );
 }
-

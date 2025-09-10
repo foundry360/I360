@@ -122,6 +122,10 @@ type QuickActionContextType = {
   onCollectionsUpdated: (() => void) | null;
   setOnCollectionsUpdated: (callback: (() => void) | null) => (() => void) | void;
   
+  isInsightsPanelOpen: boolean;
+  openInsightsPanel: () => void;
+  closeInsightsPanel: () => void;
+  
   onAddFromLibrary: (() => void) | null;
   setOnAddFromLibrary: (callback: (() => void) | null) => (() => void) | void;
   
@@ -196,6 +200,8 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
   
   const [isManageCollectionsDialogOpen, setIsManageCollectionsDialogOpen] = React.useState(false);
   const onCollectionsUpdatedRef = React.useRef<(() => void) | null>(null);
+  
+  const [isInsightsPanelOpen, setIsInsightsPanelOpen] = React.useState(false);
   
   const onAddFromLibraryRef = React.useRef<(() => void) | null>(null);
 
@@ -389,6 +395,9 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
     return () => { onCollectionsUpdatedRef.current = null; };
   }, []);
   
+  const openInsightsPanel = React.useCallback(() => setIsInsightsPanelOpen(true), []);
+  const closeInsightsPanel = React.useCallback(() => setIsInsightsPanelOpen(false), []);
+  
   const setOnAddFromLibrary = React.useCallback((callback: (() => void) | null) => {
     onAddFromLibraryRef.current = callback;
     return () => { onAddFromLibraryRef.current = null; };
@@ -501,6 +510,10 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
     onCollectionsUpdated: onCollectionsUpdatedRef.current,
     setOnCollectionsUpdated,
     
+    isInsightsPanelOpen,
+    openInsightsPanel,
+    closeInsightsPanel,
+    
     onAddFromLibrary: onAddFromLibraryRef.current,
     setOnAddFromLibrary,
     
@@ -528,6 +541,7 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
     isNewCollectionDialogOpen, openNewCollectionDialog, closeNewCollectionDialog, setOnCollectionCreated,
     isAddFromCollectionDialogOpen, openAddFromCollectionDialog, closeAddFromCollectionDialog, addFromCollectionData, setOnCollectionAddedToProject,
     isManageCollectionsDialogOpen, openManageCollectionsDialog, closeManageCollectionsDialog, setOnCollectionsUpdated,
+    isInsightsPanelOpen, openInsightsPanel, closeInsightsPanel,
     setOnAddFromLibrary,
     globalSearchTerm,
     projects, getProjectsCallback,

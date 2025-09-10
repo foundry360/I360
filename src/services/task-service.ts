@@ -1,6 +1,4 @@
 
-'use client';
-
 import { db } from '@/lib/firebase';
 import { collection, doc, getDocs, setDoc, updateDoc, query, where, writeBatch, runTransaction, DocumentReference, WriteBatch, addDoc, deleteDoc, getDoc, deleteField, onSnapshot } from 'firebase/firestore';
 import type { BacklogItem } from './backlog-item-service';

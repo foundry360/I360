@@ -67,7 +67,7 @@ export default function CompaniesPage() {
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(25);
   
-  const [sortConfig, setSortConfig] = React.useState<{ key: SortKey; direction: 'ascending' | 'descending' } | null>({ key: 'name', direction: 'ascending' });
+  const [sortConfig, setSortConfig] = React.useState<{ key: SortKey; direction: 'ascending' | 'descending' } | null>({ key: 'lastActivity', direction: 'descending' });
 
   const { openNewCompanyDialog, setOnCompanyCreated, globalSearchTerm, setGlobalSearchTerm } = useQuickAction();
   const { toast } = useToast();

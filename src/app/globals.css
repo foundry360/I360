@@ -143,7 +143,7 @@ body {
     .dark .btn-outline-cancel {
         @apply bg-[hsl(0_0%_12%)] border-[hsl(0_0%_12%)] hover:bg-[hsl(0_0%_15%)] hover:text-foreground;
     }
-    .dark .table-pagination-select > button {
+    .table-pagination-select > button {
         @apply bg-transparent border-transparent;
     }
 }

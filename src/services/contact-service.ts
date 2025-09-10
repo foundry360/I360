@@ -1,8 +1,8 @@
 
-'use client';
 import { db } from '@/lib/firebase';
 import { collection, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, writeBatch, query, where, addDoc } from 'firebase/firestore';
 import { getCompany, updateCompany, type Company } from './company-service';
+import { createNotification } from './notification-service';
 
 export interface Contact {
   id: string;
@@ -55,12 +55,19 @@ export async function createContact(contactData: Omit<Contact, 'id' | 'lastActiv
   // Check if this company has a primary contact yet. If not, make this the one.
   if (contactData.companyId) {
     const company = await getCompany(contactData.companyId);
-    if (company && !company.contact?.name) {
-        await updateCompany(contactData.companyId, {
-            contact: {
-                name: newContact.name,
-                avatar: newContact.avatar
-            }
+    if (company) {
+        if (!company.contact?.name) {
+            await updateCompany(contactData.companyId, {
+                contact: {
+                    name: newContact.name,
+                    avatar: newContact.avatar
+                }
+            });
+        }
+        await createNotification({
+            message: `New contact "${newContact.name}" was added for ${company.name}.`,
+            link: `/dashboard/companies/${contactData.companyId}/details`,
+            type: 'activity',
         });
     }
   }

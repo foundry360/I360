@@ -21,7 +21,7 @@ import { AppLayout } from '@/components/app-layout';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import React from 'react';
 import { Progress } from '@/components/ui/progress';
-import { Phone, Globe, MapPin, ArrowLeft, Plus, Pencil, FileText, Trash2, Paperclip, Upload, Link2, FolderKanban, Star, MoreHorizontal, ClipboardList, Notebook, Folder, FilePenLine, KeyRound, ChevronsRight, ChevronsLeft } from 'lucide-react';
+import { Phone, Globe, MapPin, ArrowLeft, Plus, Pencil, FileText, Trash2, Paperclip, Upload, Link2, FolderKanban, Star, MoreHorizontal, ClipboardList, Notebook, Folder, FilePenLine, KeyRound, ChevronsRight, ChevronsLeft, Users, GanttChartSquare, Activity } from 'lucide-react';
 import type { Company } from '@/services/company-service';
 import { getCompany, updateCompany } from '@/services/company-service';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -149,7 +149,6 @@ export default function CompanyDetailsPage() {
             .sort((a, b) => b.time.getTime() - a.time.getTime());
            setAllRecentActivity(allActivity);
       } else {
-        console.error("Company not found");
         setAllRecentActivity([]);
       }
 
@@ -374,7 +373,7 @@ export default function CompanyDetailsPage() {
     return formatDistanceToNow(date, { addSuffix: true });
   }
 
-  if (loading && !companyData) {
+  if (loading) {
       return (
             <div className="space-y-6">
                 <Skeleton className="h-10 w-1/2" />
@@ -701,7 +700,7 @@ export default function CompanyDetailsPage() {
             </Tabs>
           </div>
 
-          <div className={cn("relative transition-all duration-300 border-l", isPanelCollapsed ? "w-12" : "w-[32rem]")}>
+          <div className={cn("relative transition-all duration-300 border-l", isPanelCollapsed ? "w-12" : "w-[22rem]")}>
             <Button
                 variant="ghost"
                 size="icon"
@@ -770,7 +769,10 @@ export default function CompanyDetailsPage() {
                                 </div>
                                 ))
                             ) : (
-                                <p className="text-sm text-muted-foreground text-center py-4">No contacts found.</p>
+                                <div className="text-center text-muted-foreground py-4 space-y-2">
+                                  <Users className="mx-auto h-6 w-6" />
+                                  <p className="text-sm">No contacts found.</p>
+                                </div>
                             )}
                         </div>
                       </AccordionContent>
@@ -801,7 +803,10 @@ export default function CompanyDetailsPage() {
                                   </Link>
                                   ))
                               ) : (
-                                  <p className="text-sm text-muted-foreground text-center py-4">No engagements found.</p>
+                                  <div className="text-center text-muted-foreground py-4 space-y-2">
+                                    <GanttChartSquare className="mx-auto h-6 w-6" />
+                                    <p className="text-sm">No engagements found.</p>
+                                  </div>
                               )}
                           </div>
                       </AccordionContent>
@@ -816,8 +821,8 @@ export default function CompanyDetailsPage() {
                            <div className="space-y-4 pt-2">
                               {recentActivity.length > 0 ? (
                                   recentActivity.map((item, index) => (
-                                      <div key={index} className="flex items-start gap-4">
-                                          <div className="mt-1 h-2 w-2 rounded-full bg-primary" />
+                                      <div key={index} className="flex items-start gap-3">
+                                          <div className="mt-1.5 h-2 w-2 rounded-full bg-primary flex-shrink-0" />
                                           <div>
                                           <p className="text-sm line-clamp-2">{item.activity}</p>
                                           <p className="text-xs text-muted-foreground">{formatDateTime(item.time)}</p>
@@ -825,7 +830,10 @@ export default function CompanyDetailsPage() {
                                       </div>
                                   ))
                               ) : (
-                                  <p className="text-sm text-muted-foreground text-center py-4">No recent activity.</p>
+                                  <div className="text-center text-muted-foreground py-4 space-y-2">
+                                    <Activity className="mx-auto h-6 w-6" />
+                                    <p className="text-sm">No recent activity.</p>
+                                  </div>
                               )}
                               {allRecentActivity.length > 5 && (
                                   <Button 
@@ -907,3 +915,8 @@ export default function CompanyDetailsPage() {
     </>
   );
 }
+
+    
+
+    
+

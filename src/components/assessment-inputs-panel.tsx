@@ -7,6 +7,8 @@ import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import type { Assessment, GtmReadinessInput } from '@/services/assessment-service';
 import { SheetHeader, SheetTitle, SheetDescription } from './ui/sheet';
+import { Button } from './ui/button';
+import { Download } from 'lucide-react';
 
 const formSections = [
   {
@@ -169,6 +171,16 @@ interface AssessmentInputsPanelProps {
     assessment: Assessment;
 }
 
+const FieldDisplay = ({ label, value }: { label: string; value: React.ReactNode }) => {
+    if (!value || value.toString().trim() === '') return null;
+    return (
+        <div className="space-y-1">
+            <p className="text-sm font-medium text-muted-foreground">{label}</p>
+            <p className="text-base">{value.toString()}</p>
+        </div>
+    );
+};
+
 export function AssessmentInputsPanel({ assessment }: AssessmentInputsPanelProps) {
     if (!assessment || !assessment.formData) {
         return (
@@ -183,12 +195,20 @@ export function AssessmentInputsPanel({ assessment }: AssessmentInputsPanelProps
     return (
         <div className="flex flex-col h-full">
             <SheetHeader className="p-6">
-                <SheetTitle>{assessment.name}</SheetTitle>
-                <SheetDescription>GTM Readiness Assessment Inputs</SheetDescription>
+                <div className="flex justify-between items-center">
+                    <div>
+                        <SheetTitle>{assessment.name}</SheetTitle>
+                        <SheetDescription>GTM Readiness Assessment Inputs</SheetDescription>
+                    </div>
+                    <Button variant="outline" onClick={() => window.print()}>
+                        <Download className="mr-2 h-4 w-4" />
+                        Export to PDF
+                    </Button>
+                </div>
             </SheetHeader>
             <Separator />
             <ScrollArea className="flex-1">
-                <div className="p-6 space-y-6">
+                <div className="p-6 space-y-8">
                     {formSections.map((section, index) => {
                         const sectionHasValues = section.fields.some(key => {
                             const value = formData[key as keyof GtmReadinessInput];
@@ -198,29 +218,18 @@ export function AssessmentInputsPanel({ assessment }: AssessmentInputsPanelProps
                         if (!sectionHasValues) return null;
 
                         return (
-                            <Card key={index}>
-                                <CardHeader>
-                                    <CardTitle>{section.title}</CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-6">
-                                        {section.fields.map((key) => {
-                                            const fieldKey = key as keyof GtmReadinessInput;
-                                            const label = fieldLabels[fieldKey];
-                                            const value = formData[fieldKey];
-
-                                            if (!label || !value || value.toString().trim() === '') return null;
-
-                                            return (
-                                                <div key={key} className="space-y-1">
-                                                    <p className="text-sm font-medium text-muted-foreground">{label}</p>
-                                                    <p className="text-base">{value.toString()}</p>
-                                                </div>
-                                            )
-                                        })}
-                                    </div>
-                                </CardContent>
-                            </Card>
+                            <div key={index} className="space-y-4">
+                                <h3 className="text-lg font-semibold text-primary">{section.title}</h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                                    {section.fields.map((key) => {
+                                        const fieldKey = key as keyof GtmReadinessInput;
+                                        const label = fieldLabels[fieldKey];
+                                        const value = formData[fieldKey];
+                                        return <FieldDisplay key={key} label={label} value={value} />;
+                                    })}
+                                </div>
+                                {index < formSections.length - 1 && <Separator className="pt-4" />}
+                            </div>
                         )
                     })}
                 </div>
@@ -228,4 +237,3 @@ export function AssessmentInputsPanel({ assessment }: AssessmentInputsPanelProps
         </div>
     );
 }
-

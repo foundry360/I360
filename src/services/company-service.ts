@@ -1,8 +1,8 @@
 
-'use client';
 import { db } from '@/lib/firebase';
-import { collection, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, writeBatch, query, where } from 'firebase/firestore';
+import { collection, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, writeBatch, query, where, addDoc } from 'firebase/firestore';
 import { getProjectsForCompany, updateProject } from './project-service';
+import { createNotification } from './notification-service';
 
 export interface Company {
   id: string;
@@ -62,11 +62,11 @@ export async function getCompany(id: string): Promise<Company | null> {
     }
 }
 
-export async function createCompany(companyData: Omit<Company, 'id' | 'contact' | 'status' | 'lastActivity'>): Promise<void> {
-  const companyId = companyData.name.toLowerCase().replace(/\s+/g, '-');
+export async function createCompany(companyData: Omit<Company, 'id' | 'contact' | 'status' | 'lastActivity'>): Promise<string> {
+  const docRef = doc(collection(db, 'companies'));
   const newCompany: Company = {
       ...companyData,
-      id: companyId,
+      id: docRef.id,
       contact: {
         name: '', 
         avatar: '',
@@ -75,7 +75,15 @@ export async function createCompany(companyData: Omit<Company, 'id' | 'contact' 
       lastActivity: new Date().toISOString(),
   };
   
-  await setDoc(doc(companiesCollection, newCompany.id), newCompany);
+  await setDoc(docRef, newCompany);
+  
+  await createNotification({
+    message: `New company "${newCompany.name}" has been created.`,
+    link: `/dashboard/companies/${docRef.id}/details`,
+    type: 'activity',
+  });
+  
+  return docRef.id;
 }
 
 export async function updateCompany(id: string, companyData: Partial<Company>): Promise<void> {

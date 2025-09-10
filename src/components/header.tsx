@@ -1,4 +1,3 @@
-
 'use client';
 
 import { Logo } from './logo';
@@ -17,7 +16,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Button } from './ui/button';
-import { Plus, Search, LogOut, Briefcase, UserPlus, FilePlus, Bell, CheckCheck, Maximize, Minimize, FolderKanban, Moon, Sun, Monitor, Library } from 'lucide-react';
+import { Plus, Search, LogOut, Briefcase, UserPlus, FilePlus, Bell, CheckCheck, Maximize, Minimize, FolderKanban, Moon, Sun, Monitor, Library, Sparkles } from 'lucide-react';
 import { useQuickAction } from '@/contexts/quick-action-context';
 import * as React from 'react';
 import { Input } from './ui/input';
@@ -34,7 +33,7 @@ export function Header() {
   const router = useRouter();
   const { user } = useUser();
   const { setTheme } = useTheme();
-  const { openNewCompanyDialog, openNewContactDialog, openAssessmentModal, openNewProjectDialog, openNewUserStoryDialog, globalSearchTerm, setGlobalSearchTerm } = useQuickAction();
+  const { openNewCompanyDialog, openNewContactDialog, openAssessmentModal, openNewProjectDialog, openNewUserStoryDialog, globalSearchTerm, setGlobalSearchTerm, openInsightsPanel } = useQuickAction();
   const [isSearchVisible, setIsSearchVisible] = React.useState(false);
   const [searchResults, setSearchResults] = React.useState<Company[]>([]);
   const searchInputRef = React.useRef<HTMLInputElement>(null);
@@ -173,6 +172,10 @@ export function Header() {
                 </div>
             )}
         </div>
+        <Button variant="outline-sidebar" onClick={openInsightsPanel}>
+          <Sparkles className="mr-2 h-5 w-5" />
+          Ask Insights360
+        </Button>
         <Button variant="ghost" size="icon" onClick={toggleFullScreen}>
           {isFullscreen ? <Minimize className="h-5 w-5" /> : <Maximize className="h-5 w-5" />}
           <span className="sr-only">Toggle Fullscreen</span>
