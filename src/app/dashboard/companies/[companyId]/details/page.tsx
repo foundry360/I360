@@ -537,11 +537,6 @@ export default function CompanyDetailsPage() {
                                           <span>Delete Document</span>
                                         </DropdownMenuItem>
                                     )}
-                                    <DropdownMenuSeparator />
-                                    <DropdownMenuItem onClick={() => openDeleteDialog(assessment)} className="text-destructive focus:bg-destructive/90 focus:text-destructive-foreground">
-                                        <Trash2 className="mr-2 h-4 w-4" />
-                                        <span>Delete</span>
-                                    </DropdownMenuItem>
                                 </DropdownMenuContent>
                             </DropdownMenu>
                           </TableCell>
