@@ -332,7 +332,7 @@ export function GtmReadinessForm({ onComplete, assessmentToResume }: GtmReadines
       const company = companies.find(c => c.id === companyId);
       const finalAssessmentName = company ? `${assessmentName} - ${company.name}` : assessmentName;
       
-      const payload: Omit<Assessment, 'id'> = {
+      const payload: Omit<Assessment, 'id' | 'result'> = {
         companyId: companyId,
         name: finalAssessmentName,
         type: 'GTM Readiness',
@@ -340,7 +340,6 @@ export function GtmReadinessForm({ onComplete, assessmentToResume }: GtmReadines
         progress: 100,
         startDate: assessmentToResume?.startDate || new Date().toISOString(),
         formData: values,
-        result: undefined, // No result generated
       };
 
       let finalAssessmentId = currentAssessmentId;
