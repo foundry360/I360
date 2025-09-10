@@ -5,16 +5,16 @@ import { google } from 'googleapis';
 import { db } from '@/lib/firebase';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 
-constOAuthConfig = {
+const oauthConfig = {
     clientId: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
     redirectUri: process.env.GOOGLE_REDIRECT_URI,
 };
 
 const oauth2Client = new google.auth.OAuth2(
-    oAuthConfig.clientId,
-    oAuthConfig.clientSecret,
-    oAuthConfig.redirectUri
+    oauthConfig.clientId,
+    oauthConfig.clientSecret,
+    oauthConfig.redirectUri
 );
 
 // Helper function to store tokens
@@ -41,9 +41,15 @@ async function getAuthenticatedClient() {
         oauth2Client.setCredentials(tokens);
         // Check if the access token is expired and refresh it if necessary
         if (oauth2Client.isTokenExpiring()) {
-            const { credentials } = await oauth2Client.refreshAccessToken();
-            oauth2Client.setCredentials(credentials);
-            await storeTokens(credentials);
+            try {
+                const { credentials } = await oauth2Client.refreshAccessToken();
+                oauth2Client.setCredentials(credentials);
+                await storeTokens(credentials);
+            } catch (error) {
+                console.error("Error refreshing access token, user needs to re-authenticate.", error);
+                // By returning null, we force the re-authentication flow
+                return null;
+            }
         }
         return oauth2Client;
     }
