@@ -514,24 +514,11 @@ export default function DashboardPage() {
       <div>
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-bold">Recent Engagements</h2>
-          <div className="flex items-center gap-2">
-            <Sheet>
-              <SheetTrigger asChild>
-                <Button variant="outline">
-                  <Zap className="mr-2 h-4 w-4"/>
-                  Insights
-                </Button>
-              </SheetTrigger>
-              <SheetContent className="w-[1000px] sm:max-w-none sm:w-[1280px] p-0 bg-sidebar text-sidebar-foreground border-sidebar-border">
-                <EngagementInsightsPanel projects={recentEngagements.filter(p => p.status === 'Active')} />
-              </SheetContent>
-            </Sheet>
-            {recentEngagements.length > 4 && (
-              <Button variant="outline" onClick={() => router.push('/dashboard/projects')}>
-                View All
-              </Button>
-            )}
-          </div>
+          {recentEngagements.length > 4 && (
+            <Button variant="outline" onClick={() => router.push('/dashboard/projects')}>
+              View All
+            </Button>
+          )}
         </div>
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {recentEngagements.map((project) => (
