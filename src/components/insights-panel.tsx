@@ -1,8 +1,9 @@
+
 'use client';
 import * as React from 'react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { useQuickAction } from '@/contexts/quick-action-context';
-import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { ArrowUp, Bot, Loader2, Sparkles, User } from 'lucide-react';
 import { getInsights } from '@/ai/flows/insights-flow';
@@ -12,8 +13,7 @@ import { ScrollArea } from './ui/scroll-area';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback } from './ui/avatar';
 import { useUser } from '@/contexts/user-context';
-import { Separator } from './ui/separator';
-import type { MessagePart, Message } from 'genkit';
+import type { Message } from 'genkit';
 
 export function InsightsPanel() {
     const { isInsightsPanelOpen, closeInsightsPanel } = useQuickAction();
@@ -41,7 +41,7 @@ export function InsightsPanel() {
             setLoading(false);
         }
     };
-    
+
     React.useEffect(() => {
         if (scrollAreaRef.current) {
             scrollAreaRef.current.scrollTo({
@@ -50,7 +50,7 @@ export function InsightsPanel() {
             });
         }
     }, [messages]);
-    
+
     const getInitials = (email: string) => {
         if (!email) return 'U';
         return email[0].toUpperCase();
@@ -66,8 +66,8 @@ export function InsightsPanel() {
                     </SheetTitle>
                     <SheetDescription>Ask Insights360 questions about your engagements, tasks, and more...</SheetDescription>
                 </SheetHeader>
-                <div className="flex-1 overflow-hidden">
-                   <ScrollArea className="h-full" ref={scrollAreaRef}>
+                <div className="flex-1 flex flex-col overflow-hidden">
+                   <ScrollArea className="flex-1" ref={scrollAreaRef}>
                         <div className="p-6 space-y-6">
                             {messages.map((message, index) => (
                                 <div key={index} className={cn("flex items-start gap-3", message.role === 'user' && 'justify-end')}>
@@ -104,16 +104,23 @@ export function InsightsPanel() {
                 </div>
                 <div className="p-4 border-t">
                     <div className="relative">
-                        <Input
+                        <Textarea
                             placeholder="e.g., How many tasks are due this week?"
                             value={input}
                             onChange={(e) => setInput(e.target.value)}
-                            onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter' && !e.shiftKey) {
+                                    e.preventDefault();
+                                    handleSend();
+                                }
+                            }}
                             disabled={loading}
+                            className="pr-12 min-h-[40px] resize-none"
+                            rows={1}
                         />
                         <Button
                             size="icon"
-                            className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8"
+                            className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8"
                             onClick={handleSend}
                             disabled={loading || !input.trim()}
                         >
