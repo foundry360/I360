@@ -57,7 +57,7 @@ export default function LibraryPage() {
   const [isManageCollectionsOpen, setIsManageCollectionsOpen] = React.useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
   
-  const { openNewUserStoryDialog, setOnUserStoryCreated, openEditUserStoryDialog, setOnUserStoryUpdated, openManageCollectionsDialog, isManageCollectionsDialogOpen, closeManageCollectionsDialog, onCollectionsUpdated, setOnCollectionsUpdated, onBacklogItemCreated, setOnBacklogItemCreated } = useQuickAction();
+  const { openNewUserStoryDialog, setOnUserStoryCreated, openEditUserStoryDialog, setOnUserStoryUpdated, openManageCollectionsDialog, isManageCollectionsDialogOpen, closeManageCollectionsDialog, onCollectionsUpdated, setOnCollectionsUpdated, onBacklogItemCreated } = useQuickAction();
   const { toast } = useToast();
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   const [isUploadResultDialogOpen, setIsUploadResultDialogOpen] = React.useState(false);
@@ -149,7 +149,7 @@ export default function LibraryPage() {
     try {
         setLoading(true);
         const storiesToAdd = stories.filter(story => selectedStories.includes(story.id));
-        await bulkCreateLibraryStories(storiesToAdd, projectId);
+        await bulkCreateBacklogItems(projectId, null, storiesToAdd);
         toast({
             title: 'Success!',
             description: `${storiesToAdd.length} user stor${storiesToAdd.length > 1 ? 'ies' : 'y'} added to the project backlog`,

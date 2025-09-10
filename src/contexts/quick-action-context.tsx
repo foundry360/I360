@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import * as React from 'react';
@@ -218,6 +219,9 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
   React.useEffect(() => {
     const unsubscribe = getBacklogItems((items) => {
         setBacklogItems(items);
+        if (onBacklogItemCreatedRef.current) {
+          onBacklogItemCreatedRef.current();
+        }
     });
     return () => unsubscribe();
   }, []);

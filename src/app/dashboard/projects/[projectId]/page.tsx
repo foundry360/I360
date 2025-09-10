@@ -264,7 +264,7 @@ export default function ProjectDetailsPage() {
     const [project, setProject] = React.useState<Project | null>(null);
     const [columns, setColumns] = React.useState<BoardColumns>(initialColumns);
     const [epics, setEpics] = React.useState<Epic[]>([]);
-    const { backlogItems, getProjects } = useQuickAction();
+    const { backlogItems, getProjects, setOnBacklogItemCreated, onBacklogItemCreated } = useQuickAction();
     const [sprints, setSprints] = React.useState<Sprint[]>([]);
     const [contacts, setContacts] = React.useState<Contact[]>([]);
     const [allTags, setAllTags] = React.useState<Tag[]>([]);
@@ -279,7 +279,6 @@ export default function ProjectDetailsPage() {
         openNewSprintDialog,
         openEditSprintDialog,
         openAddFromCollectionDialog,
-        setOnBacklogItemCreated,
         setOnEpicCreated,
         setOnSprintCreated,
         setOnBacklogItemUpdated,
@@ -334,32 +333,24 @@ export default function ProjectDetailsPage() {
 
     React.useEffect(() => {
         fetchData();
-        const unsub1 = setOnBacklogItemCreated(fetchData);
-        const unsub2 = setOnEpicCreated(fetchData);
-        const unsub3 = setOnSprintCreated(fetchData);
-        const unsub4 = setOnBacklogItemUpdated(fetchData);
-        const unsub5 = setOnEpicUpdated(fetchData);
-        const unsub6 = setOnSprintUpdated(fetchData);
-        const unsub7 = setOnCollectionAddedToProject(fetchData);
+        const unsubCreated = setOnBacklogItemCreated(fetchData);
+        const unsubEpic = setOnEpicCreated(fetchData);
+        const unsubSprint = setOnSprintCreated(fetchData);
+        const unsubBacklogUpdated = setOnBacklogItemUpdated(fetchData);
+        const unsubEpicUpdated = setOnEpicUpdated(fetchData);
+        const unsubSprintUpdated = setOnSprintUpdated(fetchData);
+        const unsubCollectionAdded = setOnCollectionAddedToProject(fetchData);
+
         return () => {
-            if(unsub1) unsub1();
-            if(unsub2) unsub2();
-            if(unsub3) unsub3();
-            if(unsub4) unsub4();
-            if(unsub5) unsub5();
-            if(unsub6) unsub6();
-            if(unsub7) unsub7();
+            if (unsubCreated) unsubCreated();
+            if (unsubEpic) unsubEpic();
+            if (unsubSprint) unsubSprint();
+            if (unsubBacklogUpdated) unsubBacklogUpdated();
+            if (unsubEpicUpdated) unsubEpicUpdated();
+            if (unsubSprintUpdated) unsubSprintUpdated();
+            if (unsubCollectionAdded) unsubCollectionAdded();
         };
-    }, [
-        fetchData, 
-        setOnBacklogItemCreated, 
-        setOnEpicCreated, 
-        setOnSprintCreated, 
-        setOnBacklogItemUpdated,
-        setOnEpicUpdated,
-        setOnSprintUpdated,
-        setOnCollectionAddedToProject,
-    ]);
+    }, [fetchData, setOnBacklogItemCreated, setOnEpicCreated, setOnSprintCreated, setOnBacklogItemUpdated, setOnEpicUpdated, setOnSprintUpdated, setOnCollectionAddedToProject]);
 
      React.useEffect(() => {
         const activeOrCompletedSprintIds = sprints
