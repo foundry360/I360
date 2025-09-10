@@ -1,4 +1,3 @@
-
 'use client';
 
 import { Logo } from './logo';
@@ -173,7 +172,7 @@ export function Header() {
                 </div>
             )}
         </div>
-        <Button variant="ghost" onClick={openInsightsPanel}>
+        <Button variant="outline" onClick={openInsightsPanel}>
           <Sparkles className="mr-2 h-5 w-5" />
           Ask Insights360
         </Button>
