@@ -705,7 +705,7 @@ export default function CompanyDetailsPage() {
             <Button
                 variant="ghost"
                 size="icon"
-                className="absolute top-2 -left-5 h-7 w-7 bg-background border rounded-full text-muted-foreground hover:bg-muted"
+                className={cn("absolute top-2 h-7 w-7 bg-background border rounded-full text-muted-foreground hover:bg-muted", isPanelCollapsed ? '-left-4' : '-left-5')}
                 onClick={() => setIsPanelCollapsed(!isPanelCollapsed)}
             >
                 {isPanelCollapsed ? <ChevronsLeft className="h-4 w-4" /> : <ChevronsRight className="h-4 w-4" />}
@@ -807,9 +807,11 @@ export default function CompanyDetailsPage() {
                       </AccordionContent>
                     </AccordionItem>
                      <AccordionItem value="item-4">
-                      <AccordionTrigger chevronFirst>
-                          <h3 className="font-semibold">Recent Activity</h3>
-                      </AccordionTrigger>
+                      <div className="flex items-center justify-between w-full">
+                        <AccordionTrigger chevronFirst className="flex-1">
+                            <h3 className="font-semibold">Recent Activity</h3>
+                        </AccordionTrigger>
+                      </div>
                       <AccordionContent>
                            <div className="space-y-4 pt-2">
                               {recentActivity.length > 0 ? (
