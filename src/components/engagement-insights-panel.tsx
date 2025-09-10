@@ -25,7 +25,7 @@ export function EngagementInsightsPanel({ project, epics, sprints, backlogItems 
         return (
              <div className="flex flex-col h-full">
                 <SheetHeader className="p-6 border-b">
-                    <SheetTitle>Engagement Insights</SheetTitle>
+                    <SheetTitle>Engagement Snapshot</SheetTitle>
                 </SheetHeader>
                 <div className="p-6">
                     <p className="text-muted-foreground text-center py-10">No engagement data available.</p>
@@ -46,9 +46,9 @@ export function EngagementInsightsPanel({ project, epics, sprints, backlogItems 
     return (
         <div className="flex flex-col h-full">
             <SheetHeader className="p-6 border-b">
-                <SheetTitle>Insights for: {project.name}</SheetTitle>
+                <SheetTitle>Engagement Snapshot</SheetTitle>
                 <SheetDescription>
-                   A complete overview of your engagement in a single glance.
+                   {project.name}
                 </SheetDescription>
             </SheetHeader>
             <ScrollArea className="flex-1">
