@@ -700,7 +700,7 @@ export default function CompanyDetailsPage() {
             </Tabs>
           </div>
 
-          <div className={cn("relative transition-all duration-300", isPanelCollapsed ? "w-12" : "w-80")}>
+          <div className={cn("relative transition-all duration-300 border-l", isPanelCollapsed ? "w-12" : "w-80")}>
             <Button
               variant="outline"
               size="icon"
@@ -709,115 +709,119 @@ export default function CompanyDetailsPage() {
             >
               {isPanelCollapsed ? <ChevronsLeft className="h-4 w-4" /> : <ChevronsRight className="h-4 w-4" />}
             </Button>
-            <div className={cn("h-full space-y-6 transition-opacity duration-200", isPanelCollapsed ? "opacity-0 pointer-events-none" : "opacity-100")}>
-              <Card>
-                  <CardHeader className="flex flex-row items-center justify-between">
-                      <CardTitle className="text-xl">Company Information</CardTitle>
-                      <Button variant="outline" size="sm" onClick={() => setIsEditModalOpen(true)}>
-                          <Pencil className="h-4 w-4" />
-                      </Button>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                      <div className="flex items-center gap-4">
-                          <MapPin className="h-5 w-5 text-muted-foreground" />
-                          <span className="text-sm">{`${companyData.street}, ${companyData.city}, ${companyData.state} ${companyData.zip}`}</span>
-                      </div>
-                       <div className="flex items-center gap-4">
-                          <Phone className="h-5 w-5 text-muted-foreground" />
-                          <span className="text-sm">{companyData.phone}</span>
-                      </div>
-                       <div className="flex items-center gap-4">
-                          <Globe className="h-5 w-5 text-muted-foreground" />
-                          <a href={`http://${companyData.website}`} target="_blank" rel="noopener noreferrer" className="text-sm text-primary hover:underline">
-                              {companyData.website}
-                          </a>
-                      </div>
-                  </CardContent>
-              </Card>
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between">
-                  <CardTitle className="text-xl">Primary Contacts</CardTitle>
-                   <Button variant="outline" size="sm" onClick={openNewContactDialog}>
-                      <Plus className="h-4 w-4" />
-                  </Button>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {contacts.length > 0 ? (
-                    contacts.map((contact) => (
-                      <div key={contact.id} className="flex items-center gap-4">
-                        <Avatar>
-                           <AvatarFallback className="bg-primary text-primary-foreground">
-                            {getInitials(contact.name)}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <p className="font-medium text-sm">{contact.name}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {contact.title}
-                          </p>
+            <div className={cn("h-full transition-opacity duration-200", isPanelCollapsed ? "opacity-0 pointer-events-none" : "opacity-100")}>
+              <Card className="h-full border-t-0 border-r-0 border-b-0 rounded-none">
+                <CardContent className="p-0">
+                    <div className="p-6">
+                        <div className="flex items-center justify-between mb-4">
+                            <h3 className="font-semibold">Company Information</h3>
+                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setIsEditModalOpen(true)}>
+                                <Pencil className="h-4 w-4" />
+                            </Button>
                         </div>
-                      </div>
-                    ))
-                  ) : (
-                      <p className="text-sm text-muted-foreground text-center py-4">No contacts found for this company.</p>
-                  )}
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between">
-                    <CardTitle className="text-xl">Company Engagements</CardTitle>
-                    <Button variant="outline" size="icon" onClick={openNewProjectDialog}>
-                        <Plus className="h-4 w-4" />
-                        <span className="sr-only">New Engagement</span>
-                    </Button>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                    {projects.length > 0 ? (
-                        projects.map(project => (
-                          <Link href={`/dashboard/projects/${project.id}`} key={project.id}>
-                            <div className="flex justify-between items-center p-2 rounded-md hover:bg-muted cursor-pointer">
-                                <div>
-                                    <p className="font-medium text-sm">{project.name}</p>
-                                    <p className="text-xs text-muted-foreground">{project.owner}</p>
-                                </div>
-                                <Badge variant={project.status === 'Active' ? 'success' : 'secondary'}>
-                                    {project.status}
-                                </Badge>
+                        <div className="space-y-4">
+                            <div className="flex items-center gap-4">
+                                <MapPin className="h-5 w-5 text-muted-foreground" />
+                                <span className="text-sm">{`${companyData.street}, ${companyData.city}, ${companyData.state} ${companyData.zip}`}</span>
                             </div>
-                          </Link>
-                        ))
-                    ) : (
-                        <p className="text-sm text-muted-foreground text-center py-4">No engagements found for this company.</p>
-                    )}
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-xl">Recent Activity</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {recentActivity.length > 0 ? (
-                      recentActivity.map((item, index) => (
-                          <div key={index} className="flex items-start gap-4">
-                              <div className="mt-1 h-2 w-2 rounded-full bg-primary" />
-                              <div>
-                              <p className="font-medium text-sm">{item.activity}</p>
-                              <p className="text-xs text-muted-foreground">{formatDateTime(item.time)}</p>
-                              </div>
-                          </div>
-                      ))
-                  ) : (
-                      <p className="text-sm text-muted-foreground text-center py-4">No recent activity.</p>
-                  )}
-                  {allRecentActivity.length > 5 && (
-                      <Button 
-                          variant="link" 
-                          className="p-0 h-auto text-sm"
-                          onClick={() => setIsActivityExpanded(!isActivityExpanded)}
-                      >
-                          {isActivityExpanded ? 'View less' : 'View all'}
-                      </Button>
-                  )}
+                            <div className="flex items-center gap-4">
+                                <Phone className="h-5 w-5 text-muted-foreground" />
+                                <span className="text-sm">{companyData.phone}</span>
+                            </div>
+                            <div className="flex items-center gap-4">
+                                <Globe className="h-5 w-5 text-muted-foreground" />
+                                <a href={`http://${companyData.website}`} target="_blank" rel="noopener noreferrer" className="text-sm text-primary hover:underline">
+                                    {companyData.website}
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <Separator />
+                    <div className="p-6">
+                       <div className="flex items-center justify-between mb-4">
+                            <h3 className="font-semibold">Primary Contacts</h3>
+                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={openNewContactDialog}>
+                                <Plus className="h-4 w-4" />
+                            </Button>
+                        </div>
+                        <div className="space-y-4">
+                            {contacts.length > 0 ? (
+                                contacts.map((contact) => (
+                                <div key={contact.id} className="flex items-center gap-4">
+                                    <Avatar>
+                                    <AvatarFallback className="bg-primary text-primary-foreground">
+                                        {getInitials(contact.name)}
+                                    </AvatarFallback>
+                                    </Avatar>
+                                    <div>
+                                    <p className="font-medium text-sm">{contact.name}</p>
+                                    <p className="text-xs text-muted-foreground">
+                                        {contact.title}
+                                    </p>
+                                    </div>
+                                </div>
+                                ))
+                            ) : (
+                                <p className="text-sm text-muted-foreground text-center py-4">No contacts found.</p>
+                            )}
+                        </div>
+                    </div>
+                    <Separator />
+                     <div className="p-6">
+                        <div className="flex items-center justify-between mb-4">
+                            <h3 className="font-semibold">Company Engagements</h3>
+                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={openNewProjectDialog}>
+                                <Plus className="h-4 w-4" />
+                            </Button>
+                        </div>
+                        <div className="space-y-3">
+                            {projects.length > 0 ? (
+                                projects.map(project => (
+                                <Link href={`/dashboard/projects/${project.id}`} key={project.id}>
+                                    <div className="flex justify-between items-center p-2 rounded-md hover:bg-muted cursor-pointer -mx-2">
+                                        <div>
+                                            <p className="font-medium text-sm">{project.name}</p>
+                                            <p className="text-xs text-muted-foreground">{project.owner}</p>
+                                        </div>
+                                        <Badge variant={project.status === 'Active' ? 'success' : 'secondary'}>
+                                            {project.status}
+                                        </Badge>
+                                    </div>
+                                </Link>
+                                ))
+                            ) : (
+                                <p className="text-sm text-muted-foreground text-center py-4">No engagements found.</p>
+                            )}
+                        </div>
+                    </div>
+                    <Separator />
+                    <div className="p-6">
+                         <h3 className="font-semibold mb-4">Recent Activity</h3>
+                         <div className="space-y-4">
+                            {recentActivity.length > 0 ? (
+                                recentActivity.map((item, index) => (
+                                    <div key={index} className="flex items-start gap-4">
+                                        <div className="mt-1 h-2 w-2 rounded-full bg-primary" />
+                                        <div>
+                                        <p className="font-medium text-sm">{item.activity}</p>
+                                        <p className="text-xs text-muted-foreground">{formatDateTime(item.time)}</p>
+                                        </div>
+                                    </div>
+                                ))
+                            ) : (
+                                <p className="text-sm text-muted-foreground text-center py-4">No recent activity.</p>
+                            )}
+                            {allRecentActivity.length > 5 && (
+                                <Button 
+                                    variant="link" 
+                                    className="p-0 h-auto text-sm"
+                                    onClick={() => setIsActivityExpanded(!isActivityExpanded)}
+                                >
+                                    {isActivityExpanded ? 'View less' : 'View all'}
+                                </Button>
+                            )}
+                         </div>
+                    </div>
                 </CardContent>
               </Card>
             </div>
