@@ -362,7 +362,9 @@ export default function LibraryPage() {
                   <AccordionItem value="tags">
                     <AccordionTrigger className="px-4 py-2 text-base font-semibold no-underline hover:no-underline hover:bg-muted/50 flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <Layers className="h-4 w-4" /> Tags
+                        <Layers className="h-4 w-4" />
+                        <span>Tags</span>
+                        <span className="text-muted-foreground text-sm">({allTags.length})</span>
                       </div>
                     </AccordionTrigger>
                     <AccordionContent>
@@ -418,7 +420,9 @@ export default function LibraryPage() {
                   <AccordionItem value="collections">
                     <AccordionTrigger className="px-4 py-2 text-base font-semibold no-underline hover:no-underline hover:bg-muted/50 flex items-center justify-between">
                        <div className="flex items-center gap-2">
-                         <BookCopy className="h-4 w-4" /> Collections
+                         <BookCopy className="h-4 w-4" />
+                         <span>Collections</span>
+                         <span className="text-muted-foreground text-sm">({collections.length})</span>
                        </div>
                     </AccordionTrigger>
                     <AccordionContent>
@@ -583,4 +587,3 @@ export default function LibraryPage() {
     </>
   );
 }
-
