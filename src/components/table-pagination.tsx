@@ -16,6 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { cn } from '@/lib/utils';
 
 interface TablePaginationProps {
   count: number;
@@ -60,7 +61,7 @@ export function TablePagination({
             onRowsPerPageChange(Number(value));
           }}
         >
-          <SelectTrigger className="h-8 w-[70px]">
+          <SelectTrigger className="h-8 w-[70px] table-pagination-select">
             <SelectValue placeholder={rowsPerPage} />
           </SelectTrigger>
           <SelectContent side="top">
@@ -100,7 +101,7 @@ export function TablePagination({
           onClick={handleNextPage}
           disabled={page >= totalPages - 1}
         >
-          <span className="sr-only">Go to next page</span>
+          <span className="sr-only">Next page</span>
           <ChevronRight className="h-4 w-4" />
         </Button>
         <Button

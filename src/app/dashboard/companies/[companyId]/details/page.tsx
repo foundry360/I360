@@ -85,7 +85,7 @@ export default function CompanyDetailsPage() {
   const [assessmentToDelete, setAssessmentToDelete] = React.useState<Assessment | null>(null);
   const [assessmentDocumentToDelete, setAssessmentDocumentToDelete] = React.useState<Assessment | null>(null);
   const [page, setPage] = React.useState(0);
-  const [rowsPerPage, setRowsPerPage] = React.useState(10);
+  const [rowsPerPage, setRowsPerPage] = React.useState(25);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   const [assessmentToUpload, setAssessmentToUpload] = React.useState<string | null>(null);
   const [isInputsPanelOpen, setIsInputsPanelOpen] = React.useState(false);
@@ -784,5 +784,3 @@ export default function CompanyDetailsPage() {
     </>
   );
 }
-
-    
