@@ -711,10 +711,7 @@ export default function CompanyDetailsPage() {
             </Button>
             <div className={cn("h-full transition-opacity duration-200", isPanelCollapsed ? "opacity-0 pointer-events-none" : "opacity-100")}>
               <Card className="h-full border-t-0 border-r-0 border-b-0 rounded-none">
-                <CardHeader>
-                  <h3 className="font-semibold">Company Details</h3>
-                </CardHeader>
-                <CardContent className="p-0">
+                <CardContent className="p-0 pt-6">
                     <div className="p-6">
                         <div className="flex items-center justify-between mb-4">
                             <h3 className="font-semibold">Company Information</h3>
