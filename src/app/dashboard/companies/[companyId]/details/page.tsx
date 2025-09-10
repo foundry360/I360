@@ -48,7 +48,7 @@ import { EditCompanyModal } from '@/components/edit-company-modal';
 import { getAssessmentsForCompany, type Assessment, deleteAssessments, uploadAssessmentDocument, updateAssessment, deleteAssessmentDocument } from '@/services/assessment-service';
 import { getContactsForCompany, type Contact } from '@/services/contact-service';
 import { getProjectsForCompany, type Project } from '@/services/project-service';
-import { signInWithGoogleDriveRedirect, handleGoogleDriveRedirectResult, listFiles, isGoogleDriveAuthenticated } from '@/services/google-drive-service';
+import { signInWithGoogleDriveRedirect, listFiles, isGoogleDriveAuthenticated, handleGoogleDriveRedirectResult, clearGoogleDriveAuth } from '@/services/google-drive-service';
 import { cn } from '@/lib/utils';
 import { useQuickAction } from '@/contexts/quick-action-context';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -161,37 +161,55 @@ export default function CompanyDetailsPage() {
   React.useEffect(() => {
     fetchCompanyData();
   }, [fetchCompanyData]);
-  
-  React.useEffect(() => {
-    const processAuth = async () => {
-        if (activeTab !== 'documents' || !companyData) return;
 
-        setIsDriveLoading(true);
-        try {
-            const accessToken = await handleGoogleDriveRedirectResult();
-            if (accessToken) {
-                setDriveAuthNeeded(false);
-                const files = await listFiles(companyData.name);
-                setDriveFiles(files);
-            } else {
-                setDriveAuthNeeded(true);
-                setDriveFiles([]);
-            }
-        } catch (error) {
-            console.error("Error during Google Drive auth process:", error);
-            setDriveAuthNeeded(true);
-            setDriveFiles([]);
-            toast({
-                variant: "destructive",
-                title: "Authentication Failed",
-                description: "Could not connect to Google Drive. Please try again.",
-            });
-        } finally {
-            setIsDriveLoading(false);
-        }
+  const fetchDriveFiles = React.useCallback(async () => {
+    if (isGoogleDriveAuthenticated() && companyData) {
+      setIsDriveLoading(true);
+      try {
+        const files = await listFiles(companyData.name);
+        setDriveFiles(files);
+        setDriveAuthNeeded(false);
+      } catch (error) {
+        console.error("Error fetching drive files", error);
+        toast({ variant: "destructive", title: "Error", description: "Could not fetch Google Drive files. You may need to re-authenticate." });
+        clearGoogleDriveAuth();
+        setDriveAuthNeeded(true);
+      } finally {
+        setIsDriveLoading(false);
+      }
+    }
+  }, [companyData, toast]);
+
+  React.useEffect(() => {
+    if (activeTab !== 'documents') return;
+
+    const handleAuthSuccess = () => {
+      console.log("Auth success event received");
+      setDriveAuthNeeded(false);
+      fetchDriveFiles();
     };
-    processAuth();
-}, [activeTab, companyData, toast]);
+    
+    const handleAuthError = (event: any) => {
+      console.error("Auth error event received", event.detail.error);
+      toast({ variant: "destructive", title: "Authentication Failed", description: "Could not connect to Google Drive. Please try again." });
+      setIsDriveLoading(false);
+    };
+
+    window.addEventListener('googleDriveAuthSuccess', handleAuthSuccess);
+    window.addEventListener('googleDriveAuthError', handleAuthError);
+
+    // Initial check when tab becomes active
+    if (isGoogleDriveAuthenticated()) {
+      fetchDriveFiles();
+    } else {
+      setDriveAuthNeeded(true);
+    }
+    
+    return () => {
+      window.removeEventListener('googleDriveAuthSuccess', handleAuthSuccess);
+      window.removeEventListener('googleDriveAuthError', handleAuthError);
+    };
+}, [activeTab, fetchDriveFiles, toast]);
 
 
   React.useEffect(() => {
