@@ -169,15 +169,23 @@ const getBacklogItemsTool = ai.defineTool({
 
 const getAssessmentsTool = ai.defineTool({
     name: 'getAssessments',
-    description: 'Get a list of all assessments.',
-    inputSchema: z.object({}),
+    description: 'Get a list of all assessments, optionally filtering by company name.',
+    inputSchema: z.object({
+        companyName: z.string().optional().describe('The name of the company to filter assessments by.'),
+    }),
     outputSchema: z.array(z.object({
         name: z.string(),
         companyName: z.string().optional(),
         status: z.string(),
         type: z.string(),
     })),
-}, getAssessments);
+}, async ({ companyName }) => {
+    const allAssessments = await getAssessments();
+    if (companyName) {
+        return allAssessments.filter(a => a.companyName?.toLowerCase() === companyName.toLowerCase());
+    }
+    return allAssessments;
+});
 
 
 export async function getInsights(history: Message[], prompt: string): Promise<string> {
