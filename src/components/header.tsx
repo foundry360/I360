@@ -17,7 +17,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Button } from './ui/button';
-import { Plus, Search, LogOut, Briefcase, UserPlus, FilePlus, Bell, CheckCheck, Maximize, Minimize, FolderKanban, Moon, Sun, Monitor, Library, Lightbulb } from 'lucide-react';
+import { Plus, Search, LogOut, Briefcase, UserPlus, FilePlus, Bell, CheckCheck, Maximize, Minimize, FolderKanban, Moon, Sun, Monitor, Library, Sparkles } from 'lucide-react';
 import { useQuickAction } from '@/contexts/quick-action-context';
 import * as React from 'react';
 import { Input } from './ui/input';
@@ -173,9 +173,9 @@ export function Header() {
                 </div>
             )}
         </div>
-        <Button variant="ghost" size="icon" onClick={openInsightsPanel}>
-          <Lightbulb className="h-5 w-5" />
-          <span className="sr-only">Open Insights Panel</span>
+        <Button variant="ghost" onClick={openInsightsPanel}>
+          <Sparkles className="mr-2 h-5 w-5" />
+          Ask Insights360
         </Button>
         <Button variant="ghost" size="icon" onClick={toggleFullScreen}>
           {isFullscreen ? <Minimize className="h-5 w-5" /> : <Maximize className="h-5 w-5" />}
