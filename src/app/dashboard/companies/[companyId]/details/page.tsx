@@ -21,7 +21,7 @@ import { AppLayout } from '@/components/app-layout';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import React from 'react';
 import { Progress } from '@/components/ui/progress';
-import { Phone, Globe, MapPin, ArrowLeft, Plus, Pencil, FileText, Trash2, Paperclip, Upload, Link2, FolderKanban, Star, MoreHorizontal, ClipboardList, Notebook, Folder, FilePenLine, KeyRound, ChevronsRight, ChevronsLeft } from 'lucide-react';
+import { Phone, Globe, MapPin, ArrowLeft, Plus, Pencil, FileText, Trash2, Paperclip, Upload, Link2, FolderKanban, Star, MoreHorizontal, ClipboardList, Notebook, Folder, FilePenLine, KeyRound, ChevronsRight, ChevronsLeft, Users, GanttChartSquare, Activity } from 'lucide-react';
 import type { Company } from '@/services/company-service';
 import { getCompany, updateCompany } from '@/services/company-service';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -701,7 +701,7 @@ export default function CompanyDetailsPage() {
             </Tabs>
           </div>
 
-          <div className={cn("relative transition-all duration-300 border-l", isPanelCollapsed ? "w-12" : "w-[28rem]")}>
+          <div className={cn("relative transition-all duration-300 border-l", isPanelCollapsed ? "w-12" : "w-[24rem]")}>
             <Button
                 variant="ghost"
                 size="icon"
@@ -770,7 +770,10 @@ export default function CompanyDetailsPage() {
                                 </div>
                                 ))
                             ) : (
-                                <p className="text-sm text-muted-foreground text-center py-4">No contacts found.</p>
+                                <div className="text-center text-muted-foreground py-4 space-y-2">
+                                  <Users className="mx-auto h-6 w-6" />
+                                  <p className="text-sm">No contacts found.</p>
+                                </div>
                             )}
                         </div>
                       </AccordionContent>
@@ -801,7 +804,10 @@ export default function CompanyDetailsPage() {
                                   </Link>
                                   ))
                               ) : (
-                                  <p className="text-sm text-muted-foreground text-center py-4">No engagements found.</p>
+                                  <div className="text-center text-muted-foreground py-4 space-y-2">
+                                    <GanttChartSquare className="mx-auto h-6 w-6" />
+                                    <p className="text-sm">No engagements found.</p>
+                                  </div>
                               )}
                           </div>
                       </AccordionContent>
@@ -825,7 +831,10 @@ export default function CompanyDetailsPage() {
                                       </div>
                                   ))
                               ) : (
-                                  <p className="text-sm text-muted-foreground text-center py-4">No recent activity.</p>
+                                  <div className="text-center text-muted-foreground py-4 space-y-2">
+                                    <Activity className="mx-auto h-6 w-6" />
+                                    <p className="text-sm">No recent activity.</p>
+                                  </div>
                               )}
                               {allRecentActivity.length > 5 && (
                                   <Button 
@@ -907,5 +916,7 @@ export default function CompanyDetailsPage() {
     </>
   );
 }
+
+    
 
     
