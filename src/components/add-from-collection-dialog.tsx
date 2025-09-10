@@ -24,8 +24,7 @@ import { cn } from '@/lib/utils';
 const CollectionItem = ({ collection, onMove, moveDirection }: { collection: StoryCollection, onMove: () => void, moveDirection: 'add' | 'remove' }) => (
     <div
         className={cn(
-            "p-3 mb-2 rounded-lg border text-card-foreground shadow-sm flex items-center gap-2",
-            'bg-[hsl(0_0%_6%)]'
+            "p-3 mb-2 rounded-lg border text-card-foreground shadow-sm flex items-center gap-2 bg-card"
         )}
     >
         <div className="flex-1">
@@ -164,7 +163,7 @@ export function AddFromCollectionDialog() {
                                             <CollectionItem key={collection.id} collection={collection} onMove={() => handleMoveCollection(collection, 'remove')} moveDirection="remove" />
                                         ))}
                                         {selectedCollections.length === 0 && (
-                                            <div className="h-full flex items-center justify-center text-center bg-muted/20 text-foreground border-2 border-dashed border-border/80 rounded-lg p-4">
+                                            <div className="h-full flex items-center justify-center text-center bg-muted/20 text-foreground border-2 border-dashed rounded-lg p-4">
                                                 <p>Move collections from the left here to add them to the backlog.</p>
                                             </div>
                                         )}
@@ -182,3 +181,4 @@ export function AddFromCollectionDialog() {
         </Dialog>
     );
 }
+

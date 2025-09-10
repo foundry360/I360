@@ -4,12 +4,14 @@
 import * as React from 'react';
 import type { Assessment } from '@/services/assessment-service';
 import type { Epic } from '@/services/epic-service';
-import { getBacklogItems, type BacklogItem } from '@/services/backlog-item-service';
+import { getBacklogItems as fetchBacklogItems, type BacklogItem } from '@/services/backlog-item-service';
 import type { Sprint } from '@/services/sprint-service';
 import type { Contact } from '@/services/contact-service';
 import { getProjects, type Project } from '@/services/project-service';
 import type { UserStory } from '@/services/user-story-service';
 import type { StoryCollection } from '@/services/collection-service';
+import { collection, onSnapshot } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 
 
 type StoryForEdit = Omit<UserStory, 'createdAt'> & { createdAt: string };
@@ -216,7 +218,9 @@ export function QuickActionProvider({ children }: { children: React.ReactNode })
   }, []);
 
   React.useEffect(() => {
-    const unsubscribe = getBacklogItems((items) => {
+    const q = collection(db, 'backlogItems');
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+        const items = snapshot.docs.map(doc => doc.data() as BacklogItem);
         setBacklogItems(items);
     });
     return () => unsubscribe();
@@ -564,3 +568,5 @@ export const useQuickAction = () => {
   }
   return context;
 };
+
+    

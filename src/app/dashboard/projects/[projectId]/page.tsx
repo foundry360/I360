@@ -264,14 +264,11 @@ export default function ProjectDetailsPage() {
     const [project, setProject] = React.useState<Project | null>(null);
     const [columns, setColumns] = React.useState<BoardColumns>(initialColumns);
     const [epics, setEpics] = React.useState<Epic[]>([]);
-    const { backlogItems, getProjects } = useQuickAction();
-    const [sprints, setSprints] = React.useState<Sprint[]>([]);
-    const [contacts, setContacts] = React.useState<Contact[]>([]);
-    const [allTags, setAllTags] = React.useState<Tag[]>([]);
-    const [collections, setCollections] = React.useState<StoryCollection[]>([]);
-    const [loading, setLoading] = React.useState(true);
-    const [activeTab, setActiveTab] = React.useState('summary');
     const { 
+        backlogItems, 
+        getProjects, 
+        setOnBacklogItemCreated, 
+        onBacklogItemCreated,
         openNewBacklogItemDialog,
         openNewEpicDialog,
         openEditEpicDialog,
@@ -279,13 +276,20 @@ export default function ProjectDetailsPage() {
         openNewSprintDialog,
         openEditSprintDialog,
         openAddFromCollectionDialog,
-        setOnBacklogItemCreated,
         setOnEpicCreated,
         setOnSprintCreated,
         setOnBacklogItemUpdated,
         setOnEpicUpdated,
         setOnSprintUpdated,
+        setOnCollectionAddedToProject,
     } = useQuickAction();
+    const [sprints, setSprints] = React.useState<Sprint[]>([]);
+    const [contacts, setContacts] = React.useState<Contact[]>([]);
+    const [allTags, setAllTags] = React.useState<Tag[]>([]);
+    const [collections, setCollections] = React.useState<StoryCollection[]>([]);
+    const [loading, setLoading] = React.useState(true);
+    const [activeTab, setActiveTab] = React.useState('summary');
+    
     const { toast } = useToast();
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
     const [itemToDelete, setItemToDelete] = React.useState<{type: 'epic' | 'backlogItem' | 'sprint', id: string, name: string} | null>(null);
@@ -333,28 +337,32 @@ export default function ProjectDetailsPage() {
 
     React.useEffect(() => {
         fetchData();
-        const unsub1 = setOnBacklogItemCreated(fetchData);
-        const unsub2 = setOnEpicCreated(fetchData);
-        const unsub3 = setOnSprintCreated(fetchData);
-        const unsub4 = setOnBacklogItemUpdated(fetchData);
-        const unsub5 = setOnEpicUpdated(fetchData);
-        const unsub6 = setOnSprintUpdated(fetchData);
+        const unsubCreated = setOnBacklogItemCreated(fetchData);
+        const unsubEpic = setOnEpicCreated(fetchData);
+        const unsubSprint = setOnSprintCreated(fetchData);
+        const unsubBacklogUpdated = setOnBacklogItemUpdated(fetchData);
+        const unsubEpicUpdated = setOnEpicUpdated(fetchData);
+        const unsubSprintUpdated = setOnSprintUpdated(fetchData);
+        const unsubCollectionAdded = setOnCollectionAddedToProject(fetchData);
+
         return () => {
-            if(unsub1) unsub1();
-            if(unsub2) unsub2();
-            if(unsub3) unsub3();
-            if(unsub4) unsub4();
-            if(unsub5) unsub5();
-            if(unsub6) unsub6();
+            if (typeof unsubCreated === 'function') unsubCreated();
+            if (typeof unsubEpic === 'function') unsubEpic();
+            if (typeof unsubSprint === 'function') unsubSprint();
+            if (typeof unsubBacklogUpdated === 'function') unsubBacklogUpdated();
+            if (typeof unsubEpicUpdated === 'function') unsubEpicUpdated();
+            if (typeof unsubSprintUpdated === 'function') unsubSprintUpdated();
+            if (typeof unsubCollectionAdded === 'function') unsubCollectionAdded();
         };
     }, [
         fetchData, 
         setOnBacklogItemCreated, 
         setOnEpicCreated, 
         setOnSprintCreated, 
-        setOnBacklogItemUpdated,
-        setOnEpicUpdated,
-        setOnSprintUpdated,
+        setOnBacklogItemUpdated, 
+        setOnEpicUpdated, 
+        setOnSprintUpdated, 
+        setOnCollectionAddedToProject
     ]);
 
      React.useEffect(() => {
@@ -759,8 +767,7 @@ export default function ProjectDetailsPage() {
       return name.split(' ').map(n => n[0]).join('').toUpperCase();
     }
     
-    const unassignedBacklogItems = projectBacklogItems.filter(item => !item.epicId);
-    const unassignedAndUnscheduledBacklogItems = unassignedBacklogItems.filter(item => !item.sprintId);
+    const unscheduledBacklogItems = projectBacklogItems.filter(item => !item.sprintId);
     
     if (loading) {
         return (
@@ -1327,7 +1334,7 @@ export default function ProjectDetailsPage() {
                     </TabsContent>
                     <TabsContent value="epics">
                         <div className="space-y-6">
-                            {epics.length === 0 && unassignedBacklogItems.length === 0 ? (
+                            {epics.length === 0 && projectBacklogItems.filter(item => !item.epicId).length === 0 ? (
                                 <div className="p-10 text-center rounded-lg border-2 border-dashed border-border bg-transparent shadow-none">
                                     <div className="flex justify-center mb-4">
                                        <div className="flex justify-center items-center h-16 w-16 text-muted-foreground">
@@ -1458,7 +1465,7 @@ export default function ProjectDetailsPage() {
                     </TabsContent>
                     <TabsContent value="backlog">
                         <div className="space-y-6">
-                            {unassignedAndUnscheduledBacklogItems.length === 0 ? (
+                            {unscheduledBacklogItems.length === 0 ? (
                                 <div className="p-10 text-center rounded-lg border-2 border-dashed border-border bg-muted/20">
                                     <div className="flex justify-center mb-4">
                                         <div className="flex justify-center items-center h-16 w-16 text-muted-foreground">
@@ -1467,7 +1474,7 @@ export default function ProjectDetailsPage() {
                                     </div>
                                     <h3 className="text-lg font-semibold">The backlog is empty!</h3>
                                     <p className="text-muted-foreground mt-2 mb-4">
-                                        This space is for user stories that haven't been assigned to an epic or wave yet.
+                                        This space is for user stories that haven't been assigned to a wave yet.
                                     </p>
                                     <div className="flex justify-center gap-4">
                                         <Button variant="outline" onClick={() => openAddFromCollectionDialog(projectId, collections)}><BookCopy className="h-4 w-4 mr-2" /> Add from Collection</Button>
@@ -1484,8 +1491,8 @@ export default function ProjectDetailsPage() {
                                     <CardHeader>
                                         <div className="flex justify-between items-center">
                                             <div>
-                                                <CardTitle>Unassigned Backlog Items</CardTitle>
-                                                <CardDescription>Items that are not yet assigned to an epic or wave.</CardDescription>
+                                                <CardTitle>Project Backlog</CardTitle>
+                                                <CardDescription>Items that are not yet assigned to a wave.</CardDescription>
                                             </div>
                                             <div className="flex items-center gap-2">
                                                  <TooltipProvider>
@@ -1528,7 +1535,7 @@ export default function ProjectDetailsPage() {
                                     </CardHeader>
                                     <CardContent>
                                         <div className="border rounded-lg">
-                                            {unassignedAndUnscheduledBacklogItems.map(item => (
+                                            {unscheduledBacklogItems.map(item => (
                                                 <div 
                                                     key={item.id} 
                                                     className="flex justify-between items-center p-3 border-b last:border-b-0 hover:bg-muted/50 cursor-pointer"
@@ -1913,3 +1920,6 @@ export default function ProjectDetailsPage() {
         </div>
     );
 }
+
+
+    
