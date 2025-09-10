@@ -126,13 +126,12 @@ export default function ProjectsPage() {
   }, [setGlobalSearchTerm]);
 
   const hasDependencies = async (projectId: string) => {
-    const [backlogItems, epics, sprints, tasks] = await Promise.all([
+    const [backlogItems, epics, sprints] = await Promise.all([
       getBacklogItemsForProject(projectId),
       getEpicsForProject(projectId),
       getSprintsForProject(projectId),
-      getTasksForProject(projectId),
     ]);
-    return backlogItems.length > 0 || epics.length > 0 || sprints.length > 0 || tasks.length > 0;
+    return backlogItems.length > 0 || epics.length > 0 || sprints.length > 0;
   };
 
   const openDeleteDialog = (project: Project) => {
@@ -144,9 +143,10 @@ export default function ProjectsPage() {
     if (!projectToDelete) return;
     const dependenciesExist = await hasDependencies(projectToDelete.id);
     if (dependenciesExist) {
-        setDependencyErrorDialogMessage(`The engagement "${projectToDelete.name}" cannot be deleted because it has associated epics, waves, tasks or backlog items. Please remove these items before deleting the engagement.`);
+        setDependencyErrorDialogMessage(`The engagement "${projectToDelete.name}" cannot be deleted because it has associated epics, waves, or backlog items. Please remove these items before deleting the engagement.`);
         setIsDependencyErrorDialogOpen(true);
         setIsDeleteDialogOpen(false);
+        setProjectToDelete(null);
         return;
     }
 
@@ -615,11 +615,14 @@ export default function ProjectsPage() {
             <AlertDialogHeader>
               <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
               <AlertDialogDescription>
-                This action cannot be undone. This will permanently delete the selected engagements.
+                {numSelected > 0 
+                    ? `This action cannot be undone. This will permanently delete the ${numSelected} selected engagements.`
+                    : `This action cannot be undone. This will permanently delete the engagement "${projectToDelete?.name}".`
+                }
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogCancel onClick={() => { setIsDeleteDialogOpen(false); setProjectToDelete(null); }}>Cancel</AlertDialogCancel>
               <AlertDialogAction onClick={numSelected > 0 ? handleBulkDelete : handleDeleteProject}>
                 Delete
               </AlertDialogAction>
