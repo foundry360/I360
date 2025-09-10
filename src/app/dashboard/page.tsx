@@ -1,4 +1,5 @@
 
+
 'use client';
 import * as React from 'react';
 import {
@@ -47,10 +48,7 @@ import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { EngagementInsightsPanel } from '@/components/engagement-insights-panel';
 import { getNotifications, markAllNotificationsAsRead, type Notification, updateNotification, NotificationType } from '@/services/notification-service';
-import { FeedItem } from '@/components/feed-item';
 import { useQuickAction } from '@/contexts/quick-action-context';
 import type { Project } from '@/services/project-service';
 import {

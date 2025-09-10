@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import * as React from 'react';
@@ -51,8 +52,6 @@ import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 import { Progress } from '@/components/ui/progress';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { EngagementInsightsPanel } from '@/components/engagement-insights-panel';
 
 type SortKey = keyof Project;
 type ProjectStatus = 'Active' | 'Inactive' | 'Completed' | 'On Hold';
@@ -362,17 +361,6 @@ export default function ProjectsPage() {
                         <Search className="h-4 w-4" />
                         <span className="sr-only">Search</span>
                     </Button>
-                    <Sheet>
-                      <SheetTrigger asChild>
-                        <Button variant="outline">
-                          <Zap className="mr-2 h-4 w-4"/>
-                          Insights
-                        </Button>
-                      </SheetTrigger>
-                      <SheetContent className="w-[1000px] sm:max-w-none sm:w-[1280px] p-0 bg-sidebar text-sidebar-foreground border-sidebar-border">
-                        <EngagementInsightsPanel projects={projects.filter(p => p.status === 'Active')} />
-                      </SheetContent>
-                    </Sheet>
                     <Button size="icon" onClick={openNewProjectDialog}>
                         <Plus className="h-4 w-4" />
                         <span className="sr-only">New Engagement</span>
