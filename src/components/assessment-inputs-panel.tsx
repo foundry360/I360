@@ -7,6 +7,8 @@ import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import type { Assessment, GtmReadinessInput } from '@/services/assessment-service';
 import { SheetHeader, SheetTitle, SheetDescription } from './ui/sheet';
+import { Button } from './ui/button';
+import { Download } from 'lucide-react';
 
 const formSections = [
   {
@@ -193,8 +195,16 @@ export function AssessmentInputsPanel({ assessment }: AssessmentInputsPanelProps
     return (
         <div className="flex flex-col h-full">
             <SheetHeader className="p-6">
-                <SheetTitle>{assessment.name}</SheetTitle>
-                <SheetDescription>GTM Readiness Assessment Inputs</SheetDescription>
+                <div className="flex justify-between items-center">
+                    <div>
+                        <SheetTitle>{assessment.name}</SheetTitle>
+                        <SheetDescription>GTM Readiness Assessment Inputs</SheetDescription>
+                    </div>
+                    <Button variant="outline" onClick={() => window.print()}>
+                        <Download className="mr-2 h-4 w-4" />
+                        Export to PDF
+                    </Button>
+                </div>
             </SheetHeader>
             <Separator />
             <ScrollArea className="flex-1">
