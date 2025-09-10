@@ -63,7 +63,7 @@ export function InsightsPanel() {
 
     return (
         <Sheet open={isInsightsPanelOpen} onOpenChange={closeInsightsPanel}>
-            <SheetContent className="w-[800px] sm:max-w-none flex flex-col p-0">
+            <SheetContent className="w-[600px] sm:max-w-none flex flex-col p-0">
                 <SheetHeader className="p-6 border-b">
                     <SheetTitle className="flex items-center gap-2">
                         <Sparkles className="h-5 w-5 text-primary" />
