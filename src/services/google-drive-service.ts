@@ -6,11 +6,13 @@ import { google } from 'googleapis';
 import { db } from '@/lib/firebase';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 
-const oauth2Client = new google.auth.OAuth2(
-    process.env.GOOGLE_CLIENT_ID,
-    process.env.GOOGLE_CLIENT_SECRET,
-    process.env.GOOGLE_REDIRECT_URI
-);
+const createOAuth2Client = () => {
+    return new google.auth.OAuth2(
+        process.env.GOOGLE_CLIENT_ID,
+        process.env.GOOGLE_CLIENT_SECRET,
+        process.env.GOOGLE_REDIRECT_URI
+    );
+};
 
 // Helper function to store tokens
 const storeTokens = async (tokens: any) => {
@@ -31,6 +33,7 @@ const getTokens = async () => {
 
 // Function to get an authenticated client
 async function getAuthenticatedClient() {
+    const oauth2Client = createOAuth2Client();
     const tokens = await getTokens();
     if (tokens) {
         oauth2Client.setCredentials(tokens);
@@ -52,6 +55,7 @@ async function getAuthenticatedClient() {
 }
 
 export async function getGoogleAuthUrl(companyId: string) {
+    const oauth2Client = createOAuth2Client();
     const scopes = ['https://www.googleapis.com/auth/drive.readonly'];
     return oauth2Client.generateAuthUrl({
         access_type: 'offline',
@@ -62,6 +66,7 @@ export async function getGoogleAuthUrl(companyId: string) {
 }
 
 export async function setTokensFromCode(code: string) {
+    const oauth2Client = createOAuth2Client();
     const { tokens } = await oauth2Client.getToken(code);
     oauth2Client.setCredentials(tokens);
     await storeTokens(tokens);
