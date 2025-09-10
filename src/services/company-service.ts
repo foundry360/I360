@@ -3,6 +3,7 @@
 import { db } from '@/lib/firebase';
 import { collection, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, writeBatch, query, where, addDoc } from 'firebase/firestore';
 import { getProjectsForCompany, updateProject } from './project-service';
+import { createNotification } from './notification-service';
 
 export interface Company {
   id: string;
@@ -76,6 +77,13 @@ export async function createCompany(companyData: Omit<Company, 'id' | 'contact' 
   };
   
   await setDoc(docRef, newCompany);
+  
+  await createNotification({
+    message: `New company "${newCompany.name}" has been created.`,
+    link: `/dashboard/companies/${docRef.id}/details`,
+    type: 'activity',
+  });
+  
   return docRef.id;
 }
 
