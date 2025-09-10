@@ -3,7 +3,7 @@ import { setTokensFromCode } from '@/services/google-drive-service';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {
-    const { searchParams } = new URL(request.url);
+    const { searchParams, origin } = new URL(request.url);
     const code = searchParams.get('code');
     const companyId = searchParams.get('state'); // Retrieve companyId from state
 
@@ -11,14 +11,13 @@ export async function GET(request: NextRequest) {
         try {
             await setTokensFromCode(code);
             
-            const baseUrl = new URL(request.url).origin;
             let redirectUrl;
 
             if (companyId) {
-                redirectUrl = new URL(`/dashboard/companies/${companyId}/details?authed=true`, baseUrl);
+                redirectUrl = new URL(`/dashboard/companies/${companyId}/details?authed=true`, origin);
             } else {
                  // Fallback if state is missing
-                redirectUrl = new URL('/dashboard/companies', baseUrl);
+                redirectUrl = new URL('/dashboard/companies', origin);
             }
             return NextResponse.redirect(redirectUrl.toString());
 
