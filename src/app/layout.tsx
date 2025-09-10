@@ -28,6 +28,7 @@ import { useToast } from '@/hooks/use-toast';
 import { NewCollectionDialog } from '@/components/new-collection-dialog';
 import { AddFromCollectionDialog } from '@/components/add-from-collection-dialog';
 import { ManageCollectionsDialog } from '@/components/manage-collections-dialog';
+import { InsightsPanel } from '@/components/insights-panel';
 
 const unprotectedRoutes = ['/login', '/public/assessment/[companyId]', '/public/assessment/thanks'];
 
@@ -137,6 +138,7 @@ export default function RootLayout({
                   <AssessmentModal 
                     // These props are managed by the QuickActionProvider now
                   />
+                  <InsightsPanel />
               </AuthGuard>
             </QuickActionProvider>
           </UserProvider>
