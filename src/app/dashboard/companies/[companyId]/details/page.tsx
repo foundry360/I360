@@ -416,7 +416,7 @@ export default function CompanyDetailsPage() {
                       <CardHeader>
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-3">
-                            <CardTitle className="text-xl">Assessments</CardTitle>
+                            <CardTitle className="text-xl flex items-center gap-2"><ClipboardList className="h-5 w-5" />Assessments</CardTitle>
                           </div>
                            <div className='flex items-center gap-2'>
                             {selectedAssessments.length > 0 && (
@@ -458,9 +458,6 @@ export default function CompanyDetailsPage() {
                                   data-state={isAssessmentIndeterminate ? 'indeterminate' : (allOnPageSelected ? 'checked' : 'unchecked')}
                                 />
                               </TableHead>
-                              <TableHead className="w-[50px]">
-                                <Star className="h-4 w-4" />
-                              </TableHead>
                               <TableHead>Assessment Name</TableHead>
                               <TableHead>Type</TableHead>
                               <TableHead>Status</TableHead>
@@ -481,11 +478,6 @@ export default function CompanyDetailsPage() {
                                       aria-label={`Select ${assessment.name}`}
                                     />
                                   </TableCell>
-                                   <TableCell>
-                                      <Button variant="ghost" size="icon" onClick={(e) => handleToggleStar(e, assessment)}>
-                                        <Star className={cn("h-4 w-4", assessment.isStarred ? 'text-yellow-400 fill-yellow-400' : 'text-muted-foreground')} />
-                                      </Button>
-                                   </TableCell>
                                   <TableCell className="font-medium" onClick={() => handleOpenAssessment(assessment)}>
                                     <span className="cursor-pointer hover:text-primary">{assessment.name}</span>
                                   </TableCell>
@@ -520,6 +512,11 @@ export default function CompanyDetailsPage() {
                                             </Button>
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent align="end">
+                                            <DropdownMenuItem onClick={() => handleToggleStar(e, assessment)}>
+                                                <Star className={cn("mr-2 h-4 w-4", assessment.isStarred ? "text-yellow-400 fill-yellow-400" : "text-muted-foreground")} />
+                                                <span>{assessment.isStarred ? 'Unstar' : 'Star'}</span>
+                                            </DropdownMenuItem>
+                                            <DropdownMenuSeparator />
                                             <DropdownMenuItem onClick={() => handleOpenAssessment(assessment)}>
                                                 <FileText className="mr-2 h-4 w-4" />
                                                 <span>{assessment.status === 'Completed' ? 'View Inputs' : 'Resume'}</span>
