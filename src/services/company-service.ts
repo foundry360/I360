@@ -1,5 +1,4 @@
 
-'use client';
 import { db } from '@/lib/firebase';
 import { collection, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, writeBatch, query, where, addDoc } from 'firebase/firestore';
 import { getProjectsForCompany, updateProject } from './project-service';
