@@ -48,7 +48,7 @@ import { EditCompanyModal } from '@/components/edit-company-modal';
 import { getAssessmentsForCompany, type Assessment, deleteAssessments, uploadAssessmentDocument, updateAssessment, deleteAssessmentDocument } from '@/services/assessment-service';
 import { getContactsForCompany, type Contact } from '@/services/contact-service';
 import { getProjectsForCompany, type Project } from '@/services/project-service';
-import { listFiles, getGoogleAuthUrl } from '@/services/google-drive-service';
+import { listFiles } from '@/services/google-drive-service';
 import { cn } from '@/lib/utils';
 import { useQuickAction } from '@/contexts/quick-action-context';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -86,7 +86,7 @@ export default function CompanyDetailsPage() {
   const [projects, setProjects] = React.useState<Project[]>([]);
   const [driveFiles, setDriveFiles] = React.useState<DriveFile[]>([]);
   const [isDriveLoading, setIsDriveLoading] = React.useState(false);
-  const [driveAuthNeeded, setDriveAuthNeeded] = React.useState(false);
+  const [driveAuthNeeded, setDriveAuthNeeded] = React.useState(true);
   const [allRecentActivity, setAllRecentActivity] = React.useState<ActivityItem[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [isEditModalOpen, setIsEditModalOpen] = React.useState(false);
@@ -161,18 +161,18 @@ export default function CompanyDetailsPage() {
   const fetchDriveFiles = React.useCallback(async () => {
     if (process.env.NEXT_PUBLIC_GOOGLE_DRIVE_FOLDER_ID && companyData) {
         setIsDriveLoading(true);
-        setDriveAuthNeeded(false);
         try {
             const files = await listFiles(process.env.NEXT_PUBLIC_GOOGLE_DRIVE_FOLDER_ID, companyData.name);
-            if (files === null) {
-                setDriveAuthNeeded(true);
-                setDriveFiles([]);
-            } else {
+            if (files) {
                 setDriveFiles(files);
+                setDriveAuthNeeded(false);
+            } else {
+                setDriveFiles([]);
+                setDriveAuthNeeded(true);
             }
         } catch (error) {
             console.error("Error fetching Google Drive files:", error);
-            // Don't set auth needed on general errors, only when listFiles returns null
+            setDriveAuthNeeded(true);
         } finally {
             setIsDriveLoading(false);
         }
@@ -183,13 +183,6 @@ export default function CompanyDetailsPage() {
   React.useEffect(() => {
     fetchCompanyData();
   }, [fetchCompanyData]);
-
-  React.useEffect(() => {
-    const hasJustAuthed = searchParams.get('authed') === 'true';
-    if (activeTab === 'documents' && !hasJustAuthed) {
-        fetchDriveFiles();
-    }
-  }, [activeTab, fetchDriveFiles, searchParams]);
 
   React.useEffect(() => {
     const unsubscribeAssessment = setOnAssessmentCompleted(() => fetchCompanyData);
@@ -339,12 +332,6 @@ export default function CompanyDetailsPage() {
     } catch (error) {
       console.error('Failed to delete assessments:', error);
     }
-  };
-  
-  const handleGoogleAuth = async () => {
-      if (!companyId) return;
-      const authUrl = await getGoogleAuthUrl(companyId);
-      router.push(authUrl);
   };
 
   const paginatedAssessments = assessments.slice(
@@ -639,7 +626,7 @@ export default function CompanyDetailsPage() {
                             ) : driveAuthNeeded ? (
                                 <div className="text-center p-8">
                                     <p className="mb-4 text-muted-foreground">Connect to Google Drive to view documents.</p>
-                                    <Button onClick={handleGoogleAuth}>
+                                    <Button onClick={fetchDriveFiles}>
                                         <KeyRound className="mr-2 h-4 w-4" /> Authorize Google Drive
                                     </Button>
                                 </div>

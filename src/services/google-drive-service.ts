@@ -1,133 +1,67 @@
 
-'use server';
+'use client';
 
-import 'dotenv/config'; // Ensure environment variables are loaded
-import { google } from 'googleapis';
-import { db } from '@/lib/firebase';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { auth } from '@/lib/firebase';
+import { GoogleAuthProvider, signInWithPopup, type AuthProvider, type User } from 'firebase/auth';
 
-const createOAuth2Client = () => {
-    return new google.auth.OAuth2(
-        process.env.GOOGLE_CLIENT_ID,
-        process.env.GOOGLE_CLIENT_SECRET,
-        process.env.GOOGLE_REDIRECT_URI
-    );
-};
+// This function initiates the sign-in process and requests the necessary Google Drive scopes.
+async function getDriveAccessToken(): Promise<string | null> {
+    const provider = new GoogleAuthProvider();
+    provider.addScope('https://www.googleapis.com/auth/drive.readonly');
 
-// Helper function to store tokens
-const storeTokens = async (tokens: any) => {
-    // In a real app, you'd want to store this per-user, but for this demo, we'll store it globally.
-    const tokenDocRef = doc(db, 'googleApiTokens', 'driveTokens');
-    await setDoc(tokenDocRef, tokens);
-};
-
-// Helper function to get tokens
-const getTokens = async () => {
-    const tokenDocRef = doc(db, 'googleApiTokens', 'driveTokens');
-    const tokenDoc = await getDoc(tokenDocRef);
-    if (tokenDoc.exists()) {
-        return tokenDoc.data();
-    }
-    return null;
-};
-
-// Function to get an authenticated client
-async function getAuthenticatedClient() {
-    const oauth2Client = createOAuth2Client();
-    const tokens = await getTokens();
-    if (tokens) {
-        oauth2Client.setCredentials(tokens);
-        // Check if the access token is expired and refresh it if necessary
-        if (oauth2Client.isTokenExpiring()) {
-            try {
-                const { credentials } = await oauth2Client.refreshAccessToken();
-                oauth2Client.setCredentials(credentials);
-                await storeTokens(credentials);
-            } catch (error) {
-                console.error("Error refreshing access token, user needs to re-authenticate.", error);
-                // By returning null, we force the re-authentication flow
-                return null;
-            }
-        }
-        return oauth2Client;
-    }
-    return null;
-}
-
-export async function getGoogleAuthUrl(companyId: string) {
-    const oauth2Client = createOAuth2Client();
-    const scopes = ['https://www.googleapis.com/auth/drive.readonly'];
-    return oauth2Client.generateAuthUrl({
-        access_type: 'offline',
-        prompt: 'consent', // Force consent screen to get a refresh token
-        scope: scopes,
-        state: companyId, // Pass companyId in the state parameter
-    });
-}
-
-export async function setTokensFromCode(code: string) {
-    const oauth2Client = createOAuth2Client();
-    const { tokens } = await oauth2Client.getToken(code);
-    oauth2Client.setCredentials(tokens);
-    await storeTokens(tokens);
-}
-
-
-export async function listFiles(parentFolderId: string, companyName: string): Promise<{ id: string; name: string; webViewLink: string; iconLink: string }[] | null> {
-    const auth = await getAuthenticatedClient();
-    if (!auth) {
-        // Return null to indicate authentication is required
+    try {
+        const result = await signInWithPopup(auth, provider);
+        const credential = GoogleAuthProvider.credentialFromResult(result);
+        return credential?.accessToken || null;
+    } catch (error) {
+        console.error("Google sign-in error:", error);
         return null;
     }
-    
-    const drive = google.drive({ version: 'v3', auth });
-    
-    try {
-        // 1. Find the company subfolder
-        const folderQuery = `mimeType='application/vnd.google-apps.folder' and name='${companyName}' and '${parentFolderId}' in parents and trashed=false`;
-        const folderRes = await drive.files.list({
-            q: folderQuery,
-            fields: 'files(id, name)',
-            pageSize: 1,
-        });
+}
 
-        if (!folderRes.data.files || folderRes.data.files.length === 0) {
-            console.log(`No folder found with name "${companyName}" in parent folder.`);
-            return [];
-        }
-        
-        const companyFolderId = folderRes.data.files[0].id;
-        if (!companyFolderId) {
-             console.log(`Folder "${companyName}" has no ID.`);
-             return [];
-        }
-
-        // 2. List files within that subfolder
-        const fileQuery = `'${companyFolderId}' in parents and trashed=false`;
-        const res = await drive.files.list({
-            q: fileQuery,
-            fields: 'files(id, name, webViewLink, iconLink)',
-            pageSize: 100,
-        });
-
-        const files = res.data.files;
-        if (files && files.length) {
-            return files.map(file => ({
-                id: file.id || '',
-                name: file.name || 'Untitled',
-                webViewLink: file.webViewLink || '',
-                iconLink: file.iconLink || '',
-            }));
-        } else {
-            return [];
-        }
-    } catch (error: any) {
-        if (error.response?.status === 401 || error.response?.status === 403) {
-           console.log("Authentication error, user needs to re-authenticate.");
-           // Return null to signal auth is needed
-           return null;
-        }
-        console.error('The API returned an error: ' + error);
-        throw error; // Re-throw other errors
+// This function lists files from Google Drive using the access token.
+export async function listFiles(parentFolderId: string, companyName: string): Promise<{ id: string; name: string; webViewLink: string; iconLink: string; }[] | null> {
+    const accessToken = await getDriveAccessToken();
+    if (!accessToken) {
+        return null; // Indicates authentication failed or was cancelled.
     }
+    
+    const driveApiEndpoint = 'https://www.googleapis.com/drive/v3/files';
+
+    // 1. Find the company subfolder within the parent folder
+    const folderQuery = `mimeType='application/vnd.google-apps.folder' and name='${companyName}' and '${parentFolderId}' in parents and trashed=false`;
+    const folderSearchUrl = `${driveApiEndpoint}?q=${encodeURIComponent(folderQuery)}&fields=files(id,name)`;
+
+    const folderRes = await fetch(folderSearchUrl, {
+        headers: { 'Authorization': `Bearer ${accessToken}` }
+    });
+
+    if (!folderRes.ok) {
+        console.error("Error searching for company folder:", await folderRes.text());
+        return [];
+    }
+
+    const folderData = await folderRes.json();
+    if (!folderData.files || folderData.files.length === 0) {
+        console.log(`No folder found for company: ${companyName}`);
+        return []; // No folder found, so no files to list.
+    }
+    
+    const companyFolderId = folderData.files[0].id;
+
+    // 2. List files within that company subfolder
+    const fileQuery = `'${companyFolderId}' in parents and trashed=false`;
+    const fileSearchUrl = `${driveApiEndpoint}?q=${encodeURIComponent(fileQuery)}&fields=files(id,name,webViewLink,iconLink)`;
+
+    const filesRes = await fetch(fileSearchUrl, {
+        headers: { 'Authorization': `Bearer ${accessToken}` }
+    });
+    
+    if (!filesRes.ok) {
+        console.error("Error listing files:", await filesRes.text());
+        return [];
+    }
+
+    const filesData = await filesRes.json();
+    return filesData.files || [];
 }
