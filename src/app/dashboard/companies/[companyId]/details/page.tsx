@@ -512,7 +512,7 @@ export default function CompanyDetailsPage() {
                                             </Button>
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent align="end">
-                                            <DropdownMenuItem onClick={() => handleToggleStar(e, assessment)}>
+                                            <DropdownMenuItem onClick={(e) => handleToggleStar(e, assessment)}>
                                                 <Star className={cn("mr-2 h-4 w-4", assessment.isStarred ? "text-yellow-400 fill-yellow-400" : "text-muted-foreground")} />
                                                 <span>{assessment.isStarred ? 'Unstar' : 'Star'}</span>
                                             </DropdownMenuItem>
@@ -535,17 +535,15 @@ export default function CompanyDetailsPage() {
                                                     <span>Upload Document</span>
                                                 </DropdownMenuItem>
                                             )}
-                                            <DropdownMenuSeparator />
                                             {assessment.documentUrl && (
-                                                <DropdownMenuItem onClick={() => openDeleteDocumentDialog(assessment)} className="text-destructive focus:bg-destructive/90 focus:text-destructive-foreground">
-                                                  <Trash2 className="mr-2 h-4 w-4" />
-                                                  <span>Delete Document</span>
-                                                </DropdownMenuItem>
+                                                <>
+                                                    <DropdownMenuSeparator />
+                                                    <DropdownMenuItem onClick={() => openDeleteDocumentDialog(assessment)} className="text-destructive focus:bg-destructive/90 focus:text-destructive-foreground">
+                                                    <Trash2 className="mr-2 h-4 w-4" />
+                                                    <span>Delete Document</span>
+                                                    </DropdownMenuItem>
+                                                </>
                                             )}
-                                            <DropdownMenuItem onClick={() => openDeleteDialog(assessment)} className="text-destructive focus:bg-destructive focus:text-destructive-foreground">
-                                                <Trash2 className="mr-2 h-4 w-4" />
-                                                Delete
-                                            </DropdownMenuItem>
                                         </DropdownMenuContent>
                                     </DropdownMenu>
                                   </TableCell>
