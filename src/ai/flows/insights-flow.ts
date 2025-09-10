@@ -187,6 +187,32 @@ const getAssessmentsTool = ai.defineTool({
     return allAssessments;
 });
 
+const getAssessmentDetailsTool = ai.defineTool({
+    name: 'getAssessmentDetails',
+    description: 'Get the detailed form data and inputs for a specific assessment.',
+    inputSchema: z.object({
+        assessmentName: z.string().describe('The name of the assessment to get details for.'),
+        companyName: z.string().optional().describe('The name of the company the assessment belongs to, for filtering.'),
+    }),
+    outputSchema: z.any().nullable(),
+}, async ({ assessmentName, companyName }) => {
+    const allAssessments = await getAssessments();
+    let targetAssessment = allAssessments.find(a => a.name.toLowerCase() === assessmentName.toLowerCase());
+
+    if (companyName) {
+        targetAssessment = allAssessments.find(a => 
+            a.name.toLowerCase() === assessmentName.toLowerCase() &&
+            a.companyName?.toLowerCase() === companyName.toLowerCase()
+        );
+    }
+    
+    if (targetAssessment) {
+        return targetAssessment.formData || null;
+    }
+
+    return null;
+});
+
 
 export async function getInsights(history: Message[], prompt: string): Promise<string> {
     const messages: Message[] = [...history, { role: 'user', content: [{ text: prompt }] }];
@@ -202,10 +228,12 @@ export async function getInsights(history: Message[], prompt: string): Promise<s
             getUserStoriesTool,
             getCollectionsTool,
             getBacklogItemsTool,
-            getAssessmentsTool
+            getAssessmentsTool,
+            getAssessmentDetailsTool
         ],
         system: `You are a helpful assistant for the Insights360 application.
 You can answer questions about projects, tasks, contacts, companies, engagements, the user story library, collections, backlog items, and assessments.
+When asked about the contents or details of a specific assessment, you must use the getAssessmentDetailsTool to retrieve the information.
 Use the available tools to answer the user's questions.
 Provide concise and helpful answers. Format your answers in markdown.
 When listing items, use bullet points.`
