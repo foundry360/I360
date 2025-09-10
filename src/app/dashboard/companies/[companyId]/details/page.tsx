@@ -18,7 +18,7 @@ import {
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { AppLayout } from '@/components/app-layout';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import React from 'react';
 import { Progress } from '@/components/ui/progress';
 import { Phone, Globe, MapPin, ArrowLeft, Plus, Pencil, FileText, Trash2, Paperclip, Upload, Link2, FolderKanban, Star, MoreHorizontal, ClipboardList, Notebook, Folder, FilePenLine, KeyRound } from 'lucide-react';
@@ -76,6 +76,7 @@ interface DriveFile {
 export default function CompanyDetailsPage() {
   const params = useParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { toast } = useToast();
   const companyId = params.companyId as string;
   const { openAssessmentModal, setOnAssessmentCompleted, openNewContactDialog, setOnContactCreated, openNewProjectDialog, setOnProjectCreated } = useQuickAction();
@@ -171,7 +172,7 @@ export default function CompanyDetailsPage() {
             }
         } catch (error) {
             console.error("Error fetching Google Drive files:", error);
-            // Handle other potential errors, e.g., show a toast notification
+            setDriveAuthNeeded(true);
         } finally {
             setIsDriveLoading(false);
         }
@@ -185,9 +186,12 @@ export default function CompanyDetailsPage() {
 
   React.useEffect(() => {
      if (activeTab === 'documents') {
-        fetchDriveFiles();
+        const hasJustAuthed = searchParams.get('authed') === 'true';
+        if (!hasJustAuthed) {
+           fetchDriveFiles();
+        }
     }
-  }, [activeTab, fetchDriveFiles])
+  }, [activeTab, fetchDriveFiles, searchParams])
 
   React.useEffect(() => {
     const unsubscribeAssessment = setOnAssessmentCompleted(() => fetchCompanyData);
@@ -340,7 +344,8 @@ export default function CompanyDetailsPage() {
   };
   
   const handleGoogleAuth = async () => {
-      const authUrl = await getGoogleAuthUrl();
+      if (!companyId) return;
+      const authUrl = await getGoogleAuthUrl(companyId);
       router.push(authUrl);
   };
 

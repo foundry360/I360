@@ -56,12 +56,13 @@ async function getAuthenticatedClient() {
     return null;
 }
 
-export async function getGoogleAuthUrl() {
+export async function getGoogleAuthUrl(companyId: string) {
     const scopes = ['https://www.googleapis.com/auth/drive.readonly'];
     return oauth2Client.generateAuthUrl({
         access_type: 'offline',
         prompt: 'consent', // Force consent screen to get a refresh token
         scope: scopes,
+        state: companyId, // Pass companyId in the state parameter
     });
 }
 
