@@ -59,6 +59,7 @@ import { format, formatDistanceToNow, parseISO } from 'date-fns';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { AssessmentInputsPanel } from '@/components/assessment-inputs-panel';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
 
 type ActivityItem = {
@@ -79,7 +80,7 @@ export default function CompanyDetailsPage() {
   const searchParams = useSearchParams();
   const { toast } = useToast();
   const companyId = params.companyId as string;
-  const { openAssessmentModal, setOnAssessmentCompleted, openNewContactDialog, setOnContactCreated, openNewProjectDialog, setOnProjectCreated } = useQuickAction();
+  const { openAssessmentModal, setOnAssessmentCompleted, openNewContactDialog, setOnContactCreated, openNewProjectDialog, setOnProjectCreated } from useQuickAction();
   const [companyData, setCompanyData] = React.useState<Company | null>(null);
   const [assessments, setAssessments] = React.useState<Assessment[]>([]);
   const [contacts, setContacts] = React.useState<Contact[]>([]);
@@ -711,40 +712,47 @@ export default function CompanyDetailsPage() {
             </Button>
             <div className={cn("h-full transition-opacity duration-200", isPanelCollapsed ? "opacity-0 pointer-events-none" : "opacity-100")}>
               <Card className="h-full border-t-0 border-r-0 border-b-0 rounded-none">
-                <CardContent className="p-0 pt-6">
-                    <div className="p-6">
-                        <div className="flex items-center justify-between mb-4">
-                            <h3 className="font-semibold">Company Information</h3>
-                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setIsEditModalOpen(true)}>
-                                <Pencil className="h-4 w-4" />
-                            </Button>
-                        </div>
-                        <div className="space-y-4">
-                            <div className="flex items-center gap-4">
-                                <MapPin className="h-5 w-5 text-muted-foreground" />
-                                <span className="text-sm">{`${companyData.street}, ${companyData.city}, ${companyData.state} ${companyData.zip}`}</span>
-                            </div>
-                            <div className="flex items-center gap-4">
-                                <Phone className="h-5 w-5 text-muted-foreground" />
-                                <span className="text-sm">{companyData.phone}</span>
-                            </div>
-                            <div className="flex items-center gap-4">
-                                <Globe className="h-5 w-5 text-muted-foreground" />
-                                <a href={`http://${companyData.website}`} target="_blank" rel="noopener noreferrer" className="text-sm text-primary hover:underline">
-                                    {companyData.website}
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                    <Separator />
-                    <div className="p-6">
-                       <div className="flex items-center justify-between mb-4">
-                            <h3 className="font-semibold">Primary Contacts</h3>
-                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={openNewContactDialog}>
-                                <Plus className="h-4 w-4" />
-                            </Button>
-                        </div>
-                        <div className="space-y-4">
+                <CardContent className="p-4">
+                  <Accordion type="multiple" defaultValue={['item-1', 'item-2', 'item-3', 'item-4']} className="w-full">
+                    <AccordionItem value="item-1">
+                      <AccordionTrigger>
+                          <div className="flex items-center justify-between w-full">
+                              <h3 className="font-semibold">Company Information</h3>
+                              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setIsEditModalOpen(true)}>
+                                  <Pencil className="h-4 w-4" />
+                              </Button>
+                          </div>
+                      </AccordionTrigger>
+                      <AccordionContent>
+                          <div className="space-y-4 pt-2">
+                              <div className="flex items-center gap-4">
+                                  <MapPin className="h-5 w-5 text-muted-foreground" />
+                                  <span className="text-sm">{`${companyData.street}, ${companyData.city}, ${companyData.state} ${companyData.zip}`}</span>
+                              </div>
+                              <div className="flex items-center gap-4">
+                                  <Phone className="h-5 w-5 text-muted-foreground" />
+                                  <span className="text-sm">{companyData.phone}</span>
+                              </div>
+                              <div className="flex items-center gap-4">
+                                  <Globe className="h-5 w-5 text-muted-foreground" />
+                                  <a href={`http://${companyData.website}`} target="_blank" rel="noopener noreferrer" className="text-sm text-primary hover:underline">
+                                      {companyData.website}
+                                  </a>
+                              </div>
+                          </div>
+                      </AccordionContent>
+                    </AccordionItem>
+                    <AccordionItem value="item-2">
+                      <AccordionTrigger>
+                          <div className="flex items-center justify-between w-full">
+                              <h3 className="font-semibold">Primary Contacts</h3>
+                              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={openNewContactDialog}>
+                                  <Plus className="h-4 w-4" />
+                              </Button>
+                          </div>
+                      </AccordionTrigger>
+                      <AccordionContent>
+                        <div className="space-y-4 pt-2">
                             {contacts.length > 0 ? (
                                 contacts.map((contact) => (
                                 <div key={contact.id} className="flex items-center gap-4">
@@ -765,63 +773,71 @@ export default function CompanyDetailsPage() {
                                 <p className="text-sm text-muted-foreground text-center py-4">No contacts found.</p>
                             )}
                         </div>
-                    </div>
-                    <Separator />
-                     <div className="p-6">
-                        <div className="flex items-center justify-between mb-4">
-                            <h3 className="font-semibold">Company Engagements</h3>
-                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={openNewProjectDialog}>
-                                <Plus className="h-4 w-4" />
-                            </Button>
-                        </div>
-                        <div className="space-y-3">
-                            {projects.length > 0 ? (
-                                projects.map(project => (
-                                <Link href={`/dashboard/projects/${project.id}`} key={project.id}>
-                                    <div className="flex justify-between items-center p-2 rounded-md hover:bg-muted cursor-pointer -mx-2">
-                                        <div>
-                                            <p className="font-medium text-sm">{project.name}</p>
-                                            <p className="text-xs text-muted-foreground">{project.owner}</p>
-                                        </div>
-                                        <Badge variant={project.status === 'Active' ? 'success' : 'secondary'}>
-                                            {project.status}
-                                        </Badge>
-                                    </div>
-                                </Link>
-                                ))
-                            ) : (
-                                <p className="text-sm text-muted-foreground text-center py-4">No engagements found.</p>
-                            )}
-                        </div>
-                    </div>
-                    <Separator />
-                    <div className="p-6">
-                         <h3 className="font-semibold mb-4">Recent Activity</h3>
-                         <div className="space-y-4">
-                            {recentActivity.length > 0 ? (
-                                recentActivity.map((item, index) => (
-                                    <div key={index} className="flex items-start gap-4">
-                                        <div className="mt-1 h-2 w-2 rounded-full bg-primary" />
-                                        <div>
-                                        <p className="font-medium text-sm">{item.activity}</p>
-                                        <p className="text-xs text-muted-foreground">{formatDateTime(item.time)}</p>
-                                        </div>
-                                    </div>
-                                ))
-                            ) : (
-                                <p className="text-sm text-muted-foreground text-center py-4">No recent activity.</p>
-                            )}
-                            {allRecentActivity.length > 5 && (
-                                <Button 
-                                    variant="link" 
-                                    className="p-0 h-auto text-sm"
-                                    onClick={() => setIsActivityExpanded(!isActivityExpanded)}
-                                >
-                                    {isActivityExpanded ? 'View less' : 'View all'}
-                                </Button>
-                            )}
-                         </div>
-                    </div>
+                      </AccordionContent>
+                    </AccordionItem>
+                    <AccordionItem value="item-3">
+                      <AccordionTrigger>
+                          <div className="flex items-center justify-between w-full">
+                              <h3 className="font-semibold">Company Engagements</h3>
+                              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={openNewProjectDialog}>
+                                  <Plus className="h-4 w-4" />
+                              </Button>
+                          </div>
+                      </AccordionTrigger>
+                      <AccordionContent>
+                          <div className="space-y-3 pt-2">
+                              {projects.length > 0 ? (
+                                  projects.map(project => (
+                                  <Link href={`/dashboard/projects/${project.id}`} key={project.id}>
+                                      <div className="flex justify-between items-center p-2 rounded-md hover:bg-muted cursor-pointer -mx-2">
+                                          <div>
+                                              <p className="font-medium text-sm">{project.name}</p>
+                                              <p className="text-xs text-muted-foreground">{project.owner}</p>
+                                          </div>
+                                          <Badge variant={project.status === 'Active' ? 'success' : 'secondary'}>
+                                              {project.status}
+                                          </Badge>
+                                      </div>
+                                  </Link>
+                                  ))
+                              ) : (
+                                  <p className="text-sm text-muted-foreground text-center py-4">No engagements found.</p>
+                              )}
+                          </div>
+                      </AccordionContent>
+                    </AccordionItem>
+                     <AccordionItem value="item-4">
+                      <AccordionTrigger>
+                          <h3 className="font-semibold">Recent Activity</h3>
+                      </AccordionTrigger>
+                      <AccordionContent>
+                           <div className="space-y-4 pt-2">
+                              {recentActivity.length > 0 ? (
+                                  recentActivity.map((item, index) => (
+                                      <div key={index} className="flex items-start gap-4">
+                                          <div className="mt-1 h-2 w-2 rounded-full bg-primary" />
+                                          <div>
+                                          <p className="font-medium text-sm">{item.activity}</p>
+                                          <p className="text-xs text-muted-foreground">{formatDateTime(item.time)}</p>
+                                          </div>
+                                      </div>
+                                  ))
+                              ) : (
+                                  <p className="text-sm text-muted-foreground text-center py-4">No recent activity.</p>
+                              )}
+                              {allRecentActivity.length > 5 && (
+                                  <Button 
+                                      variant="link" 
+                                      className="p-0 h-auto text-sm"
+                                      onClick={() => setIsActivityExpanded(!isActivityExpanded)}
+                                  >
+                                      {isActivityExpanded ? 'View less' : 'View all'}
+                                  </Button>
+                              )}
+                           </div>
+                      </AccordionContent>
+                    </AccordionItem>
+                  </Accordion>
                 </CardContent>
               </Card>
             </div>
