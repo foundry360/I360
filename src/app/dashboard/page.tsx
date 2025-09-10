@@ -64,7 +64,7 @@ import Link from 'next/link';
 
 type ActivityItem = {
   id: string;
-  type: 'Engagement' | 'Assessment' | 'Contact';
+  type: 'Engagement' | 'Assessment' | 'Contact' | 'System';
   message: string;
   timestamp: string;
   icon: React.ElementType;
@@ -77,6 +77,7 @@ const activityTypeConfig: Record<ActivityItem['type'], { icon: React.ElementType
   Engagement: { icon: FolderKanban, color: 'text-blue-500', bg: 'bg-blue-500/10' },
   Assessment: { icon: ClipboardList, color: 'text-purple-500', bg: 'bg-purple-500/10' },
   Contact: { icon: UserPlus, color: 'text-green-500', bg: 'bg-green-500/10' },
+  System: { icon: MonitorCog, color: 'text-gray-500', bg: 'bg-gray-500/10' },
 };
 
 const statusColors: Record<BacklogItemStatus, string> = {
@@ -126,7 +127,9 @@ export default function DashboardPage() {
             getContacts(),
             getNotifications(),
         ]);
-        setNotifications(notificationsData);
+        
+        const systemNotifications = notificationsData.filter(n => n.type === 'system' || n.type === 'alert');
+        setNotifications(notificationsData.filter(n => n.type !== 'system' && n.type !== 'alert'));
 
         const projectActivities: ActivityItem[] = projects.map((p) => ({
             id: p.id,
@@ -155,10 +158,20 @@ export default function DashboardPage() {
             link: `/dashboard/companies/${c.companyId}/details`,
         }));
         
+        const systemActivities: ActivityItem[] = systemNotifications.map(n => ({
+            id: n.id,
+            type: 'System',
+            message: n.message,
+            timestamp: n.createdAt,
+            icon: MonitorCog,
+            link: n.link,
+        }));
+        
         const allActivities = [
             ...projectActivities,
             ...assessmentActivities,
             ...contactActivities,
+            ...systemActivities
         ].sort(
             (a, b) =>
             parseISO(b.timestamp).getTime() -

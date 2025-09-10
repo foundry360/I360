@@ -131,9 +131,14 @@ export async function updateProject(id: string, projectData: Partial<Omit<Projec
     await updateDoc(docRef, dataWithTimestamp);
 }
 
-const deleteProjectAndRelatedData = async (projectId: string, batch: WriteBatch) => {
+const deleteProjectAndRelatedData = async (projectId: string, batch: WriteBatch): Promise<{ name: string; companyName: string } | null> => {
     // Delete Project
     const projectRef = doc(db, 'projects', projectId);
+    const projectDoc = await getDoc(projectRef);
+
+    if (!projectDoc.exists()) return null;
+    const projectData = projectDoc.data() as Project;
+
     batch.delete(projectRef);
 
     // Delete related items in other collections
@@ -143,18 +148,41 @@ const deleteProjectAndRelatedData = async (projectId: string, batch: WriteBatch)
         const snapshot = await getDocs(q);
         snapshot.forEach(doc => batch.delete(doc.ref));
     }
+    
+    return { name: projectData.name, companyName: projectData.companyName || 'Unknown Company' };
 }
 
 export async function deleteProject(id: string): Promise<void> {
     const batch = writeBatch(db);
-    await deleteProjectAndRelatedData(id, batch);
+    const deletedProjectInfo = await deleteProjectAndRelatedData(id, batch);
     await batch.commit();
+
+    if (deletedProjectInfo) {
+      await createNotification({
+        message: `Engagement "${deletedProjectInfo.name}" for ${deletedProjectInfo.companyName} was deleted.`,
+        link: `/dashboard/projects`,
+        type: 'alert',
+      });
+    }
 }
 
 export async function deleteProjects(ids: string[]): Promise<void> {
     const batch = writeBatch(db);
+    const deletedProjectsInfo = [];
+
     for (const id of ids) {
-        await deleteProjectAndRelatedData(id, batch);
+        const info = await deleteProjectAndRelatedData(id, batch);
+        if (info) {
+            deletedProjectsInfo.push(info);
+        }
     }
     await batch.commit();
+    
+    for (const info of deletedProjectsInfo) {
+        await createNotification({
+            message: `Engagement "${info.name}" for ${info.companyName} was deleted.`,
+            link: `/dashboard/projects`,
+            type: 'alert',
+        });
+    }
 }

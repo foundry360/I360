@@ -64,7 +64,7 @@ export async function getCompany(id: string): Promise<Company | null> {
 }
 
 export async function createCompany(companyData: Omit<Company, 'id' | 'contact' | 'status' | 'lastActivity'>): Promise<string> {
-  const docRef = doc(companiesCollection);
+  const docRef = doc(collection(db, 'companies'));
   const newCompany: Company = {
       ...companyData,
       id: docRef.id,
