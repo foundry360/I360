@@ -278,7 +278,6 @@ export function Sidebar() {
     {
       group: 'TOOLS',
       links: [
-        { href: `/dashboard/assessments`, label: 'Assessments', icon: ClipboardList },
         { href: `/dashboard/library`, label: 'Library', icon: Library },
         { href: `/dashboard/collections`, label: 'Collections', icon: BookCopy },
       ],

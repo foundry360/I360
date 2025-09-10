@@ -3,7 +3,7 @@
 'use client';
 
 import * as React from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter, CardDescription } from '@/components/ui/card';
 import {
@@ -191,7 +191,7 @@ const BacklogItemCard = ({ item, itemNumber }: { item: BacklogItem; itemNumber: 
 
 const BoardColumn = ({ title, items, projectPrefix, onItemClick }: { title: string; items: BacklogItem[]; projectPrefix: string; onItemClick: (item: BacklogItem) => void;}) => (
     <div className="flex-1">
-        <Card className="bg-muted border-none shadow-none">
+        <Card className="bg-background border-none shadow-none">
             <CardHeader className="p-4">
                 <CardTitle className="text-base font-semibold">{title}</CardTitle>
             </CardHeader>
@@ -257,6 +257,7 @@ const chartConfig = {
 export default function ProjectDetailsPage() {
     const params = useParams();
     const router = useRouter();
+    const searchParams = useSearchParams();
     const projectId = params.projectId as string;
     const [project, setProject] = React.useState<Project | null>(null);
     const [columns, setColumns] = React.useState<BoardColumns>(initialColumns);
@@ -292,7 +293,13 @@ export default function ProjectDetailsPage() {
     const projectBacklogItems = React.useMemo(() => {
         return backlogItems.filter(item => item.projectId === projectId);
     }, [backlogItems, projectId]);
-
+    
+    React.useEffect(() => {
+        const tabFromUrl = searchParams.get('tab');
+        if (tabFromUrl && ['summary', 'backlog', 'board', 'epics', 'sprints', 'timeline', 'all-work'].includes(tabFromUrl)) {
+            setActiveTab(tabFromUrl);
+        }
+    }, [searchParams]);
 
     const fetchData = React.useCallback(async () => {
         if (!projectId) return;
@@ -821,14 +828,7 @@ export default function ProjectDetailsPage() {
                             <Inbox className="h-4 w-4" />
                             Backlog
                         </TabsTrigger>
-                        <TabsTrigger 
-                            value="board"
-                            className="pb-3 rounded-none data-[state=active]:shadow-none data-[state=active]:border-primary data-[state=active]:border-b-4 data-[state=active]:text-foreground data-[state=active]:font-bold flex items-center gap-2"
-                        >
-                            <Trello className="h-4 w-4" />
-                            Board
-                        </TabsTrigger>
-                        <TabsTrigger 
+                         <TabsTrigger 
                             value="epics"
                             className="pb-3 rounded-none data-[state=active]:shadow-none data-[state=active]:border-primary data-[state=active]:border-b-4 data-[state=active]:text-foreground data-[state=active]:font-bold flex items-center gap-2"
                         >
@@ -841,6 +841,13 @@ export default function ProjectDetailsPage() {
                         >
                             <Waves className="h-4 w-4" />
                             Waves
+                        </TabsTrigger>
+                        <TabsTrigger 
+                            value="board"
+                            className="pb-3 rounded-none data-[state=active]:shadow-none data-[state=active]:border-primary data-[state=active]:border-b-4 data-[state=active]:text-foreground data-[state=active]:font-bold flex items-center gap-2"
+                        >
+                            <Trello className="h-4 w-4" />
+                            Board
                         </TabsTrigger>
                          <TabsTrigger 
                             value="timeline"
@@ -999,13 +1006,11 @@ export default function ProjectDetailsPage() {
                             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                                <div className="col-span-1 space-y-6">
                                     <Card className={cn(velocityData.length === 0 && 'border-dashed border-2 bg-transparent shadow-none')}>
-                                        {velocityData.length > 0 && (
-                                            <CardHeader>
-                                                <CardTitle>Velocity</CardTitle>
-                                                <CardDescription>Story points completed per wave</CardDescription>
-                                            </CardHeader>
-                                        )}
-                                        <CardContent className={cn(velocityData.length === 0 && 'p-0')}>
+                                        <CardHeader>
+                                            <CardTitle>Velocity</CardTitle>
+                                            {velocityData.length > 0 && <CardDescription>Story points completed per wave</CardDescription>}
+                                        </CardHeader>
+                                        <CardContent>
                                             {velocityData.length > 0 ? (
                                                 <ChartContainer config={chartConfig} className="h-[150px] w-full">
                                                     <LineChart
@@ -1058,7 +1063,7 @@ export default function ProjectDetailsPage() {
                                                     </LineChart>
                                                 </ChartContainer>
                                             ) : (
-                                                <div className="h-[218px] flex flex-col items-center justify-center text-center text-muted-foreground text-sm p-4">
+                                                <div className="h-[150px] flex flex-col items-center justify-center text-center text-muted-foreground text-sm p-4">
                                                     <CircleGauge className="h-10 w-10 mb-2" />
                                                     Complete a wave to see your team's velocity.
                                                 </div>
@@ -1066,13 +1071,11 @@ export default function ProjectDetailsPage() {
                                         </CardContent>
                                     </Card>
                                     <Card className={cn(burndownData.length === 0 && 'border-dashed border-2 bg-transparent shadow-none')}>
-                                        {burndownData.length > 0 && (
-                                            <CardHeader>
-                                                <CardTitle>Burndown</CardTitle>
-                                                <CardDescription>Ideal vs actual work remaining</CardDescription>
-                                            </CardHeader>
-                                        )}
-                                        <CardContent className={cn(burndownData.length === 0 && 'p-0')}>
+                                        <CardHeader>
+                                            <CardTitle>Burndown</CardTitle>
+                                            {burndownData.length > 0 && <CardDescription>Ideal vs actual work remaining</CardDescription>}
+                                        </CardHeader>
+                                        <CardContent>
                                             {burndownData.length > 0 ? (
                                                 <ChartContainer config={chartConfig} className="h-[150px] w-full">
                                                     <LineChart
@@ -1113,9 +1116,9 @@ export default function ProjectDetailsPage() {
                                                     </LineChart>
                                                 </ChartContainer>
                                             ) : (
-                                                <div className="h-[218px] flex flex-col items-center justify-center text-center text-muted-foreground text-sm p-4">
+                                                <div className="h-[150px] flex flex-col items-center justify-center text-center text-muted-foreground text-sm p-4">
                                                     <CloudDownload className="h-10 w-10 mb-2" />
-                                                    Complete a wave to generate a burndown chart.
+                                                    Complete a wave with estimated story points to generate a burndown chart.
                                                 </div>
                                             )}
                                         </CardContent>
@@ -1123,13 +1126,13 @@ export default function ProjectDetailsPage() {
                                </div>
                                <div className="col-span-1 space-y-6">
                                      <Card className={cn(!activeSprint && 'border-dashed border-2 bg-transparent shadow-none')}>
-                                        {activeSprint && (
-                                            <CardHeader>
-                                                <CardTitle>Active Wave Health</CardTitle>
+                                        <CardHeader>
+                                            <CardTitle>Active Wave Health</CardTitle>
+                                            {activeSprint ? (
                                                 <CardDescription>{activeSprint.name}</CardDescription>
-                                            </CardHeader>
-                                        )}
-                                        <CardContent className={cn(!activeSprint && 'p-0')}>
+                                            ) : null }
+                                        </CardHeader>
+                                        <CardContent>
                                             {activeSprint ? (
                                                 activeSprintHealthData && activeSprintHealthData.totalItems > 0 ? (
                                                     <>
@@ -1165,7 +1168,7 @@ export default function ProjectDetailsPage() {
                                                     </div>
                                                 )
                                             ) : (
-                                                <div className="h-[200px] flex flex-col items-center justify-center text-center text-muted-foreground text-sm p-4">
+                                                <div className="h-[150px] flex flex-col items-center justify-center text-center text-muted-foreground text-sm p-4">
                                                   <Waves className="h-10 w-10 mb-2" />
                                                   No wave is currently active. Start a wave to see its health.
                                                 </div>
@@ -1180,13 +1183,11 @@ export default function ProjectDetailsPage() {
                                         )}
                                     </Card>
                                     <Card className={cn(epicProgressData.length === 0 && 'border-dashed border-2 bg-transparent shadow-none')}>
-                                        {epicProgressData.length > 0 && (
-                                            <CardHeader>
-                                                <CardTitle>Epic Progress</CardTitle>
-                                                <CardDescription>A summary of completion for each engagement epic</CardDescription>
-                                            </CardHeader>
-                                        )}
-                                        <CardContent className={cn(epicProgressData.length === 0 && 'p-0')}>
+                                        <CardHeader>
+                                            <CardTitle>Epic Progress</CardTitle>
+                                            {epicProgressData.length > 0 && <CardDescription>A summary of completion for each engagement epic</CardDescription>}
+                                        </CardHeader>
+                                        <CardContent>
                                             {epicProgressData.length > 0 ? (
                                                 <Accordion type="multiple" className="w-full">
                                                     {epicProgressData.map((epic, index) => {
@@ -1212,7 +1213,7 @@ export default function ProjectDetailsPage() {
                                                     })}
                                                 </Accordion>
                                             ) : (
-                                                 <div className="h-[218px] flex flex-col items-center justify-center text-center text-muted-foreground text-sm p-4">
+                                                 <div className="h-[150px] flex flex-col items-center justify-center text-center text-muted-foreground text-sm p-4">
                                                     <Loader className="h-10 w-10 mb-2" />
                                                     No epic progress to display. Add items with points to epics.
                                                 </div>
@@ -1222,13 +1223,11 @@ export default function ProjectDetailsPage() {
                                </div>
                                <div className="col-span-1 space-y-6">
                                      <Card className={cn(atRiskItems.length === 0 && 'border-dashed border-2 bg-transparent shadow-none')}>
-                                        {atRiskItems.length > 0 && (
-                                            <CardHeader>
-                                                <CardTitle>At-Risk Items</CardTitle>
-                                                <CardDescription>Items that are overdue or due within 3 days.</CardDescription>
-                                            </CardHeader>
-                                        )}
-                                        <CardContent className={cn(atRiskItems.length === 0 && 'p-0')}>
+                                        <CardHeader>
+                                            <CardTitle>At-Risk Items</CardTitle>
+                                            {atRiskItems.length > 0 && <CardDescription>Items that are overdue or due within 3 days.</CardDescription>}
+                                        </CardHeader>
+                                        <CardContent>
                                             {atRiskItems.length > 0 ? (
                                                 atRiskItems.map(item => {
                                                     const dueDate = parseISO(item.dueDate!);
@@ -1272,7 +1271,7 @@ export default function ProjectDetailsPage() {
                                                     )
                                                 })
                                             ) : (
-                                                 <div className="h-[460px] flex flex-col items-center justify-center text-center text-muted-foreground text-sm p-4">
+                                                 <div className="h-[150px] flex flex-col items-center justify-center text-center text-muted-foreground text-sm p-4">
                                                     <AlertTriangle className="h-10 w-10 mb-2" />
                                                     No at-risk items. Great job!
                                                 </div>
@@ -1456,10 +1455,10 @@ export default function ProjectDetailsPage() {
                                 <Card>
                                     <CardHeader>
                                         <div className="flex justify-between items-center">
-                                            <div>
-                                                <CardTitle>Unassigned Backlog Items</CardTitle>
-                                                <CardDescription>Items that are not yet assigned to an epic or wave.</CardDescription>
-                                            </div>
+                                            <CardTitle className="flex items-center gap-2">
+                                                <Inbox className="h-5 w-5" />
+                                                Unassigned Backlog Items
+                                            </CardTitle>
                                             <div className="flex items-center gap-2">
                                                  <TooltipProvider>
                                                     <Tooltip>
@@ -1669,17 +1668,6 @@ export default function ProjectDetailsPage() {
                                                                                         </TooltipContent>
                                                                                     </Tooltip>
                                                                                 </TooltipProvider>
-                                                                                 <DropdownMenu>
-                                                                                    <DropdownMenuTrigger asChild>
-                                                                                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => e.stopPropagation()}><MoreVertical className="h-4 w-4" /></Button>
-                                                                                    </DropdownMenuTrigger>
-                                                                                    <DropdownMenuContent align="end">
-                                                                                        <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setItemToDelete({type: 'backlogItem', id: item.id, name: item.title}); setIsDeleteDialogOpen(true);}} className="text-destructive focus:bg-destructive/90 focus:text-destructive-foreground">
-                                                                                            <Trash2 className="mr-2 h-4 w-4" />
-                                                                                            Delete
-                                                                                        </DropdownMenuItem>
-                                                                                    </DropdownMenuContent>
-                                                                                </DropdownMenu>
                                                                             </div>
                                                                         </div>
                                                                     )
@@ -1780,75 +1768,103 @@ export default function ProjectDetailsPage() {
                         </div>
                     </TabsContent>
                     <TabsContent value="timeline">
-                        <TimelineView
-                            items={timelineData.items}
-                            projectStartDate={timelineData.projectStartDate}
-                            projectEndDate={timelineData.projectEndDate}
-                        />
+                        {timelineData.items.length > 0 ? (
+                            <TimelineView
+                                items={timelineData.items}
+                                projectStartDate={timelineData.projectStartDate}
+                                projectEndDate={timelineData.projectEndDate}
+                            />
+                        ) : (
+                             <div className="p-10 text-center rounded-lg border-2 border-dashed border-border bg-transparent shadow-none">
+                                <div className="flex justify-center mb-4">
+                                    <div className="flex justify-center items-center h-16 w-16 text-muted-foreground">
+                                        <GanttChartSquare className="h-8 w-8" />
+                                    </div>
+                                </div>
+                                <h3 className="text-lg font-semibold text-foreground">Nothing to Show on Timeline</h3>
+                                <p className="text-muted-foreground mt-2 mb-4">
+                                    Create epics and waves, then assign items to them to build out your engagement timeline.
+                                </p>
+                            </div>
+                        )}
                     </TabsContent>
                      <TabsContent value="all-work">
-                        <div className="space-y-4">
-                            <div className="relative">
-                                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                                <Input
-                                    placeholder="Search all work items..."
-                                    value={allWorkSearchTerm}
-                                    onChange={(e) => setAllWorkSearchTerm(e.target.value)}
-                                    className="pl-8"
-                                />
-                            </div>
-                             <div className="border rounded-lg">
-                                {allSprintItems.length > 0 ? allSprintItems.map(item => {
-                                    const epic = epics.find(e => e.id === item.epicId);
-                                    const sprint = sprints.find(s => s.id === item.sprintId);
-                                    const config = epic ? (tagConfig.find(c => c.iconName === epic.category) || tagConfig.find(t => t.iconName === 'Layers')) : tagConfig.find(t => t.iconName === 'Layers');
-                                    const IconComponent = config?.icon || Layers;
-                                    return (
-                                        <div key={item.id} className="flex justify-between items-center p-3 border-b last:border-b-0 hover:bg-muted/50 cursor-pointer"
-                                            onClick={() => openEditBacklogItemDialog(item, epics, sprints, contacts)}
-                                        >
-                                            <div className="flex items-center gap-3">
-                                                <TooltipProvider>
-                                                    <Tooltip>
-                                                        <TooltipTrigger>
-                                                            <IconComponent className={cn("h-4 w-4", config?.color)} />
-                                                        </TooltipTrigger>
-                                                        <TooltipContent>
-                                                            <p>Epic: {epic?.title || 'Unknown'}</p>
-                                                        </TooltipContent>
-                                                    </Tooltip>
-                                                </TooltipProvider>
-                                                <span className="text-foreground text-sm">{projectPrefix}-{item.backlogId}</span>
-                                                <p className="text-sm font-medium">{item.title}</p>
+                         {projectBacklogItems.length > 0 ? (
+                            <div className="space-y-4">
+                                <div className="relative">
+                                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                                    <Input
+                                        placeholder="Search all work items..."
+                                        value={allWorkSearchTerm}
+                                        onChange={(e) => setAllWorkSearchTerm(e.target.value)}
+                                        className="pl-8"
+                                    />
+                                </div>
+                                 <div className="border rounded-lg">
+                                    {allSprintItems.length > 0 ? allSprintItems.map(item => {
+                                        const epic = epics.find(e => e.id === item.epicId);
+                                        const sprint = sprints.find(s => s.id === item.sprintId);
+                                        const config = epic ? (tagConfig.find(c => c.iconName === epic.category) || tagConfig.find(t => t.iconName === 'Layers')) : tagConfig.find(t => t.iconName === 'Layers');
+                                        const IconComponent = config?.icon || Layers;
+                                        return (
+                                            <div key={item.id} className="flex justify-between items-center p-3 border-b last:border-b-0 hover:bg-muted/50 cursor-pointer"
+                                                onClick={() => openEditBacklogItemDialog(item, epics, sprints, contacts)}
+                                            >
+                                                <div className="flex items-center gap-3">
+                                                    <TooltipProvider>
+                                                        <Tooltip>
+                                                            <TooltipTrigger>
+                                                                <IconComponent className={cn("h-4 w-4", config?.color)} />
+                                                            </TooltipTrigger>
+                                                            <TooltipContent>
+                                                                <p>Epic: {epic?.title || 'Unknown'}</p>
+                                                            </TooltipContent>
+                                                        </Tooltip>
+                                                    </TooltipProvider>
+                                                    <span className="text-foreground text-sm">{projectPrefix}-{item.backlogId}</span>
+                                                    <p className="text-sm font-medium">{item.title}</p>
+                                                </div>
+                                                <div className="flex items-center gap-4">
+                                                    {sprint && <Badge variant={sprint.status === 'Active' ? 'success' : sprint.status === 'Completed' ? 'secondary' : 'outline'}>{sprint.name}</Badge>}
+                                                    <Badge variant="outline" className={cn(statusColors[item.status])}>{item.status}</Badge>
+                                                    <Badge variant="secondary">{item.points} Points</Badge>
+                                                     <TooltipProvider>
+                                                        <Tooltip>
+                                                            <TooltipTrigger>
+                                                                <PriorityIcon priority={item.priority} />
+                                                            </TooltipTrigger>
+                                                            <TooltipContent>
+                                                                <p>Priority: {item.priority}</p>
+                                                            </TooltipContent>
+                                                        </Tooltip>
+                                                    </TooltipProvider>
+                                                    <Avatar className="h-6 w-6">
+                                                        <AvatarImage src={item.ownerAvatarUrl} />
+                                                        <AvatarFallback className="text-xs">{item.owner.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                                                    </Avatar>
+                                                </div>
                                             </div>
-                                            <div className="flex items-center gap-4">
-                                                {sprint && <Badge variant={sprint.status === 'Active' ? 'success' : sprint.status === 'Completed' ? 'secondary' : 'outline'}>{sprint.name}</Badge>}
-                                                <Badge variant="outline" className={cn(statusColors[item.status])}>{item.status}</Badge>
-                                                <Badge variant="secondary">{item.points} Points</Badge>
-                                                 <TooltipProvider>
-                                                    <Tooltip>
-                                                        <TooltipTrigger>
-                                                            <PriorityIcon priority={item.priority} />
-                                                        </TooltipTrigger>
-                                                        <TooltipContent>
-                                                            <p>Priority: {item.priority}</p>
-                                                        </TooltipContent>
-                                                    </Tooltip>
-                                                </TooltipProvider>
-                                                <Avatar className="h-6 w-6">
-                                                    <AvatarImage src={item.ownerAvatarUrl} />
-                                                    <AvatarFallback className="text-xs">{item.owner.split(' ').map(n => n[0]).join('')}</AvatarFallback>
-                                                </Avatar>
-                                            </div>
+                                        )
+                                    }) : (
+                                        <div className="p-10 text-center">
+                                            <p className="text-muted-foreground">No matching items found.</p>
                                         </div>
-                                    )
-                                }) : (
-                                    <p className="text-sm text-muted-foreground text-center p-6">
-                                        {allWorkSearchTerm ? 'No matching items found.' : 'No items assigned to any waves.'}
-                                    </p>
-                                )}
+                                    )}
+                                </div>
                             </div>
-                        </div>
+                        ) : (
+                            <div className="p-10 text-center rounded-lg border-2 border-dashed border-border bg-transparent shadow-none">
+                                <div className="flex justify-center mb-4">
+                                    <div className="flex justify-center items-center h-16 w-16 text-muted-foreground">
+                                        <LayoutList className="h-8 w-8" />
+                                    </div>
+                                </div>
+                                <h3 className="text-lg font-semibold text-foreground">No Work Items Yet</h3>
+                                <p className="text-muted-foreground mt-2 mb-4">
+                                    Add items to the backlog and assign them to waves to see them here.
+                                </p>
+                            </div>
+                        )}
                     </TabsContent>
                 </div>
             </Tabs>
@@ -1869,3 +1885,4 @@ export default function ProjectDetailsPage() {
         </div>
     );
 }
+

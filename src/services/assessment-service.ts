@@ -1,13 +1,78 @@
 
 'use client';
 
-import { GtmReadinessOutput, GtmReadinessInput } from "@/ai/flows/gtm-readiness-flow";
 import { db, auth } from '@/lib/firebase';
-import { collection, doc, getDocs, setDoc, updateDoc, query, where, writeBatch, getDoc, addDoc } from 'firebase/firestore';
-import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { collection, doc, getDocs, setDoc, updateDoc, query, where, writeBatch, getDoc, addDoc, deleteField } from 'firebase/firestore';
+import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import type { Company } from "./company-service";
 import { createNotification } from "./notification-service";
 
+export interface GtmReadinessInput {
+  companyStage?: string;
+  employeeCount?: string;
+  industrySector?: string;
+  goToMarketStrategy?: string;
+  growthChallenges?: string;
+  departmentalAlignment?: string;
+  communicationFrequency?: string;
+  responsibilityClarity?: string;
+  crmPlatform?: string;
+  dataHygienePractices?: string;
+  techStackAssessment?: string;
+  integrationEffectiveness?: string;
+  toolAdoptionRates?: string;
+  workflowAutomation?: string;
+  leadManagementProcess?: string;
+  salesCycleEfficiency?: string;
+  forecastingProcess?: string;
+  customerJourneyMapping?: string;
+  customerFirstCulture?: string;
+  personalizationEfforts?: string;
+  customerFeedbackMechanisms?: string;
+  revenueMetricsDescription?: string;
+  annualRecurringRevenue?: string;
+  netRevenueRetention?: string;
+  revenueGrowthRate?: string;
+  acquisitionMetricsDescription?: string;
+  customerAcquisitionCost?: string;
+  winRate?: string;
+  pipelineCoverage?: string;
+  pipelineVelocity?: string;
+  retentionMetricsDescription?: string;
+  churnRate?: string;
+  customerLifetimeValue?: string;
+  netPromoterScore?: string;
+  customerSatisfaction?: string;
+  kpiReportingFrequency?: string;
+  specificPainPoints?: string;
+  challengesDescription?: string;
+  executiveSponsorship?: string;
+  organizationalChangeDescription?: string;
+  crossFunctionalInputMechanisms?: string;
+  icpLastUpdated?: string;
+  valueMessagingAlignment?: string;
+  tangibleDifferentiators?: string;
+  forecastAccuracy?: string;
+  pipelineReportingTools?: string;
+  manualReportingTime?: string;
+  budgetAllocation?: string;
+  aiAdoptionBarriers?: string;
+  businessModelTesting?: string;
+}
+
+export interface GtmReadinessOutput {
+  executiveSummary: {
+    overallReadinessScore: number;
+    companyStageAndFte: string;
+    industrySector: string;
+    primaryGtmStrategy: string;
+  };
+  top3CriticalFindings: Array<{
+    findingTitle: string;
+    impactLevel: string;
+  }>;
+  fullReport: string;
+}
 
 export interface Assessment {
   id: string;
@@ -18,7 +83,7 @@ export interface Assessment {
   progress: number;
   startDate: string;
   result?: GtmReadinessOutput;
-  formData?: Partial<GtmReadinessInput>;
+  formData?: Partial<GtmReadinessInput> & { companyId?: string, assessmentName?: string };
   companyName?: string;
   documentUrl?: string;
   isStarred?: boolean;
@@ -66,7 +131,7 @@ export async function getAssessmentsForCompany(companyId: string): Promise<Asses
     } as Assessment));
 }
 
-export async function createAssessment(assessmentData: Omit<Assessment, 'id'>, isPublicSubmission: boolean = false): Promise<string> {
+export async function createAssessment(assessmentData: Omit<Assessment, 'id' | 'result'>, isPublicSubmission: boolean = false): Promise<string> {
     const docRef = await addDoc(assessmentsCollection, {});
     const now = new Date().toISOString();
     const finalData = { 
@@ -90,7 +155,7 @@ export async function createAssessment(assessmentData: Omit<Assessment, 'id'>, i
     return docRef.id;
 }
 
-export async function updateAssessment(id: string, assessmentData: Partial<Omit<Assessment, 'id'>>): Promise<void> {
+export async function updateAssessment(id: string, assessmentData: Partial<Omit<Assessment, 'id' | 'result'>>): Promise<void> {
     const docRef = doc(db, 'assessments', id);
     const dataWithTimestamp = {
         ...assessmentData,
@@ -125,4 +190,49 @@ export async function uploadAssessmentDocument(assessmentId: string, file: File)
     });
 
     return downloadURL;
+}
+
+export async function deleteAssessmentDocument(assessmentId: string): Promise<void> {
+    if (!auth.currentUser) {
+        throw new Error("User must be logged in to delete documents.");
+    }
+    const storage = getStorage();
+    const assessmentDocRef = doc(db, 'assessments', assessmentId);
+    const assessmentDoc = await getDoc(assessmentDocRef);
+
+    if (assessmentDoc.exists()) {
+        const assessmentData = assessmentDoc.data() as Assessment;
+        const url = assessmentData.documentUrl;
+
+        if (url) {
+            try {
+                // The URL needs to be decoded to get the correct path
+                const decodedUrl = decodeURIComponent(url);
+                const pathRegex = /o\/(.*?)\?/;
+                const match = decodedUrl.match(pathRegex);
+
+                if (match && match[1]) {
+                    const filePath = match[1];
+                    const fileRef = ref(storage, filePath);
+                    await deleteObject(fileRef);
+                } else {
+                    console.warn("Could not extract file path from URL:", url);
+                }
+            } catch (error) {
+                console.error("Error deleting file from storage:", error);
+                // Don't throw if file doesn't exist, just continue to remove the URL from firestore
+                if ((error as any).code !== 'storage/object-not-found') {
+                    throw error;
+                }
+            }
+
+            // Remove the URL field from the Firestore document
+            await updateDoc(assessmentDocRef, {
+                documentUrl: deleteField(),
+                lastActivity: new Date().toISOString()
+            });
+        }
+    } else {
+        throw new Error("Assessment not found");
+    }
 }

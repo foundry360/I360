@@ -2,17 +2,11 @@
 'use client';
 
 import * as React from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import { getDoc, doc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
-import type { Assessment, GtmReadinessInput } from '@/services/assessment-service';
-import { AppLayout } from '@/components/app-layout';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Button }from '@/components/ui/button';
-import { ArrowLeft, RefreshCw } from 'lucide-react';
-import { Separator } from '@/components/ui/separator';
-import { useQuickAction } from '@/contexts/quick-action-context';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import type { Assessment, GtmReadinessInput } from '@/services/assessment-service';
+import { SheetHeader, SheetTitle, SheetDescription } from './ui/sheet';
 
 const formSections = [
   {
@@ -171,104 +165,30 @@ const fieldLabels: Record<keyof GtmReadinessInput, string> = {
     businessModelTesting: 'Business Model Testing Frequency'
 };
 
-export default function ReportPage() {
-    const params = useParams();
-    const router = useRouter();
-    const { openAssessmentModal } = useQuickAction();
-    const assessmentId = params.assessmentId as string;
-    const [assessment, setAssessment] = React.useState<Assessment | null>(null);
-    const [loading, setLoading] = React.useState(true);
+interface AssessmentInputsPanelProps {
+    assessment: Assessment;
+}
 
-    React.useEffect(() => {
-        if (!assessmentId) return;
-
-        const fetchAssessment = async () => {
-            try {
-                setLoading(true);
-                const assessmentDoc = await getDoc(doc(db, 'assessments', assessmentId));
-
-                if (assessmentDoc.exists()) {
-                    const assessmentData = assessmentDoc.data() as Assessment;
-                    if (assessmentData.companyId) {
-                        const companyDoc = await getDoc(doc(db, 'companies', assessmentData.companyId));
-                        if (companyDoc.exists()) {
-                           assessmentData.companyName = companyDoc.data().name;
-                        }
-                    }
-                    setAssessment(assessmentData);
-                }
-            } catch (err) {
-                console.error("Error fetching assessment:", err);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchAssessment();
-    }, [assessmentId]);
-    
-    const handleRerun = () => {
-        if (!assessment) return;
-        
-        const newAssessmentData = {
-            ...assessment,
-            id: '', // Unset the ID to create a new document
-            status: 'In Progress' as const,
-            result: undefined, // Clear the old result
-            formData: {
-                ...assessment.formData,
-                assessmentName: `${assessment.name} (Rerun)`
-            }
-        };
-        openAssessmentModal(newAssessmentData);
-    };
-
-    if (loading) {
-        return (
-            <AppLayout>
-                <div className="p-6 space-y-4">
-                    <Skeleton className="h-10 w-1/4" />
-                    <Skeleton className="h-6 w-1/2" />
-                    <Skeleton className="h-[600px] w-full" />
-                </div>
-            </AppLayout>
-        );
-    }
-    
+export function AssessmentInputsPanel({ assessment }: AssessmentInputsPanelProps) {
     if (!assessment || !assessment.formData) {
         return (
-            <AppLayout>
-                <div className="p-6">
-                    <p>Assessment data not found or is incomplete.</p>
-                     <Button onClick={() => router.back()} className="mt-4">Go Back</Button>
-                </div>
-            </AppLayout>
+            <div className="p-6">
+                <p>Assessment data not found or is incomplete.</p>
+            </div>
         );
     }
-
+    
     const { formData } = assessment;
 
     return (
-        <AppLayout>
-            <div className="flex flex-col h-full">
-                 <div className="flex justify-between items-center p-6">
-                    <div className="flex items-center gap-4">
-                        <Button onClick={() => router.back()} variant="outline" size="icon">
-                            <ArrowLeft className="h-4 w-4" />
-                            <span className="sr-only">Back</span>
-                        </Button>
-                        <div>
-                            <h1 className="text-2xl font-bold">{assessment.name}</h1>
-                            <p className="text-muted-foreground">GTM Readiness Assessment Inputs</p>
-                        </div>
-                    </div>
-                    <Button onClick={handleRerun} variant="outline">
-                        <RefreshCw className="mr-2 h-4 w-4" />
-                        Rerun Assessment
-                    </Button>
-                </div>
-                <Separator />
-                <div className="flex-1 overflow-y-auto p-6 space-y-6">
+        <div className="flex flex-col h-full">
+            <SheetHeader className="p-6">
+                <SheetTitle>{assessment.name}</SheetTitle>
+                <SheetDescription>GTM Readiness Assessment Inputs</SheetDescription>
+            </SheetHeader>
+            <Separator />
+            <ScrollArea className="flex-1">
+                <div className="p-6 space-y-6">
                     {formSections.map((section, index) => {
                         const sectionHasValues = section.fields.some(key => {
                             const value = formData[key as keyof GtmReadinessInput];
@@ -304,7 +224,8 @@ export default function ReportPage() {
                         )
                     })}
                 </div>
-            </div>
-        </AppLayout>
+            </ScrollArea>
+        </div>
     );
 }
+

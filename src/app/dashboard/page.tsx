@@ -35,6 +35,7 @@ import {
   MessageSquare,
   AlertTriangle,
   MonitorCog,
+  Eye,
 } from 'lucide-react';
 import { getAssessments, type Assessment } from '@/services/assessment-service';
 import { getContacts, type Contact } from '@/services/contact-service';
@@ -59,6 +60,7 @@ import {
 } from "@/components/ui/collapsible"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useToast } from '@/hooks/use-toast';
+import Link from 'next/link';
 
 type ActivityItem = {
   id: string;
@@ -296,9 +298,6 @@ export default function DashboardPage() {
           <h1 className="text-2xl font-bold">
             {greeting ? `${greeting}, ${getFirstName()} 👋` : `Welcome, ${getFirstName()} 👋`}
           </h1>
-          <p className="text-muted-foreground">
-            Here's a quick overview of your workspace
-          </p>
         </div>
       </div>
 
@@ -374,11 +373,13 @@ export default function DashboardPage() {
             </Card>
             <Card className={cn("group h-full flex flex-col", allRecentActivity.length === 0 && 'p-10 rounded-lg border-2 border-dashed border-border bg-transparent shadow-none')}>
               {allRecentActivity.length > 0 && (
-                <CardHeader>
-                  <CardTitle>Recent Activity</CardTitle>
-                  <CardDescription>
-                    The latest updates from your workspace
-                  </CardDescription>
+                <CardHeader className="flex flex-row justify-between items-center">
+                  <div>
+                    <CardTitle>Recent Activity</CardTitle>
+                    <CardDescription>
+                      The latest updates from your workspace
+                    </CardDescription>
+                  </div>
                 </CardHeader>
               )}
               <CardContent className={cn("flex-grow", allRecentActivity.length === 0 && 'flex items-center justify-center h-full')}>
@@ -431,29 +432,19 @@ export default function DashboardPage() {
                     </div>
                 )}
               </CardContent>
-              {allRecentActivity.length > 3 && (
-                <CardFooter className="justify-end">
-                    <Button 
-                        variant="link" 
-                        className="p-0 h-auto text-sm opacity-0 group-hover:opacity-100 transition-opacity"
-                        onClick={() => setIsActivityExpanded(!isActivityExpanded)}
-                    >
-                        {isActivityExpanded ? 'View less' : 'View all'}
-                    </Button>
-                </CardFooter>
-              )}
             </Card>
              <Card className={cn("group h-full flex flex-col", notifications.length === 0 && 'p-10 rounded-lg border-2 border-dashed border-border bg-transparent shadow-none')}>
                 {notifications.length > 0 && (
-                  <CardHeader>
-                      <div className="flex items-center justify-between">
-                          <CardTitle>
-                          Communications Feed
-                          </CardTitle>
-                      </div>
-                      <CardDescription>
+                  <CardHeader className="flex flex-row justify-between items-center">
+                      <div>
+                        <CardTitle>Communications Feed</CardTitle>
+                        <CardDescription>
                           A live feed of all notifications and alerts
-                      </CardDescription>
+                        </CardDescription>
+                      </div>
+                      <Button asChild variant="ghost" size="icon" className="opacity-0 group-hover:opacity-100 transition-opacity">
+                         <Link href="/dashboard/feed"><Eye className="h-4 w-4" /></Link>
+                      </Button>
                   </CardHeader>
                 )}
                 <CardContent className={cn("flex-1", notifications.length === 0 && 'flex flex-col items-center justify-center')}>
@@ -499,11 +490,6 @@ export default function DashboardPage() {
                     </div>
                 )}
               </CardContent>
-              {notifications.length > 3 && (
-                <CardFooter>
-                  <Button variant="outline" className="w-full" onClick={() => router.push('/dashboard/feed')}>View all in Feed</Button>
-                </CardFooter>
-              )}
             </Card>
           </div>
         </CollapsibleContent>
@@ -527,9 +513,11 @@ export default function DashboardPage() {
                 <EngagementInsightsPanel projects={recentEngagements.filter(p => p.status === 'Active')} />
               </SheetContent>
             </Sheet>
-            <Button variant="outline" onClick={() => router.push('/dashboard/projects')}>
-              View All
-            </Button>
+            {recentEngagements.length > 4 && (
+              <Button variant="outline" onClick={() => router.push('/dashboard/projects')}>
+                View All
+              </Button>
+            )}
           </div>
         </div>
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -542,7 +530,7 @@ export default function DashboardPage() {
                 <CardHeader>
                   <CardTitle className="flex justify-between items-start">
                     <span className="line-clamp-1">{project.name}</span>
-                    <Badge variant={statusBadgeVariant(project.status)}>
+                    <Badge variant={statusBadgeVariant(project.status)} className="whitespace-nowrap">
                       {project.status}
                     </Badge>
                   </CardTitle>

@@ -30,6 +30,12 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from '@/components/ui/sheet';
+import {
   getAssessments,
   deleteAssessments,
   Assessment,
@@ -47,6 +53,7 @@ import { useQuickAction } from '@/contexts/quick-action-context';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
+import { AssessmentInputsPanel } from '@/components/assessment-inputs-panel';
 
 type SortKey = keyof Assessment;
 
@@ -72,6 +79,9 @@ export default function AssessmentsPage() {
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   const [assessmentToUpload, setAssessmentToUpload] = React.useState<string | null>(null);
   const [isSearchVisible, setIsSearchVisible] = React.useState(false);
+
+  const [isInputsPanelOpen, setIsInputsPanelOpen] = React.useState(false);
+  const [selectedAssessmentForPanel, setSelectedAssessmentForPanel] = React.useState<Assessment | null>(null);
 
   const fetchAssessments = React.useCallback(async () => {
     try {
@@ -113,10 +123,15 @@ export default function AssessmentsPage() {
     setAssessmentToDelete(assessment);
     setIsDeleteDialogOpen(true);
   };
+  
+  const handleViewInputs = (assessment: Assessment) => {
+    setSelectedAssessmentForPanel(assessment);
+    setIsInputsPanelOpen(true);
+  };
 
   const handleOpenAssessment = (assessment: Assessment) => {
     if (assessment.status === 'Completed') {
-        router.push(`/assessment/${assessment.id}/report`);
+        handleViewInputs(assessment);
     } else {
         openAssessmentModal(assessment);
     }
@@ -261,9 +276,6 @@ export default function AssessmentsPage() {
       <div className="space-y-6">
         <div>
           <h1 className="text-2xl font-bold">Assessments</h1>
-          <p className="text-muted-foreground">
-            Manage and track all assessments in your system
-          </p>
         </div>
         <Separator />
         <div className="flex justify-between items-center">
@@ -427,9 +439,9 @@ export default function AssessmentsPage() {
                                       </a>
                                   </Button>
                                 )}
-                                <Button variant="ghost" size="icon" onClick={() => handleOpenAssessment(assessment)} title="View Report">
+                                <Button variant="ghost" size="icon" onClick={() => handleViewInputs(assessment)} title="View Inputs">
                                     <FileText className="h-4 w-4" />
-                                    <span className="sr-only">View Report</span>
+                                    <span className="sr-only">View Inputs</span>
                                 </Button>
                                 <Button variant="ghost" size="icon" onClick={() => handleUploadClick(assessment.id)} title="Upload Document">
                                     <Upload className="h-4 w-4" />
@@ -449,7 +461,7 @@ export default function AssessmentsPage() {
                                   onClick={() => handleOpenAssessment(assessment)}
                                 >
                                   <FileText className="mr-2 h-4 w-4" />
-                                  {assessment.status === 'Completed' ? 'View Report' : 'Resume'}
+                                  {assessment.status === 'Completed' ? 'View Inputs' : 'Resume'}
                                 </DropdownMenuItem>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem
@@ -507,6 +519,15 @@ export default function AssessmentsPage() {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
+
+        <Sheet open={isInputsPanelOpen} onOpenChange={setIsInputsPanelOpen}>
+            <SheetContent className="w-full sm:max-w-4xl">
+                {selectedAssessmentForPanel && (
+                    <AssessmentInputsPanel assessment={selectedAssessmentForPanel} />
+                )}
+            </SheetContent>
+        </Sheet>
+
       </div>
     </>
   );

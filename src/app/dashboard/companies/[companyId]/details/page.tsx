@@ -18,10 +18,10 @@ import {
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { AppLayout } from '@/components/app-layout';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import React from 'react';
 import { Progress } from '@/components/ui/progress';
-import { Phone, Globe, MapPin, ArrowLeft, Plus, Pencil, FileText, Trash2, Paperclip, Upload, Link2, FolderKanban, Star } from 'lucide-react';
+import { Phone, Globe, MapPin, ArrowLeft, Plus, Pencil, FileText, Trash2, Paperclip, Upload, Link2, FolderKanban, Star, MoreHorizontal, ClipboardList, Notebook, Folder, FilePenLine, KeyRound, ChevronsRight, ChevronsLeft } from 'lucide-react';
 import type { Company } from '@/services/company-service';
 import { getCompany, updateCompany } from '@/services/company-service';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -31,6 +31,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import {
@@ -44,9 +45,10 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { EditCompanyModal } from '@/components/edit-company-modal';
-import { getAssessmentsForCompany, type Assessment, deleteAssessments, uploadAssessmentDocument, updateAssessment } from '@/services/assessment-service';
+import { getAssessmentsForCompany, type Assessment, deleteAssessments, uploadAssessmentDocument, updateAssessment, deleteAssessmentDocument } from '@/services/assessment-service';
 import { getContactsForCompany, type Contact } from '@/services/contact-service';
 import { getProjectsForCompany, type Project } from '@/services/project-service';
+import { signInWithGoogleDrive, listFiles, isGoogleDriveAuthenticated, handleGoogleDriveRedirectResult, clearGoogleDriveAuth } from '@/services/google-drive-service';
 import { cn } from '@/lib/utils';
 import { useQuickAction } from '@/contexts/quick-action-context';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -54,23 +56,38 @@ import { TablePagination } from '@/components/table-pagination';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { format, formatDistanceToNow, parseISO } from 'date-fns';
+import { Sheet, SheetContent } from '@/components/ui/sheet';
+import { AssessmentInputsPanel } from '@/components/assessment-inputs-panel';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+
 
 type ActivityItem = {
     activity: string;
     time: Date;
 };
 
+interface DriveFile {
+  id: string;
+  name: string;
+  webViewLink: string;
+  iconLink: string;
+}
+
 export default function CompanyDetailsPage() {
   const params = useParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { toast } = useToast();
   const companyId = params.companyId as string;
   const { openAssessmentModal, setOnAssessmentCompleted, openNewContactDialog, setOnContactCreated, openNewProjectDialog, setOnProjectCreated } = useQuickAction();
   const [companyData, setCompanyData] = React.useState<Company | null>(null);
-  const [currentAssessments, setCurrentAssessments] = React.useState<Assessment[]>([]);
-  const [completedAssessments, setCompletedAssessments] = React.useState<Assessment[]>([]);
+  const [assessments, setAssessments] = React.useState<Assessment[]>([]);
   const [contacts, setContacts] = React.useState<Contact[]>([]);
   const [projects, setProjects] = React.useState<Project[]>([]);
+  const [driveFiles, setDriveFiles] = React.useState<DriveFile[]>([]);
+  const [isDriveLoading, setIsDriveLoading] = React.useState(false);
+  const [driveAuthNeeded, setDriveAuthNeeded] = React.useState(true);
   const [allRecentActivity, setAllRecentActivity] = React.useState<ActivityItem[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [isEditModalOpen, setIsEditModalOpen] = React.useState(false);
@@ -78,10 +95,16 @@ export default function CompanyDetailsPage() {
   const [isActivityExpanded, setIsActivityExpanded] = React.useState(false);
   const [selectedAssessments, setSelectedAssessments] = React.useState<string[]>([]);
   const [isBulkDeleteDialogOpen, setIsBulkDeleteDialogOpen] = React.useState(false);
+  const [assessmentToDelete, setAssessmentToDelete] = React.useState<Assessment | null>(null);
+  const [assessmentDocumentToDelete, setAssessmentDocumentToDelete] = React.useState<Assessment | null>(null);
   const [page, setPage] = React.useState(0);
-  const [rowsPerPage, setRowsPerPage] = React.useState(10);
+  const [rowsPerPage, setRowsPerPage] = React.useState(25);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   const [assessmentToUpload, setAssessmentToUpload] = React.useState<string | null>(null);
+  const [isInputsPanelOpen, setIsInputsPanelOpen] = React.useState(false);
+  const [selectedAssessmentForPanel, setSelectedAssessmentForPanel] = React.useState<Assessment | null>(null);
+  const [activeTab, setActiveTab] = React.useState('assessments');
+  const [isPanelCollapsed, setIsPanelCollapsed] = React.useState(false);
 
   const fetchCompanyData = React.useCallback(async () => {
     if (!companyId) return;
@@ -102,10 +125,9 @@ export default function CompanyDetailsPage() {
       setCompanyData(company);
       setProjects(companyProjects);
       
-      const current = allAssessments.filter(a => a.status === 'In Progress');
-      const completed = allAssessments.filter(a => a.status === 'Completed').sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime());
-      setCurrentAssessments(current);
-      setCompletedAssessments(completed);
+      const sortedAssessments = allAssessments.sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime());
+      setAssessments(sortedAssessments);
+
       setContacts(companyContacts);
 
       if (company) {
@@ -140,6 +162,55 @@ export default function CompanyDetailsPage() {
 
   React.useEffect(() => {
     fetchCompanyData();
+  }, [fetchCompanyData]);
+
+  const fetchDriveFiles = React.useCallback(async () => {
+    if (!companyData?.name) return;
+    setIsDriveLoading(true);
+    try {
+      const files = await listFiles(companyData.name);
+      setDriveFiles(files);
+      setDriveAuthNeeded(false);
+    } catch (error) {
+      console.error("Error fetching drive files", error);
+      toast({ variant: "destructive", title: "Error", description: "Could not fetch Google Drive files. Please try authorizing again." });
+      clearGoogleDriveAuth();
+      setDriveAuthNeeded(true);
+    } finally {
+      setIsDriveLoading(false);
+    }
+  }, [companyData?.name, toast]);
+
+  React.useEffect(() => {
+    handleGoogleDriveRedirectResult().then(token => {
+      if (token) {
+        setDriveAuthNeeded(false);
+        if (activeTab === 'documents') {
+          fetchDriveFiles();
+        }
+      } else {
+        setDriveAuthNeeded(true);
+      }
+    });
+  }, [activeTab, fetchDriveFiles]);
+
+  React.useEffect(() => {
+    const handleAuthSuccess = () => {
+        setDriveAuthNeeded(false);
+        fetchDriveFiles();
+    };
+    window.addEventListener('googleDriveAuthSuccess', handleAuthSuccess);
+    return () => window.removeEventListener('googleDriveAuthSuccess', handleAuthSuccess);
+  }, [fetchDriveFiles]);
+  
+
+  React.useEffect(() => {
+    if (activeTab === 'documents' && !driveAuthNeeded) {
+        fetchDriveFiles();
+    }
+  }, [activeTab, driveAuthNeeded, fetchDriveFiles]);
+
+  React.useEffect(() => {
     const unsubscribeAssessment = setOnAssessmentCompleted(() => fetchCompanyData);
     const unsubscribeContact = setOnContactCreated(() => fetchCompanyData);
     const unsubscribeProject = setOnProjectCreated(() => fetchCompanyData);
@@ -153,11 +224,21 @@ export default function CompanyDetailsPage() {
   
   const handleOpenAssessment = (assessment: Assessment) => {
     if (assessment.status === 'Completed') {
-        router.push(`/assessment/${assessment.id}/report`);
+        setSelectedAssessmentForPanel(assessment);
+        setIsInputsPanelOpen(true);
     } else {
         openAssessmentModal(assessment);
     }
   }
+  
+  const openDeleteDialog = (assessment: Assessment) => {
+    setAssessmentToDelete(assessment);
+    setIsBulkDeleteDialogOpen(true);
+  };
+  
+  const openDeleteDocumentDialog = (assessment: Assessment) => {
+    setAssessmentDocumentToDelete(assessment);
+  };
 
   const handleCompanyUpdate = async (updatedData: Partial<Company>) => {
     if (!companyId) return;
@@ -216,6 +297,29 @@ export default function CompanyDetailsPage() {
     });
   };
 
+  const handleDeleteDocument = async () => {
+    if (!assessmentDocumentToDelete) return;
+    try {
+      setLoading(true);
+      await deleteAssessmentDocument(assessmentDocumentToDelete.id);
+      toast({
+        title: "Document Deleted",
+        description: "The document has been successfully removed.",
+      });
+      await fetchCompanyData();
+    } catch (error) {
+      console.error("Failed to delete document:", error);
+      toast({
+        variant: "destructive",
+        title: "Deletion Failed",
+        description: "There was a problem deleting the document.",
+      });
+    } finally {
+      setLoading(false);
+      setAssessmentDocumentToDelete(null);
+    }
+  };
+
 
   const getInitials = (name: string) => {
     if (!name) return '';
@@ -244,17 +348,19 @@ export default function CompanyDetailsPage() {
   };
 
   const handleBulkDelete = async () => {
+    const idsToDelete = assessmentToDelete ? [assessmentToDelete.id] : selectedAssessments;
     try {
-      await deleteAssessments(selectedAssessments);
+      await deleteAssessments(idsToDelete);
       setSelectedAssessments([]);
       setIsBulkDeleteDialogOpen(false);
+      setAssessmentToDelete(null);
       await fetchCompanyData(); // Refetch data
     } catch (error) {
       console.error('Failed to delete assessments:', error);
     }
   };
 
-  const paginatedAssessments = completedAssessments.slice(
+  const paginatedAssessments = assessments.slice(
     page * rowsPerPage,
     page * rowsPerPage + rowsPerPage
   );
@@ -263,11 +369,6 @@ export default function CompanyDetailsPage() {
   const isAssessmentIndeterminate = paginatedAssessments.some(a => selectedAssessments.includes(a.id)) && !allOnPageSelected;
 
   const recentActivity = isActivityExpanded ? allRecentActivity : allRecentActivity.slice(0, 5);
-
-  const formatDate = (isoDate: string) => {
-    if (!isoDate) return 'N/A';
-    return format(parseISO(isoDate), 'MMM dd, yyyy');
-  };
 
   const formatDateTime = (date: Date) => {
     return formatDistanceToNow(date, { addSuffix: true });
@@ -337,8 +438,8 @@ export default function CompanyDetailsPage() {
         </div>
         <Separator className="my-4" />
 
-        <div className="grid gap-6 lg:grid-cols-3">
-          <div className="lg:col-span-2 space-y-6">
+        <div className="flex gap-6">
+          <div className="flex-1 space-y-6">
             <Card>
               <CardHeader>
                 <CardTitle className="text-xl">Company Overview</CardTitle>
@@ -366,323 +467,382 @@ export default function CompanyDetailsPage() {
                   )}
               </CardContent>
             </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between">
-                <div>
-                  <CardTitle className="text-xl">Current Assessments</CardTitle>
-                  <CardDescription>
-                    Ongoing assessments for {companyData.name}
-                  </CardDescription>
-                </div>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="sm">
-                      <Plus className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem onSelect={() => openAssessmentModal()}>
-                      GTM Readiness
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </CardHeader>
-              <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Assessment Name</TableHead>
-                      <TableHead>Type</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead className="w-[150px]">Progress</TableHead>
-                      <TableHead>Start Date</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {currentAssessments.length > 0 ? (
-                      currentAssessments.map((assessment, index) => (
-                        <TableRow 
-                          key={index}
-                          onClick={() => handleOpenAssessment(assessment)}
-                          className="cursor-pointer"
-                        >
-                          <TableCell className="font-medium">
-                            {assessment.name}
-                          </TableCell>
-                          <TableCell>
-                            <Badge variant={(assessment.type || 'GTM Readiness') === 'GTM Readiness' ? 'default' : 'secondary'}>
-                              {assessment.type || 'GTM Readiness'}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                            <Badge
-                              variant={
-                                assessment.status === 'In Progress'
-                                  ? 'secondary'
-                                  : 'outline'
-                              }
-                            >
-                              {assessment.status}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                              <Progress value={assessment.progress} className="h-2" />
-                          </TableCell>
-                          <TableCell>{formatDate(assessment.startDate)}</TableCell>
-                        </TableRow>
-                      ))
-                    ) : (
-                      <TableRow>
-                        <TableCell colSpan={5} className="h-24 text-center">
-                          No assessments found.
-                        </TableCell>
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle className="text-xl">Assessment History</CardTitle>
-                    <CardDescription>
-                      Review of all completed assessments
-                    </CardDescription>
-                  </div>
-                   {selectedAssessments.length > 0 && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setIsBulkDeleteDialogOpen(true)}
-                      >
-                        <Trash2 className="h-4 w-4 mr-2" />
-                        Delete ({selectedAssessments.length})
-                      </Button>
-                    )}
-                </div>
-              </CardHeader>
-              <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-[50px]">
-                        <Checkbox
-                          checked={allOnPageSelected}
-                          onCheckedChange={(checked) =>
-                            handleSelectAllAssessments(checked as boolean)
-                          }
-                          aria-label="Select all assessments on page"
-                          data-state={isAssessmentIndeterminate ? 'indeterminate' : (allOnPageSelected ? 'checked' : 'unchecked')}
-                        />
-                      </TableHead>
-                      <TableHead className="w-[50px]">
-                        <Star className="h-4 w-4" />
-                      </TableHead>
-                      <TableHead>Assessment Name</TableHead>
-                      <TableHead>Type</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Date</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {paginatedAssessments.length > 0 ? (
-                      paginatedAssessments.map((assessment) => (
-                        <TableRow key={assessment.id}>
-                           <TableCell>
-                            <Checkbox
-                              checked={selectedAssessments.includes(assessment.id)}
-                              onCheckedChange={(checked) =>
-                                handleSelectAssessment(assessment.id, checked as boolean)
-                              }
-                              aria-label={`Select ${assessment.name}`}
-                            />
-                          </TableCell>
-                           <TableCell>
-                              <Button variant="ghost" size="icon" onClick={(e) => handleToggleStar(e, assessment)}>
-                                <Star className={cn("h-4 w-4", assessment.isStarred ? 'text-yellow-400 fill-yellow-400' : 'text-muted-foreground')} />
-                              </Button>
-                           </TableCell>
-                          <TableCell className="font-medium">
-                            {assessment.name}
-                          </TableCell>
-                          <TableCell>
-                            <Badge variant={(assessment.type || 'GTM Readiness') === 'GTM Readiness' ? 'default' : 'secondary'}>
-                              {assessment.type || 'GTM Readiness'}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                            <Badge
-                              variant={
-                                assessment.status === 'Completed'
-                                  ? 'success'
-                                  : 'outline'
-                              }
-                            >
-                              {assessment.status}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>{formatDate(assessment.startDate)}</TableCell>
-                          <TableCell className="text-right">
-                              {assessment.documentUrl && (
-                                <Button asChild variant="ghost" size="icon" title="View Document">
-                                    <a href={assessment.documentUrl} target="_blank" rel="noopener noreferrer">
-                                        <Paperclip className="h-4 w-4" />
-                                        <span className="sr-only">View Document</span>
-                                    </a>
+            
+            <Tabs value={activeTab} onValueChange={setActiveTab}>
+                <TabsList>
+                    <TabsTrigger value="assessments"><ClipboardList className="h-4 w-4 mr-2" />Assessments</TabsTrigger>
+                    <TabsTrigger value="documents"><Folder className="h-4 w-4 mr-2" />Documents</TabsTrigger>
+                    <TabsTrigger value="notes"><FilePenLine className="h-4 w-4 mr-2" />Notes</TabsTrigger>
+                </TabsList>
+                <TabsContent value="assessments">
+                    <Card>
+                      <CardHeader>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <CardTitle className="text-xl flex items-center gap-2"><ClipboardList className="h-5 w-5" />Assessments</CardTitle>
+                          </div>
+                           <div className='flex items-center gap-2'>
+                            {selectedAssessments.length > 0 && (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => setIsBulkDeleteDialogOpen(true)}
+                                >
+                                  <Trash2 className="h-4 w-4 mr-2" />
+                                  Delete ({selectedAssessments.length})
                                 </Button>
                               )}
-                              <Button variant="ghost" size="icon" onClick={() => handleOpenAssessment(assessment)} title="View Report">
-                                  <FileText className="h-4 w-4" />
-                                  <span className="sr-only">View Report</span>
-                              </Button>
-                              <Button variant="ghost" size="icon" onClick={() => handleUploadClick(assessment.id)} title="Upload Document">
-                                  <Upload className="h-4 w-4" />
-                                  <span className="sr-only">Upload Document</span>
-                              </Button>
-                          </TableCell>
-                        </TableRow>
-                      ))
-                    ) : (
-                       <TableRow>
-                        <TableCell colSpan={7} className="h-24 text-center">
-                          No assessments found.
-                        </TableCell>
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
-                {completedAssessments.length > 0 && (
-                    <div className="flex justify-end mt-4">
-                        <TablePagination
-                            count={completedAssessments.length}
-                            page={page}
-                            rowsPerPage={rowsPerPage}
-                            onPageChange={(newPage) => setPage(newPage)}
-                            onRowsPerPageChange={(newRowsPerPage) => {
-                                setRowsPerPage(newRowsPerPage);
-                                setPage(0);
-                            }}
-                        />
-                    </div>
-                )}
-              </CardContent>
-            </Card>
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button variant="outline" size="sm">
+                                    <Plus className="h-4 w-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuItem onSelect={() => openAssessmentModal()}>
+                                    GTM Readiness
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                           </div>
+                        </div>
+                      </CardHeader>
+                      <CardContent>
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead className="w-[50px]">
+                                <Checkbox
+                                  checked={allOnPageSelected}
+                                  onCheckedChange={(checked) =>
+                                    handleSelectAllAssessments(checked as boolean)
+                                  }
+                                  aria-label="Select all assessments on page"
+                                  data-state={isAssessmentIndeterminate ? 'indeterminate' : (allOnPageSelected ? 'checked' : 'unchecked')}
+                                />
+                              </TableHead>
+                              <TableHead>Assessment Name</TableHead>
+                              <TableHead>Type</TableHead>
+                              <TableHead>Status</TableHead>
+                              <TableHead>Progress</TableHead>
+                              <TableHead className="text-right">Actions</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {paginatedAssessments.length > 0 ? (
+                              paginatedAssessments.map((assessment) => (
+                                <TableRow key={assessment.id}>
+                                   <TableCell>
+                                    <Checkbox
+                                      checked={selectedAssessments.includes(assessment.id)}
+                                      onCheckedChange={(checked) =>
+                                        handleSelectAssessment(assessment.id, checked as boolean)
+                                      }
+                                      aria-label={`Select ${assessment.name}`}
+                                    />
+                                  </TableCell>
+                                  <TableCell className="font-medium" onClick={() => handleOpenAssessment(assessment)}>
+                                    <span className="cursor-pointer hover:text-primary">{assessment.name}</span>
+                                  </TableCell>
+                                  <TableCell>
+                                    <Badge variant={(assessment.type || 'GTM Readiness') === 'GTM Readiness' ? 'default' : 'secondary'}>
+                                      {assessment.type || 'GTM Readiness'}
+                                    </Badge>
+                                  </TableCell>
+                                  <TableCell>
+                                    <Badge
+                                      variant={
+                                        assessment.status === 'Completed'
+                                          ? 'success'
+                                          : 'secondary'
+                                      }
+                                    >
+                                      {assessment.status}
+                                    </Badge>
+                                  </TableCell>
+                                  <TableCell>
+                                    <div className="flex items-center gap-2">
+                                        <Progress value={assessment.progress} className="w-24" />
+                                        <span className="text-xs text-muted-foreground">{assessment.progress}%</span>
+                                    </div>
+                                  </TableCell>
+                                  <TableCell className="text-right">
+                                     <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button variant="ghost" className="h-8 w-8 p-0">
+                                                <span className="sr-only">Open menu</span>
+                                                <MoreHorizontal className="h-4 w-4" />
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end">
+                                            <DropdownMenuItem onClick={(e) => handleToggleStar(e, assessment)}>
+                                                <Star className={cn("mr-2 h-4 w-4", assessment.isStarred ? "text-yellow-400 fill-yellow-400" : "text-muted-foreground")} />
+                                                <span>{assessment.isStarred ? 'Unstar' : 'Star'}</span>
+                                            </DropdownMenuItem>
+                                            <DropdownMenuSeparator />
+                                            <DropdownMenuItem onClick={() => handleOpenAssessment(assessment)}>
+                                                <FileText className="mr-2 h-4 w-4" />
+                                                <span>{assessment.status === 'Completed' ? 'View Inputs' : 'Resume'}</span>
+                                            </DropdownMenuItem>
+                                            {assessment.status === 'Completed' && assessment.documentUrl && (
+                                                <DropdownMenuItem asChild>
+                                                    <a href={assessment.documentUrl} target="_blank" rel="noopener noreferrer">
+                                                        <Paperclip className="mr-2 h-4 w-4" />
+                                                        <span>View Document</span>
+                                                    </a>
+                                                </DropdownMenuItem>
+                                            )}
+                                             {assessment.status === 'Completed' && (
+                                                <DropdownMenuItem onClick={() => handleUploadClick(assessment.id)}>
+                                                    <Upload className="mr-2 h-4 w-4" />
+                                                    <span>Upload Document</span>
+                                                </DropdownMenuItem>
+                                            )}
+                                            {assessment.documentUrl && (
+                                                <>
+                                                    <DropdownMenuSeparator />
+                                                    <DropdownMenuItem onClick={() => openDeleteDocumentDialog(assessment)} className="text-destructive focus:bg-destructive/90 focus:text-destructive-foreground">
+                                                    <Trash2 className="mr-2 h-4 w-4" />
+                                                    <span>Delete Document</span>
+                                                    </DropdownMenuItem>
+                                                </>
+                                            )}
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                  </TableCell>
+                                </TableRow>
+                              ))
+                            ) : (
+                               <TableRow>
+                                <TableCell colSpan={7} className="h-24 text-center">
+                                  No assessments found.
+                                </TableCell>
+                              </TableRow>
+                            )}
+                          </TableBody>
+                        </Table>
+                        {assessments.length > 0 && (
+                            <div className="flex justify-end mt-4 p-4 border-t">
+                                <TablePagination
+                                    count={assessments.length}
+                                    page={page}
+                                    rowsPerPage={rowsPerPage}
+                                    onPageChange={(newPage) => setPage(newPage)}
+                                    onRowsPerPageChange={(newRowsPerPage) => {
+                                        setRowsPerPage(newRowsPerPage);
+                                        setPage(0);
+                                    }}
+                                />
+                            </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                </TabsContent>
+                <TabsContent value="documents">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Documents</CardTitle>
+                            <CardDescription>
+                                Files from Google Drive for {companyData.name}.
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            {isDriveLoading ? (
+                                <Skeleton className="h-24 w-full" />
+                            ) : driveAuthNeeded ? (
+                                <div className="text-center p-8">
+                                    <p className="mb-4 text-muted-foreground">Connect to Google Drive to view documents.</p>
+                                    <Button onClick={signInWithGoogleDrive}>
+                                        <KeyRound className="mr-2 h-4 w-4" /> Authorize Google Drive
+                                    </Button>
+                                </div>
+                            ) : driveFiles.length > 0 ? (
+                                <Table>
+                                  <TableHeader>
+                                    <TableRow>
+                                      <TableHead className="w-[50px]"></TableHead>
+                                      <TableHead>Name</TableHead>
+                                    </TableRow>
+                                  </TableHeader>
+                                  <TableBody>
+                                    {driveFiles.map(file => (
+                                        <TableRow key={file.id}>
+                                            <TableCell>
+                                                <img src={file.iconLink} alt="file icon" className="h-4 w-4" />
+                                            </TableCell>
+                                            <TableCell>
+                                                <a href={file.webViewLink} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                                                    {file.name}
+                                                </a>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                  </TableBody>
+                                </Table>
+                            ) : (
+                                <p className="text-muted-foreground text-center p-8">No documents found in Google Drive for this company.</p>
+                            )}
+                        </CardContent>
+                    </Card>
+                </TabsContent>
+                <TabsContent value="notes">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Notes</CardTitle>
+                            <CardDescription>
+                                General notes and observations about {companyData.name}.
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <p className="text-muted-foreground text-center p-8">No notes created yet.</p>
+                        </CardContent>
+                    </Card>
+                </TabsContent>
+            </Tabs>
           </div>
 
-          <div className="space-y-6">
-            <Card>
-                <CardHeader className="flex flex-row items-center justify-between">
-                    <CardTitle className="text-xl">Company Information</CardTitle>
-                    <Button variant="outline" size="sm" onClick={() => setIsEditModalOpen(true)}>
-                        <Pencil className="h-4 w-4" />
-                    </Button>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                    <div className="flex items-center gap-4">
-                        <MapPin className="h-5 w-5 text-muted-foreground" />
-                        <span className="text-sm">{`${companyData.street}, ${companyData.city}, ${companyData.state} ${companyData.zip}`}</span>
-                    </div>
-                     <div className="flex items-center gap-4">
-                        <Phone className="h-5 w-5 text-muted-foreground" />
-                        <span className="text-sm">{companyData.phone}</span>
-                    </div>
-                     <div className="flex items-center gap-4">
-                        <Globe className="h-5 w-5 text-muted-foreground" />
-                        <a href={`http://${companyData.website}`} target="_blank" rel="noopener noreferrer" className="text-sm text-primary hover:underline">
-                            {companyData.website}
-                        </a>
-                    </div>
-                </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle className="text-xl">Primary Contacts</CardTitle>
-                 <Button variant="outline" size="sm" onClick={openNewContactDialog}>
-                    <Plus className="h-4 w-4" />
-                </Button>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {contacts.length > 0 ? (
-                  contacts.map((contact) => (
-                    <div key={contact.id} className="flex items-center gap-4">
-                      <Avatar>
-                         <AvatarFallback className="bg-primary text-primary-foreground">
-                          {getInitials(contact.name)}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <p className="font-medium text-sm">{contact.name}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {contact.title}
-                        </p>
+          <div className={cn("relative transition-all duration-300 border-l", isPanelCollapsed ? "w-12" : "w-[32rem]")}>
+            <Button
+                variant="ghost"
+                size="icon"
+                className={cn("absolute top-2 h-7 w-7 bg-background border rounded-full text-muted-foreground hover:bg-muted", isPanelCollapsed ? '-left-4' : '-left-5')}
+                onClick={() => setIsPanelCollapsed(!isPanelCollapsed)}
+            >
+                {isPanelCollapsed ? <ChevronsLeft className="h-4 w-4" /> : <ChevronsRight className="h-4 w-4" />}
+            </Button>
+            <div className={cn("h-full transition-opacity duration-200", isPanelCollapsed ? "opacity-0 pointer-events-none" : "opacity-100")}>
+              <Card className="h-full border-t-0 border-r-0 border-b-0 rounded-none">
+                <CardContent className="p-4">
+                  <Accordion type="multiple" defaultValue={['item-1', 'item-2', 'item-3', 'item-4']} className="w-full">
+                    <AccordionItem value="item-1" className="border-b-4 border-border pb-4 pt-4">
+                      <div className="flex items-center justify-between w-full">
+                        <AccordionTrigger chevronFirst className="flex-1 py-2">
+                            <h3 className="font-semibold">Company Information</h3>
+                        </AccordionTrigger>
+                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={(e) => { e.stopPropagation(); setIsEditModalOpen(true);}}>
+                            <Pencil className="h-4 w-4" />
+                        </Button>
                       </div>
-                    </div>
-                  ))
-                ) : (
-                    <p className="text-sm text-muted-foreground text-center py-4">No contacts found for this company.</p>
-                )}
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between">
-                  <CardTitle className="text-xl">Company Engagements</CardTitle>
-                  <Button variant="outline" size="icon" onClick={openNewProjectDialog}>
-                      <Plus className="h-4 w-4" />
-                      <span className="sr-only">New Engagement</span>
-                  </Button>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                  {projects.length > 0 ? (
-                      projects.map(project => (
-                        <Link href={`/dashboard/projects/${project.id}`} key={project.id}>
-                          <div className="flex justify-between items-center p-2 rounded-md hover:bg-muted cursor-pointer">
-                              <div>
-                                  <p className="font-medium text-sm">{project.name}</p>
-                                  <p className="text-xs text-muted-foreground">{project.owner}</p>
+                      <AccordionContent>
+                          <div className="space-y-4 pt-2">
+                              <div className="flex items-center gap-4">
+                                  <MapPin className="h-5 w-5 text-muted-foreground" />
+                                  <span className="text-sm">{`${companyData.street}, ${companyData.city}, ${companyData.state} ${companyData.zip}`}</span>
                               </div>
-                              <Badge variant={project.status === 'Active' ? 'success' : 'secondary'}>
-                                  {project.status}
-                              </Badge>
+                              <div className="flex items-center gap-4">
+                                  <Phone className="h-5 w-5 text-muted-foreground" />
+                                  <span className="text-sm">{companyData.phone}</span>
+                              </div>
+                              <div className="flex items-center gap-4">
+                                  <Globe className="h-5 w-5 text-muted-foreground" />
+                                  <a href={`http://${companyData.website}`} target="_blank" rel="noopener noreferrer" className="text-sm text-primary hover:underline">
+                                      {companyData.website}
+                                  </a>
+                              </div>
                           </div>
-                        </Link>
-                      ))
-                  ) : (
-                      <p className="text-sm text-muted-foreground text-center py-4">No engagements found for this company.</p>
-                  )}
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-xl">Recent Activity</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {recentActivity.length > 0 ? (
-                    recentActivity.map((item, index) => (
-                        <div key={index} className="flex items-start gap-4">
-                            <div className="mt-1 h-2 w-2 rounded-full bg-primary" />
-                            <div>
-                            <p className="font-medium text-sm">{item.activity}</p>
-                            <p className="text-xs text-muted-foreground">{formatDateTime(item.time)}</p>
-                            </div>
+                      </AccordionContent>
+                    </AccordionItem>
+                    <AccordionItem value="item-2" className="border-b-4 border-border pb-4 pt-4">
+                       <div className="flex items-center justify-between w-full">
+                          <AccordionTrigger chevronFirst className="flex-1 py-2">
+                              <h3 className="font-semibold">Primary Contacts</h3>
+                          </AccordionTrigger>
+                          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={(e) => { e.stopPropagation(); openNewContactDialog(); }}>
+                              <Plus className="h-4 w-4" />
+                          </Button>
+                       </div>
+                      <AccordionContent>
+                        <div className="space-y-4 pt-2">
+                            {contacts.length > 0 ? (
+                                contacts.map((contact) => (
+                                <div key={contact.id} className="flex items-center gap-4">
+                                    <Avatar>
+                                    <AvatarFallback className="bg-primary text-primary-foreground">
+                                        {getInitials(contact.name)}
+                                    </AvatarFallback>
+                                    </Avatar>
+                                    <div>
+                                    <p className="font-medium text-sm">{contact.name}</p>
+                                    <p className="text-xs text-muted-foreground">
+                                        {contact.title}
+                                    </p>
+                                    </div>
+                                </div>
+                                ))
+                            ) : (
+                                <p className="text-sm text-muted-foreground text-center py-4">No contacts found.</p>
+                            )}
                         </div>
-                    ))
-                ) : (
-                    <p className="text-sm text-muted-foreground text-center py-4">No recent activity.</p>
-                )}
-                {allRecentActivity.length > 5 && (
-                    <Button 
-                        variant="link" 
-                        className="p-0 h-auto text-sm"
-                        onClick={() => setIsActivityExpanded(!isActivityExpanded)}
-                    >
-                        {isActivityExpanded ? 'View less' : 'View all'}
-                    </Button>
-                )}
-              </CardContent>
-            </Card>
+                      </AccordionContent>
+                    </AccordionItem>
+                    <AccordionItem value="item-3" className="border-b-4 border-border pb-4 pt-4">
+                       <div className="flex items-center justify-between w-full">
+                          <AccordionTrigger chevronFirst className="flex-1 py-2">
+                              <h3 className="font-semibold">Company Engagements</h3>
+                          </AccordionTrigger>
+                          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={(e) => { e.stopPropagation(); openNewProjectDialog(); }}>
+                              <Plus className="h-4 w-4" />
+                          </Button>
+                       </div>
+                      <AccordionContent>
+                          <div className="space-y-3 pt-2">
+                              {projects.length > 0 ? (
+                                  projects.map(project => (
+                                  <Link href={`/dashboard/projects/${project.id}`} key={project.id}>
+                                      <div className="flex justify-between items-center p-2 rounded-md hover:bg-muted cursor-pointer -mx-2">
+                                          <div>
+                                              <p className="font-medium text-sm">{project.name}</p>
+                                              <p className="text-xs text-muted-foreground">{project.owner}</p>
+                                          </div>
+                                          <Badge variant={project.status === 'Active' ? 'success' : 'secondary'}>
+                                              {project.status}
+                                          </Badge>
+                                      </div>
+                                  </Link>
+                                  ))
+                              ) : (
+                                  <p className="text-sm text-muted-foreground text-center py-4">No engagements found.</p>
+                              )}
+                          </div>
+                      </AccordionContent>
+                    </AccordionItem>
+                     <AccordionItem value="item-4" className="border-b-0 pb-4 pt-4">
+                      <div className="flex items-center justify-between w-full">
+                        <AccordionTrigger chevronFirst className="flex-1 py-2">
+                            <h3 className="font-semibold">Recent Activity</h3>
+                        </AccordionTrigger>
+                      </div>
+                      <AccordionContent>
+                           <div className="space-y-4 pt-2">
+                              {recentActivity.length > 0 ? (
+                                  recentActivity.map((item, index) => (
+                                      <div key={index} className="flex items-start gap-4">
+                                          <div className="mt-1 h-2 w-2 rounded-full bg-primary" />
+                                          <div>
+                                          <p className="text-sm line-clamp-2">{item.activity}</p>
+                                          <p className="text-xs text-muted-foreground">{formatDateTime(item.time)}</p>
+                                          </div>
+                                      </div>
+                                  ))
+                              ) : (
+                                  <p className="text-sm text-muted-foreground text-center py-4">No recent activity.</p>
+                              )}
+                              {allRecentActivity.length > 5 && (
+                                  <Button 
+                                      variant="link" 
+                                      className="p-0 h-auto text-sm"
+                                      onClick={() => setIsActivityExpanded(!isActivityExpanded)}
+                                  >
+                                      {isActivityExpanded ? 'View less' : 'View all'}
+                                  </Button>
+                              )}
+                           </div>
+                      </AccordionContent>
+                    </AccordionItem>
+                  </Accordion>
+                </CardContent>
+              </Card>
+            </div>
           </div>
         </div>
       </div>
@@ -703,11 +863,11 @@ export default function CompanyDetailsPage() {
             <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
             <AlertDialogDescription>
               This action cannot be undone. This will permanently delete the
-              {selectedAssessments.length} selected assessments.
+              {selectedAssessments.length > 1 ? ` ${selectedAssessments.length} selected assessments.` : ' selected assessment.'}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setIsBulkDeleteDialogOpen(false)}>
+            <AlertDialogCancel onClick={() => { setIsBulkDeleteDialogOpen(false); setAssessmentToDelete(null); }}>
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction onClick={handleBulkDelete}>
@@ -716,6 +876,34 @@ export default function CompanyDetailsPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      <AlertDialog
+        open={!!assessmentDocumentToDelete}
+        onOpenChange={(isOpen) => !isOpen && setAssessmentDocumentToDelete(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the document attached to the "{assessmentDocumentToDelete?.name}" assessment.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setAssessmentDocumentToDelete(null)}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteDocument}>
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+        <Sheet open={isInputsPanelOpen} onOpenChange={setIsInputsPanelOpen}>
+            <SheetContent className="w-full sm:max-w-4xl">
+                {selectedAssessmentForPanel && (
+                    <AssessmentInputsPanel assessment={selectedAssessmentForPanel} />
+                )}
+            </SheetContent>
+        </Sheet>
     </>
   );
 }
