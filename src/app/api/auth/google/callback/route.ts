@@ -12,13 +12,11 @@ export async function GET(request: NextRequest) {
             await setTokensFromCode(code);
             // Redirect back to the specific company page with a status parameter
             if (companyId) {
-                const redirectUrl = new URL(`/dashboard/companies/${companyId}/details?authed=true`, request.url);
-                redirectUrl.searchParams.set('authed', 'true');
-                return NextResponse.redirect(redirectUrl);
+                // Using a relative path is more robust for redirects.
+                return NextResponse.redirect(`/dashboard/companies/${companyId}/details?authed=true`);
             } else {
                  // Fallback if state is missing
-                const redirectUrl = new URL('/dashboard/companies', request.url);
-                return NextResponse.redirect(redirectUrl);
+                return NextResponse.redirect('/dashboard/companies');
             }
 
         } catch (error) {

@@ -172,7 +172,7 @@ export default function CompanyDetailsPage() {
             }
         } catch (error) {
             console.error("Error fetching Google Drive files:", error);
-            setDriveAuthNeeded(true);
+            // Don't set auth needed on general errors, only when listFiles returns null
         } finally {
             setIsDriveLoading(false);
         }
@@ -185,13 +185,11 @@ export default function CompanyDetailsPage() {
   }, [fetchCompanyData]);
 
   React.useEffect(() => {
-     if (activeTab === 'documents') {
-        const hasJustAuthed = searchParams.get('authed') === 'true';
-        if (!hasJustAuthed) {
-           fetchDriveFiles();
-        }
+    const hasJustAuthed = searchParams.get('authed') === 'true';
+    if (activeTab === 'documents' && !hasJustAuthed) {
+        fetchDriveFiles();
     }
-  }, [activeTab, fetchDriveFiles, searchParams])
+  }, [activeTab, fetchDriveFiles, searchParams]);
 
   React.useEffect(() => {
     const unsubscribeAssessment = setOnAssessmentCompleted(() => fetchCompanyData);
