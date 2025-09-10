@@ -425,6 +425,7 @@ export default function CompanyDetailsPage() {
                       <TableHead>Assessment Name</TableHead>
                       <TableHead>Type</TableHead>
                       <TableHead>Status</TableHead>
+                      <TableHead>Progress</TableHead>
                       <TableHead>Date</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
@@ -466,6 +467,12 @@ export default function CompanyDetailsPage() {
                               {assessment.status}
                             </Badge>
                           </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                                <Progress value={assessment.progress} className="w-24" />
+                                <span className="text-xs text-muted-foreground">{assessment.progress}%</span>
+                            </div>
+                          </TableCell>
                           <TableCell>{formatDate(assessment.startDate)}</TableCell>
                           <TableCell className="text-right">
                               {assessment.status === 'Completed' && (
@@ -493,7 +500,7 @@ export default function CompanyDetailsPage() {
                       ))
                     ) : (
                        <TableRow>
-                        <TableCell colSpan={7} className="h-24 text-center">
+                        <TableCell colSpan={8} className="h-24 text-center">
                           No assessments found.
                         </TableCell>
                       </TableRow>
