@@ -21,6 +21,7 @@ import { MoreHorizontal, Plus, Trash2, Search, Upload, FilePlus, Layers, Library
 import { Separator } from '@/components/ui/separator';
 import { useQuickAction } from '@/contexts/quick-action-context';
 import { getUserStories, deleteUserStory, UserStory, bulkCreateUserStories as bulkCreateLibraryStories, getTags, Tag, deleteUserStories } from '@/services/user-story-service';
+import { bulkCreateBacklogItems } from '@/services/backlog-item-service';
 import { getCollections, addStoriesToCollection, type StoryCollection } from '@/services/collection-service';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
@@ -148,12 +149,12 @@ export default function LibraryPage() {
     try {
         setLoading(true);
         const storiesToAdd = stories.filter(story => selectedStories.includes(story.id));
-        // await bulkCreateBacklogItems(projectId, null, storiesToAdd);
+        await bulkCreateBacklogItems(projectId, null, storiesToAdd);
         toast({
             title: 'Success!',
             description: `${storiesToAdd.length} user stor${storiesToAdd.length > 1 ? 'ies' : 'y'} added to the project backlog`,
         });
-        router.push(`/dashboard/projects/${projectId}`);
+        router.push(`/dashboard/projects/${projectId}?tab=backlog`);
     } catch (error) {
         console.error("Error adding stories to backlog:", error);
         toast({
@@ -301,12 +302,6 @@ export default function LibraryPage() {
             )}
             <div>
                 <h1 className="text-2xl font-bold">User Story Library</h1>
-                <p className="text-muted-foreground">
-                    {projectId 
-                        ? "Select stories to add to your project's backlog"
-                        : "Browse and manage reusable user stories for your projects"
-                    }
-                </p>
             </div>
         </div>
         <Separator />
@@ -588,5 +583,4 @@ export default function LibraryPage() {
     </>
   );
 }
-
 

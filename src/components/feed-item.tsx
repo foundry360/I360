@@ -112,7 +112,7 @@ export const FeedItem: React.FC<FeedItemProps> = ({
   return (
     <div
       className={cn(
-        'flex items-start gap-4 p-4 border-b transition-all cursor-pointer group border-l-4',
+        'flex items-start gap-4 p-4 transition-all cursor-pointer group border-l-4',
         isSelected && 'bg-primary/10 dark:bg-primary/20',
         config.border
       )}
@@ -186,5 +186,3 @@ export const FeedItem: React.FC<FeedItemProps> = ({
     </div>
   );
 };
-
-    

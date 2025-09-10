@@ -316,9 +316,6 @@ export default function ProjectsPage() {
       <div className="space-y-6">
         <div>
             <h1 className="text-2xl font-bold">Engagements</h1>
-            <p className="text-muted-foreground">
-                Manage and track all engagements across your companies
-            </p>
         </div>
         <Separator />
         
@@ -480,7 +477,7 @@ export default function ProjectsPage() {
                                                     </Link>
                                                 </TableCell>
                                                 <TableCell className="p-2">
-                                                    <Badge variant={statusBadgeVariant(project.status)}>
+                                                    <Badge variant={statusBadgeVariant(project.status)} className="whitespace-nowrap">
                                                         {project.status}
                                                     </Badge>
                                                 </TableCell>
@@ -550,7 +547,7 @@ export default function ProjectsPage() {
                                     <CardHeader>
                                         <CardTitle className="flex justify-between items-start">
                                             <span className="line-clamp-1">{project.name}</span>
-                                            <Badge variant={statusBadgeVariant(project.status)}>
+                                            <Badge variant={statusBadgeVariant(project.status)} className="whitespace-nowrap">
                                             {project.status}
                                             </Badge>
                                         </CardTitle>

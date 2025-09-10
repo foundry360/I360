@@ -4,11 +4,6 @@ import * as React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
-  generateGtmReadiness,
-  type GtmReadinessInput,
-  type GtmReadinessOutput,
-} from '@/ai/flows/gtm-readiness-flow';
-import {
   Form,
   FormControl,
   FormField,
@@ -46,6 +41,7 @@ import { getCompanies, type Company } from '@/services/company-service';
 import { createAssessment, updateAssessment, type Assessment } from '@/services/assessment-service';
 import { Separator } from '@/components/ui/separator';
 import { createNotification } from '@/services/notification-service';
+import type { GtmReadinessInput } from '@/services/assessment-service';
 
 
 const GtmReadinessInputSchema = z.object({
@@ -332,19 +328,17 @@ export function GtmReadinessForm({ onComplete, assessmentToResume }: GtmReadines
   async function onSubmit(values: z.infer<typeof GtmReadinessInputSchema>) {
     setLoading(true);
     try {
-      const { companyId, assessmentName, ...assessmentData } = values;
+      const { companyId, assessmentName } = values;
       const company = companies.find(c => c.id === companyId);
       const finalAssessmentName = company ? `${assessmentName} - ${company.name}` : assessmentName;
       
-      const response = await generateGtmReadiness(assessmentData as GtmReadinessInput);
-      const payload: Omit<Assessment, 'id'> = {
+      const payload: Omit<Assessment, 'id' | 'result'> = {
         companyId: companyId,
         name: finalAssessmentName,
         type: 'GTM Readiness',
         status: 'Completed' as const,
         progress: 100,
         startDate: assessmentToResume?.startDate || new Date().toISOString(),
-        result: response,
         formData: values,
       };
 
@@ -364,7 +358,7 @@ export function GtmReadinessForm({ onComplete, assessmentToResume }: GtmReadines
 
       onComplete(finalAssessmentId!);
     } catch (error) {
-      console.error('Error generating GTM readiness report:', error);
+      console.error('Error saving GTM readiness assessment:', error);
       setLoading(false);
     } 
   }
@@ -487,7 +481,7 @@ export function GtmReadinessForm({ onComplete, assessmentToResume }: GtmReadines
                             {isFinalStep && <div className="h-2 w-2 rounded-full bg-primary" />}
                         </div>
                     }
-                    <span>Generate Report</span>
+                    <span>Submit Assessment</span>
                 </button>
             </nav>
             <Separator className="my-4" />
@@ -502,15 +496,15 @@ export function GtmReadinessForm({ onComplete, assessmentToResume }: GtmReadines
                      <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
                         <Card className="max-w-lg">
                            <CardHeader>
-                             <CardTitle>Ready to Generate Your Report?</CardTitle>
+                             <CardTitle>Submit Assessment?</CardTitle>
                            </CardHeader>
                            <CardContent>
-                              <p className="text-muted-foreground mb-6">You have completed all the sections of the GTM Readiness Assessment. Click the button below to submit your answers and receive your personalized analysis and recommendations from our AI.</p>
+                              <p className="text-muted-foreground mb-6">You have completed all the sections of the GTM Readiness Assessment. Click the button below to submit your answers.</p>
                                <Button type="submit" size="lg" disabled={loading} className="w-full">
                                 {loading ? (
-                                    <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Analyzing...</>
+                                    <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Submitting...</>
                                 ) : (
-                                    'Generate GTM Readiness Report'
+                                    'Submit Assessment'
                                 )}
                                 </Button>
                            </CardContent>
@@ -614,11 +608,3 @@ export function GtmReadinessForm({ onComplete, assessmentToResume }: GtmReadines
     </div>
   );
 }
-
-    
-
-    
-
-    
-
-    
