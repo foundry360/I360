@@ -701,13 +701,18 @@ export default function CompanyDetailsPage() {
           </div>
 
           <div className={cn("relative transition-all duration-300 border-l", isPanelCollapsed ? "w-12" : "w-80")}>
+            <Button
+                variant="ghost"
+                size="icon"
+                className="absolute top-2 -left-5 h-7 w-7 bg-background border rounded-full text-muted-foreground hover:bg-muted"
+                onClick={() => setIsPanelCollapsed(!isPanelCollapsed)}
+            >
+                {isPanelCollapsed ? <ChevronsLeft className="h-4 w-4" /> : <ChevronsRight className="h-4 w-4" />}
+            </Button>
             <div className={cn("h-full transition-opacity duration-200", isPanelCollapsed ? "opacity-0 pointer-events-none" : "opacity-100")}>
               <Card className="h-full border-t-0 border-r-0 border-b-0 rounded-none">
-                <CardHeader className="flex flex-row items-center justify-between p-4">
+                <CardHeader>
                   <h3 className="font-semibold">Company Details</h3>
-                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setIsPanelCollapsed(true)}>
-                      <ChevronsRight className="h-4 w-4" />
-                  </Button>
                 </CardHeader>
                 <CardContent className="p-0">
                     <div className="p-6">
@@ -823,13 +828,6 @@ export default function CompanyDetailsPage() {
                 </CardContent>
               </Card>
             </div>
-            {isPanelCollapsed && (
-              <div className="flex justify-center items-center h-full">
-                <Button variant="ghost" size="icon" onClick={() => setIsPanelCollapsed(false)}>
-                  <ChevronsLeft className="h-4 w-4" />
-                </Button>
-              </div>
-            )}
           </div>
         </div>
       </div>
