@@ -1,13 +1,78 @@
 
 'use client';
 
-import { GtmReadinessOutput, GtmReadinessInput } from "@/ai/flows/gtm-readiness-flow";
 import { db, auth } from '@/lib/firebase';
 import { collection, doc, getDocs, setDoc, updateDoc, query, where, writeBatch, getDoc, addDoc } from 'firebase/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import type { Company } from "./company-service";
 import { createNotification } from "./notification-service";
 
+export interface GtmReadinessInput {
+  companyStage?: string;
+  employeeCount?: string;
+  industrySector?: string;
+  goToMarketStrategy?: string;
+  growthChallenges?: string;
+  departmentalAlignment?: string;
+  communicationFrequency?: string;
+  responsibilityClarity?: string;
+  crmPlatform?: string;
+  dataHygienePractices?: string;
+  techStackAssessment?: string;
+  integrationEffectiveness?: string;
+  toolAdoptionRates?: string;
+  workflowAutomation?: string;
+  leadManagementProcess?: string;
+  salesCycleEfficiency?: string;
+  forecastingProcess?: string;
+  customerJourneyMapping?: string;
+  customerFirstCulture?: string;
+  personalizationEfforts?: string;
+  customerFeedbackMechanisms?: string;
+  revenueMetricsDescription?: string;
+  annualRecurringRevenue?: string;
+  netRevenueRetention?: string;
+  revenueGrowthRate?: string;
+  acquisitionMetricsDescription?: string;
+  customerAcquisitionCost?: string;
+  winRate?: string;
+  pipelineCoverage?: string;
+  pipelineVelocity?: string;
+  retentionMetricsDescription?: string;
+  churnRate?: string;
+  customerLifetimeValue?: string;
+  netPromoterScore?: string;
+  customerSatisfaction?: string;
+  kpiReportingFrequency?: string;
+  specificPainPoints?: string;
+  challengesDescription?: string;
+  executiveSponsorship?: string;
+  organizationalChangeDescription?: string;
+  crossFunctionalInputMechanisms?: string;
+  icpLastUpdated?: string;
+  valueMessagingAlignment?: string;
+  tangibleDifferentiators?: string;
+  forecastAccuracy?: string;
+  pipelineReportingTools?: string;
+  manualReportingTime?: string;
+  budgetAllocation?: string;
+  aiAdoptionBarriers?: string;
+  businessModelTesting?: string;
+}
+
+export interface GtmReadinessOutput {
+  executiveSummary: {
+    overallReadinessScore: number;
+    companyStageAndFte: string;
+    industrySector: string;
+    primaryGtmStrategy: string;
+  };
+  top3CriticalFindings: Array<{
+    findingTitle: string;
+    impactLevel: string;
+  }>;
+  fullReport: string;
+}
 
 export interface Assessment {
   id: string;
@@ -18,7 +83,7 @@ export interface Assessment {
   progress: number;
   startDate: string;
   result?: GtmReadinessOutput;
-  formData?: Partial<GtmReadinessInput>;
+  formData?: Partial<GtmReadinessInput> & { companyId?: string, assessmentName?: string };
   companyName?: string;
   documentUrl?: string;
   isStarred?: boolean;

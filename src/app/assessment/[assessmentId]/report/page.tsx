@@ -5,15 +5,67 @@ import * as React from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { getDoc, doc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import type { Assessment } from '@/services/assessment-service';
-import { GtmReadinessReport } from '@/components/gtm-readiness-report';
+import type { Assessment, GtmReadinessInput } from '@/services/assessment-service';
 import { AppLayout } from '@/components/app-layout';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button }from '@/components/ui/button';
-import { ArrowLeft, Terminal, RefreshCw } from 'lucide-react';
+import { ArrowLeft, RefreshCw } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useQuickAction } from '@/contexts/quick-action-context';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+
+const fieldLabels: Record<keyof GtmReadinessInput, string> = {
+    companyStage: 'Company Stage',
+    employeeCount: 'Employee Count',
+    industrySector: 'Industry / Sector',
+    goToMarketStrategy: 'Go-to-Market Strategy',
+    growthChallenges: 'Primary Growth Challenges',
+    departmentalAlignment: 'Departmental Alignment',
+    communicationFrequency: 'Communication Frequency',
+    responsibilityClarity: 'Clarity of Responsibility',
+    crmPlatform: 'CRM Platform',
+    dataHygienePractices: 'Data Hygiene Practices',
+    techStackAssessment: 'Tech Stack Satisfaction',
+    integrationEffectiveness: 'Integration Effectiveness',
+    toolAdoptionRates: 'Tool Adoption Rates',
+    workflowAutomation: 'Workflow Automation',
+    leadManagementProcess: 'Lead Management Process',
+    salesCycleEfficiency: 'Sales Cycle Efficiency',
+    forecastingProcess: 'Forecasting Process',
+    customerJourneyMapping: 'Customer Journey Mapping',
+    customerFirstCulture: 'Customer-First Culture',
+    personalizationEfforts: 'Personalization Efforts',
+    customerFeedbackMechanisms: 'Customer Feedback Mechanisms',
+    revenueMetricsDescription: 'Revenue Metrics Description',
+    annualRecurringRevenue: 'Annual Recurring Revenue (ARR)',
+    netRevenueRetention: 'Net Revenue Retention (NRR)',
+    revenueGrowthRate: 'Revenue Growth Rate',
+    acquisitionMetricsDescription: 'Acquisition Metrics Description',
+    customerAcquisitionCost: 'Customer Acquisition Cost (CAC)',
+    winRate: 'Win Rate',
+    pipelineCoverage: 'Pipeline Coverage',
+    pipelineVelocity: 'Pipeline Velocity',
+    retentionMetricsDescription: 'Retention & Success Metrics Description',
+    churnRate: 'Churn Rate',
+    customerLifetimeValue: 'Customer Lifetime Value (CLV)',
+    netPromoterScore: 'Net Promoter Score (NPS)',
+    customerSatisfaction: 'Customer Satisfaction Score (CSAT)',
+    kpiReportingFrequency: 'KPI Reporting Frequency',
+    specificPainPoints: 'Specific Pain Points',
+    challengesDescription: 'Biggest GTM Challenges',
+    executiveSponsorship: 'Executive Sponsorship',
+    organizationalChangeDescription: 'Organizational Approach to Change',
+    crossFunctionalInputMechanisms: 'Cross-functional Input Mechanisms',
+    icpLastUpdated: 'ICP Last Updated',
+    valueMessagingAlignment: 'Value Proposition Consistency',
+    tangibleDifferentiators: 'Tangible Differentiators',
+    forecastAccuracy: 'Forecast Accuracy',
+    pipelineReportingTools: 'Pipeline Reporting Tools',
+    manualReportingTime: 'Manual Reporting Time',
+    budgetAllocation: 'Budget Allocation Perception',
+    aiAdoptionBarriers: 'AI Adoption Barriers',
+    businessModelTesting: 'Business Model Testing Frequency'
+};
 
 export default function ReportPage() {
     const params = useParams();
@@ -22,7 +74,6 @@ export default function ReportPage() {
     const assessmentId = params.assessmentId as string;
     const [assessment, setAssessment] = React.useState<Assessment | null>(null);
     const [loading, setLoading] = React.useState(true);
-    const [error, setError] = React.useState<string | null>(null);
 
     React.useEffect(() => {
         if (!assessmentId) return;
@@ -40,25 +91,10 @@ export default function ReportPage() {
                            assessmentData.companyName = companyDoc.data().name;
                         }
                     }
-                    // Comprehensive data validation
-                    if (
-                        !assessmentData.result || 
-                        typeof assessmentData.result !== 'object' ||
-                        !assessmentData.result.executiveSummary || 
-                        !assessmentData.result.top3CriticalFindings ||
-                        !Array.isArray(assessmentData.result.top3CriticalFindings)
-                    ) {
-                        setError('The report for this assessment is incomplete and cannot be displayed. It may be from an older version or the AI analysis failed.');
-                        setAssessment(null); // Explicitly set to null on error
-                    } else {
-                        setAssessment(assessmentData);
-                    }
-                } else {
-                    setError('Assessment not found.');
+                    setAssessment(assessmentData);
                 }
             } catch (err) {
                 console.error("Error fetching assessment:", err);
-                setError('Failed to load the assessment.');
             } finally {
                 setLoading(false);
             }
@@ -83,16 +119,6 @@ export default function ReportPage() {
         openAssessmentModal(newAssessmentData);
     };
 
-    const getReportTitle = () => {
-        if (!assessment) return '';
-        const name = assessment.name || '';
-        const companyName = assessment.companyName || '';
-        if (companyName && name.endsWith(` - ${companyName}`)) {
-            return name.substring(0, name.length - ` - ${companyName}`.length);
-        }
-        return name;
-    };
-
     if (loading) {
         return (
             <AppLayout>
@@ -105,25 +131,18 @@ export default function ReportPage() {
         );
     }
     
-    if (error || !assessment) {
+    if (!assessment || !assessment.formData) {
         return (
             <AppLayout>
                 <div className="p-6">
-                    <Alert variant="destructive">
-                        <Terminal className="h-4 w-4" />
-                        <AlertTitle>Error Loading Report</AlertTitle>
-                        <AlertDescription>
-                          {error || 'An unknown error occurred.'}
-                        </AlertDescription>
-                    </Alert>
+                    <p>Assessment data not found or is incomplete.</p>
                      <Button onClick={() => router.back()} className="mt-4">Go Back</Button>
                 </div>
             </AppLayout>
         );
     }
 
-    const reportTitle = getReportTitle();
-    const pageTitle = assessment.name || 'GTM Readiness Report';
+    const { formData } = assessment;
 
     return (
         <AppLayout>
@@ -135,8 +154,8 @@ export default function ReportPage() {
                             <span className="sr-only">Back</span>
                         </Button>
                         <div>
-                            <h1 className="text-2xl font-bold">{pageTitle}</h1>
-                            <p className="text-muted-foreground">GTM Readiness Report</p>
+                            <h1 className="text-2xl font-bold">{assessment.name}</h1>
+                            <p className="text-muted-foreground">GTM Readiness Assessment Inputs</p>
                         </div>
                     </div>
                     <Button onClick={handleRerun} variant="outline">
@@ -145,8 +164,27 @@ export default function ReportPage() {
                     </Button>
                 </div>
                 <Separator />
-                <div className="flex-1 overflow-y-auto">
-                    <GtmReadinessReport title={reportTitle} result={assessment.result!} onComplete={() => router.back()} />
+                <div className="flex-1 overflow-y-auto p-6">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Questionnaire Responses</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                {Object.entries(formData).map(([key, value]) => {
+                                    const label = fieldLabels[key as keyof GtmReadinessInput];
+                                    if (!label || !value || key === 'companyId' || key === 'assessmentName') return null;
+
+                                    return (
+                                        <div key={key} className="space-y-1">
+                                            <p className="text-sm font-medium text-muted-foreground">{label}</p>
+                                            <p className="text-base">{value.toString()}</p>
+                                        </div>
+                                    )
+                                })}
+                            </div>
+                        </CardContent>
+                    </Card>
                 </div>
             </div>
         </AppLayout>
