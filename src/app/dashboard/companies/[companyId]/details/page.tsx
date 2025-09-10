@@ -159,19 +159,22 @@ export default function CompanyDetailsPage() {
 
   const fetchDriveFiles = React.useCallback(async () => {
     if (process.env.NEXT_PUBLIC_GOOGLE_DRIVE_FOLDER_ID && companyData) {
-      setIsDriveLoading(true);
-      setDriveAuthNeeded(false);
-      try {
-        const files = await listFiles(process.env.NEXT_PUBLIC_GOOGLE_DRIVE_FOLDER_ID, companyData.name);
-        setDriveFiles(files);
-      } catch (error) {
-        console.error("Error fetching Google Drive files:", error);
-        if (error instanceof Error && error.message === 'Authentication required') {
-           setDriveAuthNeeded(true);
+        setIsDriveLoading(true);
+        setDriveAuthNeeded(false);
+        try {
+            const files = await listFiles(process.env.NEXT_PUBLIC_GOOGLE_DRIVE_FOLDER_ID, companyData.name);
+            if (files === null) {
+                setDriveAuthNeeded(true);
+                setDriveFiles([]);
+            } else {
+                setDriveFiles(files);
+            }
+        } catch (error) {
+            console.error("Error fetching Google Drive files:", error);
+            // Handle other potential errors, e.g., show a toast notification
+        } finally {
+            setIsDriveLoading(false);
         }
-      } finally {
-        setIsDriveLoading(false);
-      }
     }
   }, [companyData]);
 

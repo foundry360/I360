@@ -72,10 +72,11 @@ export async function setTokensFromCode(code: string) {
 }
 
 
-export async function listFiles(parentFolderId: string, companyName: string): Promise<{ id: string; name: string; webViewLink: string; iconLink: string }[]> {
+export async function listFiles(parentFolderId: string, companyName: string): Promise<{ id: string; name: string; webViewLink: string; iconLink: string }[] | null> {
     const auth = await getAuthenticatedClient();
     if (!auth) {
-        throw new Error("Authentication required");
+        // Return null to indicate authentication is required, instead of throwing an error
+        return null;
     }
     
     const drive = google.drive({ version: 'v3', auth });
@@ -122,9 +123,10 @@ export async function listFiles(parentFolderId: string, companyName: string): Pr
     } catch (error: any) {
         if (error.response?.status === 401 || error.response?.status === 403) {
            console.log("Authentication error, user needs to re-authenticate.");
-           throw new Error("Authentication required");
+           // Return null to signal auth is needed
+           return null;
         }
         console.error('The API returned an error: ' + error);
-        throw error;
+        throw error; // Re-throw other errors
     }
 }
