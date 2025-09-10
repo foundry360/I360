@@ -75,7 +75,7 @@ export async function setTokensFromCode(code: string) {
 export async function listFiles(parentFolderId: string, companyName: string): Promise<{ id: string; name: string; webViewLink: string; iconLink: string }[]> {
     const auth = await getAuthenticatedClient();
     if (!auth) {
-        throw new Error("User is not authenticated with Google Drive.");
+        throw new Error("Authentication required");
     }
     
     const drive = google.drive({ version: 'v3', auth });
