@@ -24,8 +24,7 @@ import { cn } from '@/lib/utils';
 const CollectionItem = ({ collection, onMove, moveDirection }: { collection: StoryCollection, onMove: () => void, moveDirection: 'add' | 'remove' }) => (
     <div
         className={cn(
-            "p-3 mb-2 rounded-lg border text-card-foreground shadow-sm flex items-center gap-2",
-            'bg-[hsl(0_0%_6%)]'
+            "p-3 mb-2 rounded-lg border text-card-foreground shadow-sm flex items-center gap-2 bg-card"
         )}
     >
         <div className="flex-1">
