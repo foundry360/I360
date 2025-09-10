@@ -714,7 +714,7 @@ export default function CompanyDetailsPage() {
               <Card className="h-full border-t-0 border-r-0 border-b-0 rounded-none">
                 <CardContent className="p-4">
                   <Accordion type="multiple" defaultValue={['item-1', 'item-2', 'item-3', 'item-4']} className="w-full">
-                    <AccordionItem value="item-1" className="border-b-4 border-border">
+                    <AccordionItem value="item-1" className="border-b-4 border-border pb-4">
                       <div className="flex items-center justify-between w-full">
                         <AccordionTrigger chevronFirst className="flex-1 py-2">
                             <h3 className="font-semibold">Company Information</h3>
@@ -742,7 +742,7 @@ export default function CompanyDetailsPage() {
                           </div>
                       </AccordionContent>
                     </AccordionItem>
-                    <AccordionItem value="item-2" className="border-b-4 border-border">
+                    <AccordionItem value="item-2" className="border-b-4 border-border pb-4">
                        <div className="flex items-center justify-between w-full">
                           <AccordionTrigger chevronFirst className="flex-1 py-2">
                               <h3 className="font-semibold">Primary Contacts</h3>
@@ -775,7 +775,7 @@ export default function CompanyDetailsPage() {
                         </div>
                       </AccordionContent>
                     </AccordionItem>
-                    <AccordionItem value="item-3" className="border-b-4 border-border">
+                    <AccordionItem value="item-3" className="border-b-4 border-border pb-4">
                        <div className="flex items-center justify-between w-full">
                           <AccordionTrigger chevronFirst className="flex-1 py-2">
                               <h3 className="font-semibold">Company Engagements</h3>
@@ -806,7 +806,7 @@ export default function CompanyDetailsPage() {
                           </div>
                       </AccordionContent>
                     </AccordionItem>
-                     <AccordionItem value="item-4" className="border-b-0">
+                     <AccordionItem value="item-4" className="border-b-0 pb-4">
                       <div className="flex items-center justify-between w-full">
                         <AccordionTrigger chevronFirst className="flex-1 py-2">
                             <h3 className="font-semibold">Recent Activity</h3>
