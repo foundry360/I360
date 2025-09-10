@@ -1026,10 +1026,12 @@ export default function ProjectDetailsPage() {
                             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                                <div className="col-span-1 space-y-6">
                                     <Card className={cn(velocityData.length === 0 && 'border-dashed border-2 bg-transparent shadow-none')}>
-                                        <CardHeader>
-                                            <CardTitle>Velocity</CardTitle>
-                                            {velocityData.length > 0 && <CardDescription>Story points completed per wave</CardDescription>}
-                                        </CardHeader>
+                                        {velocityData.length > 0 && (
+                                            <CardHeader>
+                                                <CardTitle>Velocity</CardTitle>
+                                                <CardDescription>Story points completed per wave</CardDescription>
+                                            </CardHeader>
+                                        )}
                                         <CardContent>
                                             {velocityData.length > 0 ? (
                                                 <ChartContainer config={chartConfig} className="h-[150px] w-full">
@@ -1091,10 +1093,12 @@ export default function ProjectDetailsPage() {
                                         </CardContent>
                                     </Card>
                                     <Card className={cn(burndownData.length === 0 && 'border-dashed border-2 bg-transparent shadow-none')}>
-                                        <CardHeader>
-                                            <CardTitle>Burndown</CardTitle>
-                                            {burndownData.length > 0 && <CardDescription>Ideal vs actual work remaining</CardDescription>}
-                                        </CardHeader>
+                                        {burndownData.length > 0 && (
+                                            <CardHeader>
+                                                <CardTitle>Burndown</CardTitle>
+                                                <CardDescription>Ideal vs actual work remaining</CardDescription>
+                                            </CardHeader>
+                                        )}
                                         <CardContent>
                                             {burndownData.length > 0 ? (
                                                 <ChartContainer config={chartConfig} className="h-[150px] w-full">
@@ -1146,12 +1150,12 @@ export default function ProjectDetailsPage() {
                                </div>
                                <div className="col-span-1 space-y-6">
                                      <Card className={cn(!activeSprint && 'border-dashed border-2 bg-transparent shadow-none')}>
-                                        <CardHeader>
-                                            <CardTitle>Active Wave Health</CardTitle>
-                                            {activeSprint ? (
+                                        {activeSprint && (
+                                            <CardHeader>
+                                                <CardTitle>Active Wave Health</CardTitle>
                                                 <CardDescription>{activeSprint.name}</CardDescription>
-                                            ) : null }
-                                        </CardHeader>
+                                            </CardHeader>
+                                        )}
                                         <CardContent>
                                             {activeSprint ? (
                                                 activeSprintHealthData && activeSprintHealthData.totalItems > 0 ? (
@@ -1203,10 +1207,12 @@ export default function ProjectDetailsPage() {
                                         )}
                                     </Card>
                                     <Card className={cn(epicProgressData.length === 0 && 'border-dashed border-2 bg-transparent shadow-none')}>
-                                        <CardHeader>
-                                            <CardTitle>Epic Progress</CardTitle>
-                                            {epicProgressData.length > 0 && <CardDescription>A summary of completion for each engagement epic</CardDescription>}
-                                        </CardHeader>
+                                        {epicProgressData.length > 0 && (
+                                            <CardHeader>
+                                                <CardTitle>Epic Progress</CardTitle>
+                                                <CardDescription>A summary of completion for each engagement epic</CardDescription>
+                                            </CardHeader>
+                                        )}
                                         <CardContent>
                                             {epicProgressData.length > 0 ? (
                                                 <Accordion type="multiple" className="w-full">
@@ -1243,10 +1249,12 @@ export default function ProjectDetailsPage() {
                                </div>
                                <div className="col-span-1 space-y-6">
                                      <Card className={cn(atRiskItems.length === 0 && 'border-dashed border-2 bg-transparent shadow-none')}>
-                                        <CardHeader>
-                                            <CardTitle>At-Risk Items</CardTitle>
-                                            {atRiskItems.length > 0 && <CardDescription>Items that are overdue or due within 3 days.</CardDescription>}
-                                        </CardHeader>
+                                        {atRiskItems.length > 0 && (
+                                            <CardHeader>
+                                                <CardTitle>At-Risk Items</CardTitle>
+                                                <CardDescription>Items that are overdue or due within 3 days.</CardDescription>
+                                            </CardHeader>
+                                        )}
                                         <CardContent>
                                             {atRiskItems.length > 0 ? (
                                                 atRiskItems.map(item => {
