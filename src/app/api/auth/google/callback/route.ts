@@ -10,14 +10,17 @@ export async function GET(request: NextRequest) {
     if (code) {
         try {
             await setTokensFromCode(code);
-            // Redirect back to the specific company page with a status parameter
+            
+            const baseUrl = new URL(request.url).origin;
+            let redirectUrl;
+
             if (companyId) {
-                // Using a relative path is more robust for redirects.
-                return NextResponse.redirect(`/dashboard/companies/${companyId}/details?authed=true`);
+                redirectUrl = new URL(`/dashboard/companies/${companyId}/details?authed=true`, baseUrl);
             } else {
                  // Fallback if state is missing
-                return NextResponse.redirect('/dashboard/companies');
+                redirectUrl = new URL('/dashboard/companies', baseUrl);
             }
+            return NextResponse.redirect(redirectUrl.toString());
 
         } catch (error) {
             console.error('Error exchanging code for tokens:', error);

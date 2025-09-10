@@ -1,6 +1,7 @@
 
 'use server';
 
+import 'dotenv/config'; // Ensure environment variables are loaded
 import { google } from 'googleapis';
 import { db } from '@/lib/firebase';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
@@ -76,7 +77,7 @@ export async function setTokensFromCode(code: string) {
 export async function listFiles(parentFolderId: string, companyName: string): Promise<{ id: string; name: string; webViewLink: string; iconLink: string }[] | null> {
     const auth = await getAuthenticatedClient();
     if (!auth) {
-        // Return null to indicate authentication is required, instead of throwing an error
+        // Return null to indicate authentication is required
         return null;
     }
     
