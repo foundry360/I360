@@ -51,15 +51,11 @@ export interface BacklogItem {
 
 const backlogItemsCollection = collection(db, 'backlogItems');
 
-export function getBacklogItems(onUpdate: (items: BacklogItem[]) => void): () => void {
+export async function getBacklogItems(): Promise<BacklogItem[]> {
     const q = query(backlogItemsCollection);
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-        const items = snapshot.docs.map(doc => doc.data() as BacklogItem);
-        onUpdate(items);
-    }, (error) => {
-        console.error("Error in getBacklogItems listener:", error);
-    });
-    return unsubscribe;
+    const snapshot = await getDocs(q);
+    const items = snapshot.docs.map(doc => doc.data() as BacklogItem);
+    return items;
 }
 
 
