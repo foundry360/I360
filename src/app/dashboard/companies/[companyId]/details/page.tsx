@@ -714,9 +714,9 @@ export default function CompanyDetailsPage() {
               <Card className="h-full border-t-0 border-r-0 border-b-0 rounded-none">
                 <CardContent className="p-4">
                   <Accordion type="multiple" defaultValue={['item-1', 'item-2', 'item-3', 'item-4']} className="w-full">
-                    <AccordionItem value="item-1" className="py-2">
+                    <AccordionItem value="item-1" className="border-b-4 border-card">
                       <div className="flex items-center justify-between w-full">
-                        <AccordionTrigger chevronFirst className="flex-1">
+                        <AccordionTrigger chevronFirst className="flex-1 py-2">
                             <h3 className="font-semibold">Company Information</h3>
                         </AccordionTrigger>
                         <Button variant="ghost" size="icon" className="h-7 w-7" onClick={(e) => { e.stopPropagation(); setIsEditModalOpen(true);}}>
@@ -742,9 +742,9 @@ export default function CompanyDetailsPage() {
                           </div>
                       </AccordionContent>
                     </AccordionItem>
-                    <AccordionItem value="item-2" className="py-2">
+                    <AccordionItem value="item-2" className="border-b-4 border-card">
                        <div className="flex items-center justify-between w-full">
-                          <AccordionTrigger chevronFirst className="flex-1">
+                          <AccordionTrigger chevronFirst className="flex-1 py-2">
                               <h3 className="font-semibold">Primary Contacts</h3>
                           </AccordionTrigger>
                           <Button variant="ghost" size="icon" className="h-7 w-7" onClick={(e) => { e.stopPropagation(); openNewContactDialog(); }}>
@@ -775,9 +775,9 @@ export default function CompanyDetailsPage() {
                         </div>
                       </AccordionContent>
                     </AccordionItem>
-                    <AccordionItem value="item-3" className="py-2">
+                    <AccordionItem value="item-3" className="border-b-4 border-card">
                        <div className="flex items-center justify-between w-full">
-                          <AccordionTrigger chevronFirst className="flex-1">
+                          <AccordionTrigger chevronFirst className="flex-1 py-2">
                               <h3 className="font-semibold">Company Engagements</h3>
                           </AccordionTrigger>
                           <Button variant="ghost" size="icon" className="h-7 w-7" onClick={(e) => { e.stopPropagation(); openNewProjectDialog(); }}>
@@ -806,9 +806,9 @@ export default function CompanyDetailsPage() {
                           </div>
                       </AccordionContent>
                     </AccordionItem>
-                     <AccordionItem value="item-4" className="py-2">
+                     <AccordionItem value="item-4" className="border-b-0">
                       <div className="flex items-center justify-between w-full">
-                        <AccordionTrigger chevronFirst className="flex-1">
+                        <AccordionTrigger chevronFirst className="flex-1 py-2">
                             <h3 className="font-semibold">Recent Activity</h3>
                         </AccordionTrigger>
                       </div>
