@@ -54,6 +54,8 @@ import { TablePagination } from '@/components/table-pagination';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { format, formatDistanceToNow, parseISO } from 'date-fns';
+import { Sheet, SheetContent } from '@/components/ui/sheet';
+import { AssessmentInputsPanel } from '@/components/assessment-inputs-panel';
 
 type ActivityItem = {
     activity: string;
@@ -82,6 +84,8 @@ export default function CompanyDetailsPage() {
   const [rowsPerPage, setRowsPerPage] = React.useState(10);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   const [assessmentToUpload, setAssessmentToUpload] = React.useState<string | null>(null);
+  const [isInputsPanelOpen, setIsInputsPanelOpen] = React.useState(false);
+  const [selectedAssessmentForPanel, setSelectedAssessmentForPanel] = React.useState<Assessment | null>(null);
 
   const fetchCompanyData = React.useCallback(async () => {
     if (!companyId) return;
@@ -153,7 +157,8 @@ export default function CompanyDetailsPage() {
   
   const handleOpenAssessment = (assessment: Assessment) => {
     if (assessment.status === 'Completed') {
-        router.push(`/assessment/${assessment.id}/report`);
+        setSelectedAssessmentForPanel(assessment);
+        setIsInputsPanelOpen(true);
     } else {
         openAssessmentModal(assessment);
     }
@@ -534,9 +539,9 @@ export default function CompanyDetailsPage() {
                                     </a>
                                 </Button>
                               )}
-                              <Button variant="ghost" size="icon" onClick={() => handleOpenAssessment(assessment)} title="View Report">
+                              <Button variant="ghost" size="icon" onClick={() => handleOpenAssessment(assessment)} title="View Inputs">
                                   <FileText className="h-4 w-4" />
-                                  <span className="sr-only">View Report</span>
+                                  <span className="sr-only">View Inputs</span>
                               </Button>
                               <Button variant="ghost" size="icon" onClick={() => handleUploadClick(assessment.id)} title="Upload Document">
                                   <Upload className="h-4 w-4" />
@@ -716,6 +721,13 @@ export default function CompanyDetailsPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+        <Sheet open={isInputsPanelOpen} onOpenChange={setIsInputsPanelOpen}>
+            <SheetContent className="w-[600px] sm:w-[800px]">
+                {selectedAssessmentForPanel && (
+                    <AssessmentInputsPanel assessment={selectedAssessmentForPanel} />
+                )}
+            </SheetContent>
+        </Sheet>
     </>
   );
 }
