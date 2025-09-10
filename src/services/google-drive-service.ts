@@ -1,4 +1,3 @@
-
 'use client';
 
 import { auth } from '@/lib/firebase';
@@ -35,40 +34,49 @@ class GoogleDriveService {
 
   async handleGoogleDriveRedirectResult(): Promise<string | null> {
     try {
-      if (typeof window !== 'undefined' && !localStorage.getItem('driveAuthPending')) {
-        // If we didn't initiate the auth flow, don't do anything.
-        return this.getAccessToken();
-      }
-      
+      // Always check for redirect result first
       const result = await getRedirectResult(auth);
       
       if (result) {
-        localStorage.removeItem('driveAuthPending');
+        // Clear any pending flag since we got a result
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('driveAuthPending');
+        }
         
         const credential = GoogleAuthProvider.credentialFromResult(result);
         const accessToken = credential?.accessToken;
         
         if (accessToken) {
           this.accessToken = accessToken;
-          localStorage.setItem('googleDriveAccessToken', accessToken);
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('googleDriveAccessToken', accessToken);
+          }
           console.log('Google Drive authentication successful');
           return accessToken;
         } else {
-          console.error('No access token received');
+          console.error('No access token received from redirect result');
           return null;
         }
       }
       
+      // If no redirect result, check if we have a stored token
       if (this.isAuthenticated()) {
-        const isValid = await this.verifyToken(this.getAccessToken()!);
-        if (isValid) {
-          return this.getAccessToken();
-        } else {
-          this.clearToken();
-          return null;
+        const currentToken = this.getAccessToken();
+        if (currentToken) {
+          const isValid = await this.verifyToken(currentToken);
+          if (isValid) {
+            console.log('Using existing valid token');
+            return currentToken;
+          } else {
+            console.log('Stored token is invalid, clearing');
+            this.clearToken();
+            return null;
+          }
         }
       }
       
+      // No authentication available
+      console.log('No authentication available');
       return null;
     } catch (error) {
       if (typeof window !== 'undefined') {
@@ -79,10 +87,18 @@ class GoogleDriveService {
     }
   }
 
-  async verifyToken(token: string) {
+  async verifyToken(token: string): Promise<boolean> {
     try {
       const response = await fetch(`https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=${token}`);
-      return response.ok;
+      
+      if (response.ok) {
+        const tokenInfo = await response.json();
+        // Check if the token has the required scope
+        const hasRequiredScope = tokenInfo.scope?.includes('https://www.googleapis.com/auth/drive.readonly');
+        return hasRequiredScope;
+      }
+      
+      return false;
     } catch (error) {
       console.error('Token verification failed:', error);
       return false;
@@ -97,7 +113,7 @@ class GoogleDriveService {
     }
   }
 
-  getAccessToken() {
+  getAccessToken(): string | null {
     if (typeof window !== 'undefined') {
         return this.accessToken || localStorage.getItem('googleDriveAccessToken');
     }
@@ -111,8 +127,9 @@ class GoogleDriveService {
     }
 
     try {
-      const query = `name contains '${companyName}'`;
-      const url = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(query)}&fields=files(id,name,webViewLink,iconLink)&pageSize=10`;
+      // More flexible search query
+      const query = companyName ? `name contains '${companyName.replace(/'/g, "\\'")}'` : '';
+      const url = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(query)}&fields=files(id,name,webViewLink,iconLink,mimeType,createdTime)&pageSize=20&orderBy=modifiedTime desc`;
       
       const response = await fetch(url, {
         headers: {
@@ -130,6 +147,7 @@ class GoogleDriveService {
       }
 
       const data = await response.json();
+      console.log('Drive API response:', data);
       return data.files || [];
     } catch (error) {
       console.error('Error listing Drive files:', error);
@@ -137,8 +155,20 @@ class GoogleDriveService {
     }
   }
 
-  isAuthenticated() {
+  isAuthenticated(): boolean {
     return !!this.getAccessToken();
+  }
+
+  // Debug helper method
+  getDebugInfo() {
+    if (typeof window === 'undefined') return { server: true };
+    
+    return {
+      hasStoredToken: !!localStorage.getItem('googleDriveAccessToken'),
+      authPending: !!localStorage.getItem('driveAuthPending'),
+      currentToken: this.getAccessToken()?.substring(0, 20) + '...',
+      isAuthenticated: this.isAuthenticated()
+    };
   }
 }
 
@@ -149,3 +179,4 @@ export const handleGoogleDriveRedirectResult = () => driveService.handleGoogleDr
 export const listFiles = (companyName: string) => driveService.listFiles(companyName);
 export const isGoogleDriveAuthenticated = () => driveService.isAuthenticated();
 export const clearGoogleDriveAuth = () => driveService.clearToken();
+export const getGoogleDriveDebugInfo = () => driveService.getDebugInfo();

@@ -85,8 +85,8 @@ export default function CompanyDetailsPage() {
   const [contacts, setContacts] = React.useState<Contact[]>([]);
   const [projects, setProjects] = React.useState<Project[]>([]);
   const [driveFiles, setDriveFiles] = React.useState<DriveFile[]>([]);
-  const [isDriveLoading, setIsDriveLoading] = React.useState(true);
-  const [driveAuthNeeded, setDriveAuthNeeded] = React.useState(false);
+  const [isDriveLoading, setIsDriveLoading] = React.useState(false);
+  const [driveAuthNeeded, setDriveAuthNeeded] = React.useState(true);
   const [allRecentActivity, setAllRecentActivity] = React.useState<ActivityItem[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [isEditModalOpen, setIsEditModalOpen] = React.useState(false);
@@ -162,29 +162,37 @@ export default function CompanyDetailsPage() {
     fetchCompanyData();
   }, [fetchCompanyData]);
   
-   React.useEffect(() => {
-    async function checkDriveAuth() {
-        if (!companyData || activeTab !== 'documents') return;
+  React.useEffect(() => {
+    const processAuth = async () => {
+        if (activeTab !== 'documents' || !companyData) return;
 
         setIsDriveLoading(true);
-        setDriveAuthNeeded(!isGoogleDriveAuthenticated());
-
         try {
-            await handleGoogleDriveRedirectResult();
-            if (isGoogleDriveAuthenticated()) {
+            const accessToken = await handleGoogleDriveRedirectResult();
+            if (accessToken) {
                 setDriveAuthNeeded(false);
                 const files = await listFiles(companyData.name);
                 setDriveFiles(files);
+            } else {
+                setDriveAuthNeeded(true);
+                setDriveFiles([]);
             }
         } catch (error) {
-            console.error("Error handling Google Drive auth:", error);
+            console.error("Error during Google Drive auth process:", error);
             setDriveAuthNeeded(true);
+            setDriveFiles([]);
+            toast({
+                variant: "destructive",
+                title: "Authentication Failed",
+                description: "Could not connect to Google Drive. Please try again.",
+            });
         } finally {
             setIsDriveLoading(false);
         }
-    }
-    checkDriveAuth();
-  }, [companyData, activeTab]);
+    };
+    processAuth();
+}, [activeTab, companyData, toast]);
+
 
   React.useEffect(() => {
     const unsubscribeAssessment = setOnAssessmentCompleted(() => fetchCompanyData);
