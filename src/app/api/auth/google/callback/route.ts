@@ -9,9 +9,9 @@ export async function GET(request: NextRequest) {
     if (code) {
         try {
             await setTokensFromCode(code);
-            // Redirect user back to the companies page after successful authentication.
-            // Using a relative URL is more reliable.
-            return NextResponse.redirect('/dashboard/companies');
+            // Hardcode the redirect URL to ensure it works in the local dev environment.
+            const redirectUrl = 'http://localhost:9002/dashboard/companies';
+            return NextResponse.redirect(redirectUrl);
         } catch (error) {
             console.error('Error exchanging code for tokens:', error);
             return new NextResponse('Authentication failed', { status: 500 });
