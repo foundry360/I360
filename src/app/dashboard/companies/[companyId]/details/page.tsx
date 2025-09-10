@@ -160,13 +160,9 @@ export default function CompanyDetailsPage() {
   const fetchDriveFiles = React.useCallback(async () => {
     if (process.env.NEXT_PUBLIC_GOOGLE_DRIVE_FOLDER_ID) {
       setIsDriveLoading(true);
-      setDriveAuthNeeded(false);
+      setDriveAuthNeeded(false); // Reset on each fetch attempt
       try {
         const files = await listFiles(process.env.NEXT_PUBLIC_GOOGLE_DRIVE_FOLDER_ID);
-        if (files.length === 0 && !driveAuthNeeded) {
-            // This might mean we need to authenticate
-            setDriveAuthNeeded(true);
-        }
         setDriveFiles(files);
       } catch (error) {
         console.error("Error fetching Google Drive files:", error);
@@ -175,7 +171,7 @@ export default function CompanyDetailsPage() {
         setIsDriveLoading(false);
       }
     }
-  }, [driveAuthNeeded]);
+  }, []);
 
 
   React.useEffect(() => {
