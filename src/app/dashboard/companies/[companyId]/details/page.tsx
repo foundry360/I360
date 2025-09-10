@@ -715,7 +715,7 @@ export default function CompanyDetailsPage() {
                 <CardContent className="p-4">
                   <Accordion type="multiple" defaultValue={['item-1', 'item-2', 'item-3', 'item-4']} className="w-full">
                     <AccordionItem value="item-1">
-                      <AccordionTrigger>
+                      <AccordionTrigger chevronFirst>
                           <div className="flex items-center justify-between w-full">
                               <h3 className="font-semibold">Company Information</h3>
                               <Button variant="ghost" size="icon" className="h-7 w-7" onClick={(e) => { e.stopPropagation(); setIsEditModalOpen(true);}}>
@@ -743,7 +743,7 @@ export default function CompanyDetailsPage() {
                       </AccordionContent>
                     </AccordionItem>
                     <AccordionItem value="item-2">
-                      <AccordionTrigger>
+                      <AccordionTrigger chevronFirst>
                           <div className="flex items-center justify-between w-full">
                               <h3 className="font-semibold">Primary Contacts</h3>
                               <Button variant="ghost" size="icon" className="h-7 w-7" onClick={(e) => { e.stopPropagation(); openNewContactDialog(); }}>
@@ -776,7 +776,7 @@ export default function CompanyDetailsPage() {
                       </AccordionContent>
                     </AccordionItem>
                     <AccordionItem value="item-3">
-                      <AccordionTrigger>
+                      <AccordionTrigger chevronFirst>
                           <div className="flex items-center justify-between w-full">
                               <h3 className="font-semibold">Company Engagements</h3>
                               <Button variant="ghost" size="icon" className="h-7 w-7" onClick={(e) => { e.stopPropagation(); openNewProjectDialog(); }}>
@@ -807,7 +807,7 @@ export default function CompanyDetailsPage() {
                       </AccordionContent>
                     </AccordionItem>
                      <AccordionItem value="item-4">
-                      <AccordionTrigger>
+                      <AccordionTrigger chevronFirst>
                           <h3 className="font-semibold">Recent Activity</h3>
                       </AccordionTrigger>
                       <AccordionContent>
