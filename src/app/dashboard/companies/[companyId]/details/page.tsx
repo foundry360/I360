@@ -149,7 +149,6 @@ export default function CompanyDetailsPage() {
             .sort((a, b) => b.time.getTime() - a.time.getTime());
            setAllRecentActivity(allActivity);
       } else {
-        console.error("Company not found");
         setAllRecentActivity([]);
       }
 
@@ -374,7 +373,7 @@ export default function CompanyDetailsPage() {
     return formatDistanceToNow(date, { addSuffix: true });
   }
 
-  if (loading && !companyData) {
+  if (loading) {
       return (
             <div className="space-y-6">
                 <Skeleton className="h-10 w-1/2" />
