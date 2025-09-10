@@ -3,15 +3,15 @@ import { setTokensFromCode } from '@/services/google-drive-service';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {
-    const { searchParams } = new URL(request.url);
+    const { searchParams, protocol, host } = new URL(request.url);
     const code = searchParams.get('code');
 
     if (code) {
         try {
             await setTokensFromCode(code);
-            // Redirect user back to the company details page they were on.
-            // For simplicity, we'll redirect to the main companies page.
-            return NextResponse.redirect(new URL('/dashboard/companies', request.url));
+            // Redirect user back to the companies page after successful authentication.
+            const redirectUrl = `${protocol}//${host}/dashboard/companies`;
+            return NextResponse.redirect(redirectUrl);
         } catch (error) {
             console.error('Error exchanging code for tokens:', error);
             return new NextResponse('Authentication failed', { status: 500 });
