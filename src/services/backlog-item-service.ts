@@ -1,4 +1,5 @@
 
+
 import { db } from '@/lib/firebase';
 import { collection, query, where, getDocs, doc, setDoc, addDoc, getDoc, updateDoc, deleteDoc, deleteField, writeBatch, runTransaction, onSnapshot } from 'firebase/firestore';
 import { updateProjectLastActivity } from './project-service';
@@ -112,6 +113,7 @@ export async function bulkCreateBacklogItems(projectId: string, epicId: string |
             id: docRef.id,
             projectId,
             epicId: epicId, // This will be null for general backlog items
+            sprintId: null,
             backlogId: lastBacklogId++,
             title: story.title,
             description: story.story,
@@ -162,6 +164,7 @@ export async function addCollectionToProjectBacklog(projectId: string, collectio
             id: docRef.id,
             projectId,
             epicId: null, // Imported stories don't have an epic by default
+            sprintId: null,
             backlogId: lastBacklogId++,
             title: story.title,
             description: story.story,
@@ -210,6 +213,7 @@ export async function addCollectionsToProjectBacklog(projectId: string, collecti
                     id: docRef.id,
                     projectId,
                     epicId: null,
+                    sprintId: null,
                     backlogId: lastBacklogId++,
                     title: story.title,
                     description: story.story,
