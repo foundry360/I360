@@ -172,7 +172,7 @@ export function Header() {
                 </div>
             )}
         </div>
-        <Button variant="outline" onClick={openInsightsPanel}>
+        <Button variant="outline-sidebar" onClick={openInsightsPanel}>
           <Sparkles className="mr-2 h-5 w-5" />
           Ask Insights360
         </Button>
