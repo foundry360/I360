@@ -6,16 +6,10 @@ import { google } from 'googleapis';
 import { db } from '@/lib/firebase';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 
-const oauthConfig = {
-    clientId: process.env.GOOGLE_CLIENT_ID,
-    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    redirectUri: process.env.GOOGLE_REDIRECT_URI,
-};
-
 const oauth2Client = new google.auth.OAuth2(
-    oauthConfig.clientId,
-    oauthConfig.clientSecret,
-    oauthConfig.redirectUri
+    process.env.GOOGLE_CLIENT_ID,
+    process.env.GOOGLE_CLIENT_SECRET,
+    process.env.GOOGLE_REDIRECT_URI
 );
 
 // Helper function to store tokens
