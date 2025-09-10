@@ -62,11 +62,11 @@ export async function getCompany(id: string): Promise<Company | null> {
     }
 }
 
-export async function createCompany(companyData: Omit<Company, 'id' | 'contact' | 'status' | 'lastActivity'>): Promise<void> {
-  const companyId = companyData.name.toLowerCase().replace(/\s+/g, '-');
+export async function createCompany(companyData: Omit<Company, 'id' | 'contact' | 'status' | 'lastActivity'>): Promise<string> {
+  const docRef = doc(companiesCollection);
   const newCompany: Company = {
       ...companyData,
-      id: companyId,
+      id: docRef.id,
       contact: {
         name: '', 
         avatar: '',
@@ -75,7 +75,8 @@ export async function createCompany(companyData: Omit<Company, 'id' | 'contact' 
       lastActivity: new Date().toISOString(),
   };
   
-  await setDoc(doc(companiesCollection, newCompany.id), newCompany);
+  await setDoc(docRef, newCompany);
+  return docRef.id;
 }
 
 export async function updateCompany(id: string, companyData: Partial<Company>): Promise<void> {
