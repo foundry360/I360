@@ -759,8 +759,7 @@ export default function ProjectDetailsPage() {
       return name.split(' ').map(n => n[0]).join('').toUpperCase();
     }
     
-    const unassignedBacklogItems = projectBacklogItems.filter(item => !item.epicId);
-    const unassignedAndUnscheduledBacklogItems = unassignedBacklogItems.filter(item => !item.sprintId);
+    const unscheduledBacklogItems = projectBacklogItems.filter(item => !item.sprintId);
     
     if (loading) {
         return (
@@ -1327,7 +1326,7 @@ export default function ProjectDetailsPage() {
                     </TabsContent>
                     <TabsContent value="epics">
                         <div className="space-y-6">
-                            {epics.length === 0 && unassignedBacklogItems.length === 0 ? (
+                            {epics.length === 0 && projectBacklogItems.filter(item => !item.epicId).length === 0 ? (
                                 <div className="p-10 text-center rounded-lg border-2 border-dashed border-border bg-transparent shadow-none">
                                     <div className="flex justify-center mb-4">
                                        <div className="flex justify-center items-center h-16 w-16 text-muted-foreground">
@@ -1458,7 +1457,7 @@ export default function ProjectDetailsPage() {
                     </TabsContent>
                     <TabsContent value="backlog">
                         <div className="space-y-6">
-                            {unassignedAndUnscheduledBacklogItems.length === 0 ? (
+                            {unscheduledBacklogItems.length === 0 ? (
                                 <div className="p-10 text-center rounded-lg border-2 border-dashed border-border bg-muted/20">
                                     <div className="flex justify-center mb-4">
                                         <div className="flex justify-center items-center h-16 w-16 text-muted-foreground">
@@ -1467,7 +1466,7 @@ export default function ProjectDetailsPage() {
                                     </div>
                                     <h3 className="text-lg font-semibold">The backlog is empty!</h3>
                                     <p className="text-muted-foreground mt-2 mb-4">
-                                        This space is for user stories that haven't been assigned to an epic or wave yet.
+                                        This space is for user stories that haven't been assigned to a wave yet.
                                     </p>
                                     <div className="flex justify-center gap-4">
                                         <Button variant="outline" onClick={() => openAddFromCollectionDialog(projectId, collections)}><BookCopy className="h-4 w-4 mr-2" /> Add from Collection</Button>
@@ -1484,8 +1483,8 @@ export default function ProjectDetailsPage() {
                                     <CardHeader>
                                         <div className="flex justify-between items-center">
                                             <div>
-                                                <CardTitle>Unassigned Backlog Items</CardTitle>
-                                                <CardDescription>Items that are not yet assigned to an epic or wave.</CardDescription>
+                                                <CardTitle>Project Backlog</CardTitle>
+                                                <CardDescription>Items that are not yet assigned to a wave.</CardDescription>
                                             </div>
                                             <div className="flex items-center gap-2">
                                                  <TooltipProvider>
@@ -1528,7 +1527,7 @@ export default function ProjectDetailsPage() {
                                     </CardHeader>
                                     <CardContent>
                                         <div className="border rounded-lg">
-                                            {unassignedAndUnscheduledBacklogItems.map(item => (
+                                            {unscheduledBacklogItems.map(item => (
                                                 <div 
                                                     key={item.id} 
                                                     className="flex justify-between items-center p-3 border-b last:border-b-0 hover:bg-muted/50 cursor-pointer"
@@ -1913,3 +1912,4 @@ export default function ProjectDetailsPage() {
         </div>
     );
 }
+
