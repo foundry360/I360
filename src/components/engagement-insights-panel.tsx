@@ -24,11 +24,11 @@ export function EngagementInsightsPanel({ project, epics, sprints, backlogItems 
     if (!project) {
         return (
              <div className="flex flex-col h-full">
-                <SheetHeader className="p-6 border-b border-sidebar-border">
-                    <SheetTitle className="text-sidebar-foreground">Engagement Insights</SheetTitle>
+                <SheetHeader className="p-6 border-b">
+                    <SheetTitle>Engagement Insights</SheetTitle>
                 </SheetHeader>
                 <div className="p-6">
-                    <p className="text-sidebar-foreground/60 text-center py-10">No engagement data available.</p>
+                    <p className="text-muted-foreground text-center py-10">No engagement data available.</p>
                 </div>
             </div>
         );
@@ -45,95 +45,95 @@ export function EngagementInsightsPanel({ project, epics, sprints, backlogItems 
 
     return (
         <div className="flex flex-col h-full">
-            <SheetHeader className="p-6 border-b border-sidebar-border">
-                <SheetTitle className="text-sidebar-foreground">Insights for: {project.name}</SheetTitle>
-                <SheetDescription className="text-sidebar-foreground/80">
+            <SheetHeader className="p-6 border-b">
+                <SheetTitle>Insights for: {project.name}</SheetTitle>
+                <SheetDescription>
                    A complete overview of your engagement in a single glance.
                 </SheetDescription>
             </SheetHeader>
             <ScrollArea className="flex-1">
                 <div className="p-6 space-y-6">
-                    <Card className="bg-sidebar-accent border-sidebar-border text-sidebar-foreground">
+                    <Card>
                         <CardHeader>
                             <CardTitle className="text-lg">Engagement Summary</CardTitle>
                         </CardHeader>
                         <CardContent>
                              <div className="grid grid-cols-2 gap-4 text-sm">
                                 <div className="flex justify-between">
-                                    <span className="text-sidebar-foreground/80">Total Epics:</span>
+                                    <span className="text-muted-foreground">Total Epics:</span>
                                     <span className="font-bold">{summaryStats.totalEpics}</span>
                                 </div>
                                  <div className="flex justify-between">
-                                    <span className="text-sidebar-foreground/80">Total Waves:</span>
+                                    <span className="text-muted-foreground">Total Waves:</span>
                                     <span className="font-bold">{summaryStats.totalSprints}</span>
                                 </div>
                                 <div className="flex justify-between">
-                                    <span className="text-sidebar-foreground/80">Total Items:</span>
+                                    <span className="text-muted-foreground">Total Items:</span>
                                     <span className="font-bold">{summaryStats.totalBacklogItems}</span>
                                 </div>
                                  <div className="flex justify-between">
-                                    <span className="text-sidebar-foreground/80">Completed Items:</span>
+                                    <span className="text-muted-foreground">Completed Items:</span>
                                     <span className="font-bold">{summaryStats.completedItems}</span>
                                 </div>
                             </div>
                         </CardContent>
                     </Card>
 
-                    <Card className="bg-sidebar-accent border-sidebar-border text-sidebar-foreground">
+                    <Card>
                         <CardHeader>
                             <CardTitle className="text-lg">Epics</CardTitle>
                         </CardHeader>
                         <CardContent>
                              <div className="space-y-3">
                                 {epics.map(epic => (
-                                    <div key={epic.id} className="p-3 rounded-md bg-sidebar-background border border-sidebar-divider">
+                                    <div key={epic.id} className="p-3 rounded-md bg-muted/50 border">
                                         <p className="font-semibold text-sm">{epic.title}</p>
-                                        <p className="text-xs text-sidebar-foreground/60 line-clamp-2">{epic.description}</p>
+                                        <p className="text-xs text-muted-foreground line-clamp-2">{epic.description}</p>
                                     </div>
                                 ))}
-                                {epics.length === 0 && <p className="text-xs text-sidebar-foreground/60 text-center">No epics found.</p>}
+                                {epics.length === 0 && <p className="text-xs text-muted-foreground text-center">No epics found.</p>}
                             </div>
                         </CardContent>
                     </Card>
 
-                    <Card className="bg-sidebar-accent border-sidebar-border text-sidebar-foreground">
+                    <Card>
                         <CardHeader>
                             <CardTitle className="text-lg">Waves</CardTitle>
                         </CardHeader>
                         <CardContent>
                             <div className="space-y-3">
                                 {sprints.map(sprint => (
-                                     <div key={sprint.id} className="p-3 rounded-md bg-sidebar-background border border-sidebar-divider">
+                                     <div key={sprint.id} className="p-3 rounded-md bg-muted/50 border">
                                         <div className="flex justify-between items-center">
                                             <p className="font-semibold text-sm">{sprint.name}</p>
                                             <Badge variant="secondary" className="text-xs">{sprint.status}</Badge>
                                         </div>
-                                        <p className="text-xs text-sidebar-foreground/60">{sprint.goal}</p>
+                                        <p className="text-xs text-muted-foreground">{sprint.goal}</p>
                                     </div>
                                 ))}
-                                {sprints.length === 0 && <p className="text-xs text-sidebar-foreground/60 text-center">No waves found.</p>}
+                                {sprints.length === 0 && <p className="text-xs text-muted-foreground text-center">No waves found.</p>}
                             </div>
                         </CardContent>
                     </Card>
                     
-                    <Card className="bg-sidebar-accent border-sidebar-border text-sidebar-foreground">
+                    <Card>
                         <CardHeader>
                             <CardTitle className="text-lg">Backlog Items</CardTitle>
                         </CardHeader>
                         <CardContent>
                              <div className="space-y-2">
                                 {backlogItems.map(item => (
-                                     <div key={item.id} className="p-2 rounded-md bg-sidebar-background border border-sidebar-divider">
+                                     <div key={item.id} className="p-2 rounded-md bg-muted/50 border">
                                         <div className="flex justify-between items-start">
                                             <p className="text-sm font-medium flex-1 pr-2">
-                                                <span className="text-sidebar-foreground/50 mr-2">{projectPrefix}-{item.backlogId}</span>
+                                                <span className="text-muted-foreground mr-2">{projectPrefix}-{item.backlogId}</span>
                                                 {item.title}
                                             </p>
                                             <Badge variant="outline" className="text-xs">{item.status}</Badge>
                                         </div>
                                     </div>
                                 ))}
-                                {backlogItems.length === 0 && <p className="text-xs text-sidebar-foreground/60 text-center">No backlog items found.</p>}
+                                {backlogItems.length === 0 && <p className="text-xs text-muted-foreground text-center">No backlog items found.</p>}
                             </div>
                         </CardContent>
                     </Card>

@@ -875,7 +875,7 @@ export default function ProjectDetailsPage() {
                                     Insights
                                     </Button>
                                 </SheetTrigger>
-                                <SheetContent className="w-[600px] sm:max-w-none sm:w-[600px] p-0 bg-sidebar text-sidebar-foreground border-sidebar-border">
+                                <SheetContent className="w-[600px] sm:max-w-none sm:w-[600px] p-0">
                                     <EngagementInsightsPanel 
                                         project={project}
                                         epics={epics}
