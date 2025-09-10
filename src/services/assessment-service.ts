@@ -2,8 +2,8 @@
 'use client';
 
 import { db, auth } from '@/lib/firebase';
-import { collection, doc, getDocs, setDoc, updateDoc, query, where, writeBatch, getDoc, addDoc } from 'firebase/firestore';
-import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { collection, doc, getDocs, setDoc, updateDoc, query, where, writeBatch, getDoc, addDoc, deleteField } from 'firebase/firestore';
+import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import type { Company } from "./company-service";
 import { createNotification } from "./notification-service";
 
@@ -131,7 +131,7 @@ export async function getAssessmentsForCompany(companyId: string): Promise<Asses
     } as Assessment));
 }
 
-export async function createAssessment(assessmentData: Omit<Assessment, 'id'>, isPublicSubmission: boolean = false): Promise<string> {
+export async function createAssessment(assessmentData: Omit<Assessment, 'id' | 'result'>, isPublicSubmission: boolean = false): Promise<string> {
     const docRef = await addDoc(assessmentsCollection, {});
     const now = new Date().toISOString();
     const finalData = { 
@@ -155,7 +155,7 @@ export async function createAssessment(assessmentData: Omit<Assessment, 'id'>, i
     return docRef.id;
 }
 
-export async function updateAssessment(id: string, assessmentData: Partial<Omit<Assessment, 'id'>>): Promise<void> {
+export async function updateAssessment(id: string, assessmentData: Partial<Omit<Assessment, 'id' | 'result'>>): Promise<void> {
     const docRef = doc(db, 'assessments', id);
     const dataWithTimestamp = {
         ...assessmentData,
@@ -190,4 +190,49 @@ export async function uploadAssessmentDocument(assessmentId: string, file: File)
     });
 
     return downloadURL;
+}
+
+export async function deleteAssessmentDocument(assessmentId: string): Promise<void> {
+    if (!auth.currentUser) {
+        throw new Error("User must be logged in to delete documents.");
+    }
+    const storage = getStorage();
+    const assessmentDocRef = doc(db, 'assessments', assessmentId);
+    const assessmentDoc = await getDoc(assessmentDocRef);
+
+    if (assessmentDoc.exists()) {
+        const assessmentData = assessmentDoc.data() as Assessment;
+        const url = assessmentData.documentUrl;
+
+        if (url) {
+            try {
+                // The URL needs to be decoded to get the correct path
+                const decodedUrl = decodeURIComponent(url);
+                const pathRegex = /o\/(.*?)\?/;
+                const match = decodedUrl.match(pathRegex);
+
+                if (match && match[1]) {
+                    const filePath = match[1];
+                    const fileRef = ref(storage, filePath);
+                    await deleteObject(fileRef);
+                } else {
+                    console.warn("Could not extract file path from URL:", url);
+                }
+            } catch (error) {
+                console.error("Error deleting file from storage:", error);
+                // Don't throw if file doesn't exist, just continue to remove the URL from firestore
+                if ((error as any).code !== 'storage/object-not-found') {
+                    throw error;
+                }
+            }
+
+            // Remove the URL field from the Firestore document
+            await updateDoc(assessmentDocRef, {
+                documentUrl: deleteField(),
+                lastActivity: new Date().toISOString()
+            });
+        }
+    } else {
+        throw new Error("Assessment not found");
+    }
 }

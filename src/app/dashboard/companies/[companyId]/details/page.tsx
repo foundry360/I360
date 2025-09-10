@@ -45,7 +45,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { EditCompanyModal } from '@/components/edit-company-modal';
-import { getAssessmentsForCompany, type Assessment, deleteAssessments, uploadAssessmentDocument, updateAssessment } from '@/services/assessment-service';
+import { getAssessmentsForCompany, type Assessment, deleteAssessments, uploadAssessmentDocument, updateAssessment, deleteAssessmentDocument } from '@/services/assessment-service';
 import { getContactsForCompany, type Contact } from '@/services/contact-service';
 import { getProjectsForCompany, type Project } from '@/services/project-service';
 import { cn } from '@/lib/utils';
@@ -81,6 +81,7 @@ export default function CompanyDetailsPage() {
   const [selectedAssessments, setSelectedAssessments] = React.useState<string[]>([]);
   const [isBulkDeleteDialogOpen, setIsBulkDeleteDialogOpen] = React.useState(false);
   const [assessmentToDelete, setAssessmentToDelete] = React.useState<Assessment | null>(null);
+  const [assessmentDocumentToDelete, setAssessmentDocumentToDelete] = React.useState<Assessment | null>(null);
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(10);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
@@ -168,6 +169,10 @@ export default function CompanyDetailsPage() {
     setAssessmentToDelete(assessment);
     setIsBulkDeleteDialogOpen(true);
   };
+  
+  const openDeleteDocumentDialog = (assessment: Assessment) => {
+    setAssessmentDocumentToDelete(assessment);
+  };
 
   const handleCompanyUpdate = async (updatedData: Partial<Company>) => {
     if (!companyId) return;
@@ -224,6 +229,29 @@ export default function CompanyDetailsPage() {
       title: "Link Copied!",
       description: "Assessment link has been copied to your clipboard.",
     });
+  };
+
+  const handleDeleteDocument = async () => {
+    if (!assessmentDocumentToDelete) return;
+    try {
+      setLoading(true);
+      await deleteAssessmentDocument(assessmentDocumentToDelete.id);
+      toast({
+        title: "Document Deleted",
+        description: "The document has been successfully removed.",
+      });
+      await fetchCompanyData();
+    } catch (error) {
+      console.error("Failed to delete document:", error);
+      toast({
+        variant: "destructive",
+        title: "Deletion Failed",
+        description: "There was a problem deleting the document.",
+      });
+    } finally {
+      setLoading(false);
+      setAssessmentDocumentToDelete(null);
+    }
   };
 
 
@@ -503,6 +531,12 @@ export default function CompanyDetailsPage() {
                                             <span>Upload Document</span>
                                         </DropdownMenuItem>
                                     )}
+                                    {assessment.documentUrl && (
+                                        <DropdownMenuItem onClick={() => openDeleteDocumentDialog(assessment)} className="text-destructive focus:bg-destructive/90 focus:text-destructive-foreground">
+                                          <Trash2 className="mr-2 h-4 w-4" />
+                                          <span>Delete Document</span>
+                                        </DropdownMenuItem>
+                                    )}
                                     <DropdownMenuSeparator />
                                     <DropdownMenuItem onClick={() => openDeleteDialog(assessment)} className="text-destructive focus:bg-destructive/90 focus:text-destructive-foreground">
                                         <Trash2 className="mr-2 h-4 w-4" />
@@ -679,6 +713,27 @@ export default function CompanyDetailsPage() {
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction onClick={handleBulkDelete}>
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      <AlertDialog
+        open={!!assessmentDocumentToDelete}
+        onOpenChange={(isOpen) => !isOpen && setAssessmentDocumentToDelete(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the document attached to the "{assessmentDocumentToDelete?.name}" assessment.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setAssessmentDocumentToDelete(null)}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteDocument}>
               Delete
             </AlertDialogAction>
           </AlertDialogFooter>
