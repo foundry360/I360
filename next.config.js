@@ -1,3 +1,4 @@
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   typescript: {
@@ -9,6 +10,14 @@ const nextConfig = {
   // Disable static generation to avoid Firebase init during build
   experimental: {
     staticWorkerRequestDeduping: false,
+  },
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '*.googleusercontent.com',
+      }
+    ],
   },
   async headers() {
     return [

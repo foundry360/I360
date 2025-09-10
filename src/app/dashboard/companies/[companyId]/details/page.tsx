@@ -21,7 +21,7 @@ import { AppLayout } from '@/components/app-layout';
 import { useParams, useRouter } from 'next/navigation';
 import React from 'react';
 import { Progress } from '@/components/ui/progress';
-import { Phone, Globe, MapPin, ArrowLeft, Plus, Pencil, FileText, Trash2, Paperclip, Upload, Link2, FolderKanban, Star, MoreHorizontal, ClipboardList, Notebook, Folder, FilePenLine } from 'lucide-react';
+import { Phone, Globe, MapPin, ArrowLeft, Plus, Pencil, FileText, Trash2, Paperclip, Upload, Link2, FolderKanban, Star, MoreHorizontal, ClipboardList, Notebook, Folder, FilePenLine, KeyRound } from 'lucide-react';
 import type { Company } from '@/services/company-service';
 import { getCompany, updateCompany } from '@/services/company-service';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -48,6 +48,7 @@ import { EditCompanyModal } from '@/components/edit-company-modal';
 import { getAssessmentsForCompany, type Assessment, deleteAssessments, uploadAssessmentDocument, updateAssessment, deleteAssessmentDocument } from '@/services/assessment-service';
 import { getContactsForCompany, type Contact } from '@/services/contact-service';
 import { getProjectsForCompany, type Project } from '@/services/project-service';
+import { listFiles, getGoogleAuthUrl } from '@/services/google-drive-service';
 import { cn } from '@/lib/utils';
 import { useQuickAction } from '@/contexts/quick-action-context';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -65,6 +66,13 @@ type ActivityItem = {
     time: Date;
 };
 
+interface DriveFile {
+  id: string;
+  name: string;
+  webViewLink: string;
+  iconLink: string;
+}
+
 export default function CompanyDetailsPage() {
   const params = useParams();
   const router = useRouter();
@@ -75,6 +83,9 @@ export default function CompanyDetailsPage() {
   const [assessments, setAssessments] = React.useState<Assessment[]>([]);
   const [contacts, setContacts] = React.useState<Contact[]>([]);
   const [projects, setProjects] = React.useState<Project[]>([]);
+  const [driveFiles, setDriveFiles] = React.useState<DriveFile[]>([]);
+  const [isDriveLoading, setIsDriveLoading] = React.useState(false);
+  const [driveAuthNeeded, setDriveAuthNeeded] = React.useState(false);
   const [allRecentActivity, setAllRecentActivity] = React.useState<ActivityItem[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [isEditModalOpen, setIsEditModalOpen] = React.useState(false);
@@ -146,8 +157,32 @@ export default function CompanyDetailsPage() {
     }
   }, [companyId]);
 
+  const fetchDriveFiles = React.useCallback(async () => {
+    if (process.env.NEXT_PUBLIC_GOOGLE_DRIVE_FOLDER_ID) {
+      setIsDriveLoading(true);
+      setDriveAuthNeeded(false);
+      try {
+        const files = await listFiles(process.env.NEXT_PUBLIC_GOOGLE_DRIVE_FOLDER_ID);
+        if (files.length === 0 && !driveAuthNeeded) {
+            // This might mean we need to authenticate
+            setDriveAuthNeeded(true);
+        }
+        setDriveFiles(files);
+      } catch (error) {
+        console.error("Error fetching Google Drive files:", error);
+        setDriveAuthNeeded(true);
+      } finally {
+        setIsDriveLoading(false);
+      }
+    }
+  }, [driveAuthNeeded]);
+
+
   React.useEffect(() => {
     fetchCompanyData();
+    if (activeTab === 'documents') {
+        fetchDriveFiles();
+    }
     const unsubscribeAssessment = setOnAssessmentCompleted(() => fetchCompanyData);
     const unsubscribeContact = setOnContactCreated(() => fetchCompanyData);
     const unsubscribeProject = setOnProjectCreated(() => fetchCompanyData);
@@ -157,7 +192,7 @@ export default function CompanyDetailsPage() {
       if (typeof unsubscribeContact === 'function') unsubscribeContact();
       if (typeof unsubscribeProject === 'function') unsubscribeProject();
     }
-  }, [fetchCompanyData, setOnAssessmentCompleted, setOnContactCreated, setOnProjectCreated]);
+  }, [fetchCompanyData, setOnAssessmentCompleted, setOnContactCreated, setOnProjectCreated, activeTab, fetchDriveFiles]);
   
   const handleOpenAssessment = (assessment: Assessment) => {
     if (assessment.status === 'Completed') {
@@ -295,6 +330,11 @@ export default function CompanyDetailsPage() {
     } catch (error) {
       console.error('Failed to delete assessments:', error);
     }
+  };
+  
+  const handleGoogleAuth = async () => {
+      const authUrl = await getGoogleAuthUrl();
+      router.push(authUrl);
   };
 
   const paginatedAssessments = assessments.slice(
@@ -580,11 +620,45 @@ export default function CompanyDetailsPage() {
                         <CardHeader>
                             <CardTitle>Documents</CardTitle>
                             <CardDescription>
-                                All documents related to {companyData.name}.
+                                Files from Google Drive for {companyData.name}.
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <p className="text-muted-foreground text-center p-8">No documents uploaded yet.</p>
+                            {isDriveLoading ? (
+                                <Skeleton className="h-24 w-full" />
+                            ) : driveAuthNeeded ? (
+                                <div className="text-center p-8">
+                                    <p className="mb-4 text-muted-foreground">Connect to Google Drive to view documents.</p>
+                                    <Button onClick={handleGoogleAuth}>
+                                        <KeyRound className="mr-2 h-4 w-4" /> Authorize Google Drive
+                                    </Button>
+                                </div>
+                            ) : driveFiles.length > 0 ? (
+                                <Table>
+                                  <TableHeader>
+                                    <TableRow>
+                                      <TableHead className="w-[50px]"></TableHead>
+                                      <TableHead>Name</TableHead>
+                                    </TableRow>
+                                  </TableHeader>
+                                  <TableBody>
+                                    {driveFiles.map(file => (
+                                        <TableRow key={file.id}>
+                                            <TableCell>
+                                                <img src={file.iconLink} alt="file icon" className="h-4 w-4" />
+                                            </TableCell>
+                                            <TableCell>
+                                                <a href={file.webViewLink} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                                                    {file.name}
+                                                </a>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                  </TableBody>
+                                </Table>
+                            ) : (
+                                <p className="text-muted-foreground text-center p-8">No documents found in the linked Google Drive folder.</p>
+                            )}
                         </CardContent>
                     </Card>
                 </TabsContent>
