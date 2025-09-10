@@ -162,28 +162,28 @@ export default function CompanyDetailsPage() {
     fetchCompanyData();
   }, [fetchCompanyData]);
   
-  React.useEffect(() => {
+   React.useEffect(() => {
     async function checkDriveAuth() {
+        if (!companyData) return;
+
         setIsDriveLoading(true);
         try {
             const accessToken = await handleGoogleDriveRedirectResult();
-            if (accessToken && companyData) {
-                const files = await listFiles(accessToken, companyData.name, process.env.NEXT_PUBLIC_GOOGLE_DRIVE_FOLDER_ID);
+            if (accessToken) {
+                const files = await listFiles(accessToken, companyData.name);
                 setDriveFiles(files);
                 setDriveAuthNeeded(false);
             } else {
                 setDriveAuthNeeded(true);
             }
         } catch (error) {
-            console.error("Error checking Drive auth:", error);
+            console.error("Error handling Google Drive auth:", error);
             setDriveAuthNeeded(true);
         } finally {
             setIsDriveLoading(false);
         }
     }
-    if (companyData) {
-        checkDriveAuth();
-    }
+    checkDriveAuth();
   }, [companyData]);
 
   React.useEffect(() => {
