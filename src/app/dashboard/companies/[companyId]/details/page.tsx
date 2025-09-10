@@ -715,14 +715,14 @@ export default function CompanyDetailsPage() {
                 <CardContent className="p-4">
                   <Accordion type="multiple" defaultValue={['item-1', 'item-2', 'item-3', 'item-4']} className="w-full">
                     <AccordionItem value="item-1">
-                      <AccordionTrigger chevronFirst>
-                          <div className="flex items-center justify-between w-full">
-                              <h3 className="font-semibold">Company Information</h3>
-                              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={(e) => { e.stopPropagation(); setIsEditModalOpen(true);}}>
-                                  <Pencil className="h-4 w-4" />
-                              </Button>
-                          </div>
-                      </AccordionTrigger>
+                      <div className="flex items-center justify-between w-full">
+                        <AccordionTrigger chevronFirst className="flex-1">
+                            <h3 className="font-semibold">Company Information</h3>
+                        </AccordionTrigger>
+                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={(e) => { e.stopPropagation(); setIsEditModalOpen(true);}}>
+                            <Pencil className="h-4 w-4" />
+                        </Button>
+                      </div>
                       <AccordionContent>
                           <div className="space-y-4 pt-2">
                               <div className="flex items-center gap-4">
@@ -743,14 +743,14 @@ export default function CompanyDetailsPage() {
                       </AccordionContent>
                     </AccordionItem>
                     <AccordionItem value="item-2">
-                      <AccordionTrigger chevronFirst>
-                          <div className="flex items-center justify-between w-full">
+                       <div className="flex items-center justify-between w-full">
+                          <AccordionTrigger chevronFirst className="flex-1">
                               <h3 className="font-semibold">Primary Contacts</h3>
-                              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={(e) => { e.stopPropagation(); openNewContactDialog(); }}>
-                                  <Plus className="h-4 w-4" />
-                              </Button>
-                          </div>
-                      </AccordionTrigger>
+                          </AccordionTrigger>
+                          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={(e) => { e.stopPropagation(); openNewContactDialog(); }}>
+                              <Plus className="h-4 w-4" />
+                          </Button>
+                       </div>
                       <AccordionContent>
                         <div className="space-y-4 pt-2">
                             {contacts.length > 0 ? (
@@ -776,14 +776,14 @@ export default function CompanyDetailsPage() {
                       </AccordionContent>
                     </AccordionItem>
                     <AccordionItem value="item-3">
-                      <AccordionTrigger chevronFirst>
-                          <div className="flex items-center justify-between w-full">
+                       <div className="flex items-center justify-between w-full">
+                          <AccordionTrigger chevronFirst className="flex-1">
                               <h3 className="font-semibold">Company Engagements</h3>
-                              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={(e) => { e.stopPropagation(); openNewProjectDialog(); }}>
-                                  <Plus className="h-4 w-4" />
-                              </Button>
-                          </div>
-                      </AccordionTrigger>
+                          </AccordionTrigger>
+                          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={(e) => { e.stopPropagation(); openNewProjectDialog(); }}>
+                              <Plus className="h-4 w-4" />
+                          </Button>
+                       </div>
                       <AccordionContent>
                           <div className="space-y-3 pt-2">
                               {projects.length > 0 ? (
