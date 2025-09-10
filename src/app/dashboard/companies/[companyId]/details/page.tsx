@@ -21,7 +21,7 @@ import { AppLayout } from '@/components/app-layout';
 import { useParams, useRouter } from 'next/navigation';
 import React from 'react';
 import { Progress } from '@/components/ui/progress';
-import { Phone, Globe, MapPin, ArrowLeft, Plus, Pencil, FileText, Trash2, Paperclip, Upload, Link2, FolderKanban, Star, MoreHorizontal, ClipboardList } from 'lucide-react';
+import { Phone, Globe, MapPin, ArrowLeft, Plus, Pencil, FileText, Trash2, Paperclip, Upload, Link2, FolderKanban, Star, MoreHorizontal, ClipboardList, Notebook, Folder, FilePenLine } from 'lucide-react';
 import type { Company } from '@/services/company-service';
 import { getCompany, updateCompany } from '@/services/company-service';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -57,6 +57,8 @@ import { useToast } from '@/hooks/use-toast';
 import { format, formatDistanceToNow, parseISO } from 'date-fns';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { AssessmentInputsPanel } from '@/components/assessment-inputs-panel';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+
 
 type ActivityItem = {
     activity: string;
@@ -88,6 +90,7 @@ export default function CompanyDetailsPage() {
   const [assessmentToUpload, setAssessmentToUpload] = React.useState<string | null>(null);
   const [isInputsPanelOpen, setIsInputsPanelOpen] = React.useState(false);
   const [selectedAssessmentForPanel, setSelectedAssessmentForPanel] = React.useState<Assessment | null>(null);
+  const [activeTab, setActiveTab] = React.useState('assessments');
 
   const fetchCompanyData = React.useCallback(async () => {
     if (!companyId) return;
@@ -402,170 +405,208 @@ export default function CompanyDetailsPage() {
               </CardContent>
             </Card>
             
-            <Card>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <ClipboardList className="h-6 w-6 text-primary" />
-                    <CardTitle className="text-xl">Assessments</CardTitle>
-                  </div>
-                   <div className='flex items-center gap-2'>
-                    {selectedAssessments.length > 0 && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setIsBulkDeleteDialogOpen(true)}
-                        >
-                          <Trash2 className="h-4 w-4 mr-2" />
-                          Delete ({selectedAssessments.length})
-                        </Button>
-                      )}
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="outline" size="sm">
-                            <Plus className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onSelect={() => openAssessmentModal()}>
-                            GTM Readiness
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                   </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-[50px]">
-                        <Checkbox
-                          checked={allOnPageSelected}
-                          onCheckedChange={(checked) =>
-                            handleSelectAllAssessments(checked as boolean)
-                          }
-                          aria-label="Select all assessments on page"
-                          data-state={isAssessmentIndeterminate ? 'indeterminate' : (allOnPageSelected ? 'checked' : 'unchecked')}
-                        />
-                      </TableHead>
-                      <TableHead className="w-[50px]">
-                        <Star className="h-4 w-4" />
-                      </TableHead>
-                      <TableHead>Assessment Name</TableHead>
-                      <TableHead>Type</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Progress</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {paginatedAssessments.length > 0 ? (
-                      paginatedAssessments.map((assessment) => (
-                        <TableRow key={assessment.id}>
-                           <TableCell>
-                            <Checkbox
-                              checked={selectedAssessments.includes(assessment.id)}
-                              onCheckedChange={(checked) =>
-                                handleSelectAssessment(assessment.id, checked as boolean)
-                              }
-                              aria-label={`Select ${assessment.name}`}
-                            />
-                          </TableCell>
-                           <TableCell>
-                              <Button variant="ghost" size="icon" onClick={(e) => handleToggleStar(e, assessment)}>
-                                <Star className={cn("h-4 w-4", assessment.isStarred ? 'text-yellow-400 fill-yellow-400' : 'text-muted-foreground')} />
-                              </Button>
-                           </TableCell>
-                          <TableCell className="font-medium" onClick={() => handleOpenAssessment(assessment)}>
-                            <span className="cursor-pointer hover:text-primary">{assessment.name}</span>
-                          </TableCell>
-                          <TableCell>
-                            <Badge variant={(assessment.type || 'GTM Readiness') === 'GTM Readiness' ? 'default' : 'secondary'}>
-                              {assessment.type || 'GTM Readiness'}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                            <Badge
-                              variant={
-                                assessment.status === 'Completed'
-                                  ? 'success'
-                                  : 'secondary'
-                              }
-                            >
-                              {assessment.status}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex items-center gap-2">
-                                <Progress value={assessment.progress} className="w-24" />
-                                <span className="text-xs text-muted-foreground">{assessment.progress}%</span>
-                            </div>
-                          </TableCell>
-                          <TableCell className="text-right">
-                             <DropdownMenu>
+            <Tabs value={activeTab} onValueChange={setActiveTab}>
+                <TabsList>
+                    <TabsTrigger value="assessments"><ClipboardList className="h-4 w-4 mr-2" />Assessments</TabsTrigger>
+                    <TabsTrigger value="documents"><Folder className="h-4 w-4 mr-2" />Documents</TabsTrigger>
+                    <TabsTrigger value="notes"><FilePenLine className="h-4 w-4 mr-2" />Notes</TabsTrigger>
+                </TabsList>
+                <TabsContent value="assessments">
+                    <Card>
+                      <CardHeader>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <CardTitle className="text-xl">Assessments</CardTitle>
+                          </div>
+                           <div className='flex items-center gap-2'>
+                            {selectedAssessments.length > 0 && (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => setIsBulkDeleteDialogOpen(true)}
+                                >
+                                  <Trash2 className="h-4 w-4 mr-2" />
+                                  Delete ({selectedAssessments.length})
+                                </Button>
+                              )}
+                              <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" className="h-8 w-8 p-0">
-                                        <span className="sr-only">Open menu</span>
-                                        <MoreHorizontal className="h-4 w-4" />
-                                    </Button>
+                                  <Button variant="outline" size="sm">
+                                    <Plus className="h-4 w-4" />
+                                  </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
-                                    <DropdownMenuItem onClick={() => handleOpenAssessment(assessment)}>
-                                        <FileText className="mr-2 h-4 w-4" />
-                                        <span>{assessment.status === 'Completed' ? 'View Inputs' : 'Resume'}</span>
-                                    </DropdownMenuItem>
-                                    {assessment.status === 'Completed' && assessment.documentUrl && (
-                                        <DropdownMenuItem asChild>
-                                            <a href={assessment.documentUrl} target="_blank" rel="noopener noreferrer">
-                                                <Paperclip className="mr-2 h-4 w-4" />
-                                                <span>View Document</span>
-                                            </a>
-                                        </DropdownMenuItem>
-                                    )}
-                                     {assessment.status === 'Completed' && (
-                                        <DropdownMenuItem onClick={() => handleUploadClick(assessment.id)}>
-                                            <Upload className="mr-2 h-4 w-4" />
-                                            <span>Upload Document</span>
-                                        </DropdownMenuItem>
-                                    )}
-                                    <DropdownMenuSeparator />
-                                    {assessment.documentUrl && (
-                                        <DropdownMenuItem onClick={() => openDeleteDocumentDialog(assessment)} className="text-destructive focus:bg-destructive/90 focus:text-destructive-foreground">
-                                          <Trash2 className="mr-2 h-4 w-4" />
-                                          <span>Delete Document</span>
-                                        </DropdownMenuItem>
-                                    )}
+                                  <DropdownMenuItem onSelect={() => openAssessmentModal()}>
+                                    GTM Readiness
+                                  </DropdownMenuItem>
                                 </DropdownMenuContent>
-                            </DropdownMenu>
-                          </TableCell>
-                        </TableRow>
-                      ))
-                    ) : (
-                       <TableRow>
-                        <TableCell colSpan={7} className="h-24 text-center">
-                          No assessments found.
-                        </TableCell>
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
-                {assessments.length > 0 && (
-                    <div className="flex justify-end mt-4">
-                        <TablePagination
-                            count={assessments.length}
-                            page={page}
-                            rowsPerPage={rowsPerPage}
-                            onPageChange={(newPage) => setPage(newPage)}
-                            onRowsPerPageChange={(newRowsPerPage) => {
-                                setRowsPerPage(newRowsPerPage);
-                                setPage(0);
-                            }}
-                        />
-                    </div>
-                )}
-              </CardContent>
-            </Card>
+                              </DropdownMenu>
+                           </div>
+                        </div>
+                      </CardHeader>
+                      <CardContent>
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead className="w-[50px]">
+                                <Checkbox
+                                  checked={allOnPageSelected}
+                                  onCheckedChange={(checked) =>
+                                    handleSelectAllAssessments(checked as boolean)
+                                  }
+                                  aria-label="Select all assessments on page"
+                                  data-state={isAssessmentIndeterminate ? 'indeterminate' : (allOnPageSelected ? 'checked' : 'unchecked')}
+                                />
+                              </TableHead>
+                              <TableHead className="w-[50px]">
+                                <Star className="h-4 w-4" />
+                              </TableHead>
+                              <TableHead>Assessment Name</TableHead>
+                              <TableHead>Type</TableHead>
+                              <TableHead>Status</TableHead>
+                              <TableHead>Progress</TableHead>
+                              <TableHead className="text-right">Actions</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {paginatedAssessments.length > 0 ? (
+                              paginatedAssessments.map((assessment) => (
+                                <TableRow key={assessment.id}>
+                                   <TableCell>
+                                    <Checkbox
+                                      checked={selectedAssessments.includes(assessment.id)}
+                                      onCheckedChange={(checked) =>
+                                        handleSelectAssessment(assessment.id, checked as boolean)
+                                      }
+                                      aria-label={`Select ${assessment.name}`}
+                                    />
+                                  </TableCell>
+                                   <TableCell>
+                                      <Button variant="ghost" size="icon" onClick={(e) => handleToggleStar(e, assessment)}>
+                                        <Star className={cn("h-4 w-4", assessment.isStarred ? 'text-yellow-400 fill-yellow-400' : 'text-muted-foreground')} />
+                                      </Button>
+                                   </TableCell>
+                                  <TableCell className="font-medium" onClick={() => handleOpenAssessment(assessment)}>
+                                    <span className="cursor-pointer hover:text-primary">{assessment.name}</span>
+                                  </TableCell>
+                                  <TableCell>
+                                    <Badge variant={(assessment.type || 'GTM Readiness') === 'GTM Readiness' ? 'default' : 'secondary'}>
+                                      {assessment.type || 'GTM Readiness'}
+                                    </Badge>
+                                  </TableCell>
+                                  <TableCell>
+                                    <Badge
+                                      variant={
+                                        assessment.status === 'Completed'
+                                          ? 'success'
+                                          : 'secondary'
+                                      }
+                                    >
+                                      {assessment.status}
+                                    </Badge>
+                                  </TableCell>
+                                  <TableCell>
+                                    <div className="flex items-center gap-2">
+                                        <Progress value={assessment.progress} className="w-24" />
+                                        <span className="text-xs text-muted-foreground">{assessment.progress}%</span>
+                                    </div>
+                                  </TableCell>
+                                  <TableCell className="text-right">
+                                     <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button variant="ghost" className="h-8 w-8 p-0">
+                                                <span className="sr-only">Open menu</span>
+                                                <MoreHorizontal className="h-4 w-4" />
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end">
+                                            <DropdownMenuItem onClick={() => handleOpenAssessment(assessment)}>
+                                                <FileText className="mr-2 h-4 w-4" />
+                                                <span>{assessment.status === 'Completed' ? 'View Inputs' : 'Resume'}</span>
+                                            </DropdownMenuItem>
+                                            {assessment.status === 'Completed' && assessment.documentUrl && (
+                                                <DropdownMenuItem asChild>
+                                                    <a href={assessment.documentUrl} target="_blank" rel="noopener noreferrer">
+                                                        <Paperclip className="mr-2 h-4 w-4" />
+                                                        <span>View Document</span>
+                                                    </a>
+                                                </DropdownMenuItem>
+                                            )}
+                                             {assessment.status === 'Completed' && (
+                                                <DropdownMenuItem onClick={() => handleUploadClick(assessment.id)}>
+                                                    <Upload className="mr-2 h-4 w-4" />
+                                                    <span>Upload Document</span>
+                                                </DropdownMenuItem>
+                                            )}
+                                            <DropdownMenuSeparator />
+                                            {assessment.documentUrl && (
+                                                <DropdownMenuItem onClick={() => openDeleteDocumentDialog(assessment)} className="text-destructive focus:bg-destructive/90 focus:text-destructive-foreground">
+                                                  <Trash2 className="mr-2 h-4 w-4" />
+                                                  <span>Delete Document</span>
+                                                </DropdownMenuItem>
+                                            )}
+                                            <DropdownMenuItem onClick={() => openDeleteDialog(assessment)} className="text-destructive focus:bg-destructive focus:text-destructive-foreground">
+                                                <Trash2 className="mr-2 h-4 w-4" />
+                                                Delete
+                                            </DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                  </TableCell>
+                                </TableRow>
+                              ))
+                            ) : (
+                               <TableRow>
+                                <TableCell colSpan={7} className="h-24 text-center">
+                                  No assessments found.
+                                </TableCell>
+                              </TableRow>
+                            )}
+                          </TableBody>
+                        </Table>
+                        {assessments.length > 0 && (
+                            <div className="flex justify-end mt-4 p-4 border-t">
+                                <TablePagination
+                                    count={assessments.length}
+                                    page={page}
+                                    rowsPerPage={rowsPerPage}
+                                    onPageChange={(newPage) => setPage(newPage)}
+                                    onRowsPerPageChange={(newRowsPerPage) => {
+                                        setRowsPerPage(newRowsPerPage);
+                                        setPage(0);
+                                    }}
+                                />
+                            </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                </TabsContent>
+                <TabsContent value="documents">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Documents</CardTitle>
+                            <CardDescription>
+                                All documents related to {companyData.name}.
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <p className="text-muted-foreground text-center p-8">No documents uploaded yet.</p>
+                        </CardContent>
+                    </Card>
+                </TabsContent>
+                <TabsContent value="notes">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Notes</CardTitle>
+                            <CardDescription>
+                                General notes and observations about {companyData.name}.
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <p className="text-muted-foreground text-center p-8">No notes created yet.</p>
+                        </CardContent>
+                    </Card>
+                </TabsContent>
+            </Tabs>
           </div>
 
           <div className="space-y-6">
@@ -743,3 +784,5 @@ export default function CompanyDetailsPage() {
     </>
   );
 }
+
+    
