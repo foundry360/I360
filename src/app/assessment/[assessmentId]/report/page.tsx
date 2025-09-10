@@ -14,6 +14,110 @@ import { Separator } from '@/components/ui/separator';
 import { useQuickAction } from '@/contexts/quick-action-context';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 
+const formSections = [
+  {
+    title: 'Organizational Overview & Current GTM Motion',
+    fields: [
+      'companyStage',
+      'employeeCount',
+      'industrySector',
+      'goToMarketStrategy',
+      'growthChallenges',
+    ],
+  },
+  {
+    title: 'Strategic Alignment & Collaboration',
+    fields: [
+      'departmentalAlignment',
+      'communicationFrequency',
+      'responsibilityClarity',
+    ],
+  },
+  {
+    title: 'Data Management & Technology Stack',
+    fields: [
+      'crmPlatform',
+      'dataHygienePractices',
+      'techStackAssessment',
+      'integrationEffectiveness',
+      'toolAdoptionRates',
+    ],
+  },
+  {
+    title: 'Process Optimization & Automation',
+    fields: [
+      'workflowAutomation',
+      'leadManagementProcess',
+      'salesCycleEfficiency',
+      'forecastingProcess',
+    ],
+  },
+  {
+    title: 'Customer Experience (CX) & Personalization',
+    fields: [
+      'customerJourneyMapping',
+      'customerFirstCulture',
+      'personalizationEfforts',
+      'customerFeedbackMechanisms',
+    ],
+  },
+  {
+    title: 'Key Performance Indicators (KPIs) & Metrics',
+    fields: [
+        'revenueMetricsDescription',
+        'annualRecurringRevenue',
+        'netRevenueRetention',
+        'revenueGrowthRate',
+        'acquisitionMetricsDescription',
+        'customerAcquisitionCost',
+        'winRate',
+        'pipelineCoverage',
+        'pipelineVelocity',
+        'retentionMetricsDescription',
+        'churnRate',
+        'customerLifetimeValue',
+        'netPromoterScore',
+        'customerSatisfaction',
+        'kpiReportingFrequency',
+    ],
+  },
+   {
+    title: 'Specific Pain Points (Qualitative Feedback)',
+    fields: ['specificPainPoints'],
+  },
+  {
+    title: 'Change Management Readiness',
+    fields: [
+      'executiveSponsorship',
+      'organizationalChangeDescription',
+      'crossFunctionalInputMechanisms',
+    ],
+  },
+    {
+    title: 'Strategic Clarity & Value Proposition Validation',
+    fields: [
+      'challengesDescription',
+      'icpLastUpdated',
+      'valueMessagingAlignment',
+      'tangibleDifferentiators',
+    ],
+  },
+  {
+    title: 'Forecasting & Measurement Effectiveness',
+    fields: [
+      'forecastAccuracy',
+      'pipelineReportingTools',
+      'manualReportingTime',
+      'budgetAllocation',
+    ],
+  },
+  {
+    title: 'Innovation & Digital Transformation Potential',
+    fields: ['aiAdoptionBarriers', 'businessModelTesting'],
+  },
+];
+
+
 const fieldLabels: Record<keyof GtmReadinessInput, string> = {
     companyStage: 'Company Stage',
     employeeCount: 'Employee Count',
@@ -164,27 +268,41 @@ export default function ReportPage() {
                     </Button>
                 </div>
                 <Separator />
-                <div className="flex-1 overflow-y-auto p-6">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Questionnaire Responses</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                {Object.entries(formData).map(([key, value]) => {
-                                    const label = fieldLabels[key as keyof GtmReadinessInput];
-                                    if (!label || !value || key === 'companyId' || key === 'assessmentName') return null;
+                <div className="flex-1 overflow-y-auto p-6 space-y-6">
+                    {formSections.map((section, index) => {
+                        const sectionHasValues = section.fields.some(key => {
+                            const value = formData[key as keyof GtmReadinessInput];
+                            return value && value.toString().trim() !== '';
+                        });
 
-                                    return (
-                                        <div key={key} className="space-y-1">
-                                            <p className="text-sm font-medium text-muted-foreground">{label}</p>
-                                            <p className="text-base">{value.toString()}</p>
-                                        </div>
-                                    )
-                                })}
-                            </div>
-                        </CardContent>
-                    </Card>
+                        if (!sectionHasValues) return null;
+
+                        return (
+                            <Card key={index}>
+                                <CardHeader>
+                                    <CardTitle>{section.title}</CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-6">
+                                        {section.fields.map((key) => {
+                                            const fieldKey = key as keyof GtmReadinessInput;
+                                            const label = fieldLabels[fieldKey];
+                                            const value = formData[fieldKey];
+
+                                            if (!label || !value || value.toString().trim() === '') return null;
+
+                                            return (
+                                                <div key={key} className="space-y-1">
+                                                    <p className="text-sm font-medium text-muted-foreground">{label}</p>
+                                                    <p className="text-base">{value.toString()}</p>
+                                                </div>
+                                            )
+                                        })}
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        )
+                    })}
                 </div>
             </div>
         </AppLayout>
