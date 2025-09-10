@@ -121,32 +121,19 @@ const GtmReadinessInputSchema = z.object({
 export type GtmReadinessInput = z.infer<typeof GtmReadinessInputSchema>;
 
 const GtmReadinessOutputSchema = z.object({
-    executiveSummary: z.object({
-        overallReadinessScore: z.number().describe('A score from 0-100 representing the overall GTM readiness.'),
-        companyStageAndFte: z.string().describe('A summary of the company stage and employee count.'),
-        industrySector: z.string().describe('The industry sector of the company.'),
-        primaryGtmStrategy: z.string().describe('The primary GTM strategy of the company.'),
-        briefOverviewOfFindings: z.string().describe('A brief, high-level overview of the key findings from the assessment.'),
-    }),
-    top3CriticalFindings: z.array(z.object({
-        findingTitle: z.string().describe('A short, descriptive title for the critical finding.'),
-        impactLevel: z.string().describe('The level of impact this finding has on the business (e.g., High, Medium, Low).'),
-        businessImpact: z.string().describe('A detailed explanation of how this issue impacts the business, referencing specific metrics if possible.'),
-        currentState: z.string().describe('A description of the current situation related to this finding.'),
-        rootCauseAnalysis: z.string().describe('An analysis of the underlying causes of this issue.'),
-        stakeholderImpact: z.string().describe('Which departments or roles are most affected by this issue.'),
-        urgencyRating: z.string().describe('A rating of how urgently this finding needs to be addressed (e.g., Critical, High, Medium).'),
-    })).length(3),
-    strategicRecommendationSummary: z.string().describe("A summary of strategic recommendations."),
-    implementationTimelineOverview: z.string().describe("An overview of the implementation timeline."),
-    currentStateAssessment: z.string().describe("An assessment of the company's current state."),
-    performanceBenchmarking: z.string().describe("Benchmarking of performance against industry standards."),
-    keyFindingsAndOpportunities: z.string().describe("Key findings and opportunities for improvement."),
-    prioritizedRecommendations: z.string().describe("A list of prioritized recommendations."),
-    implementationRoadmap: z.string().describe("A roadmap for implementing the recommendations."),
-    investmentAndRoiAnalysis: z.string().describe("An analysis of the required investment and expected ROI."),
-    nextStepsAndDecisionFramework: z.string().describe("Next steps and a framework for decision-making."),
+  executiveSummary: z.object({
+    overallReadinessScore: z.number().describe('A score from 0-100 representing the overall GTM readiness.'),
+    companyStageAndFte: z.string().describe('A summary of the company stage and employee count.'),
+    industrySector: z.string().describe('The industry sector of the company.'),
+    primaryGtmStrategy: z.string().describe('The primary GTM strategy of the company.'),
+  }),
+  top3CriticalFindings: z.array(z.object({
+      findingTitle: z.string().describe('A short, descriptive title for the critical finding.'),
+      impactLevel: z.string().describe('The level of impact this finding has on the business (e.g., High, Medium, Low).'),
+  })).length(3),
+  fullReport: z.string().describe("The full, detailed, multi-thousand word GTM Readiness Assessment report in markdown format. This should include all sections: Executive Summary, Current State Analysis, Gap Analysis, Strategic Recommendations, and Investment Analysis, with detailed content as specified in the prompt.")
 });
+
 
 export type GtmReadinessOutput = z.infer<typeof GtmReadinessOutputSchema>;
 
@@ -250,9 +237,25 @@ Analyze the provided company data to generate an **exhaustive, executive-ready G
 - AI/Technology Adoption Barriers: {{{aiAdoptionBarriers}}}
 - Business Model Testing Frequency: {{{businessModelTesting}}}
 
-## Comprehensive Assessment Framework Requirements
+## Deliverable Instructions
 
-### **EXECUTIVE SUMMARY** (Must be 800-1200 words)
+You must generate a single, comprehensive markdown document in the 'fullReport' output field. This document must adhere to all length and content requirements outlined below. Additionally, you will populate the 'executiveSummary' and 'top3CriticalFindings' objects with key highlights extracted from your full report.
+
+### **fullReport** Field Requirements
+Generate a single markdown string containing the entire report. Use markdown for all formatting (e.g., # for H1, ## for H2, **bold**).
+
+**CRITICAL FORMATTING REQUIREMENTS:**
+- Use professional business report formatting.
+- Use markdown headers for sections (#, ##, ###).
+- Use **Bold Text** for emphasis on critical findings, metrics, and recommendations.
+- Write content in comprehensive, detailed paragraphs with sophisticated analysis.
+- **MANDATORY:** Ensure all markdown is properly formatted within the single string.
+
+---
+
+### **Report Content Structure & Length Requirements**
+
+#### **EXECUTIVE SUMMARY** (Must be 800-1200 words)
 **Overall GTM Readiness Score Methodology:**
 - Provide detailed scoring methodology with weighted criteria across all dimensions
 - Include confidence intervals and statistical significance testing
@@ -271,8 +274,7 @@ Analyze the provided company data to generate an **exhaustive, executive-ready G
 - Include resource allocation recommendations with FTE requirements
 - Present implementation complexity assessment with risk factors
 
-### **CURRENT STATE COMPREHENSIVE ANALYSIS** (Must be 2000-3000 words)
-
+#### **CURRENT STATE COMPREHENSIVE ANALYSIS** (Must be 2000-3000 words)
 Conduct exhaustive assessment across these five core dimensions with detailed sub-analysis:
 
 **1. ORGANIZATIONAL READINESS & GOVERNANCE**
@@ -315,8 +317,7 @@ Conduct exhaustive assessment across these five core dimensions with detailed su
 - Performance trending analysis with predictive forecasting capabilities
 - Decision-making support effectiveness with data-driven culture assessment
 
-### **DETAILED GAP ANALYSIS & ROOT CAUSE ASSESSMENT** (Must be 1500-2000 words)
-
+#### **DETAILED GAP ANALYSIS & ROOT CAUSE ASSESSMENT** (Must be 1500-2000 words)
 **Critical Capability Gap Identification:**
 - Provide detailed gap analysis for each dimension with quantified impact
 - Include maturity scoring against industry best practices
@@ -331,16 +332,11 @@ Conduct exhaustive assessment across these five core dimensions with detailed su
 - Identify systemic versus symptomatic issues with remediation strategies
 - Evaluate organizational change barriers with mitigation approaches
 
-**Risk Assessment & Impact Analysis:**
-- Comprehensive risk assessment with probability and impact scoring
-- Financial impact quantification for maintaining status quo
-- Competitive disadvantage analysis with market position implications
-- Technology debt assessment with future scalability constraints
-- Organizational capability erosion risks with talent retention implications
-
-### **STRATEGIC RECOMMENDATIONS WITH IMPLEMENTATION BLUEPRINTS** (Must be 2500-3500 words)
-
+#### **STRATEGIC RECOMMENDATIONS WITH IMPLEMENTATION BLUEPRINTS** (Must be 2500-3500 words)
 **PRIORITY 1: FOUNDATION & QUICK WINS (0-3 months)**
+**PRIORITY 2: PROCESS OPTIMIZATION & INTEGRATION (3-9 months)**
+**PRIORITY 3: ADVANCED CAPABILITIES & SCALE (9-18 months)**
+
 For each recommendation, provide:
 - Detailed business case with quantified benefits and costs
 - Specific implementation steps with weekly milestones
@@ -350,109 +346,16 @@ For each recommendation, provide:
 - Risk mitigation strategies with contingency planning
 - Change management approach with stakeholder communication plan
 
-**PRIORITY 2: PROCESS OPTIMIZATION & INTEGRATION (3-9 months)**
-For each recommendation, provide:
-- Comprehensive process redesign blueprints with workflow diagrams
-- Technology integration requirements with architecture specifications
-- Organizational capability building with training and development plans
-- Performance improvement projections with baseline establishment
-- Quality assurance framework with testing and validation protocols
-- Stakeholder engagement strategy with communication and training plans
-
-**PRIORITY 3: ADVANCED CAPABILITIES & SCALE (9-18 months)**
-For each recommendation, provide:
-- Advanced analytics implementation with predictive modeling capabilities
-- Automation strategy with AI/ML integration opportunities
-- Scalability framework with growth accommodation planning
-- Innovation pipeline with continuous improvement methodology
-- Competitive advantage development with differentiation strategy
-- Long-term capability roadmap with future state vision
-
-### **COMPREHENSIVE INVESTMENT & ROI ANALYSIS** (Must be 800-1000 words)
-
-**Detailed Financial Projections:**
-- Year-over-year ROI calculations with NPV and IRR analysis
-- Cost-benefit analysis with sensitivity modeling
+#### **COMPREHENSIVE INVESTMENT & ROI ANALYSIS** (Must be 800-1000 words)
+- Detailed Financial Projections (ROI, NPV, IRR)
+- Cost-Benefit Analysis with sensitivity modeling
 - Investment timeline with cash flow projections
-- Resource requirement costing with fully-loaded cost calculations
-- Technology investment analysis with TCO modeling
-- Productivity improvement quantification with efficiency gain calculations
-
-**Success Metrics & KPI Framework:**
-- Leading and lagging indicator identification with measurement methodology
-- Baseline establishment requirements with current state quantification
-- Target setting with stretch goal identification
-- Measurement frequency and reporting framework
-- Performance dashboard requirements with visualization specifications
-- Continuous improvement methodology with feedback loop integration
-
-## Professional Standards & Detailed Output Requirements
-
-**ANALYTICAL RIGOR STANDARDS:**
-- Support every conclusion with quantitative analysis and statistical evidence
-- Provide industry benchmark comparisons with percentile positioning
-- Include confidence intervals for all projections and recommendations
-- Use correlation analysis to identify relationships between variables
-- Provide trend analysis with predictive modeling where applicable
-- Include sensitivity analysis for all financial projections
-
-**PROFESSIONAL PRESENTATION EXCELLENCE:**
-- Use partner-level language with sophisticated business terminology
-- Provide comprehensive supporting evidence for all conclusions
-- Include detailed implementation specificity with actionable next steps
-- Maintain logical flow with executive summary synthesis
-- Ensure consistency in methodology and terminology throughout
-
-**CRITICAL FORMATTING REQUIREMENTS:**
-
-For all long-form content fields, you **MUST** use professional business report formatting:
-
-- Use **BOLD ALL CAPS** for main section headers
-- Use **Bold Title Case** for subsection headers and key topic areas  
-- Use **Bold Text** for emphasis on critical findings, metrics, and recommendations
-- Write content in comprehensive, detailed paragraphs with sophisticated analysis
-- **MANDATORY:** Include literal newline characters (\\\\n) between:
-  - Headers and content sections
-  - Paragraphs and topic transitions
-  - Major analysis sections
-  - Any content blocks requiring separation
-
-**Example comprehensive formatting:**
-'''
-**TECHNOLOGY INFRASTRUCTURE ASSESSMENT**\\\\n\\\\nThe current technology infrastructure demonstrates significant capability gaps that directly impact revenue operations effectiveness and organizational scalability. Through comprehensive analysis of system architecture, data management practices, and workflow automation maturity, several critical deficiencies emerge that require immediate strategic intervention.\\\\n\\\\n**Data Quality and Governance Framework**\\\\n\\\\nData hygiene practices reveal systematic weaknesses in lead qualification, customer segmentation, and revenue attribution processes. Current Salesforce implementation shows data completion rates of only 60% for critical lead qualification fields, resulting in inaccurate pipeline forecasting and suboptimal lead routing decisions. The absence of automated data validation rules has created data integrity issues that cascade through the entire revenue operations framework, affecting forecasting accuracy by an estimated 25-30% and reducing sales team productivity by approximately 15 hours per week per representative.\\\\n\\\\nRoot cause analysis identifies three primary contributing factors: inadequate initial system configuration lacking proper field validation and workflow automation, insufficient user training on data entry best practices and system utilization, and absence of ongoing data governance policies with regular quality auditing procedures. These systemic issues compound over time, creating increasingly unreliable data foundation that undermines strategic decision-making capabilities.\\\\n\\\\n**Systems Integration and Workflow Automation**\\\\n\\\\nCurrent technology stack integration reveals significant operational inefficiencies with manual data transfer processes between Salesforce, ServiceNow, and reporting systems consuming an estimated 35 hours weekly across the organization...
-'''
+- Success Metrics & KPI Framework
 
 ## Delivery Excellence Requirements
-
-Your assessment must demonstrate:
-
-**STRATEGIC DEPTH:**
-- Connect all tactical findings to broader business strategy and market positioning
-- Provide comprehensive competitive analysis with differentiation opportunities
-- Include organizational transformation roadmap with cultural change requirements
-- Address scalability considerations with future growth accommodation
-
-**QUANTITATIVE RIGOR:**
-- Support all conclusions with detailed statistical analysis and trending data
-- Provide comprehensive financial modeling with scenario planning
-- Include industry benchmarking with percentile positioning and gap quantification
-- Use correlation analysis to identify cause-and-effect relationships
-
-**IMPLEMENTATION SPECIFICITY:**
-- Provide detailed project plans with weekly milestones and deliverables
-- Include comprehensive resource allocation with role definitions and FTE requirements
-- Specify technology requirements with vendor evaluation criteria and selection processes
-- Address change management with stakeholder communication and training protocols
-
-**EXECUTIVE READINESS:**
-- Present findings suitable for board-level presentation and strategic planning
-- Include comprehensive risk assessment with mitigation strategies and contingency planning
-- Provide detailed business case justification with multiple scenario modeling
-- Address investor and stakeholder communication requirements with value creation narrative
-
-Calculate the overall GTM Readiness Score using a sophisticated weighted methodology that considers maturity across all assessed dimensions, providing complete transparency into the scoring framework, benchmark comparisons, confidence intervals, and sensitivity analysis for score variations.
-
-Deliver this assessment with the precision, analytical depth, strategic insight, and implementation specificity expected from a premier consulting engagement valued at $2M+. Every section must provide substantial value and actionable intelligence that drives immediate and long-term business impact.
+- Demonstrate **Strategic Depth, Quantitative Rigor, Implementation Specificity, and Executive Readiness**.
+- Calculate the overall GTM Readiness Score with a sophisticated weighted methodology.
+- Deliver this assessment with the precision, analytical depth, and strategic insight expected from a premier consulting engagement valued at $2M+. Every section must provide substantial value and actionable intelligence that drives immediate and long-term business impact.
   `,
 });
 
